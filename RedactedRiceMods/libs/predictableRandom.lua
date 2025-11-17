@@ -4,16 +4,16 @@ This library allows for choosing random values in a predictable way so that the 
 be repeatable in case of resets or undoing
 
 Author: Das Keifer of Redacted Rice
-Version: 1.0.0
+Version: 1.1.0
 
 See the Treeherder's "Wake the Forest" passive and the forestUtils:floraformNumOfRandomSpaces function for an example of usage
 
 How to Use:
 In the function mod:load(options, version) in init.lua add these two lines:
 	predictableRandom:registerAutoRollHook()
-	
+
 When creating a weapon:
-1. (optional) set the global seed for cross game consistency 
+1. (optional) set the global seed for cross game consistency
 	predictableRandom:seedGlobally(<some number>)
 2. Create an ID for each random generator desired
 	local randId = "Treeherders_Passive_WakeTheForest"..tostring(Pawn:GetId())
@@ -33,17 +33,17 @@ predictableRandom:getNextValue(id, minVal, maxVal, randSalt)
 predictableRandom:roll(id)
 	Rolls the seed to a new value in a predictable/repeatable way. Used to refresh the random values
 		id - the randomizer id
-		
+
 predictableRandom:resetToLastRoll(id)
 	Resets the randomizer to the last rolled/inital values to repeat the predictable random values
 		id - the randomizer id
-		
+
 
 Special thanks to KartoFlane for helping strucutre this as a reusable library
  ]]--
 
-predictableRandom = {
-	Version="1.0.0",
+local predictableRandom = {
+	Version = "1.1.0",
 	-- Set to true to debug the lib or to help see how its behaving
 	DebugLog = false
 }
@@ -68,8 +68,8 @@ local function rollRandomizer(rand)
 	local seed = (rand.currSeed + rand.currCount) % predictableRandom.max_internal
 	rand.currCount = rand.currCount + 1
 	rand.savedCount = rand.currCount
-	
-	--use the seed to get a new seed so the seed space use isnt 
+
+	--use the seed to get a new seed so the seed space use isnt
 	--continuous so its less likely to have two seeds align
 	math.randomseed(seed)
 	rand.currSeed = math.random(predictableRandom.min_internal, predictableRandom.max_internal)
@@ -82,30 +82,30 @@ local function getRandomizer(id)
 	if not(GAME and GAME.Randomizers and GAME.Randomizers[id]) then
 		return predictableRandom:seed(id)
 	end
-	
+
 	--otherwise return the randomizer at the passed id
-	return GAME.Randomizers[id] 
+	return GAME.Randomizers[id]
 end
 
 function predictableRandom:seed(id, seed)
 	local rand = {}
-	
+
 	--If used in a tooltip in squad selection then GAME wont exist
 	if GAME then
 		if not GAME.Randomizers then
 			GAME.Randomizers = {}
 		end
-		
+
 		rand = GAME.Randomizers[id]
 		if not rand then
 			rand = {}
 			GAME.Randomizers[id] = rand
 		end
 	end
-	
+
 	rand.currCount = 0
 	rand.savedCount = 0
-	
+
 	if seed then
 		rand.currSeed = seed
 	else
@@ -113,7 +113,7 @@ function predictableRandom:seed(id, seed)
 		predictableRandom.seed_internal = predictableRandom.seed_internal + 1
 	end
 	rand.savedSeed = rand.currSeed
-	
+
 	return rand
 end
 
@@ -132,19 +132,19 @@ end
 function predictableRandom:getNextValue(id, minVal, maxVal, randSalt)
 	local rand = getRandomizer(id)
 	if predictableRandom.DebugLog then LOG("Getting value for "..id.." with seed "..rand.currSeed.." and count "..rand.currCount) end
-	
+
 	local seed = rand.currSeed + rand.currCount
 	rand.currCount = rand.currCount + 1
-	
+
 	if randSalt then
 		seed = seed + randSalt
 	end
 	seed = seed % predictableRandom.max_internal
-	
+
 	--set the seed to the stored seed so the returned value is always the same
 	math.randomseed(seed)
 	rand.currSeed = math.random(predictableRandom.min_internal, predictableRandom.max_internal)
-	
+
 	math.randomseed(rand.currSeed)
 	return math.random(minVal, maxVal)
 end
@@ -162,4 +162,3 @@ function predictableRandom:registerAutoRollHook()
 end
 
 return predictableRandom
-    
