@@ -1,6 +1,6 @@
 WorldBuilders_Passive_Move = PassiveSkill:new
 {
-	Name = "Move",
+	Name = "All Terrain Mechs",
 	Description = "Mechs can move through and on buildings and mountains and can move over pawns and holes",
 	Icon = "weapons/passive_wb_move.png",
 	Rarity = 2,
@@ -13,6 +13,7 @@ WorldBuilders_Passive_Move = PassiveSkill:new
 
 	-- custom options: TODO
 	Flying = false,
+	MadeFlying = {},
 
 	TipImage = {
 		CustomPawn = "WorldBuilders_ShaperMech",
@@ -23,6 +24,7 @@ WorldBuilders_Passive_Move = PassiveSkill:new
 }
 WorldBuilders_Passive_Move.passiveEffect = mod_loader.mods[modApi.currentMod].libs.passiveEffect
 
+-- TODO: Implement this
 Weapon_Texts.WorldBuilders_Passive_Move_Upgrade1 = "Flying"
 WorldBuilders_Passive_Move_A = WorldBuilders_Passive_Move:new
 {
@@ -59,6 +61,20 @@ function WorldBuilders_Passive_Move:GetPassiveSkillEffect_SkillBuildHook(mission
 		self.addForcedMove(skillEffect, p1, p2)
 	end
 	LOG("HERE 6")
+end
+
+function WorldBuilders_Passive_Move:GetPassiveSkillEffect_PawnSelectedHook(mission, pawn)
+	if pawn:IsMech() then
+		if self.Flying and not pawn:IsFlying() then
+			LOG("Set pawn " .. pawn:GetId() .. " to flying")
+			pawn:SetFlying(true)
+			MadeFlying[pawn:GetId()] = true
+		elseif not self.Flying and MadeFlying[pawn:GetId()] then
+			LOG("Set pawn " .. pawn:GetId() .. " to not flying")
+			pawn:SetFlying(false)
+			MadeFlying[pawn:GetId()] = nil
+		end
+	end
 end
 
 function WorldBuilders_Passive_Move.addForcedMove(skillEffect, p1, p2)

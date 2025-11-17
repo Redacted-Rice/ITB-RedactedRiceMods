@@ -47,9 +47,6 @@ function mod:init()
 	require(self.scriptPath .. "weapons/wb_move")
 	modApi:addWeaponDrop("WorldBuilders_Passive_Move")
 	LOG("MOVE2")
-
-	-- Shop... TBD
-	-- modApi:addWeaponDrop("...")
 end
 
 function mod:load(options, version)
@@ -62,7 +59,7 @@ function mod:load(options, version)
 			"WorldBuilders_ShaperMech",
 		},
 		"World Builders",
-		"... Something cool here...",
+		"Once used to build the very islands, these mechs re-emerged to make the world inhospitable for the vek",
 		self.resourcePath .. "img/squad_icon.png"
 	)
 
