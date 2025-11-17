@@ -1,5 +1,4 @@
 General:
-Update readme
 Test modpack integration
 
 
@@ -33,4 +32,4 @@ Visual "bug" showing push damage when swap pushed with adjacent mountain or buil
 ------------------------------------------------------------------------------
 
 Libs:
-Modify so calling fns multiple times is not problematic. Should have a loaded bool and only call once probably. As long as weapons are done in init and libs loaded in load, this should be fine
+None
