@@ -4,19 +4,19 @@ Treeherders_Passive_WakeTheForest = PassiveSkill:new
 	Description = "Mechs on forest tiles take one less damage. Randomly expands forests two tiles each turn",
 	Icon = "weapons/passives/passive_th_forestArmor.png",
 	Rarity = 2,
-	
+
 	PowerCost = 0,
 	Damage = 0,
-	
+
 	Upgrades = 2,
 	UpgradeCost = {1, 1},
-	
+
 	-- custom options
 	ForestArmor = true,
 	ForestsToGen = 2,
 	Evacuate = false,
 	SeekMech = false,
-	
+
 	TipImage = {
 		CustomPawn = "Treeherders_ArbiformerMech",
 		Unit = Point(2, 1),
@@ -26,9 +26,11 @@ Treeherders_Passive_WakeTheForest = PassiveSkill:new
 	}
 }
 
+Treeherders_Passive_WakeTheForest.passiveEffect = mod_loader.mods[modApi.currentMod].libs.passiveEffect
+
 Weapon_Texts.Treeherders_Passive_WakeTheForest_Upgrade1 = "Tree-vacuate"
 Treeherders_Passive_WakeTheForest_A = Treeherders_Passive_WakeTheForest:new
-{	
+{
 	UpgradeDescription = "When a mech takes damage on a forest and would be set on fire, it is pushed to a safe adjacent tile (prefs rel. to atk: right, left, same, opposite)",
 	TipImage = {
 		CustomPawn = "Treeherders_ArbiformerMech",
@@ -37,7 +39,7 @@ Treeherders_Passive_WakeTheForest_A = Treeherders_Passive_WakeTheForest:new
 		Enemy = Point(2, 2),
 		Forest = Point(2, 2),
 	},
-	
+
 	Evacuate = true,
 }
 
@@ -63,9 +65,9 @@ Treeherders_Passive_WakeTheForest_AB = Treeherders_Passive_WakeTheForest_B:new
 --only a preview for passive skills
 function Treeherders_Passive_WakeTheForest:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
-	
+
 	Board:SetTerrainIcon(Point(2, 2), "forestArmor")
-	
+
 	local spaceDamage = SpaceDamage(Point(2, 2), DAMAGE_ZERO)
 	spaceDamage.sAnimation = "SwipeClaw2"
 	spaceDamage.sSound = "/enemy/scorpion_soldier_1/attack"
@@ -76,48 +78,48 @@ end
 --only a preview for passive skills
 function Treeherders_Passive_WakeTheForest_A:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
-	
+
 	Board:SetTerrainIcon(Point(2, 2), "forestArmor")
-	
+
 	local spaceDamage = SpaceDamage(Point(2, 2), 2, 3)
 	spaceDamage.sAnimation = "SwipeClaw2"
 	spaceDamage.sSound = "/enemy/scorpion_soldier_2/attack"
 	--Still not quite right
 	spaceDamage.sScript = [[Board:SetTerrainIcon(Point(2, 2), "")]]
 	ret:AddMelee(Point(2, 1), spaceDamage)
-	
+
 	return ret
 end
 
 --only a preview for passive skills
 function Treeherders_Passive_WakeTheForest_B:GetSkillEffect(p1,p2)
 	local ret = SkillEffect()
-	
+
 	forestUtils:floraformSpace(ret, Point(2, 2))
 	forestUtils:floraformSpace(ret, Point(1, 3))
-	
+
 	return ret
 end
 
 ------------------- FLORAFORM SPACES ---------------------------
 
 function Treeherders_Passive_WakeTheForest:FloraformSpaces()
-	
+
 	local randId = "Treeherders_Passive_WakeTheForest"..tostring(Pawn:GetId())
-	
+
 	local effect = SkillEffect()
-	
+
 	local candidates = forestUtils:getSpacesThatBorder(forestUtils.isAForest)
-	
+
 	--floraform and see if we floraformed enough
 	local additionalNeeded = self.ForestsToGen - forestUtils.arrayLength(
 				forestUtils:floraformNumOfRandomSpaces(effect, randId, candidates, self.ForestsToGen, DAMAGE_ZERO, nil, true, true, true, self.SeekMech))
-	
+
 	--If there are not enough spaces, do some random ones
 	if additionalNeeded > 0 then
 		--get all floraformable points to use as candidates
 		local newCandidates = forestUtils:getSpaces(forestUtils.isSpaceFloraformable)
-		
+
 		local toRemove = {}
 		--remove any points that are already forests or forest fires
 		for k, v in pairs(newCandidates) do
@@ -132,16 +134,16 @@ function Treeherders_Passive_WakeTheForest:FloraformSpaces()
 				table.insert(toRemove, k)
 			end
 		end
-		
+
 		--do it in two loops to ensure the iterator isn't messed up by removing items mid iteration
 		for _, v in pairs(toRemove) do
 			newCandidates[v] = nil
 		end
-		
+
 		--floraform the number left (or how ever many we can)
 		forestUtils:floraformNumOfRandomSpaces(effect, randId, newCandidates, additionalNeeded, DAMAGE_ZERO, nil, true, true, true, self.SeekMech)
 	end
-	
+
 	--add the effect to the board
 	Board:AddEffect(effect)
 end
@@ -151,7 +153,7 @@ Treeherders_Passive_WakeTheForest.storedForestArmorIcon = {}
 
 function Treeherders_Passive_WakeTheForest:SetForestArmorIcon(id, point, dir)
 	self:UnsetPrevForestArmorIcon(id)
-	
+
 	if self.Evacuate then
 		if dir and dir < 4 then
 			Board:SetTerrainIcon(point, "forestArmor_push_"..dir)
@@ -161,7 +163,7 @@ function Treeherders_Passive_WakeTheForest:SetForestArmorIcon(id, point, dir)
 	else
 		Board:SetTerrainIcon(point, "forestArmor")
 	end
-	
+
 	self.storedForestArmorIcon[id] = point
 end
 
@@ -191,7 +193,7 @@ Treeherders_Passive_WakeTheForest.queuedEvacs = {}
 
 function Treeherders_Passive_WakeTheForest:AddUpdateQueuedAttack(weaponId, p1, skillFx)
 	local key = weaponId..p1:GetString()
-	
+
 	--pawn pushes will be updated in time
 	local pawn = Board:GetPawn(p1)
 	if pawn then
@@ -208,15 +210,15 @@ function Treeherders_Passive_WakeTheForest:AddUpdateQueuedAttack(weaponId, p1, s
 			self.pawnIdToAttack[pId] = #self.queuedAttacks
 			--LOG("Added "..self.pawnIdToAttack[pId])
 		end
-		
+
 		if self.pawnIdToAttackId[pId] then
 			self.attackIdToPawnId[self.pawnIdToAttackId[pId]] = nil
 		end
-		
+
 		self.pawnIdToAttackId[pId] = key
 		self.attackIdToPawnId[key] = pId
 		self.queuedEvacs[key] = {}
-		
+
 	--killed and burrows wont have a pawn at p1
 	--TODO: how does this work with cancelled and pushed off attacks?
 	elseif self.attackIdToPawnId[key] then
@@ -232,13 +234,13 @@ function Treeherders_Passive_WakeTheForest:RemoveQueuedAttacks(pId)
 		table.remove(self.queuedAttacksOrigins, attackIdx)
 		table.remove(self.queuedAttacksWeaponId, attackIdx)
 	end
-	
+
 	local attackId = self.pawnIdToAttackId[pId]
 	if attackId then
 		self.attackIdToPawnId[attackId] = nil
 		self.queuedEvacs[attackId] = nil
 	end
-		
+
 	self.pawnIdToAttack[pId] = nil
 	self.pawnIdToAttackId[pId] = nil
 end
@@ -251,7 +253,7 @@ function Treeherders_Passive_WakeTheForest.EligibleForForestArmor(pawn)
 end
 
 function Treeherders_Passive_WakeTheForest:RefreshForestArmorIconToAllMechs()
-	
+
 	--Forest armor and treevac effects for both immediate and queued attacks
 	for i = 1, #self.queuedAttacks do
 		self:ApplyForestArmorAndEvacuate(self.queuedAttacks[i].effect, self.queuedAttacksOrigins[i], false, "") --self.queuedAttacksWeaponId[i]..self.queuedAttacksOrigins[i]:GetString())
@@ -259,7 +261,7 @@ function Treeherders_Passive_WakeTheForest:RefreshForestArmorIconToAllMechs()
 	for i = 1, #self.queuedAttacks do
 		self:ApplyForestArmorAndEvacuate(self.queuedAttacks[i].q_effect, self.queuedAttacksOrigins[i], true, "") --self.queuedAttacksWeaponId[i]..self.queuedAttacksOrigins[i]:GetString())
 	end
-	
+
 	local mechs = Board:GetPawns(TEAM_MECH)
 	for _, mechId in pairs(extract_table(mechs)) do
 		local space = Board:GetPawnSpace(mechId)
@@ -285,15 +287,15 @@ function Treeherders_Passive_WakeTheForest:ApplyEvacuateToSpaceDamage(spaceDamag
 					not (damagedPawn:IsShield() or damagedPawn:IsFire() or forestUtils.isAForestFire(spaceDamage.loc)) then
 		local attackDir = GetDirection(spaceDamage.loc - attackOrigin)
 		local dirPreferences = { (attackDir - 1) % 4, (attackDir + 1) % 4, attackDir, (attackDir + 2) % 4 }
-		for _, dir in pairs(dirPreferences) do	
-		
+		for _, dir in pairs(dirPreferences) do
+
 			--if we already found a spot then don't check
-			if (not spaceDamage.iPush) or spaceDamage.iPush >= 4 then	
-			
+			if (not spaceDamage.iPush) or spaceDamage.iPush >= 4 then
+
 				local p = spaceDamage.loc + DIR_VECTORS[dir]
 				local terrain = Board:GetTerrain(p)
 				local pointHash = forestUtils:getSpaceHash(p)
-				
+
 				--only push to it if we are not already pushing someone there
 				if not pToIgnore[pointHash] then
 					--If its a non blocking and non harmful terrain
@@ -301,7 +303,7 @@ function Treeherders_Passive_WakeTheForest:ApplyEvacuateToSpaceDamage(spaceDamag
 						--If its non harmful based on the units attributes
 						if (terrain ~= TERRAIN_EMPTY or damagedPawn:IsFlying()) and (terrain ~= TERRAIN_WATER or damagedPawn.Massive) then
 							--If its unocupied and not in danger
-							if not (Board:IsPawnSpace(p) or Board:IsFire(p) or Board:IsAcid(p) or Board:IsSpawning(p) or Board:IsDangerous(p) or Board:IsEnvironmentDanger(p)) then						
+							if not (Board:IsPawnSpace(p) or Board:IsFire(p) or Board:IsAcid(p) or Board:IsSpawning(p) or Board:IsDangerous(p) or Board:IsEnvironmentDanger(p)) then
 								--we found a good spot to push the pawn to
 								spaceDamage.iPush = dir
 								return p + DIR_VECTORS[dir]
@@ -318,25 +320,25 @@ function Treeherders_Passive_WakeTheForest:ApplyForestArmorAndEvacuate(effect, a
 	if (self.ForestArmor or self.Evacuate) and not effect:empty() then
 
 		local evacuatedToOrAttackedSpaces = {}
-		
+
 		--determine what spaces are being attacked
-		for _, spaceDamage in pairs(extract_table(effect)) do	
+		for _, spaceDamage in pairs(extract_table(effect)) do
 			evacuatedToOrAttackedSpaces[forestUtils:getSpaceHash(spaceDamage.loc)] = spaceDamage.loc
 		end
-		
-		for _, spaceDamage in pairs(extract_table(effect)) do		
+
+		for _, spaceDamage in pairs(extract_table(effect)) do
 			local damagedPawn = Board:GetPawn(spaceDamage.loc)
-			if damagedPawn and forestUtils.isAForest(spaceDamage.loc) and 
+			if damagedPawn and forestUtils.isAForest(spaceDamage.loc) and
 						spaceDamage.iDamage > 0 and self.EligibleForForestArmor(damagedPawn) then
-						
+
 				self:ApplyForestArmorToSpaceDamage(spaceDamage)
-				
-				local p = self:ApplyEvacuateToSpaceDamage(spaceDamage, damagedPawn, 
+
+				local p = self:ApplyEvacuateToSpaceDamage(spaceDamage, damagedPawn,
 								attackOrigin, isQueued, evacuatedToOrAttackedSpaces, attackId)
 				if p then
 					evacuatedToOrAttackedSpaces[forestUtils:getSpaceHash(p)] = p
 				end
-			end	
+			end
 		end
 	end
 end
@@ -354,11 +356,11 @@ function Treeherders_Passive_WakeTheForest:getFirstAttackingNonMechId(sourceTabl
 					if seqNum < foundPawnSequenceNum then
 						foundPawnId = v.id
 						foundPawnSequenceNum = seqNum
-					end 
+					end
 				end
             end
         end
-		
+
 		if foundPawnId > 0 then
 			return foundPawnId
 		end
@@ -375,7 +377,7 @@ function Treeherders_Passive_WakeTheForest:getFirstAttackingNonMechId(sourceTabl
 
     --if we didn't find any non mechs return nil
     return nil
-end		
+end
 
 ------------------- MAIN HOOK FUNCTIONS ---------------------------
 
@@ -394,7 +396,7 @@ end
 
 -- Skill build hooks
 function Treeherders_Passive_WakeTheForest:SkillBuildHook(weaponId, p1, skillFx)
-	if weaponId ~= "Move" then	
+	if weaponId ~= "Move" then
 		self:AddUpdateQueuedAttack(weaponId, p1, skillFx)
 		self:RefreshForestArmorIconToAllMechs()
 	end
@@ -426,8 +428,8 @@ function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_QueuedFinalEffe
 	self:RemoveQueuedAttacks(pawn:GetId())
 end
 
-passiveEffect:addPassiveEffect("Treeherders_Passive_WakeTheForest", 
-		{"skillBuildHook", "finalEffectBuildHook", 
+Treeherders_Passive_WakeTheForest.passiveEffect:addPassiveEffect("Treeherders_Passive_WakeTheForest",
+		{"skillBuildHook", "finalEffectBuildHook",
 		"skillEndHook", "finalEffectEndHook",
 		"queuedSkillEndHook", "queuedFinalEffectEndHook",
 		"preEnvironmentHook"})

@@ -4,16 +4,16 @@ WorldBuilders_Passive_Move = PassiveSkill:new
 	Description = "Mechs can move through and on buildings and mountains and can move over pawns and holes",
 	Icon = "weapons/passive_wb_move.png",
 	Rarity = 2,
-	
+
 	PowerCost = 1,
 	Damage = 0,
-	
+
 	Upgrades = 1,
 	UpgradeCost = {1},
-	
+
 	-- custom options: TODO
 	Flying = false,
-	
+
 	TipImage = {
 		CustomPawn = "WorldBuilders_ShaperMech",
 		Unit = Point(2, 1),
@@ -21,10 +21,11 @@ WorldBuilders_Passive_Move = PassiveSkill:new
 		Target = Point(2,2),
 	}
 }
+WorldBuilders_Passive_Move.passiveEffect = mod_loader.mods[modApi.currentMod].libs.passiveEffect
 
 Weapon_Texts.WorldBuilders_Passive_Move_Upgrade1 = "Flying"
 WorldBuilders_Passive_Move_A = WorldBuilders_Passive_Move:new
-{	
+{
 	UpgradeDescription = "Mechs all become flying",
 	TipImage = {
 		CustomPawn = "WorldBuilders_ShaperMech",
@@ -32,13 +33,13 @@ WorldBuilders_Passive_Move_A = WorldBuilders_Passive_Move:new
 		Hole = Point(2, 2),
 		Target = Point(2,2),
 	},
-	
+
 	Flying = true,
 }
 
 
 function WorldBuilders_Passive_Move:GetPassiveSkillEffect_TargetAreaBuildHook(mission, pawn, weaponId, p1, targetArea)
-	if weaponId == "Move" and pawn:IsMech() then	
+	if weaponId == "Move" and pawn:IsMech() then
 		LOG("HERE 1")
 		-- Remove the other points
 		while not targetArea:empty() do
@@ -49,7 +50,7 @@ function WorldBuilders_Passive_Move:GetPassiveSkillEffect_TargetAreaBuildHook(mi
 		self.addReachableTiles(p1, skillFx)
 		LOG("HERE 3")
 	end
-	
+
 	LOG("HERE 0")
 end
 
@@ -66,7 +67,7 @@ function WorldBuilders_Passive_Move.addForcedMove(skillEffect, p1, p2)
 	-- Add move for display purposes. This won't let us move onto unmovable spaces
 	-- reliably
 	skillEffect:AddMove(path, FULL_DELAY)
-	
+
 	local pawnId = Board:GetPawn(p1):GetId()
 	local secondToLastSpace = path:index(path:size() - 1)
 	local lastSpace = path:index(path:size())
@@ -77,16 +78,16 @@ function WorldBuilders_Passive_Move.addForcedMove(skillEffect, p1, p2)
 end
 
 -- Generic pathfinder
-function WorldBuilders_Passive_Move.addReachableTiles(start, skillFx)	
+function WorldBuilders_Passive_Move.addReachableTiles(start, skillFx)
 	-- "borrowed" from general_DiamondTarget and modified to not
 	-- include point
 	local pawn = Board:GetPawn(start)
 	local isFlying = _G[Pawn:GetType()].Flying
 	local size = pawn:GetBaseMove()
 	local corner = start - Point(size, size)
-	
+
 	local p = Point(corner)
-		
+
 	for i = 0, ((size*2+1)*(size*2+1)) do
 		local diff = start - p
 		local dist = math.abs(diff.x) + math.abs(diff.y)
@@ -133,6 +134,6 @@ function WorldBuilders_Passive_Move:GetSkillEffect(p1, p2)
 end
 
 LOG("ADDING PASSIVE")
-passiveEffect:addPassiveEffect("WorldBuilders_Passive_Move", 
+WorldBuilders_Passive_Move.passiveEffect:addPassiveEffect("WorldBuilders_Passive_Move",
 		{"targetAreaBuildHook", "skillBuildHook"})
 LOG("ADDING PASSIVE2")

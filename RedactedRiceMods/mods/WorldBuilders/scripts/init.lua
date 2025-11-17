@@ -1,5 +1,5 @@
 local mod = {
-	id = "eplanum_worldbuilders",
+	id = "redactedrice_worldbuilders",
 	name = "World Builders",
 	icon = "img/mod_icon.png",
 	version = "0.8.0",
@@ -12,7 +12,12 @@ local mod = {
 	libs = {}
 }
 
-function mod:init()	
+function mod:init()
+	-- Common Redacted Rice Libs
+	for libId, lib in pairs(mod_loader.mods.redactedrice_libs.libs) do
+		self.libs[libId] = lib
+	end
+
 	-- Assets
 	require(self.scriptPath .. "images")
 	require(self.scriptPath .. "palettes")
@@ -22,8 +27,7 @@ function mod:init()
 
 	-- Libs
 	mod.libs.weaponPreview = require(self.scriptPath.."libs/".."weaponPreview")
-	require(self.scriptPath .. "libs/passiveEffect")
-		
+
 	-- Pawns
 	require(self.scriptPath .. "mechs/wb_maker")
 	require(self.scriptPath .. "mechs/wb_eater")
@@ -32,18 +36,18 @@ function mod:init()
 	-- Weapons
 	require(self.scriptPath .. "weapons/wb_mold")
 	modApi:addWeaponDrop("WorldBuilders_Mold")
-	
+
 	require(self.scriptPath .. "weapons/wb_consume")
 	modApi:addWeaponDrop("WorldBuilders_Consume")
-	
+
 	require(self.scriptPath .. "weapons/wb_shift")
 	modApi:addWeaponDrop("WorldBuilders_Shift")
-	
+
 	LOG("MOVE")
 	require(self.scriptPath .. "weapons/wb_move")
 	modApi:addWeaponDrop("WorldBuilders_Passive_Move")
 	LOG("MOVE2")
-	
+
 	-- Shop... TBD
 	-- modApi:addWeaponDrop("...")
 end
@@ -61,10 +65,9 @@ function mod:load(options, version)
 		"... Something cool here...",
 		self.resourcePath .. "img/squad_icon.png"
 	)
-	
+
 	WorldBuildersAchievements:addHooks()
-	passiveEffect:addHooks()
-	passiveEffect:autoSetWeaponsPassiveFields()
+	self.libs.passiveEffect:load()
 end
 
 return mod
