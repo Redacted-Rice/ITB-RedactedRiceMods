@@ -12,6 +12,8 @@ In the function mod:load(options, version) in init.lua after loading your weapon
 	passiveEffect:load()
 Make sure you have initialized and called passiveEffect:addPassiveEffect for each weapon as part of init to
 ensure all weapons are loaded before the passive effects are loaded or else they will not work properly.
+This must also be done once per instance and in the load function as the hooks are cleared and reloaded
+when starting or reloading a game
 
 When creating a weapon:
 1. Inherit with PassiveSkill:new instead of Skill:new
@@ -38,7 +40,6 @@ Special thanks to KartoFlane for helping strucutre this as a reusable library
 
 local passiveEffect = {
 	Version="1.1.0",
-	Initialized = false,
 	DebugLog = true,
 }
 
@@ -415,11 +416,8 @@ function passiveEffect:getAllExistingNamesForWeapon(weaponBaseName)
 end
 
 function passiveEffect:load()
-	if not passiveEffect.Initialized then
-		passiveEffect:addHooks()
-		passiveEffect:autoSetWeaponsPassiveFields()
-		passiveEffect.Initialized = true
-	end
+	passiveEffect:addHooks()
+	passiveEffect:autoSetWeaponsPassiveFields()
 end
 
 return passiveEffect

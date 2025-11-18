@@ -37,4 +37,4 @@ Visual "bug" showing push damage when swap pushed with adjacent mountain or buil
 ------------------------------------------------------------------------------
 
 Libs:
-None
+Passive effect doesn't show in test scenario
