@@ -8,7 +8,7 @@ local mod = {
 	dependencies = {
         modApiExt = "1.21",
         memedit = "1.2.0",
-    }
+    },
 	libs = {},
 }
 
@@ -44,9 +44,6 @@ function mod:init()
 
 	require(self.scriptPath .. "weapons/th_waketheforest")
 	modApi:addWeaponDrop("Treeherders_Passive_WakeTheForest")
-
-	-- Shop... TBD
-	-- modApi:addWeaponDrop("...")
 end
 
 function mod:load(options, version)

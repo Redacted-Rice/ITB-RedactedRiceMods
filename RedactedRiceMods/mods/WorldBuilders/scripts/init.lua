@@ -43,10 +43,8 @@ function mod:init()
 	require(self.scriptPath .. "weapons/wb_shift")
 	modApi:addWeaponDrop("WorldBuilders_Shift")
 
-	LOG("MOVE")
 	require(self.scriptPath .. "weapons/wb_move")
 	modApi:addWeaponDrop("WorldBuilders_Passive_Move")
-	LOG("MOVE2")
 end
 
 function mod:load(options, version)

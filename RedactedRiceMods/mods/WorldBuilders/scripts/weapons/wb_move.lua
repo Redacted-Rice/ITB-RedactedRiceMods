@@ -149,7 +149,5 @@ function WorldBuilders_Passive_Move:GetSkillEffect(p1, p2)
 	return ret
 end
 
-LOG("ADDING PASSIVE")
 WorldBuilders_Passive_Move.passiveEffect:addPassiveEffect("WorldBuilders_Passive_Move",
 		{"targetAreaBuildHook", "skillBuildHook"})
-LOG("ADDING PASSIVE2")
