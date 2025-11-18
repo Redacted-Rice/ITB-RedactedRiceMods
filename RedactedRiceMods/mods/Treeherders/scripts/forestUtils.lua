@@ -1,5 +1,7 @@
 forestUtils = {}
 
+forestUtils.predictableRandom = mod_loader.mods[modApi.currentMod].libs.predictableRandom
+
 forestUtils.floraformBounce = -3
 
 function forestUtils.arrayLength(array)
@@ -201,7 +203,7 @@ function forestUtils:floraformNumOfRandomSpaces(effect, randId, candidates, numT
 			
 			for i = 1, leftToFloraForm do
 				if #keys > 0 then		
-					local index = predictableRandom:getNextValue(randId, 1, #keys, randSalt)
+					local index = forestUtils.predictableRandom:getNextValue(randId, 1, #keys, randSalt)
 					local point = candidates[keys[index]]
 					
 					retList[keys[index]] = point
@@ -216,8 +218,7 @@ function forestUtils:floraformNumOfRandomSpaces(effect, randId, candidates, numT
 	
 	
 	--Reset the roll at the end to keep the state clean in case this is rebuilt
-	--why this no work???
-	predictableRandom:resetToLastRoll(randId)
+	forestUtils.predictableRandom:resetToLastRoll(randId)
 	
 	return retList
 end

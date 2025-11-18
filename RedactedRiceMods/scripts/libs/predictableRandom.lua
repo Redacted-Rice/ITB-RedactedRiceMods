@@ -6,13 +6,17 @@ be repeatable in case of resets or undoing
 Author: Das Keifer of Redacted Rice
 Version: 1.1.0
 
-See the Treeherder's "Wake the Forest" passive and the forestUtils:floraformNumOfRandomSpaces function for an example of usage
+My own usage of this was mostly removed because I decided to go a different way for the non-passive weapons
+but the passive "Wake the Forest" still uses this somewhat. See the Treeherder's 
+forestUtils:floraformNumOfRandomSpaces function for a simple example of usage
 
 How to Use:
 In the function mod:load(options, version) in init.lua add this lines:
 	predictableRandom:load()
 Make sure you have initialized and called passiveEffect:addPassiveEffect for each weapon as part of init to
 ensure all weapons are loaded before the passive effects are loaded or else they will not work properly.
+This must also be done once per instance and in the load function as the hooks are cleared and reloaded
+when starting or reloading a game
 
 When creating a weapon:
 1. (optional) set the global seed for cross game consistency
@@ -46,7 +50,6 @@ Special thanks to KartoFlane for helping strucutre this as a reusable library
 
 local predictableRandom = {
 	Version = "1.1.0",
-	Initialized = false,
 	-- Set to true to debug the lib or to help see how its behaving
 	DebugLog = false
 }
@@ -165,10 +168,7 @@ function predictableRandom:registerAutoRollHook()
 end
 
 function predictableRandom:load()
-	if not predictableRandom.Initialized then
-		predictableRandom:registerAutoRollHook()
-		predictableRandom.Initialized = true
-	end
+	predictableRandom:registerAutoRollHook()
 end
 
 return predictableRandom

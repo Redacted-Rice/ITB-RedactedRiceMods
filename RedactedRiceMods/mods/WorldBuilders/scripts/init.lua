@@ -62,7 +62,8 @@ function mod:load(options, version)
 	)
 
 	WorldBuildersAchievements:addHooks()
-	self.libs.passiveEffect:load()
+	-- Libs initialized once in the lib init script
+	--self.libs.passiveEffect:load()
 end
 
 return mod

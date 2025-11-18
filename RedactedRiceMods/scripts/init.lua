@@ -32,7 +32,9 @@ function mod:init(options)
 end
 
 function mod:load(options, version)
-	-- Note: Could load libs here but do it in squads to show how it works
+	-- Should only be called once per instance
+	self.libs.passiveEffect:load()
+	self.libs.predictableRandom:load()
 end
 
 return mod
