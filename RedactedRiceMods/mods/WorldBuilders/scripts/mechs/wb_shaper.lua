@@ -43,5 +43,4 @@ WorldBuilders_ShaperMech = Pawn:new{
 	DefaultTeam = TEAM_PLAYER,
 	ImpactMaterial = IMPACT_METAL,
 	Massive = true,
-	Flying = true,
 }

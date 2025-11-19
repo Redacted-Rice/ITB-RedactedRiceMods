@@ -243,6 +243,9 @@ function Treeherders_Passive_WakeTheForest:RemoveQueuedAttacks(pId)
 
 	self.pawnIdToAttack[pId] = nil
 	self.pawnIdToAttackId[pId] = nil
+	
+	-- Update armor in case there are no new queued effects
+	self:RefreshForestArmorIconToAllMechs()
 end
 
 function Treeherders_Passive_WakeTheForest.EligibleForForestArmor(pawn)
@@ -395,19 +398,19 @@ function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_PreEnvironmentH
 end
 
 -- Skill build hooks
-function Treeherders_Passive_WakeTheForest:SkillBuildHook(weaponId, p1, skillFx)
+function Treeherders_Passive_WakeTheForest:SkillBuildHook(weaponId, p1, p2, skillFx)
 	if weaponId ~= "Move" then
 		self:AddUpdateQueuedAttack(weaponId, p1, skillFx)
-		self:RefreshForestArmorIconToAllMechs()
 	end
+	self:RefreshForestArmorIconToAllMechs()
 end
 
 function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_SkillBuildHook(mission, pawn, weaponId, p1, p2, skillFx)
-	return self:SkillBuildHook(weaponId, p1, skillFx)
+	return self:SkillBuildHook(weaponId, p1, p2, skillFx)
 end
 
 function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_FinalEffectBuildHook(mission, pawn, weaponId, p1, p2, p3, skillEffect)
-	return self:SkillBuildHook(weaponId, p1, skillFx)
+	return self:SkillBuildHook(weaponId, p1, p2, skillFx)
 end
 
 --Clear the queued pushes. They will be re-added by the skill build hooks. We need to do this each time

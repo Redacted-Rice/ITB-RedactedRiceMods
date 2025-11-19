@@ -1,14 +1,12 @@
 General:
-Test modpack integration
+None
 
 
 ------------------------------------------------------------------------------
 
 Tree Herders:
 Review next release candidates
-
-Test:
-- Modpack integration
+Final run through
 
 Next release candidates:
 1. Mechs (entborg specifically?) can never catch forest on fire? Might be too much a nerf on tree-venge
@@ -24,11 +22,7 @@ Next release candidates:
 World Builders:
 VFX in general
 Add projectile image(s) for consume
-
-Test:
-- Modpack integration
-- Passive weapon
-- flying for movement passive
+Move image not working
 
 Next release candidates:
 Visual "bug" showing push damage when swap pushed with adjacent mountain or building. Not sure there is a way around this (bHide?)
@@ -37,4 +31,4 @@ Visual "bug" showing push damage when swap pushed with adjacent mountain or buil
 ------------------------------------------------------------------------------
 
 Libs:
-Passive effect doesn't show in test scenario
+None
