@@ -11,7 +11,7 @@ WorldBuilders_Passive_Move = PassiveSkill:new
 	Upgrades = 1,
 	UpgradeCost = {1},
 
-	-- custom options: TODO
+	-- custom options
 	Flying = false,
 	MadeFlying = {},
 
@@ -42,25 +42,19 @@ WorldBuilders_Passive_Move_A = WorldBuilders_Passive_Move:new
 
 function WorldBuilders_Passive_Move:GetPassiveSkillEffect_TargetAreaBuildHook(mission, pawn, weaponId, p1, targetArea)
 	if weaponId == "Move" and pawn:IsMech() then
-		LOG("HERE 1")
 		-- Remove the other points
 		while not targetArea:empty() do
 		    targetArea:erase(0)
 		end
-		LOG("HERE 2")
 		-- Add the new points
-		self.addReachableTiles(p1, skillFx)
-		LOG("HERE 3")
+		self.addReachableTiles(p1, targetArea)
 	end
-
-	LOG("HERE 0")
 end
 
 function WorldBuilders_Passive_Move:GetPassiveSkillEffect_SkillBuildHook(mission, pawn, weaponId, p1, p2, skillEffect)
 	if weaponId == "Move" and pawn:IsMech() then
 		self.addForcedMove(skillEffect, p1, p2)
 	end
-	LOG("HERE 6")
 end
 
 function WorldBuilders_Passive_Move:GetPassiveSkillEffect_PawnSelectedHook(mission, pawn)
@@ -68,17 +62,24 @@ function WorldBuilders_Passive_Move:GetPassiveSkillEffect_PawnSelectedHook(missi
 		if self.Flying and not pawn:IsFlying() then
 			LOG("Set pawn " .. pawn:GetId() .. " to flying")
 			pawn:SetFlying(true)
-			MadeFlying[pawn:GetId()] = true
-		elseif not self.Flying and MadeFlying[pawn:GetId()] then
+			self.MadeFlying[pawn:GetId()] = true
+		elseif not self.Flying and self.MadeFlying[pawn:GetId()] then
 			LOG("Set pawn " .. pawn:GetId() .. " to not flying")
 			pawn:SetFlying(false)
-			MadeFlying[pawn:GetId()] = nil
+			self.MadeFlying[pawn:GetId()] = nil
 		end
 	end
 end
 
+function WorldBuilders_Passive_Move.clearSkillEffect(skillEffect)
+	-- There isn't a clear but we can set the internal data
+	skillEffect.effect = SkillEffect().effect
+end
+
 function WorldBuilders_Passive_Move.addForcedMove(skillEffect, p1, p2)
-	LOG("HERE 4")
+	-- Clear the existing move from the skilleffect
+	self.clearSkillEffect(skillEffect.effect)
+
 	local path = WorldBuilders_Passive_Move.getManhattanPath(p1, p2)
 	-- Add move for display purposes. This won't let us move onto unmovable spaces
 	-- reliably
@@ -90,15 +91,14 @@ function WorldBuilders_Passive_Move.addForcedMove(skillEffect, p1, p2)
 	local moveDamage = SpaceDamage(secondToLastSpace, 0)
 	moveDamage.sScript = [[Board:GetPawn(]] .. pawnId .. [[):SetSpace(]] .. lastSpace:GetString() .. [[)]]
 	skillEffect:AddDamage(moveDamage)
-	LOG("HERE 5")
 end
 
 -- Generic pathfinder
-function WorldBuilders_Passive_Move.addReachableTiles(start, skillFx)
+function WorldBuilders_Passive_Move.addReachableTiles(start, targetArea)
 	-- "borrowed" from general_DiamondTarget and modified to not
 	-- include point
 	local pawn = Board:GetPawn(start)
-	local isFlying = _G[Pawn:GetType()].Flying
+	local isFlying = pawn:IsFlying()
 	local size = pawn:GetBaseMove()
 	local corner = start - Point(size, size)
 
@@ -109,7 +109,7 @@ function WorldBuilders_Passive_Move.addReachableTiles(start, skillFx)
 		local dist = math.abs(diff.x) + math.abs(diff.y)
 		-- If its a valid, unoccupied space, allow it
 		if Board:IsValid(p) and dist <= size and not Board:IsPawnSpace(p) and (isFlying or Board:GetTerrain(p) ~= TERRAIN_HOLE) then
-			skillFx:push_back(p)
+			targetArea:push_back(p)
 		end
 		p = p + VEC_RIGHT
 		if math.abs(p.x - corner.x) == (size*2+1) then
@@ -150,4 +150,4 @@ function WorldBuilders_Passive_Move:GetSkillEffect(p1, p2)
 end
 
 WorldBuilders_Passive_Move.passiveEffect:addPassiveEffect("WorldBuilders_Passive_Move",
-		{"targetAreaBuildHook", "skillBuildHook"})
+		{"targetAreaBuildHook", "skillBuildHook", "pawnSelectedHook"})

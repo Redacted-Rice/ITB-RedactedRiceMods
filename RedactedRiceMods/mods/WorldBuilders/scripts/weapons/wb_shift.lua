@@ -316,7 +316,6 @@ function WorldBuilders_Shift:ApplyTerrain(spaceDamage, spaceDamagePreform, space
 	end
 
 	-- Set the terrain to the new terrain
-	LOG("Terrain "..spaceDamage.loc:GetString().." "..spaceData.terrain)
 	spaceDamage.sScript = spaceDamage.sScript .. [[
 			Board:SetTerrain(]] .. spaceDamage.loc:GetString() .. [[,]] .. spaceData.terrain .. [[)]]
 
@@ -379,7 +378,7 @@ function WorldBuilders_Shift:ApplyTerrain(spaceDamage, spaceDamagePreform, space
 
 	-- trying to swap pawns had all sorts of issues. Realistically it doesn't matter anyways as the player
 	-- would have no way of knowing if this was done or not
-	LOG("script: "..spaceDamage.sScript)
+	--LOG("script: "..spaceDamage.sScript)
 end
 
 -- For some reason when swapping buildings the push doesn't

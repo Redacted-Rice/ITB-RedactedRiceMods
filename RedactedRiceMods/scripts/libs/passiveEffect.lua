@@ -40,7 +40,7 @@ Special thanks to KartoFlane for helping strucutre this as a reusable library
 
 local passiveEffect = {
 	Version="1.1.0",
-	DebugLog = true,
+	DebugLog = false,
 }
 
 --shouldn't change this. Treat it as a constant. Changing in later version would cause incompatibility
@@ -50,6 +50,9 @@ passiveEffect.data = {}
 passiveEffect.data.autoPassivedWeapons = {}
 passiveEffect.data.possibleEffects = {}
 passiveEffect.data.activeEffects = {}
+
+passiveEffect.IsMechTest = false
+passiveEffect.hasEvaluatedForMechTest = false
 
 --creates a string for the add function corresponding to the passed hook.
 --For now all the hook appear to follow the same format but any special cases
@@ -211,12 +214,11 @@ end
 
 --function that is called on mission start or when continuing a mission to determine
 --which passive effects are required
-function passiveEffect.determineIfPassivesAreActiveFromSaveData(mission)
-	LOG("TEST1")
+function passiveEffect.determineIfPassivesAreActiveFromSaveData()
 	if passiveEffect.DebugLog then LOG("Determining what Passive Effects are active(powered)...") end
 
 	--clear the previous list of active effects
-	passiveEffect.clearActivePassives(mission)
+	passiveEffect.clearActivePassives()
 
 	--loop through the player mechs to see if they have one of the passive weapons equiped and powered
 	local pawns = passiveEffect:getAllSavedPawnData()
@@ -241,12 +243,11 @@ function passiveEffect.determineIfPassivesAreActiveFromSaveData(mission)
 	end
 end
 
-function passiveEffect.determineIfPassivesAreActive(mission)
-	LOG("TEST2")
-	if passiveEffect.DebugLog then LOG("Determining what Passive Effects are active(powered)...") end
+function passiveEffect.determineIfPassivesAreActive()
+	if passiveEffect.DebugLog then LOG("Determining what Passive Effects are active (powered)...") end
 
 	--clear the previous list of active effects
-	passiveEffect.clearActivePassives(mission)
+	passiveEffect.clearActivePassives()
 
 	--loop through the player mechs to see if they have one of the passive weapons equiped and powered
 	local pawns = Board:GetPawns(TEAM_ANY)
@@ -257,14 +258,19 @@ function passiveEffect.determineIfPassivesAreActive(mission)
 		local pawn = Board:GetPawn(pawnId)
 		local weapons = pawn:GetPoweredWeaponTypes()
 		for _, result in pairs(weapons) do
-			LOG("Weapon " .. tostring(result))
 			passiveEffect:checkAndAddIfPassiveByPoweredWeaponName(result, pawnId)
 		end
 	end
 end
 
-function passiveEffect.clearActivePassives(mission)
-	LOG("TEST3")
+function passiveEffect.testMechSetIfNotSet()
+	if passiveEffect.IsMechTest and not passiveEffect.hasEvaluatedForMechTest then
+		passiveEffect.determineIfPassivesAreActive()
+		passiveEffect.hasEvaluatedForMechTest = true
+	end
+end
+
+function passiveEffect.clearActivePassives()
 	passiveEffect.data.activeEffects = {}
 end
 
@@ -306,6 +312,16 @@ function buildPassiveEffectHookFn(hook)
 	end
 end
 
+function passiveEffect.setIsTestMech()
+	passiveEffect.IsMechTest = true
+	passiveEffect.hasEvaluatedForMechTest = false
+end
+
+function passiveEffect.unsetIsTestMech()
+	passiveEffect.IsMechTest = false
+	passiveEffect.hasEvaluatedForMechTest = false
+end
+
 --The function that adds the required hooks to the game for passive weapons
 --This should only be called once for all instances of ModUtils!
 function passiveEffect:addHooks()
@@ -313,6 +329,13 @@ function passiveEffect:addHooks()
 	modApi:addPostLoadGameHook(self.determineIfPassivesAreActiveFromSaveData) --covers loading into (continuing) a mission
 	modApi:addMissionNextPhaseCreatedHook(self.determineIfPassivesAreActive) --covers transition from first phase of final fight to second phase
 	modApi:addMissionEndHook(self.clearActivePassives) --covers ending a mission (prevents adding multiple times)`
+	
+	-- Test mech requires special handling. The event is fired before the board is set so we
+	-- use the skill build as a trigger for loading the powered weapons as it will be done
+	-- right at the start since it starts with move active
+	modApi:addTestMechEnteredHook(self.setIsTestMech)
+	modApi:addTestMechExitedHook(self.unsetIsTestMech)
+	modapiext:addSkillBuildHook(self.testMechSetIfNotSet)
 
 	--Create the needed hook objects and add the functions that handle executing
 	--the active passive effects
@@ -330,8 +353,6 @@ function passiveEffect:addHooks()
 	end
 end
 
-
---TODO remove once incorperated into modUtils
 
 --returns all the player mechs in the passed source table. If the table
 --is omitted it will determine the table to use.
