@@ -1,8 +1,8 @@
 WorldBuilders_Passive_Move = PassiveSkill:new
 {
-	Name = "All Terrain Mechs",
+	Name = "All Terrain",
 	Description = "Mechs can move through and on buildings and mountains and can move over pawns and holes",
-	Icon = "weapons/passive_wb_move.png",
+	Icon = "weapons/passives/passive_wb_move.png",
 	Rarity = 2,
 
 	PowerCost = 1,
@@ -24,11 +24,10 @@ WorldBuilders_Passive_Move = PassiveSkill:new
 }
 WorldBuilders_Passive_Move.passiveEffect = mod_loader.mods[modApi.currentMod].libs.passiveEffect
 
--- TODO: Implement this
-Weapon_Texts.WorldBuilders_Passive_Move_Upgrade1 = "Flying"
+Weapon_Texts.WorldBuilders_Passive_Move_Upgrade1 = "Hover"
 WorldBuilders_Passive_Move_A = WorldBuilders_Passive_Move:new
 {
-	UpgradeDescription = "Mechs all become flying",
+	UpgradeDescription = "Mechs can stand on hole tiles",
 	TipImage = {
 		CustomPawn = "WorldBuilders_ShaperMech",
 		Unit = Point(2, 3),
@@ -60,26 +59,20 @@ end
 function WorldBuilders_Passive_Move:GetPassiveSkillEffect_PawnSelectedHook(mission, pawn)
 	if pawn:IsMech() then
 		if self.Flying and not pawn:IsFlying() then
-			LOG("Set pawn " .. pawn:GetId() .. " to flying")
 			pawn:SetFlying(true)
 			self.MadeFlying[pawn:GetId()] = true
 		elseif not self.Flying and self.MadeFlying[pawn:GetId()] then
-			LOG("Set pawn " .. pawn:GetId() .. " to not flying")
 			pawn:SetFlying(false)
 			self.MadeFlying[pawn:GetId()] = nil
 		end
 	end
 end
 
-function WorldBuilders_Passive_Move.clearSkillEffect(skillEffect)
-	-- There isn't a clear but we can set the internal data
-	skillEffect.effect = SkillEffect().effect
-end
 
 function WorldBuilders_Passive_Move.addForcedMove(skillEffect, p1, p2)
 	-- Clear the existing move from the skilleffect
-	self.clearSkillEffect(skillEffect.effect)
-
+	skillEffect.effect = SkillEffect().effect
+	
 	local path = WorldBuilders_Passive_Move.getManhattanPath(p1, p2)
 	-- Add move for display purposes. This won't let us move onto unmovable spaces
 	-- reliably
@@ -144,6 +137,7 @@ end
 
 --only a preview for passive skills
 function WorldBuilders_Passive_Move:GetSkillEffect(p1, p2)
+	Board:GetPawn(p1):SetFlying(true)
 	local ret = SkillEffect()
 	self.addForcedMove(ret, p1, p2)
 	return ret

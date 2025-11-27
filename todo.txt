@@ -22,7 +22,7 @@ Next release candidates:
 World Builders:
 VFX in general
 Add projectile image(s) for consume
-Move image not working
+Make all terrain weapon image
 
 Next release candidates:
 Visual "bug" showing push damage when swap pushed with adjacent mountain or building. Not sure there is a way around this (bHide?)

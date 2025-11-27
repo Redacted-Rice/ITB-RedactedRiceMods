@@ -246,7 +246,7 @@ function WorldBuilders_Shift:GetTerrainAndEffectData(space)
 		acid = Board:IsAcid(space),
 		smoke = Board:IsSmoke(space),
 		emerging = Board:IsSpawning(space),
-		people1 = Board:GetPeople1(space),
+		people1 = Board:GetScoredBuildingScore(space),
 		unique = Board:GetUniqueBuilding(space),
 	}
 end
@@ -290,7 +290,7 @@ function WorldBuilders_Shift:ApplyTerrain(spaceDamage, spaceDamagePreform, space
 	-- If it was a building, change it to a road first and clear the building info
 	elseif oldSpaceData.terrain == TERRAIN_BUILDING then
 		spaceDamagePreform.sScript = [[
-				Board:SetPeople1(]] .. spaceDamagePreform.loc:GetString() .. [[, 0)]]
+				Board:UnsetScoredBuilding(]] .. spaceDamagePreform.loc:GetString() .. [[, ]].. TERRAIN_ROAD ..[[)]]
 		if oldSpaceData.unique ~= nil then
 			spaceDamagePreform.sScript = [[
 					Board:SetUniqueBuilding(]] .. spaceDamagePreform.loc:GetString() .. [[, "")]]
@@ -342,7 +342,7 @@ function WorldBuilders_Shift:ApplyTerrain(spaceDamage, spaceDamagePreform, space
 		if spaceData.unique ~= nil then
 		spaceDamage.sScript = spaceDamage.sScript .. [[
 				Board:SetUniqueBuilding(]] .. spaceDamage.loc:GetString() .. [[, "]] .. spaceData.unique .. [[")
-				Board:SetPeople1(]] .. spaceDamage.loc:GetString() .. [[, ]] .. spaceData.people1 .. [[)]]
+				Board:SetScoredBuilding(]] .. spaceDamage.loc:GetString() .. [[, ]] .. spaceData.people1 .. [[)]]
 		end
 
 	end
