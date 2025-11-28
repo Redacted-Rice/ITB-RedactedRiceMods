@@ -19,15 +19,14 @@ Treeherders_ViolentGrowth = Skill:new
     Upgrades = 2,
     UpgradeCost = { 1, 2 },
 	
+	TwoClick = true,
+	
 	-- custom options
 	ForestDamageBounce = -2,
 	NonForestBounce = 2,
 	ForestGenBounce = forestUtils.floraformBounce,
 	
-	PushTarget = false,
-	SeekVek = true,
-	
-	ForestToExpand = 1,
+	ForestToExpand = 0,
 	SlowEnemy = false,
 	SlowEnemyAmount = 3,
 	MinEnemyMove = 1,
@@ -39,6 +38,7 @@ Treeherders_ViolentGrowth = Skill:new
 		Enemy2 = Point(1,1),
 		Forest = Point(2,2),
 		Forest2 = Point(1,2),
+		Second_Click = Point(1,1),
 	},
 }
 
@@ -53,13 +53,33 @@ Weapon_Texts.Treeherders_ViolentGrowth_Upgrade2 = "+2 Expansion"
 Treeherders_ViolentGrowth_B = Treeherders_ViolentGrowth:new
 {
 	UpgradeDescription = "Expand the targeted forest two extra tiles",
-	ForestToExpand = 3,
+	ForestToExpand = 2,
 }
 
 Treeherders_ViolentGrowth_AB = Treeherders_ViolentGrowth_B:new
 {	
 	SlowEnemy = true,
 }
+
+
+-------- Use default target area -----------------
+
+
+function Treeherders_ViolentGrowth:GetSecondTargetArea(p1,p2)
+	local ret = PointList()
+	
+	local forestGroup = forestUtils:getGroupingOfSpaces(p2, forestUtils.isAForest)
+	for _, p in pairs(forestGroup.group) do
+		LOG("pg "..p:GetString())
+		ret:push_back(p)
+	end
+	for _, p in pairs(forestGroup.boardering) do
+		LOG("bg "..p:GetString())
+		ret:push_back(p)
+	end
+	
+	return ret
+end
 
 function Treeherders_ViolentGrowth:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
@@ -87,36 +107,31 @@ function Treeherders_ViolentGrowth:GetSkillEffect(p1, p2)
 		ret:AddBounce(p2, self.NonForestBounce)
 	end
 	
+	return ret
+end
+
+function Treeherders_ViolentGrowth:GetFinalEffect(p1,p2,p3)
+	-- start with the primary effect
+	local ret = self:GetSkillEffect(p1, p2)
+	
 	--small break to make the animation and move make more sense
 	ret:AddDelay(0.4)
 	
-	
 	----- For expansion ------
 	
-	--pick tiles to expand to and damage if appropriate
-	--get tiles closest to enemies
-	local expansionFocus = p1
-	if self.SeekVek then
-		local vekPositions = {}
-		for _, v in pairs(extract_table(Board:GetPawns(TEAM_ANY))) do
-			if forestUtils.isAVek(Board:GetPawn(v)) then
-				local vPos = Board:GetPawnSpace(v)
-				-- exclude if the vek is the target or already is in a forest
-				if (vPos ~= p2) and not forestUtils.isAForest(vPos) then
-					vekPositions[forestUtils:getSpaceHash(vPos)] = vPos
-				end
-			end
-		end
-		
-		if forestUtils.arrayLength(vekPositions) > 0 then
-			expansionFocus = forestUtils:getClosestOfSpaces(p2, vekPositions)
-		end
-	end
+	-- Player now selects second tile
+	local expansionFocus = p3
+	forestUtils:floraformSpace(ret, expansionFocus, self.Damage, nil, true, true)
 	
 	--Get all spaces in the grouping
-	local forestGroup = forestUtils:getGroupingOfSpaces(p2, forestUtils.isAForest)
+	local forestPoints = {}
+	forestPoints[forestUtils:getSpaceHash(p2)] = p2
+	forestPoints[forestUtils:getSpaceHash(p3)] = p3
+	local forestGroup = forestUtils:getGroupingOfSpacesMultiple(forestPoints, forestUtils.isAForest)
+	
 	--ensure the space we just formed is not in the boarding list - it will be in the group list
 	forestGroup.boardering[forestUtils:getSpaceHash(p2)] = nil
+	forestGroup.boardering[forestUtils:getSpaceHash(p3)] = nil
 	
 	local candidates = {}
 	for k, v in pairs(forestGroup.boardering) do
@@ -138,23 +153,6 @@ function Treeherders_ViolentGrowth:GetSkillEffect(p1, p2)
 		end
 	end
 	newForests[forestUtils:getSpaceHash(p2)] = p2
-	
-	
-	----- for pushing target -----
-	
-	--evaluate if we are pushing a fire unit onto a space we are floraforming because otherwise
-	--we will put out the enemy
-	if self.PushTarget then
-		local pawn = Board:GetPawn(p2)
-		
-		if pawn and pawn:IsFire() and not ret.effect:empty() then
-			for _, spaceDamage in pairs(extract_table(ret.effect)) do	
-				if spaceDamage.loc == p2 + DIR_VECTORS[pushDir] then
-					spaceDamage.iFire = EFFECT_NONE
-				end
-			end
-		end
-	end
 	
 	
 	----- For slowing enemies -----

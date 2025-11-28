@@ -341,6 +341,20 @@ function forestUtils:getGroupingOfSpaces(spaceInGroup, predicate, ...)
 	return spaces
 end
 
+function forestUtils:getGroupingOfSpacesMultiple(spacesInGroup, predicate, ...)
+	assert(type(predicate) == "function")
+	
+	local spaces = {}
+	spaces.group = {}
+	spaces.boardering = {}
+	
+	for _, space in pairs(spacesInGroup) do
+		getGrouping_internal(space, spaces.group, spaces.boardering, predicate, ...)
+	end
+	
+	return spaces
+end
+
 function forestUtils:isSpaceSurroundedBy(space, predicate, ...)
 	assert(type(predicate) == "function")
 
