@@ -5,16 +5,14 @@ None
 ------------------------------------------------------------------------------
 
 Tree Herders:
-Review next release candidates
 Final run through
 
 Next release candidates:
 1. Mechs (entborg specifically?) can never catch forest on fire? Might be too much a nerf on tree-venge
 2. Make entborg a cyborg?
-3. violent growth choose spot to expand to?
-4. Forest fire burrow effect?
-5. Treevac doesn't distinguish between damage in the attack that causes the push vs follow on attacks when checking for spaces to push to
-6. Violent growth attack cancelled when attacking allies
+3. Forest fire burrow effect?
+4. Treevac doesn't distinguish between damage in the attack that causes the push vs follow on attacks when checking for spaces to push to
+5. Violent growth attack cancelled when attacking allies
 
 
 ------------------------------------------------------------------------------
@@ -22,7 +20,6 @@ Next release candidates:
 World Builders:
 VFX in general
 Add projectile image(s) for consume
-Make all terrain weapon image
 
 Next release candidates:
 Visual "bug" showing push damage when swap pushed with adjacent mountain or building. Not sure there is a way around this (bHide?)
