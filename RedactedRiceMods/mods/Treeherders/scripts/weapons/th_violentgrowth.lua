@@ -45,7 +45,7 @@ Treeherders_ViolentGrowth = Skill:new
 Weapon_Texts.Treeherders_ViolentGrowth_Upgrade1 = "Ensnare"
 Treeherders_ViolentGrowth_A = Treeherders_ViolentGrowth:new
 {
-	UpgradeDescription = "For one turn all vek in the targetted forest lose three movement (minmum of 1)",
+	UpgradeDescription = "For one turn all vek in the targetted forest lose three movement (minimum of 1)",
 	SlowEnemy = true,
 }
 
@@ -70,11 +70,9 @@ function Treeherders_ViolentGrowth:GetSecondTargetArea(p1,p2)
 	
 	local forestGroup = forestUtils:getGroupingOfSpaces(p2, forestUtils.isAForest)
 	for _, p in pairs(forestGroup.group) do
-		LOG("pg "..p:GetString())
 		ret:push_back(p)
 	end
 	for _, p in pairs(forestGroup.boardering) do
-		LOG("bg "..p:GetString())
 		ret:push_back(p)
 	end
 	
