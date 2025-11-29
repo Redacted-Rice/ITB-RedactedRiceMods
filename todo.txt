@@ -20,9 +20,38 @@ Next release candidates:
 World Builders:
 VFX in general
 Add projectile image(s) for consume
+undoing turn with hover over pit results in falling...
 
 Next release candidates:
 Visual "bug" showing push damage when swap pushed with adjacent mountain or building. Not sure there is a way around this (bHide?)
+
+
+------------------------------------------------------------------------------
+
+Pilot/Custom Skills:
+Not equals scans?
+	If so we can determine pilot fairly relialby (Double pointers for some reason)
+	Can then determine xp, level, name, id, etc
+	But NOT skills
+		Need to assume pointers and search for skill names at address to get skills
+Get all heap memory?
+	Add a few copies of pilot/weapon
+	Can then search all memory for pilots and backtrace to hangar
+Get base game pointer?	
+	Can probably continue reverse engineering structure to get to hangar
+
+Mech upgrades
+	Actual value stored somewhere else for both but a read only value is in pawn. Instantly reset back to the stored value when changed
+		Uses value 3 for distinct visual power - green power bar uses 2. Using a not scan would be more robust
+		Can potentially be made a read only value
+	GetHealth() & GetMoveSpeed() are updated right away and can get target value
+	Can use SetMaxBaseHealth() and SetMoveSpeed() to undo changes (can set to negative values if needed)
+
+
+------------------------------------------------------------------------------
+
+Squad 3: Mini Expansion - Its still a secret ;)
+
 
 
 ------------------------------------------------------------------------------
