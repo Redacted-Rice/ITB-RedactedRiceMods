@@ -1,6 +1,6 @@
 Treeherders_ForestFire = Skill:new{
 	Name = "Forest Fire",
-	Description = "Move to any space in the forest then fire dead logs, pushing attacked tiles and growing a forest. Also grows a forest behind this mech",
+	Description = "Teleport to any space in the forest then fire dead logs, pushing attacked tiles and growing a forest. Also grows a forest behind this mech",
 	Class = "Ranged",
 	Icon = "weapons/ranged_th_forestFirer.png",
 	Rarity = 1,
@@ -13,13 +13,13 @@ Treeherders_ForestFire = Skill:new{
 	Explosion = "",
 	BounceAmount = forestUtils.floraformBounce,
 	Upgrades = 2,
-	UpgradeCost = { 2, 3 },
+	UpgradeCost = { 1, 3 },
 	
 	TwoClick = true,
 	
 	-- Range
 	ArtilleryStart = 2,
-	ArtillerySize = 4,
+	ArtillerySize = 5,
 	
 	-- Custom
 	PushOuter = false,
@@ -59,11 +59,6 @@ Treeherders_ForestFire_AB = Treeherders_ForestFire_B:new
 {
 	DamageOuter = 1,
 }
-
---function azure_zordai_sword:GetTargetArea(p1)
---function azure_zordai_sword:GetSkillEffect(p1,p2)
---function azure_zordai_sword:GetSecondTargetArea(p1,p2)
---function azure_zordai_sword:GetFinalEffect(p1,p2,p3)
 
 -- First action is to move to any space in the forest
 function Treeherders_ForestFire:GetTargetArea(point)

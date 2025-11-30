@@ -1,7 +1,7 @@
 Treeherders_Passive_WakeTheForest = PassiveSkill:new
 {
 	Name = "Wake the Forest",
-	Description = "Mechs on forest tiles take one less damage. Randomly expands forests two tiles each turn",
+	Description = "Mechs on forest tiles take one less damage. Randomly expands forests two tiles at the start of each mission and each turn",
 	Icon = "weapons/passives/passive_th_forestArmor.png",
 	Rarity = 2,
 
@@ -23,7 +23,8 @@ Treeherders_Passive_WakeTheForest = PassiveSkill:new
 		CustomPawn = "Scorpion1",
 		Enemy = Point(2, 2),
 		Forest = Point(2, 2),
-	}
+	},
+	Debug = false,
 }
 
 Treeherders_Passive_WakeTheForest.passiveEffect = mod_loader.mods[modApi.currentMod].libs.passiveEffect
@@ -182,14 +183,19 @@ function Treeherders_Passive_WakeTheForest:UpdateForestArmorForMechAtSpace(id, p
 	end
 end
 
-Treeherders_Passive_WakeTheForest.queuedAttacks = {}
-Treeherders_Passive_WakeTheForest.queuedAttacksOrigins = {}
-Treeherders_Passive_WakeTheForest.queuedAttacksWeaponId = {}
-Treeherders_Passive_WakeTheForest.pawnIdToAttack = {}
-Treeherders_Passive_WakeTheForest.pawnIdToAttackId = {}
-Treeherders_Passive_WakeTheForest.attackIdToPawnId = {}
+function Treeherders_Passive_WakeTheForest:ResetData()
+	self.queuedAttacks = {}
+	self.queuedAttacksOrigins = {}
+	self.queuedAttacksWeaponId = {}
+	self.pawnIdToAttack = {}
+	self.pawnIdToAttackId = {}
+	self.attackIdToPawnId = {}
+	self.queuedEvacs = {}
+end
 
-Treeherders_Passive_WakeTheForest.queuedEvacs = {}
+-- Set the initial data
+Treeherders_Passive_WakeTheForest:ResetData()
+
 
 function Treeherders_Passive_WakeTheForest:AddUpdateQueuedAttack(weaponId, p1, skillFx)
 	local key = weaponId..p1:GetString()
@@ -258,10 +264,16 @@ end
 function Treeherders_Passive_WakeTheForest:RefreshForestArmorIconToAllMechs()
 
 	--Forest armor and treevac effects for both immediate and queued attacks
---	for i = 1, #self.queuedAttacks do
---		self:ApplyForestArmorAndEvacuate(self.queuedAttacks[i].effect, self.queuedAttacksOrigins[i], false, "") --self.queuedAttacksWeaponId[i]..self.queuedAttacksOrigins[i]:GetString())
---	end
 	for i = 1, #self.queuedAttacks do
+		if Treeherders_Passive_WakeTheForest.Debug then
+			LOG("queued effect "..tostring(self.queuedAttacks[i] ~= nil).." "..tostring(self.queuedAttacks[i].effect ~= nil).." "..self.queuedAttacksOrigins[i]:GetString())
+		end
+		self:ApplyForestArmorAndEvacuate(self.queuedAttacks[i].effect, self.queuedAttacksOrigins[i], false, "") --self.queuedAttacksWeaponId[i]..self.queuedAttacksOrigins[i]:GetString())
+	end
+	for i = 1, #self.queuedAttacks do
+		if Treeherders_Passive_WakeTheForest.Debug then
+			LOG("queued q_effect "..tostring(self.queuedAttacks[i] ~= nil).." "..tostring(self.queuedAttacks[i].q_effect ~= nil).." "..self.queuedAttacksOrigins[i]:GetString())
+		end
 		self:ApplyForestArmorAndEvacuate(self.queuedAttacks[i].q_effect, self.queuedAttacksOrigins[i], true, "") --self.queuedAttacksWeaponId[i]..self.queuedAttacksOrigins[i]:GetString())
 	end
 
@@ -389,11 +401,23 @@ end
 -- It doesn't recognize that tiles became water in the flood event. next turn hook can
 -- be used but it happens after vek attack so it defeats the point of the seek mech
 -- ability
-function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_PreEnvironmentHook(mission)
+function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_PreEnvironmentHook(mission)	
 	--always re-evaluate the icons - this covers environment effects like floods
 	self:RefreshForestArmorIconToAllMechs()
 
 	--floraform the spaces
+	self:FloraformSpaces()
+end
+
+function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_NextTurnHook(mission)	
+	-- Enemy turn is triggered after queued attacks and before planning next
+	if Game:GetTeamTurn() == TEAM_ENEMY then
+		self:ResetData()
+	end
+end
+
+function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_MissionStartHook(mission)
+	--Fire on mission start too just to have a bit more forest consistently
 	self:FloraformSpaces()
 end
 
@@ -431,8 +455,10 @@ function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_QueuedFinalEffe
 	self:RemoveQueuedAttacks(pawn:GetId())
 end
 
+
+
 Treeherders_Passive_WakeTheForest.passiveEffect:addPassiveEffect("Treeherders_Passive_WakeTheForest",
 		{"skillBuildHook", "finalEffectBuildHook",
 		"skillEndHook", "finalEffectEndHook",
 		"queuedSkillEndHook", "queuedFinalEffectEndHook",
-		"preEnvironmentHook"})
+		"preEnvironmentHook", "missionStartHook", "nextTurnHook"})

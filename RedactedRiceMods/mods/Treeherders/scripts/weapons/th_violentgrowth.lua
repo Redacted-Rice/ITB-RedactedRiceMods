@@ -2,7 +2,7 @@ Treeherders_ViolentGrowth = Skill:new
 {
 	Name = "Violent Growth",
     Class = "Science",
-    Description = "Grows a forest in an unforested tile otherwise cancels target's attack. Expands connected forest one tile towards the closest enemy or closest spot to current position. Forest growth damages enemies",
+    Description = "Grows a forest in an unforested tile, damaging the tile, otherwise cancels target's attack. Repeat on a second tile in or next to the targeted forest",
 	Icon = "weapons/science_th_violentGrowth.png",
 	Rarity = 1,
 	
@@ -15,7 +15,7 @@ Treeherders_ViolentGrowth = Skill:new
 	PathSize = 1,
     Damage = 1,
 	
-    PowerCost = 0,
+    PowerCost = 1,
     Upgrades = 2,
     UpgradeCost = { 1, 2 },
 	
@@ -45,14 +45,14 @@ Treeherders_ViolentGrowth = Skill:new
 Weapon_Texts.Treeherders_ViolentGrowth_Upgrade1 = "Ensnare"
 Treeherders_ViolentGrowth_A = Treeherders_ViolentGrowth:new
 {
-	UpgradeDescription = "For one turn all vek in the targetted forest lose three movement (minimum of 1)",
+	UpgradeDescription = "For one turn all vek in the targeted forest lose three movement (minimum of 1)",
 	SlowEnemy = true,
 }
 
 Weapon_Texts.Treeherders_ViolentGrowth_Upgrade2 = "+2 Expansion"
 Treeherders_ViolentGrowth_B = Treeherders_ViolentGrowth:new
 {
-	UpgradeDescription = "Expand the targeted forest two extra tiles",
+	UpgradeDescription = "Expand the targeted forest two extra tiles near primary target",
 	ForestToExpand = 2,
 }
 
@@ -70,55 +70,63 @@ function Treeherders_ViolentGrowth:GetSecondTargetArea(p1,p2)
 	
 	local forestGroup = forestUtils:getGroupingOfSpaces(p2, forestUtils.isAForest)
 	for _, p in pairs(forestGroup.group) do
-		ret:push_back(p)
+		if p ~= p2 then
+			ret:push_back(p)
+		end
 	end
 	for _, p in pairs(forestGroup.boardering) do
-		ret:push_back(p)
+		if p ~= p2 then
+			ret:push_back(p)
+		end
 	end
 	
 	return ret
 end
 
-function Treeherders_ViolentGrowth:GetSkillEffect(p1, p2)
-	local ret = SkillEffect()
-	local attackDir = GetDirection(p2 - p1)
-	
-	----- For the main target ------
-	local pushDir = nil
-	if self.PushTarget then
-		pushDir = attackDir
-	end
-		
+function Treeherders_ViolentGrowth:AddPrimarySkillEffect(skillFx, p2)		
 	--if it is a forest, cancel the target's attack
 	if forestUtils.isAForest(p2) then
-		ret:AddDamage(forestUtils:getSpaceDamageWithoutSettingFire(p2, self.Damage, pushDir, true, true))
-		forestUtils:addCancelEffect(p2, ret)
-		ret:AddBounce(p2, self.NonForestBounce)
+		skillFx:AddDamage(forestUtils:getSpaceDamageWithoutSettingFire(p2, self.Damage, pushDir, true, true))
+		forestUtils:addCancelEffect(p2, skillFx)
+		skillFx:AddBounce(p2, self.NonForestBounce)
 	
 	--if it can be floraformed, do so
 	elseif forestUtils.isSpaceFloraformable(p2) then
-		forestUtils:floraformSpace(ret, p2, self.Damage, pushDir, false, true)
+		forestUtils:floraformSpace(skillFx, p2, self.Damage, pushDir, false, true)
 		
 	--otherwise just damage it
 	else
-		ret:AddDamage(SpaceDamage(p2, self.Damage))
-		ret:AddBounce(p2, self.NonForestBounce)
+		skillFx:AddDamage(SpaceDamage(p2, self.Damage))
+		skillFx:AddBounce(p2, self.NonForestBounce)
 	end
-	
+end
+
+
+function Treeherders_ViolentGrowth:GetSkillEffect(p1, p2)
+	local ret = SkillEffect()
+	AddPrimarySkillEffect(ret, p2)
 	return ret
 end
 
 function Treeherders_ViolentGrowth:GetFinalEffect(p1,p2,p3)
+	local ret = SkillEffect()
+	
 	-- start with the primary effect
-	local ret = self:GetSkillEffect(p1, p2)
+	AddPrimarySkillEffect(ret, p2)
+	
+	--small break to make the animation and move make more sense
+	ret:AddDelay(0.4)
+	
+	-- Player now selects second tile & we repeat
+	-- Repeat on the second target
+	AddPrimarySkillEffect(ret, p3)
 	
 	--small break to make the animation and move make more sense
 	ret:AddDelay(0.4)
 	
 	----- For expansion ------
 	
-	-- Player now selects second tile
-	local expansionFocus = p3
+	local expansionFocus = p2
 	forestUtils:floraformSpace(ret, expansionFocus, self.Damage, nil, true, true)
 	
 	--Get all spaces in the grouping

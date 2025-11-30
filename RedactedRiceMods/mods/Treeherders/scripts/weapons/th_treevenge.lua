@@ -15,7 +15,7 @@ Treeherders_Treevenge = Skill:new
     Damage = 1,
     PowerCost = 1,
     Upgrades = 2,
-    UpgradeCost = { 1, 2 },
+    UpgradeCost = { 1, 1 },
 	
 	--custom
 	BouncePerDamage = 2,
@@ -60,7 +60,7 @@ Treeherders_Treevenge_A = Treeherders_Treevenge:new
 Weapon_Texts.Treeherders_Treevenge_Upgrade2 = "Short Tempered"
 Treeherders_Treevenge_B = Treeherders_Treevenge:new
 {
-	UpgradeDescription = "Damage increases for every forest fire",
+	UpgradeDescription = "Damage increases for each forest fire",
 	ForestsPerDamage = 1,
 }
 
