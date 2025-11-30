@@ -104,7 +104,7 @@ end
 
 function Treeherders_ViolentGrowth:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
-	AddPrimarySkillEffect(ret, p2)
+	self:AddPrimarySkillEffect(ret, p2)
 	return ret
 end
 
@@ -112,14 +112,14 @@ function Treeherders_ViolentGrowth:GetFinalEffect(p1,p2,p3)
 	local ret = SkillEffect()
 	
 	-- start with the primary effect
-	AddPrimarySkillEffect(ret, p2)
+	self:AddPrimarySkillEffect(ret, p2)
 	
 	--small break to make the animation and move make more sense
 	ret:AddDelay(0.4)
 	
 	-- Player now selects second tile & we repeat
 	-- Repeat on the second target
-	AddPrimarySkillEffect(ret, p3)
+	self:AddPrimarySkillEffect(ret, p3)
 	
 	--small break to make the animation and move make more sense
 	ret:AddDelay(0.4)
@@ -127,7 +127,6 @@ function Treeherders_ViolentGrowth:GetFinalEffect(p1,p2,p3)
 	----- For expansion ------
 	
 	local expansionFocus = p2
-	forestUtils:floraformSpace(ret, expansionFocus, self.Damage, nil, true, true)
 	
 	--Get all spaces in the grouping
 	local forestPoints = {}
@@ -139,19 +138,12 @@ function Treeherders_ViolentGrowth:GetFinalEffect(p1,p2,p3)
 	forestGroup.boardering[forestUtils:getSpaceHash(p2)] = nil
 	forestGroup.boardering[forestUtils:getSpaceHash(p3)] = nil
 	
-	local candidates = {}
-	for k, v in pairs(forestGroup.boardering) do
-		if forestUtils.isSpaceFloraformable(v) and v ~= p2 then
-			candidates[k] = v
-		end
-	end
-	
 	local newForests = {}
 	for i = 1, self.ForestToExpand do
-		if forestUtils.arrayLength(candidates) > 0 then
+		if forestUtils.arrayLength(forestGroup.boardering) > 0 then
 			--get the nearest point, and remove it from the candidates
-			local expansion = forestUtils:getClosestOfSpaces(expansionFocus, candidates)
-			candidates[forestUtils:getSpaceHash(expansion)] = nil
+			local expansion = forestUtils:getClosestOfSpaces(expansionFocus, forestGroup.boardering)
+			forestGroup.boardering[forestUtils:getSpaceHash(expansion)] = nil
 			newForests[forestUtils:getSpaceHash(expansion)] = expansion
 			
 			--floraform it
