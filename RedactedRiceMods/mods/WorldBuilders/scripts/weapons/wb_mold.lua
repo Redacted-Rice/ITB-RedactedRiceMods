@@ -1,8 +1,7 @@
-WorldBuilders_Mold = Skill:new
-{
+WorldBuilders_Mold = Skill:new{
 	Name = "Mold",
-	Class = "Prime",
 	Description = "Uplift the terrain to deal damage, throw the target and create a barrier",
+	Class = "Prime",
 	Icon = "weapons/prime_wb_mold.png",
 	Rarity = 1,
 
