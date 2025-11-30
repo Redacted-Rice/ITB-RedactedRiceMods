@@ -220,8 +220,14 @@ function passiveEffect.determineIfPassivesAreActiveFromSaveData()
 	--clear the previous list of active effects
 	passiveEffect.clearActivePassives()
 
-	--loop through the player mechs to see if they have one of the passive weapons equiped and powered
 	local pawns = passiveEffect:getAllSavedPawnData()
+	
+	--Loaded not in the middle of a mission, nothing needs to be done
+	if pawns == nil then
+		return
+	end
+	
+	--loop through the player mechs to see if they have one of the passive weapons equiped and powered
 	for _, pawnData in pairs(pawns) do
 		if passiveEffect.DebugLog then LOG("Checking pawn: "..pawnData.type) end
 

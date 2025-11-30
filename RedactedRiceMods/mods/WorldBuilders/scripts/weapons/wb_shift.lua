@@ -4,6 +4,7 @@ WorldBuilders_Shift = Skill:new{
 	Class = "Science",
 	Icon = "weapons/science_wb_shift.png",
 	Rarity = 1,
+	
 	Damage = 1,
 	PowerCost = 1,
 	LaunchSound = "/weapons/artillery_volley",
