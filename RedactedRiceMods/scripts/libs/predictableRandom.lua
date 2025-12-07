@@ -5,6 +5,7 @@ be repeatable in case of resets or undoing
 
 Author: Das Keifer of Redacted Rice
 Version: 1.1.0
+Discord Server: https://discord.gg/CNjTVrpN4v
 
 My own usage of this was mostly removed because I decided to go a different way for the non-passive weapons
 but the passive "Wake the Forest" still uses this somewhat. See the Treeherder's 

@@ -2,9 +2,12 @@
 Various Libraries to support Into the Breach mod development.
 Each library has a short description of how to use it in the file.
 
+Join the Redacted Rice discord for support, more mods, discussion and other projects: https://discord.gg/CNjTVrpN4v
+
 Please enjoy and contact us if you run into any issues.
+RedactedRice Discord Server: https://discord.gg/CNjTVrpN4v
 ItB Discord: Das Keifer
-Email:       RedactedRice@gmail.com
+Email: RedactedRice@gmail.com
 
 # Releases:
 ## PassiveEffect

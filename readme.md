@@ -2,7 +2,14 @@
 All of RedactedRice's Mods for Into the Breach
 Created by Das Keifer
 
+Join the Redacted Rice discord for support, more mods, discussion and other projects: https://discord.gg/CNjTVrpN4v
+
 See individual folders for more details on each mod
+
+Please enjoy and contact us if you run into any issues.
+RedactedRice Discord Server: https://discord.gg/CNjTVrpN4v
+ItB Discord: Das Keifer
+Email: RedactedRice@gmail.com
 
 # Squads
 * Treeherders - v2.0.0 - Inspired by ents, this squad focuses on using forests tiles to increase their power. The flagship entborg mech gets stronger as the forests get destroyed
