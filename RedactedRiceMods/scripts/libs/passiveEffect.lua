@@ -4,6 +4,7 @@ This library allows for easily creating passive effect for weapons tying into ex
 
 Author: Das Keifer of Redacted Rice
 Version: 1.1.0
+Discord Server: https://discord.gg/CNjTVrpN4v
 
 See the Treeherder's "Wake the Forest" passive ability for an example of usage
 
