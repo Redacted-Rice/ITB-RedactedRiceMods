@@ -22,5 +22,16 @@ Email: RedactedRice@gmail.com
 # Releases
 Latest release: 1.0.0
 ## 1.0.0
-Released: 12/05/2025 
+Released: 12/12/2025 
 Treeherders 2.0.0
+Libs 1.1.0
+
+# Install
+- Unzip the release folder
+- Place the unzipped RedactedRiceMods folder in "Into the Breach/mods" folder
+  - Make sure there is not an extra layer of folder - when you enter the RedactedRiceMods folder you should see the "scripts" folder. Remove any extra folder layers
+
+To uninstall, just delete the folder
+
+# Release Process
+Copy license and this readme into RedactedRiceMods folder and zip it up

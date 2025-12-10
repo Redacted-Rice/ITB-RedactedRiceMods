@@ -12,7 +12,7 @@ Email: RedactedRice@gmail.com
 # Releases
 Latest release: 2.0.0
 ## 2.0.0
-Released: 12/05/2025 
+Released: 12/12/2025 
 compatible with:
 * ItB AE 	1.2.93
 * ModLoader 	2.9.4
