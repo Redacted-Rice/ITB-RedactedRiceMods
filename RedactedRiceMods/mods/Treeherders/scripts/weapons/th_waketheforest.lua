@@ -152,15 +152,11 @@ end
 ------------------- FOREST ARMOR AND TREEVAC ---------------------------
 Treeherders_Passive_WakeTheForest.storedForestArmorIcon = {}
 
-function Treeherders_Passive_WakeTheForest:SetForestArmorIcon(id, point, dir)
+function Treeherders_Passive_WakeTheForest:SetForestArmorIcon(id, point)
 	self:UnsetPrevForestArmorIcon(id)
 
 	if self.Evacuate then
-		if dir and dir < 4 then
-			Board:SetTerrainIcon(point, "forestArmor_push_"..dir)
-		else
-			Board:SetTerrainIcon(point, "forestArmor_treevac")
-		end
+		Board:SetTerrainIcon(point, "forestArmor_treevac")
 	else
 		Board:SetTerrainIcon(point, "forestArmor")
 	end
@@ -175,83 +171,12 @@ function Treeherders_Passive_WakeTheForest:UnsetPrevForestArmorIcon(id)
 	end
 end
 
-function Treeherders_Passive_WakeTheForest:UpdateForestArmorForMechAtSpace(id, point, dir)
+function Treeherders_Passive_WakeTheForest:UpdateForestArmorForMechAtSpace(id, point)
 	if forestUtils.isAForest(point) then
-		self:SetForestArmorIcon(id, point, dir)
+		self:SetForestArmorIcon(id, point)
 	else
 		self:UnsetPrevForestArmorIcon(id)
 	end
-end
-
-function Treeherders_Passive_WakeTheForest:ResetData()
-	self.queuedAttacks = {}
-	self.queuedAttacksOrigins = {}
-	self.queuedAttacksWeaponId = {}
-	self.pawnIdToAttack = {}
-	self.pawnIdToAttackId = {}
-	self.attackIdToPawnId = {}
-	self.queuedEvacs = {}
-end
-
--- Set the initial data
-Treeherders_Passive_WakeTheForest:ResetData()
-
-
-function Treeherders_Passive_WakeTheForest:AddUpdateQueuedAttack(weaponId, p1, skillFx)
-	local key = weaponId..p1:GetString()
-
-	--pawn pushes will be updated in time
-	local pawn = Board:GetPawn(p1)
-	if pawn then
-		local pId = pawn:GetId()
-		if self.pawnIdToAttack[pId] then
-			--LOG("UPDATED "..self.pawnIdToAttack[pId])
-			self.queuedAttacks[self.pawnIdToAttack[pId]] = skillFx
-			self.queuedAttacksOrigins[self.pawnIdToAttack[pId]] = p1
-			self.queuedAttacksWeaponId[self.pawnIdToAttack[pId]] = weaponId
-		else
-			table.insert(self.queuedAttacks, skillFx)
-			table.insert(self.queuedAttacksOrigins, p1)
-			table.insert(self.queuedAttacksWeaponId, weaponId)
-			self.pawnIdToAttack[pId] = #self.queuedAttacks
-			--LOG("Added "..self.pawnIdToAttack[pId])
-		end
-
-		if self.pawnIdToAttackId[pId] then
-			self.attackIdToPawnId[self.pawnIdToAttackId[pId]] = nil
-		end
-
-		self.pawnIdToAttackId[pId] = key
-		self.attackIdToPawnId[key] = pId
-		self.queuedEvacs[key] = {}
-
-	--killed and burrows wont have a pawn at p1
-	--TODO: how does this work with cancelled and pushed off attacks?
-	elseif self.attackIdToPawnId[key] then
-		--LOG("NO PAWN")
-		self:RemoveQueuedAttacks(self.attackIdToPawnId[key])
-	end
-end
-
-function Treeherders_Passive_WakeTheForest:RemoveQueuedAttacks(pId)
-	local attackIdx = self.pawnIdToAttack[pId]
-	if attackIdx and self.queuedAttacks[attackIdx] then
-		table.remove(self.queuedAttacks, attackIdx)
-		table.remove(self.queuedAttacksOrigins, attackIdx)
-		table.remove(self.queuedAttacksWeaponId, attackIdx)
-	end
-
-	local attackId = self.pawnIdToAttackId[pId]
-	if attackId then
-		self.attackIdToPawnId[attackId] = nil
-		self.queuedEvacs[attackId] = nil
-	end
-
-	self.pawnIdToAttack[pId] = nil
-	self.pawnIdToAttackId[pId] = nil
-	
-	-- Update armor in case there are no new queued effects
-	self:RefreshForestArmorIconToAllMechs()
 end
 
 function Treeherders_Passive_WakeTheForest.EligibleForForestArmor(pawn)
@@ -262,25 +187,10 @@ function Treeherders_Passive_WakeTheForest.EligibleForForestArmor(pawn)
 end
 
 function Treeherders_Passive_WakeTheForest:RefreshForestArmorIconToAllMechs()
-
-	--Forest armor and treevac effects for both immediate and queued attacks
-	for i = 1, #self.queuedAttacks do
-		if Treeherders_Passive_WakeTheForest.Debug then
-			LOG("queued effect "..tostring(self.queuedAttacks[i] ~= nil).." "..tostring(self.queuedAttacks[i].effect ~= nil).." "..self.queuedAttacksOrigins[i]:GetString())
-		end
-		self:ApplyForestArmorAndEvacuate(self.queuedAttacks[i].effect, self.queuedAttacksOrigins[i], false, "") --self.queuedAttacksWeaponId[i]..self.queuedAttacksOrigins[i]:GetString())
-	end
-	for i = 1, #self.queuedAttacks do
-		if Treeherders_Passive_WakeTheForest.Debug then
-			LOG("queued q_effect "..tostring(self.queuedAttacks[i] ~= nil).." "..tostring(self.queuedAttacks[i].q_effect ~= nil).." "..self.queuedAttacksOrigins[i]:GetString())
-		end
-		self:ApplyForestArmorAndEvacuate(self.queuedAttacks[i].q_effect, self.queuedAttacksOrigins[i], true, "") --self.queuedAttacksWeaponId[i]..self.queuedAttacksOrigins[i]:GetString())
-	end
-
 	local mechs = Board:GetPawns(TEAM_MECH)
 	for _, mechId in pairs(extract_table(mechs)) do
 		local space = Board:GetPawnSpace(mechId)
-		self:UpdateForestArmorForMechAtSpace(mechId, space, nil)
+		self:UpdateForestArmorForMechAtSpace(mechId, space)
 	end
 end
 
@@ -296,7 +206,7 @@ function Treeherders_Passive_WakeTheForest:ApplyForestArmorToSpaceDamage(spaceDa
 	end
 end
 
-function Treeherders_Passive_WakeTheForest:ApplyEvacuateToSpaceDamage(spaceDamage, damagedPawn, attackOrigin, isQueued, pToIgnore, attackId)
+function Treeherders_Passive_WakeTheForest:ApplyEvacuateToSpaceDamage(spaceDamage, damagedPawn, attackOrigin, pToIgnore)
 	--If the pawn is not on fire and on a forest and is taking damage
 	if self.Evacuate and spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_ZERO and spaceDamage.iDamage ~= DAMAGE_DEATH and
 					not (damagedPawn:IsShield() or damagedPawn:IsFire() or forestUtils.isAForestFire(spaceDamage.loc)) then
@@ -331,7 +241,7 @@ function Treeherders_Passive_WakeTheForest:ApplyEvacuateToSpaceDamage(spaceDamag
 	end
 end
 
-function Treeherders_Passive_WakeTheForest:ApplyForestArmorAndEvacuate(effect, attackOrigin, isQueued, attackId)
+function Treeherders_Passive_WakeTheForest:ApplyForestArmorAndEvacuate(effect, attackOrigin)
 	if (self.ForestArmor or self.Evacuate) and not effect:empty() then
 
 		local evacuatedToOrAttackedSpaces = {}
@@ -349,49 +259,13 @@ function Treeherders_Passive_WakeTheForest:ApplyForestArmorAndEvacuate(effect, a
 				self:ApplyForestArmorToSpaceDamage(spaceDamage)
 
 				local p = self:ApplyEvacuateToSpaceDamage(spaceDamage, damagedPawn,
-								attackOrigin, isQueued, evacuatedToOrAttackedSpaces, attackId)
+								attackOrigin, evacuatedToOrAttackedSpaces)
 				if p then
 					evacuatedToOrAttackedSpaces[forestUtils:getSpaceHash(p)] = p
 				end
 			end
 		end
 	end
-end
-
-function Treeherders_Passive_WakeTheForest:getFirstAttackingNonMechId(sourceTable)
-    if sourceTable then
-        --look through each item in the table for mechs
-		local foundPawnId = -1
-		local foundPawnSequenceNum = 9999
-        for k, v in pairs(sourceTable) do
-            --non player pawns keys start with pawn and have the mech flag set to false
-            if type(v) == "table" and (not v.mech) and modApi:stringStartsWith(k, "pawn") then
-				if v.iQueuedSkill > 0 then
-					local seqNum = tonumber(modApi:splitString(k, "pawn")[1])
-					if seqNum < foundPawnSequenceNum then
-						foundPawnId = v.id
-						foundPawnSequenceNum = seqNum
-					end
-				end
-            end
-        end
-
-		if foundPawnId > 0 then
-			return foundPawnId
-		end
-    else
-        --determine what table to use and call ourselves with that one
-        local region = treeherders_modApiExt.board:getCurrentRegion()
-        local nonMech = self:getFirstAttackingNonMechId(SquadData)
-        if not nonMech and region then
-            nonMech = self:getFirstAttackingNonMechId(region.player.map_data)
-        end
-
-        return nonMech
-    end
-
-    --if we didn't find any non mechs return nil
-    return nil
 end
 
 ------------------- MAIN HOOK FUNCTIONS ---------------------------
@@ -402,18 +276,8 @@ end
 -- be used but it happens after vek attack so it defeats the point of the seek mech
 -- ability
 function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_PreEnvironmentHook(mission)	
-	--always re-evaluate the icons - this covers environment effects like floods
-	self:RefreshForestArmorIconToAllMechs()
-
 	--floraform the spaces
 	self:FloraformSpaces()
-end
-
-function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_NextTurnHook(mission)	
-	-- Enemy turn is triggered after queued attacks and before planning next
-	if Game:GetTeamTurn() == TEAM_ENEMY then
-		self:ResetData()
-	end
 end
 
 function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_MissionStartHook(mission)
@@ -424,7 +288,10 @@ end
 -- Skill build hooks
 function Treeherders_Passive_WakeTheForest:SkillBuildHook(weaponId, p1, p2, skillFx)
 	if weaponId ~= "Move" then
-		self:AddUpdateQueuedAttack(weaponId, p1, skillFx)
+		-- Just try both. AFAIK it will only be one but it doesn't hurt and we guarantee 
+		-- covering all cases
+		self:ApplyForestArmorAndEvacuate(skillFx.effect, p1)
+		self:ApplyForestArmorAndEvacuate(skillFx.q_effect, p1)
 	end
 	self:RefreshForestArmorIconToAllMechs()
 end
@@ -437,28 +304,6 @@ function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_FinalEffectBuil
 	return self:SkillBuildHook(weaponId, p1, p2, skillFx)
 end
 
---Clear the queued pushes. They will be re-added by the skill build hooks. We need to do this each time
---a move is executed. This will allow the table to be repopulated with the recalculated queued effects
-function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_SkillEndHook(mission, pawn, weaponId, p1, p2)
-	self:RemoveQueuedAttacks(pawn:GetId())
-end
-
-function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_FinalEffectEndHook(mission, pawn, weaponId, p1, p2)
-	self:RemoveQueuedAttacks(pawn:GetId())
-end
-
-function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_QueuedSkillEndHook(mission, pawn, weaponId, p1, p2)
-	self:RemoveQueuedAttacks(pawn:GetId())
-end
-
-function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_QueuedFinalEffectEndHook(mission, pawn, weaponId, p1, p2)
-	self:RemoveQueuedAttacks(pawn:GetId())
-end
-
-
 
 Treeherders_Passive_WakeTheForest.passiveEffect:addPassiveEffect("Treeherders_Passive_WakeTheForest",
-		{"skillBuildHook", "finalEffectBuildHook",
-		"skillEndHook", "finalEffectEndHook",
-		"queuedSkillEndHook", "queuedFinalEffectEndHook",
-		"preEnvironmentHook", "missionStartHook", "nextTurnHook"})
+		{"skillBuildHook",  "finalEffectEndHook", "preEnvironmentHook", "missionStartHook"})
