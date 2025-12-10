@@ -306,4 +306,4 @@ end
 
 
 Treeherders_Passive_WakeTheForest.passiveEffect:addPassiveEffect("Treeherders_Passive_WakeTheForest",
-		{"skillBuildHook",  "finalEffectEndHook", "preEnvironmentHook", "missionStartHook"})
+		{"skillBuildHook",  "finalEffectBuildHook", "preEnvironmentHook", "missionStartHook"})
