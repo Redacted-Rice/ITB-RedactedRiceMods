@@ -86,7 +86,9 @@ end
 function Treeherders_ViolentGrowth:AddPrimarySkillEffect(skillFx, p2)
 	--if it is a forest, cancel the target's attack
 	if forestUtils.isAForest(p2) then
-		skillFx:AddDamage(forestUtils:getSpaceDamageWithoutSettingFire(p2, self.Damage, pushDir, true, true))
+		local spaceDamage = forestUtils:getSpaceDamageWithoutSettingFire(p2, self.Damage, pushDir, true, true)
+		spaceDamage.sSound = "impact/generic/control"
+		skillFx:AddDamage(spaceDamage)
 		forestUtils:addCancelEffect(p2, skillFx)
 		skillFx:AddBounce(p2, self.NonForestBounce)
 
@@ -96,7 +98,9 @@ function Treeherders_ViolentGrowth:AddPrimarySkillEffect(skillFx, p2)
 
 	--otherwise just damage it
 	else
-		skillFx:AddDamage(SpaceDamage(p2, self.Damage))
+		local spaceDamage = SpaceDamage(p2, self.Damage)
+		spaceDamage.sSound = "mech/distance/skill/rangedcrack"
+		skillFx:AddDamage(spaceDamage)
 		skillFx:AddBounce(p2, self.NonForestBounce)
 	end
 end
@@ -150,8 +154,10 @@ function Treeherders_ViolentGrowth:GetFinalEffect(p1,p2,p3)
 				end
 			end
 
-			--floraform it
-			forestUtils:floraformSpace(ret, expansion, self.Damage, nil, true, true)
+			--floraform it (if we found one)
+			if expansion ~= nil then
+				forestUtils:floraformSpace(ret, expansion, self.Damage, nil, true, true)
+			end
 		end
 	end
 

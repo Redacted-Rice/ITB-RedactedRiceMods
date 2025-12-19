@@ -3,8 +3,8 @@ forestUtils = {}
 forestUtils.predictableRandom = mod_loader.mods[modApi.currentMod].libs.predictableRandom
 
 forestUtils.floraformBounce = -3
-forestUtils.soundGrow = "/impact/generic/explosion"
-forestUtils.soundDamage = "/impact/generic/explosion"
+forestUtils.soundGrow = "/impact/dynamic/rock"
+forestUtils.soundDamage = "/impact/dynamic/rock"
 
 function forestUtils.arrayLength(array)
 	local count = 0

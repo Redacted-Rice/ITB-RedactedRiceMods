@@ -281,13 +281,15 @@ function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_PreEnvironmentH
 end
 
 function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_MissionStartHook(mission)
-	--Fire on mission start too just to have a bit more forest consistently
+	--Fire 2x on mission start too just to have a bit more forest consistently
+	self:FloraformSpaces()
 	self:FloraformSpaces()
 end
 
 -- Skill build hooks
 function Treeherders_Passive_WakeTheForest:SkillBuildHook(weaponId, p1, p2, skillFx)
-	if weaponId ~= "Move" then
+	-- Sometimes the skill is nil? Not sure why
+	if weaponId ~= "Move" and skillFx ~= nil then
 		-- Just try both. AFAIK it will only be one but it doesn't hurt and we guarantee 
 		-- covering all cases
 		self:ApplyForestArmorAndEvacuate(skillFx.effect, p1)
