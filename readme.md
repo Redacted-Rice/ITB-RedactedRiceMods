@@ -1,4 +1,4 @@
-# Redacted Rice Complete Mod Pack
+# Redacted Rice Complete Mods
 All of RedactedRice's Mods for Into the Breach
 Created by Das Keifer
 

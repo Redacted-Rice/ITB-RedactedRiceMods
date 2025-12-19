@@ -6,13 +6,8 @@ None
 
 Tree Herders:
 Final run through
-FX:
-	*Add sound effects for terraforming spaces
-	*Sound effect for forest firer wonky too. plays launch for teleport sometimes and no launch sound
 Gameplay:
-	*Avoid water and mountain tiles for violent growth auto selection?
 	*Does Violent Growth auto select avoid the train? (it should)
-	*VG should avoid buildings for auto select
 
 Next release candidates:
 1. Mechs (entborg specifically?) can never catch forest on fire? Might be too much a nerf on tree-venge
@@ -23,6 +18,7 @@ Next release candidates:
 
 Known issues:
 Forest Firer bounce happens after push. Doesn't seem to be a way around this
+Forest Firer teleport and launch SFX just sometimes don't play. Not sure why this is
 
 
 ------------------------------------------------------------------------------

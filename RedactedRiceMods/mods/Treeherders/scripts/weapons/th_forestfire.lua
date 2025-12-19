@@ -8,7 +8,7 @@ Treeherders_ForestFire = Skill:new{
 	PowerCost = 1,
 	--LaunchSound = "/weapons/artillery_volley",
 	ShootSound = "/weapons/artillery_volley",
-	ImpactSound = "/impact/generic/explosion",
+	ImpactSound = "/impact/dynamic/rock",
 	UpShot = "effects/shotup_th_deadtree.png",
 	UpShotOuter = "effects/shotup_th_deadtree.png",
 	Explosion = "",
@@ -26,6 +26,7 @@ Treeherders_ForestFire = Skill:new{
 	PushOuter = false,
 	DamageOuter = 0,
 	BounceOuterAmount = 2,
+	BounceCenterAmount = 2,
 	BuildingDamage = true,
 
 	--TipImage
@@ -54,6 +55,7 @@ Treeherders_ForestFire_B = Treeherders_ForestFire:new
 	UpgradeDescription = "Primary target takes two more damage",
 	UpShot = "effects/shotup_th_deadtree_3.png",
 	Damage = 3,
+	BounceCenterAmount = 4,
 }
 
 Treeherders_ForestFire_AB = Treeherders_ForestFire_B:new
@@ -127,13 +129,15 @@ function Treeherders_ForestFire:GetFinalEffect(p1,p2,p3)
 	local damage = forestUtils:getFloraformSpaceDamage(p3, self.Damage, attackDir, false, not self.BuildingDamage)
 	ret:AddBounce(p2, 1)
 
+	-- Add slight delay so sound will play
+	ret:AddDelay(0.1)
+	
 	local mainDelay = FULL_DELAY
 	if self.DamageOuter > 0 then
 		mainDelay = 0
 	end
-	damage.sSound = self.SoundShoot
+	damage.sSound = self.ShootSound
 	ret:AddArtillery(p2, damage, self.UpShot, mainDelay)
-	ret:AddBounce(p3, 1)
 
 	if self.DamageOuter > 0 then
 		dir1 = (attackDir + 1) % 4
@@ -153,6 +157,8 @@ function Treeherders_ForestFire:GetFinalEffect(p1,p2,p3)
 			ret:AddBounce(side2, self.BounceOuterAmount)
 		end
 	end
+	-- Add bounce after any delays
+	ret:AddBounce(p3, self.BounceCenterAmount)
 
 	return ret
 end
