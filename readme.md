@@ -22,7 +22,7 @@ Email: RedactedRice@gmail.com
 # Releases
 Latest release: 1.0.0
 ## 1.0.0
-Released: 12/12/2025 
+Released: 12/19/2025 
 Treeherders 2.0.0
 Libs 1.1.0
 
