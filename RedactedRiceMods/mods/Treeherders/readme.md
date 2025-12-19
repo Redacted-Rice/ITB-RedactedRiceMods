@@ -12,7 +12,7 @@ Email: RedactedRice@gmail.com
 # Releases
 Latest release: 2.0.0
 ## 2.0.0
-Released: 12/12/2025 
+Released: 12/19/2025 
 compatible with:
 * ItB AE 	1.2.93
 * ModLoader 	2.9.4
@@ -20,7 +20,9 @@ compatible with:
 * memedit	1.2.0
 
 ### Notes
-Updating for modifying libs to support multiple instances
+* Updated to 2.0
+  * Modified Forest Firer and Wake the Forest to use two click for more control and to make them more intuitive
+* Significant rebalancing and making the weapons more predictable
 
 ## 0.10.1
 Released: 5/30/2025 

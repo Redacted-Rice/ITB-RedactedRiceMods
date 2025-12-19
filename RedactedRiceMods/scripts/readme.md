@@ -14,7 +14,7 @@ Email: RedactedRice@gmail.com
 Current Release: 1.1.0
 
 ### 1.1.0
-Released: 12/12/2025
+Released: 12/19/2025
 Made it support multiple instances correctly
 
 ### 1.0.0
@@ -25,7 +25,7 @@ Initial Release.
 Current Release: 1.1.0
 
 ### 1.1.0
-Released: 12/12/2025
+Released: 12/19/2025
 Made it support multiple instances correctly
 
 ### 1.0.0
