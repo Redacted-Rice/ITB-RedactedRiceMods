@@ -49,7 +49,6 @@ WorldBuilders_Shift_B = WorldBuilders_Shift:new
 		Building = Point(2,2),
 		Target = Point(2,2),
 		Hole = Point(3,3),
-		Enemy = Point(3,3),
 		Second_Click = Point(3,3),
 	},
 }
