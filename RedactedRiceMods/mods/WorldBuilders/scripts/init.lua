@@ -7,7 +7,7 @@ local mod = {
 	gameVersion = "1.2.93",
 	dependencies = {
         modApiExt = "1.21",
-        memedit = "1.2.0",
+        memedit = "1.2.1",
     },
 	libs = {}
 }

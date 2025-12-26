@@ -1,6 +1,6 @@
 WorldBuilders_Mold = Skill:new{
 	Name = "Mold",
-	Description = "Uplift the terrain to deal damage, throw the target and create a barrier",
+	Description = "Uplift the terrain to deal damage, throw the target and create a barrier. Target pawn must die or be able to be moved to adj space",
 	Class = "Prime",
 	Icon = "weapons/prime_wb_mold.png",
 	Rarity = 1,
@@ -62,6 +62,18 @@ function WorldBuilders_Mold:CanTargetSpace(space, damage)
 	return okTerrain and pushablePawn
 end
 
+function WorldBuilders_Mold:PawnWillDie(p1, p2)
+	local actualDamage = self.Damage 
+	if Board:GetPawn(p1):IsBoosted() then
+		actualDamage = actualDamage + 1
+	end
+	local pawnTarget = Board:GetPawn(p2)
+	if pawnTarget and pawnTarget:IsAcid() then
+		actualDamage = actualDamage * 2
+	end
+	return pawnTarget and actualDamage >= pawnTarget:GetHealth()
+end
+
 function WorldBuilders_Mold:GetTargetArea(p1)
 	local ret = PointList()
 	for dir = DIR_START, DIR_END do
@@ -76,6 +88,10 @@ end
 
 function WorldBuilders_Mold:GetSecondTargetArea(p1,p2)
 	local ret = PointList()
+	
+	if not Board:IsPawnSpace(p2) or self:PawnWillDie(p1, p2) then
+		ret:push_back(p2)
+	end
 
 	-- "borrowed" from general_DiamondTarget and modified to not
 	-- include point
@@ -99,7 +115,6 @@ function WorldBuilders_Mold:GetSecondTargetArea(p1,p2)
 			p = p + VEC_DOWN
 		end
 	end
-
 	return ret
 end
 
@@ -111,9 +126,7 @@ function WorldBuilders_Mold:AddRock(effect, point)
 	-- automagically does the animation
 	effect.sPawn = "Wall"
 	local terrain = Board:GetTerrain(point)
-	LOG(point:GetString().." TERRAIN "..terrain.. " WTAER "..TERRAIN_WATER)
 	if terrain == TERRAIN_HOLE or terrain == TERRAIN_WATER or terrain == TERRAIN_ACID or terrain == TERRAIN_LAVA then
-		LOG("NEW TERRAIN")
 		effect.iTerrain = TERRAIN_ROAD
 	end
 end
@@ -123,10 +136,11 @@ function WorldBuilders_Mold:GetFinalEffect(p1,p2,p3)
 
 	local damage = SpaceDamage(p2, self.Damage)
 	local terrain = SpaceDamage(p2, 0)
-	local isPawnTargetted = Board:IsPawnSpace(p2)
+	local pawnTarget = Board:GetPawn(p2)
+	local isPawnTargetted = pawnTarget ~= nil
 	-- is it a building or is it an unpushable pawn that won
 	local isUnpushablePawn = isPawnTargetted and Board:GetPawn(p2):IsGuarding()
-	local pawnWillDie = isPawnTargetted and self.Damage >= Board:GetPawn(p2):GetHealth()
+	local pawnWillDie = self:PawnWillDie(p1, p2)
 	local unTerraformable = Board:IsTerrain(p2, TERRAIN_BUILDING) or
 			(isUnpushablePawn and not pawnWillDie)
 	local bounce = -3
