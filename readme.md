@@ -20,7 +20,7 @@ Email: RedactedRice@gmail.com
 * PredictableRandom - v1.1.0 - Library to get random numbers in a way that is repeatable for when undoing moves or resetting turns
 
 # Install
-- Download the custom 1.20.1 version of memedit and unzip it
+- Download the custom 1.2.1 version of memedit and unzip it
 - Copy the current memedit folder or zip it (renaming won't work) at "Into the Breach\scripts\mod_loader\extensions\modLoaderExtensions\mods"
 - Replace the memedit folder in the unzippped version
 	- Make sure there is not an extra layer of folder
