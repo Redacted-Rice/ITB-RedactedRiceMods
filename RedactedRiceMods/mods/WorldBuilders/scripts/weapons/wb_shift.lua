@@ -42,7 +42,7 @@ WorldBuilders_Shift_A = WorldBuilders_Shift:new
 Weapon_Texts.WorldBuilders_Shift_Upgrade2 = "Deadly"
 WorldBuilders_Shift_B = WorldBuilders_Shift:new
 {
-	UpgradeDescription = "Can swap liquid and void tiles",
+	UpgradeDescription = "Can swap liquid and holes tiles",
 	TargetDeathTiles = true,
     TipImage = {
 		Unit = Point(2,3),
