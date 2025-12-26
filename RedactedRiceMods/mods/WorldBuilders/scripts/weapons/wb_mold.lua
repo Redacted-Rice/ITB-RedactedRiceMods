@@ -62,16 +62,13 @@ function WorldBuilders_Mold:CanTargetSpace(space, damage)
 	return okTerrain and pushablePawn
 end
 
-function WorldBuilders_Mold:PawnWillDie(p1, p2)
+function WorldBuilders_Mold:NoPawnOrWillDie(p1, p2)
 	local actualDamage = self.Damage 
 	if Board:GetPawn(p1):IsBoosted() then
 		actualDamage = actualDamage + 1
 	end
-	local pawnTarget = Board:GetPawn(p2)
-	if pawnTarget and pawnTarget:IsAcid() then
-		actualDamage = actualDamage * 2
-	end
-	return pawnTarget and actualDamage >= pawnTarget:GetHealth()
+	local pawnTarget = Board:GetPawn(p1)
+	return not pawnTarget or Board:IsDeadly(SpaceDamage(p2, self.Damage), pawnTarget)
 end
 
 function WorldBuilders_Mold:GetTargetArea(p1)
@@ -82,14 +79,13 @@ function WorldBuilders_Mold:GetTargetArea(p1)
 			ret:push_back(targetSpace)
 		end
 	end
-
 	return ret
 end
 
 function WorldBuilders_Mold:GetSecondTargetArea(p1,p2)
 	local ret = PointList()
 	
-	if not Board:IsPawnSpace(p2) or self:PawnWillDie(p1, p2) then
+	if self:NoPawnOrWillDie(p1, p2) then
 		ret:push_back(p2)
 	end
 
@@ -138,11 +134,13 @@ function WorldBuilders_Mold:GetFinalEffect(p1,p2,p3)
 	local terrain = SpaceDamage(p2, 0)
 	local pawnTarget = Board:GetPawn(p2)
 	local isPawnTargetted = pawnTarget ~= nil
+
 	-- is it a building or is it an unpushable pawn that won
 	local isUnpushablePawn = isPawnTargetted and Board:GetPawn(p2):IsGuarding()
-	local pawnWillDie = self:PawnWillDie(p1, p2)
+	local pawnWillDie = self:NoPawnOrWillDie(p1, p2)
 	local unTerraformable = Board:IsTerrain(p2, TERRAIN_BUILDING) or
 			(isUnpushablePawn and not pawnWillDie)
+
 	local bounce = -3
 	if self.MakeMountains then
 		if not unTerraformable then
