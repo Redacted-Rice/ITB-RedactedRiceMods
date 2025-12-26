@@ -247,7 +247,7 @@ function WorldBuilders_Shift:GetTerrainAndEffectData(space)
 		acid = Board:IsAcid(space),
 		smoke = Board:IsSmoke(space),
 		emerging = Board:IsSpawning(space),
-		people1 = Board:GetScoredBuildingScore(space),
+		people1 = Board:GetPeoplePopulated(space),
 		unique = Board:GetUniqueBuilding(space),
 	}
 end
@@ -343,7 +343,7 @@ function WorldBuilders_Shift:ApplyTerrain(spaceDamage, spaceDamagePreform, space
 		if spaceData.unique ~= nil then
 		spaceDamage.sScript = spaceDamage.sScript .. [[
 				Board:SetUniqueBuilding(]] .. spaceDamage.loc:GetString() .. [[, "]] .. spaceData.unique .. [[")
-				Board:SetScoredBuilding(]] .. spaceDamage.loc:GetString() .. [[, ]] .. spaceData.people1 .. [[)]]
+				Board:SetPeoplePopulated(]] .. spaceDamage.loc:GetString() .. [[, ]] .. spaceData.people1 .. [[)]]
 		end
 
 	end
