@@ -1,8 +1,8 @@
 Treeherders_Treevenge = Skill:new
 {
 	Name = "Tree-venge",
-	Class = "Prime",
-	Description = "Smash an adjacent tile pushing surrounding tiles and damaging them by half. Target damage increases by forest fires / 2 (rounded up) to a max of 5",
+	Class = "TechnoVek",
+	Description = "Smash an adjacent tile pushing surrounding tiles and damaging them by half. Target damage increases by forest fires / 2 (rounded up) to a max of 5. Does not start fires.",
 	Icon = "weapons/prime_th_treevenge.png",
 	Rarity = 2,
 	
