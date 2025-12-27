@@ -2,7 +2,7 @@ Treeherders_ViolentGrowth = Skill:new
 {
 	Name = "Violent Growth",
     Class = "Science",
-    Description = "Grows a forest in an unforested tile, damaging the tile, otherwise cancels target's attack. Repeat on a second tile in or next to the targeted forest",
+    Description = "If targetting an unforested tile, grows a forest tile causing damage. Otherwise cancels target's attack. Repeat on a second tile in or next to the targeted forest. Does not start fires.",
 	Icon = "weapons/science_th_violentGrowth.png",
 	Rarity = 1,
 

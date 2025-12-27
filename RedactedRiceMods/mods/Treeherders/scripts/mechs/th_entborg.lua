@@ -6,6 +6,19 @@ local mod = modApi:getCurrentMod()
 
 local treeherdersColor = modApi:getPaletteImageOffset("treeherders_color")
 
+
+-- cyborg pilot stuff --
+modApi:appendAsset("img/portraits/pilots/Pilot_Treeherders_EntborgMech.png",path.."img/portraits/Pilot_Treeherders_EntborgMech.png")
+CreatePilot{
+	Id = "Pilot_Treeherders_EntborgMech",
+	Personality = "Vek",
+	Sex = SEX_VEK,
+	Rarity = 0,
+	Skill = "Survive_Death",
+	Blacklist = {"Invulnerable", "Popular"},
+}
+-- end of pilot stuff --
+
 local files = {
 	"th_entborg.png",
 	"th_entborg_a.png",
@@ -31,7 +44,7 @@ a.th_entborg_ns =      a.MechIcon:new{Image = "units/player/th_entborg_ns.png" }
 
 Treeherders_EntborgMech = Pawn:new{	
 	Name = "Entborg",
-	Class = "Prime",
+	Class = "TechnoVek",
 	Health = 3,
 	MoveSpeed = 4,
 	Image = "th_entborg",
