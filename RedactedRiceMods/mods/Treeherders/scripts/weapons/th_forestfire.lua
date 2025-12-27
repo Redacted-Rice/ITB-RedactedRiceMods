@@ -1,6 +1,6 @@
 Treeherders_ForestFire = Skill:new{
 	Name = "Forest Fire",
-	Description = "Teleport to any space in the forest then fire dead logs, pushing attacked tiles and growing a forest. Also grows a forest behind this mech",
+	Description = "Teleport to any space in the forest then fire dead logs, pushing attacked tiles and growing a forest tile on target and behind this mech. Does not start fires. Range: 2-5",
 	Class = "Ranged",
 	Icon = "weapons/ranged_th_forestFirer.png",
 	Rarity = 1,
