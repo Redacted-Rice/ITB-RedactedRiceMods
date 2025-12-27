@@ -67,6 +67,14 @@ function WorldBuilders_Passive_Move:GetPassiveSkillEffect_PawnSelectedHook(missi
 	end
 end
 
+function WorldBuilders_Passive_Move:GetPassiveSkillEffect_PostLoadGameHook(...)
+    -- go through each pawn and select it to force the flying status to be set roght
+    for idx = 1, 3 do
+        self:GetPassiveSkillEffect_PawnSelectedHook(nil, Board:GetPawn(idx))
+        end
+    end
+end
+
 
 function WorldBuilders_Passive_Move.addForcedMove(skillEffect, p1, p2)
 	-- Clear the existing move from the skilleffect
@@ -143,4 +151,4 @@ function WorldBuilders_Passive_Move:GetSkillEffect(p1, p2)
 end
 
 WorldBuilders_Passive_Move.passiveEffect:addPassiveEffect("WorldBuilders_Passive_Move",
-		{"targetAreaBuildHook", "skillBuildHook", "pawnSelectedHook"})
+		{"targetAreaBuildHook", "skillBuildHook", "pawnSelectedHook", "postLoadGameHook"})
