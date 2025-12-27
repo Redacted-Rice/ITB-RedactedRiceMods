@@ -26,7 +26,7 @@ WorldBuilders_Passive_Move.passiveEffect = mod_loader.mods[modApi.currentMod].li
 Weapon_Texts.WorldBuilders_Passive_Move_Upgrade1 = "Hover"
 WorldBuilders_Passive_Move_A = WorldBuilders_Passive_Move:new
 {
-	UpgradeDescription = "Mechs can stand on hole tiles",
+	UpgradeDescription = "Mechs can move onto hole tiles (holes created under will still cause death)",
 	TipImage = {
 		CustomPawn = "WorldBuilders_ShaperMech",
 		Unit = Point(2, 3),
@@ -55,26 +55,88 @@ function WorldBuilders_Passive_Move:GetPassiveSkillEffect_SkillBuildHook(mission
 	end
 end
 
+
+function WorldBuilders_Passive_Move:SetTemporarilyFlyingIfNeeded(pawn)
+	if pawn:IsMech() and self.Flying and not pawn:IsFlying() then
+		LOG("SETTING FLYING!")
+		pawn:SetFlying(true)
+		self.MadeFlying[pawn:GetId()] = true
+		return true
+	end
+	return false
+end
+
+function WorldBuilders_Passive_Move:UnsetFlyingIfTemporarilyAdded(pawn)
+	if pawn:IsMech() and self.MadeFlying[pawn:GetId()] then
+		LOG("UNSETTING FLYING!")
+		pawn:SetFlying(false)
+		self.MadeFlying[pawn:GetId()] = nil
+	end
+end
+
+-- When they select, make flying so pathing shows holes as pathable
 function WorldBuilders_Passive_Move:GetPassiveSkillEffect_PawnSelectedHook(mission, pawn)
-	if pawn:IsMech() then
-		if self.Flying and not pawn:IsFlying() then
-			pawn:SetFlying(true)
-			self.MadeFlying[pawn:GetId()] = true
-		elseif not self.Flying and self.MadeFlying[pawn:GetId()] then
-			pawn:SetFlying(false)
-			self.MadeFlying[pawn:GetId()] = nil
+	if not self:SetTemporarilyFlyingIfNeeded(pawn) then
+		self:UnsetFlyingIfTemporarilyAdded(pawn)
+	end
+end
+
+-- But after move only keep flying if on a hole (so they can't attack from water)
+function WorldBuilders_Passive_Move:GetPassiveSkillEffect_PawnMoveEndHook(mission, pawn, p1, p2)
+	if Board:GetTerrain(p2) ~= TERRAIN_HOLE then
+		self:UnsetFlyingIfTemporarilyAdded(pawn)
+	end
+end
+
+function WorldBuilders_Passive_Move:GetPassiveSkillEffect_PawnDeselectedHook(mission, pawn, p1, p2)
+	self:UnsetFlyingIfTemporarilyAdded(pawn)
+end
+
+--[[function WorldBuilders_Passive_Move:GetPassiveSkillEffect_SkillEndHook(mission, pawn, skill, p1, p2)
+	if p1 == TERRAIN_HOLE and Board:IsPawnSpace(p1) then
+		self:SetTemporarilyFlyingIfNeeded(Board:GetPawn(p1))
+	end
+	if p2 == TERRAIN_HOLE and Board:IsPawnSpace(p2) then
+		self:SetTemporarilyFlyingIfNeeded(Board:GetPawn(p2))
+	end
+end--]]
+
+-- This is ugly but this is the only hacky way I could find to get resets
+-- and loads to work because the hooks are either before board is created
+-- or too late to keep the pawn from falling. What I do is I search for the
+-- pawn types in play and temporarily set them to Flying and then shortly
+-- after unset after pawn creation
+WorldBuilders_Passive_Move.loadHackedPawns = {}
+function WorldBuilders_Passive_Move:GetPassiveSkillEffect_PostLoadGameHook(...)
+	if self.Flying then
+		local region = modapiext.board:getCurrentRegion()
+		if region ~= nil then
+			for k,v in pairs(region.player.map_data) do
+				if type(v) == "table" and v.mech and v.type then
+					local pawnClass = _G[v.type]
+					if not pawnClass.Flying then
+						LOG("Set pawn type ".. k .." to flying")
+						self.loadHackedPawns[v.type] = true
+						pawnClass.Flying = true
+					end
+				end
+			end
 		end
 	end
 end
 
-function WorldBuilders_Passive_Move:GetPassiveSkillEffect_PostLoadGameHook(...)
-    -- go through each pawn and select it to force the flying status to be set roght
-    for idx = 1, 3 do
-        self:GetPassiveSkillEffect_PawnSelectedHook(nil, Board:GetPawn(idx))
-        end
-    end
+-- I just chose this because its frequently and reliably run but not run too often
+function WorldBuilders_Passive_Move:GetPassiveSkillEffect_SaveGameHook(...)
+	for k,_ in pairs(self.loadHackedPawns) do
+		_G[k].Flying = nil
+		for idx = 0, 2 do
+			if Board:GetPawn(idx):GetType() == k then
+				self.MadeFlying[idx] = true
+			end
+		end
+	end
+	self.loadHackedPawns = {}
 end
-
 
 function WorldBuilders_Passive_Move.addForcedMove(skillEffect, p1, p2)
 	-- Clear the existing move from the skilleffect
@@ -151,4 +213,6 @@ function WorldBuilders_Passive_Move:GetSkillEffect(p1, p2)
 end
 
 WorldBuilders_Passive_Move.passiveEffect:addPassiveEffect("WorldBuilders_Passive_Move",
-		{"targetAreaBuildHook", "skillBuildHook", "pawnSelectedHook", "postLoadGameHook"})
+		{"targetAreaBuildHook", "skillBuildHook", 
+		"pawnSelectedHook", "pawnMoveEndHook", "pawnDeselectedHook",
+		"postLoadGameHook", "saveGameHook"})
