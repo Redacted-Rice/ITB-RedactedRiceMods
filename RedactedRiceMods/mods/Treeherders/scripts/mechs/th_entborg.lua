@@ -8,9 +8,10 @@ local treeherdersColor = modApi:getPaletteImageOffset("treeherders_color")
 
 
 -- cyborg pilot stuff --
-modApi:appendAsset("img/portraits/pilots/Pilot_Treeherders_EntborgMech.png",path.."img/portraits/Pilot_Treeherders_EntborgMech.png")
+modApi:appendAsset("img/portraits/pilots/Pilot_Treeherders_EntborgMech.png", resourcePath.."img/portraits/pilots/Pilot_Treeherders_EntborgMech.png")
 CreatePilot{
 	Id = "Pilot_Treeherders_EntborgMech",
+	Name = "Ironbough",
 	Personality = "Vek",
 	Sex = SEX_VEK,
 	Rarity = 0,
