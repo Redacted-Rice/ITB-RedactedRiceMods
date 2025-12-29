@@ -89,6 +89,7 @@ end
 function Treeherders_ForestFire:AddBurrowMove(skillFx, p1, p2)
 	-- Add teleport for preview
 	skillFx:AddTeleport(p1,p2,NO_DELAY)
+	
     -- initial burrow
     skillFx:AddBounce(p1, -5)
 	skillFx:AddBurst(p1,"Emitter_Burst_$tile",DIR_NONE)
@@ -109,7 +110,6 @@ function Treeherders_ForestFire:AddBurrowMove(skillFx, p1, p2)
 	skillFx:AddBounce(p2, 5)
 	skillFx:AddBurst(p2,"Emitter_Burst_$tile",DIR_NONE)
 	skillFx:AddScript(string.format("Board:GetPawn(%s):SetInvisible(false)", Pawn:GetId()))
-	--skillFx:AddScript(string.format("Board:GetPawn(%s):SetSpace(Point(%s))", Pawn:GetId(), p2:GetString()))
 	
 	return skillFx
 end

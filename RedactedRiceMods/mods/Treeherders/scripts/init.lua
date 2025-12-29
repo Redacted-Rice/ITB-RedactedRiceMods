@@ -66,4 +66,16 @@ function mod:load(options, version)
 	--self.libs.predictableRandom:load()
 end
 
+function mod:metadata()
+	modApi:addGenerationOption(
+		"th_EntborgCyborg", "Entborg Class",
+		"Changes the class of the enborg mech, and their weapons to Cyborg.\nREQUIRES RESTART TO TAKE EFFECT!",
+		{
+			strings = { "Brute", "Cyborg"},
+			values = { 0, 1},
+			value = 1
+		}
+	)
+end
+
 return mod

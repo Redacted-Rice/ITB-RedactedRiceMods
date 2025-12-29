@@ -6,20 +6,20 @@ local mod = modApi:getCurrentMod()
 
 local treeherdersColor = modApi:getPaletteImageOffset("treeherders_color")
 
-
--- cyborg pilot stuff --
-modApi:appendAsset("img/portraits/pilots/Pilot_Treeherders_EntborgMech.png", resourcePath.."img/portraits/pilots/Pilot_Treeherders_EntborgMech.png")
-CreatePilot{
-	Id = "Pilot_Treeherders_EntborgMech",
-	Name = "Ironbough",
-	Personality = "Vek",
-	Sex = SEX_VEK,
-	Rarity = 0,
-	Skill = "Survive_Death",
-	Blacklist = {"Invulnerable", "Popular"},
-}
--- end of pilot stuff --
-
+local cyborg = mod_loader.currentModContent[mod.id].options["th_EntborgCyborg"].value
+if cyborg == 1 then
+	modApi:appendAsset("img/portraits/pilots/Pilot_Treeherders_EntborgMech.png", resourcePath.."img/portraits/pilots/Pilot_Treeherders_EntborgMech.png")
+	CreatePilot{
+		Id = "Pilot_Treeherders_EntborgMech",
+		Name = "Ironbough",
+		Personality = "Vek",
+		Sex = SEX_VEK,
+		Rarity = 0,
+		Skill = "Survive_Death",
+		Blacklist = {"Invulnerable", "Popular"},
+	}
+end
+	
 local files = {
 	"th_entborg.png",
 	"th_entborg_a.png",
@@ -43,9 +43,13 @@ a.th_entborgw_broken = a.MechUnit:new{Image = "units/player/th_entborg_w_broken.
 a.th_entborg_ns =      a.MechIcon:new{Image = "units/player/th_entborg_ns.png" }
 
 
+local class = "TechnoVek"
+if cyborg == 0 then
+	class = "Brute"
+end
 Treeherders_EntborgMech = Pawn:new{	
 	Name = "Entborg",
-	Class = "TechnoVek",
+	Class = class,
 	Health = 3,
 	MoveSpeed = 4,
 	Image = "th_entborg",
@@ -56,3 +60,7 @@ Treeherders_EntborgMech = Pawn:new{
 	ImpactMaterial = IMPACT_METAL,
 	Massive = true,
 }
+
+function Treeherders_EntborgMech:configureAsCyborg()
+
+end
