@@ -418,11 +418,48 @@ function forestUtils:getSpaceHash(spaceOrX, y)
         pY = spaceOrX.y
     end
     return pY * 10 + pX
-
 end
 
+function forestUtils:unhashSpace(hash)
+	return hash % 10, math.floor(hash / 10)
+end
 
+function forestUtils:FindBfsPath(p1, p2, tiles)
+    local queue = {p1}
+    local head = 1
+
+    local cameFrom = {}
+    cameFrom[self:getSpaceHash(p1)] = false
+
+    while queue[head] do
+		LOG("Checking "..queue[head]:GetString())
+        local cur = queue[head]
+        head = head + 1
+
+        if cur == p2 then
+            -- Convert to points list
+            local path = {}
+			local k = self:getSpaceHash(cur)
+
+            while k do
+                local x, y = self:unhashSpace(k)
+                table.insert(path, 1, Point(x, y))
+                k = cameFrom[k]
+            end
+            return path
+        end
+
+        for _, dir in pairs(DIR_VECTORS) do
+            local adj = cur + dir
+            local h = self:getSpaceHash(adj)
+            -- only walk tiles that exist in the subset
+            if tiles[h] and cameFrom[h] == nil then
+                cameFrom[h] = self:getSpaceHash(cur)
+                table.insert(queue, adj)
+            end
+        end
+    end
+    return nil
+end
 
 return forestUtils
-
-
