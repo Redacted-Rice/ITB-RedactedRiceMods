@@ -1,7 +1,7 @@
 Treeherders_Treevenge = Skill:new
 {
 	Name = "Tree-venge",
-	Class = "TechnoVek",
+	Class = "Brute",
 	Description = "Smash an adjacent tile pushing surrounding tiles and damaging them by half. Target damage increases by forest fires / 2 (rounded up) to a max of 5. Does not start fires.",
 	Icon = "weapons/prime_th_treevenge.png",
 	Rarity = 2,
@@ -38,6 +38,12 @@ Treeherders_Treevenge = Skill:new
 		Fire2 = Point(3,0),
 	},
 }
+
+local mod = modApi:getCurrentMod()
+local cyborg = mod_loader.currentModContent[mod.id].options["th_EntborgCyborg"].value
+if cyborg == 1 then
+	Treeherders_Treevenge.Class = "TechnoVek"
+end
 
 Weapon_Texts.Treeherders_Treevenge_Upgrade1 = "Building Immune"
 Treeherders_Treevenge_A = Treeherders_Treevenge:new
