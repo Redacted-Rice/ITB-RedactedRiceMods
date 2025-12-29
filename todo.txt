@@ -5,16 +5,11 @@ None
 ------------------------------------------------------------------------------
 
 Tree Herders:
-Final run through
-Gameplay:
-	*Does Violent Growth auto select avoid the train? (it should)
 
 Next release candidates:
-1. Mechs (entborg specifically?) can never catch forest on fire? Might be too much a nerf on tree-venge
-2. Make entborg a cyborg?
-3. Forest fire burrow effect?
-4. Treevac doesn't distinguish between damage in the attack that causes the push vs follow on attacks when checking for spaces to push to
-5. Violent growth attack cancelled when attacking allies
+1. Forest fire burrow effect?
+2. Treevac doesn't distinguish between damage in the attack that causes the push vs follow on attacks when checking for spaces to push to
+3. Violent growth attack cancelled when attacking allies
 
 Known issues:
 Forest Firer bounce happens after push. Doesn't seem to be a way around this

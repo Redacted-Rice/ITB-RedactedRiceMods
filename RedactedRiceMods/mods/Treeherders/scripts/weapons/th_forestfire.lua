@@ -86,10 +86,38 @@ function Treeherders_ForestFire:GetTargetArea(point)
 	return ret
 end
 
+function Treeherders_ForestFire:AddBurrowMove(skillFx, p1, p2)
+	-- Add teleport for preview
+	skillFx:AddTeleport(p1,p2,NO_DELAY)
+    -- initial burrow
+    skillFx:AddBounce(p1, -5)
+	skillFx:AddBurst(p1,"Emitter_Burst_$tile",DIR_NONE)
+	skillFx:AddScript(string.format("Board:GetPawn(%s):SetInvisible(true)", Pawn:GetId()))
+	
+	-- todo get path through forest
+	local forestTiles = forestUtils:getGroupingOfSpaces(p1, forestUtils.isAForest)
+	LOG("Checking path from ".. p1:GetString() .. " to ".. p2:GetString())
+	local path = forestUtils:FindBfsPath(p1, p2, forestTiles.group)
+	local wait = 0.1
+	for _, p in pairs(path) do
+		skillFx:AddDelay(wait)
+		skillFx:AddBounce(p,-3)
+		skillFx:AddBurst(p,"Emitter_Burst_$tile",DIR_NONE)
+	end
+	
+	-- Emerge
+	skillFx:AddBounce(p2, 5)
+	skillFx:AddBurst(p2,"Emitter_Burst_$tile",DIR_NONE)
+	skillFx:AddScript(string.format("Board:GetPawn(%s):SetInvisible(false)", Pawn:GetId()))
+	--skillFx:AddScript(string.format("Board:GetPawn(%s):SetSpace(Point(%s))", Pawn:GetId(), p2:GetString()))
+	
+	return skillFx
+end
+
 function Treeherders_ForestFire:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
 	if p1 ~= p2 then
-		ret:AddTeleport(p1,p2,FULL_DELAY)
+		ret = self:AddBurrowMove(ret, p1,p2)
 	else
 		ret:AddDamage(SpaceDamage(p1,0))
 	end
