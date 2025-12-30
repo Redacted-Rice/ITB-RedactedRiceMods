@@ -6,6 +6,8 @@ None
 
 Tree Herders:
 Make single use skill for balancing the curve
+make blink and 2 images for entborg
+refresh achievement image
 
 Next release candidates:
 1. Treevac doesn't distinguish between damage in the attack that causes the push vs follow on attacks when checking for spaces to push to
