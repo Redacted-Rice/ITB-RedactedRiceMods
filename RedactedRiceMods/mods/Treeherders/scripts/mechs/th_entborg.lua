@@ -9,6 +9,8 @@ local treeherdersColor = modApi:getPaletteImageOffset("treeherders_color")
 local cyborg = mod_loader.currentModContent[mod.id].options["th_EntborgCyborg"].value
 if cyborg == 1 then
 	modApi:appendAsset("img/portraits/pilots/Pilot_Treeherders_EntborgMech.png", resourcePath.."img/portraits/pilots/Pilot_Treeherders_EntborgMech.png")
+	modApi:appendAsset("img/portraits/pilots/Pilot_Treeherders_EntborgMech_2.png", resourcePath.."img/portraits/pilots/Pilot_Treeherders_EntborgMech_2.png")
+	modApi:appendAsset("img/portraits/pilots/Pilot_Treeherders_EntborgMech_blink.png", resourcePath.."img/portraits/pilots/Pilot_Treeherders_EntborgMech_blink.png")
 	CreatePilot{
 		Id = "Pilot_Treeherders_EntborgMech",
 		Name = "Ironbough",
