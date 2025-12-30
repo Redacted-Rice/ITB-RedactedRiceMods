@@ -185,6 +185,8 @@ function WorldBuilders_Consume:Consume_Terrain(skillEffect, projectileDamage, ta
 	if consumedTerrain ~= TERRAIN_HOLE then
 		self:AddConsumeDamage(skillEffect, consumeSpace, 0)
 	end
+	
+	local projImg = "effects/shot_pull"
 
 	-- hole is the default effect
 
@@ -194,6 +196,9 @@ function WorldBuilders_Consume:Consume_Terrain(skillEffect, projectileDamage, ta
 		local side1Damage = SpaceDamage(target + DIR_VECTORS[(dir + 1) % 4], 0, dir)
 		local side2Damage = SpaceDamage(target + DIR_VECTORS[(dir - 1) % 4], 0, dir)
 
+		-- water
+		projImg = "effects/shot_firefly"
+			
 		-- water is the default effect
 		-- For some reason get terrain seems to always return water. We have the isXXXX check to handle this but
 		-- left the terrain check in case something fixes this in the future
@@ -201,46 +206,55 @@ function WorldBuilders_Consume:Consume_Terrain(skillEffect, projectileDamage, ta
 			projectileDamage.iDamage = 1
 			side1Damage.iDamage = 1
 			side2Damage.iDamage = 1
+			projImg = "effects/shot_tankice"
 
 		elseif consumedTerrain == TERRAIN_ACID or Board:IsAcid(consumeSpace) then
 			projectileDamage.iAcid = EFFECT_CREATE
 			side1Damage.iAcid = EFFECT_CREATE
 			side2Damage.iAcid = EFFECT_CREATE
+			projImg = "effects/shot_firefly2"
 
 		elseif consumedTerrain == TERRAIN_LAVA or Board:IsFire(consumeSpace) or Board:IsTerrain(consumeSpace, TERRAIN_LAVA) then
 			projectileDamage.iFire = EFFECT_CREATE
 			side1Damage.iFire = EFFECT_CREATE
 			side2Damage.iFire = EFFECT_CREATE
+			projImg = "effects/shot_fireflyB"
 		end
 
-		return {side1Damage, side2Damage}
+		return projImg, {side1Damage, side2Damage}
 
 	-- "land" effects - also apply fire, acid, smoke
 	else
 		if consumedTerrain == TERRAIN_ROAD or consumedTerrain == TERRAIN_RUBBLE then
 			projectileDamage.iDamage = 1
+			projImg = "effects/shot_mechrock"
 
 		elseif consumedTerrain == TERRAIN_SAND then
 			projectileDamage.iDamage = 1
 			local smokeDamage = SpaceDamage(consumeSpace, 0)
 			smokeDamage.iSmoke = EFFECT_CREATE
 			skillEffect:AddDamage(smokeDamage)
+			projImg = "effects/shot_mechrock"
 
 		elseif consumedTerrain == TERRAIN_MOUNTAIN then
 			projectileDamage.iDamage = 3
+			projImg = "effects/shot_mechrock"
 
 		elseif consumedTerrain == TERRAIN_FOREST then
 			projectileDamage.iDamage = 2
+			projImg = "effects/shot_mechrock"
 		end
 
 		-- Fire
 		if Board:IsFire(consumeSpace) or consumedTerrain == TERRAIN_FIRE then
 			projectileDamage.iFire = EFFECT_CREATE
+			projImg = "effects/shot_fireflyB"
 		end
 
 		-- acid
 		if Board:IsAcid(consumeSpace) then
 			projectileDamage.iAcid = EFFECT_CREATE
+			projImg = "effects/shot_firefly2"
 		end
 
 		-- smoke
@@ -252,11 +266,13 @@ function WorldBuilders_Consume:Consume_Terrain(skillEffect, projectileDamage, ta
 		if Board:IsForestFire(consumeSpace) then
 			projectileDamage.iDamage = 2
 			projectileDamage.iFire = EFFECT_CREATE
+			projImg = "effects/shot_fireflyB"
 		end
 
 		if consumablePawn ~= nil then
 			projectileDamage.iDamage = projectileDamage.iDamage + 1
 		end
+		return projImg
 	end
 end
 
@@ -274,6 +290,7 @@ function WorldBuilders_Consume:GetSkillEffect(p1, p2)
 	local projectileDamage = SpaceDamage(p2, 0, dir)
 
 	-- if its a pawn, do special things
+	local wasSpecialAnim = false
 	local extraDamage = nil
 	local pawnMaybe = Board:GetPawn(consumeSpace)
 	if Board:IsValid(consumeSpace) then
@@ -285,8 +302,9 @@ function WorldBuilders_Consume:GetSkillEffect(p1, p2)
 			-- remove the push
 			projectileDamage.iPush = DIR_NONE
 			self:Consume_Building(ret, p1, p2, consumeSpace, dir)
+			wasSpecialAnim = true
 		else -- terrain
-			extraDamage = self:Consume_Terrain(ret, projectileDamage, p2, consumeSpace, dir, pawnMaybe)
+			img, extraDamage = self:Consume_Terrain(ret, projectileDamage, p2, consumeSpace, dir, pawnMaybe)
 		end
 	end
 	-- if its not valid, it will be like a void space
@@ -314,7 +332,11 @@ function WorldBuilders_Consume:GetSkillEffect(p1, p2)
 	end
 
 	ret:AddBounce(p2, self.ProjectileHitBounce)
-	ret:AddDamage(projectileDamage)
+	if wasSpecialAnim then
+		ret:AddDamage(projectileDamage)
+	else 
+		ret:AddProjectile(projectileDamage, img)
+	end
 
 	if extraDamage ~= nil then
 		for _, damage in ipairs(extraDamage) do
