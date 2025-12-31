@@ -281,8 +281,7 @@ function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_PreEnvironmentH
 end
 
 function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_MissionStartHook(mission)
-	--Fire 2x on mission start too just to have a bit more forest consistently
-	self:FloraformSpaces()
+	--Fire on mission start as well
 	self:FloraformSpaces()
 end
 
