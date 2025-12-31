@@ -7,8 +7,7 @@ WorldBuilders_Shift = Skill:new{
 	
 	Damage = 1,
 	PowerCost = 1,
-	LaunchSound = "/weapons/artillery_volley",
-	ImpactSound = "/impact/generic/explosion",
+	LaunchSound = "/weapons/swap",
 	Explosion = "",
 	Upgrades = 2,
 	UpgradeCost = { 1, 2 },

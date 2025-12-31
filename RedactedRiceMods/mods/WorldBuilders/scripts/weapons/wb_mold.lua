@@ -4,9 +4,7 @@ WorldBuilders_Mold = Skill:new{
 	Class = "Prime",
 	Icon = "weapons/prime_wb_mold.png",
 	Rarity = 1,
-
-	Explosion = "",
-	LaunchSound = "/weapons/titan_fist",
+	LaunchSound = "/weapons/shift",
 
 	Range = 1,
 	ThrowRange = 1,
