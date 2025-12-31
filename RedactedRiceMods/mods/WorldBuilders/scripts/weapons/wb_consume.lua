@@ -6,7 +6,8 @@ WorldBuilders_Consume = Skill:new
 	Icon = "weapons/brute_wb_consume.png",
 	Rarity = 1,
 
-	Explosion = "",
+	LaunchSound = "/weapons/unstable_cannon",
+	ImpactSound = "/impact/rock",
 
 	Range = 2,
     Damage = 1,
@@ -187,6 +188,7 @@ function WorldBuilders_Consume:Consume_Terrain(skillEffect, projectileDamage, ta
 	end
 	
 	local projImg = "effects/shot_pull"
+	ImpactSound = "/impact/rock"
 
 	-- hole is the default effect
 
@@ -198,6 +200,7 @@ function WorldBuilders_Consume:Consume_Terrain(skillEffect, projectileDamage, ta
 
 		-- water
 		projImg = "effects/shot_firefly"
+		ImpactSound = "/impact/water"
 			
 		-- water is the default effect
 		-- For some reason get terrain seems to always return water. We have the isXXXX check to handle this but
@@ -207,6 +210,7 @@ function WorldBuilders_Consume:Consume_Terrain(skillEffect, projectileDamage, ta
 			side1Damage.iDamage = 1
 			side2Damage.iDamage = 1
 			projImg = "effects/shot_tankice"
+			ImpactSound = "/impact/generic/ice"
 
 		elseif consumedTerrain == TERRAIN_ACID or Board:IsAcid(consumeSpace) then
 			projectileDamage.iAcid = EFFECT_CREATE
