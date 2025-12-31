@@ -18,7 +18,7 @@ Treeherders_Overgrowth = Skill:new
 	
 	--custom
 	ForestPawns = false,
-		MovingVek = {}
+	Overgrowth = "overgrowth.png",
 	
     TipImage = {
 		Unit = Point(2,3),
@@ -57,13 +57,11 @@ Treeherders_Overgrowth_AB = Treeherders_Overgrowth_A:new
 function Treeherders_Overgrowth:GetTargetArea(point)
 	local ret = PointList()
 
-	-- Can target anywhere as long as its formable
+	-- Can target anywhere
+	-- TODO: Exclude some tiles (custom and water and holes)
 	for x = 0, 7 do
 		for y = 0,7 do
-			local point = Point(x, y)
-			if forestUtils.isSpaceFloraformable(point) then
-				ret:push_back(point)
-			end
+			ret:push_back(Point(x, y))
 		end
 	end
 	
@@ -71,15 +69,17 @@ function Treeherders_Overgrowth:GetTargetArea(point)
 end
 
 function Treeherders_Overgrowth:AddEffectForTarget(effect, point)
-		forestUtils.createAncientForestSpaceDamage(point, self.Damage, effect)
-		effect:AddDelay(0.1)
+	local damage = SpaceDamage(point, self.Damage, DIR_FLIP)
+	damage.iTerrain = TERRAIN_FOREST
+	damage.sScript = [[ Board:SetCustomTile(]] .. point:GetString() .. [[, "]].. self.Overgrowth .. [[")]]
+	
+	effect:AddDamage(damage)
+	effect:AddBounce(point, 6)
+	effect:AddBoardShake(0.5)
+	effect:AddDelay(0.1)
 	
 	for i = 0, 3 do
-		local adj = point + DIR_VECTORS[i]
-		-- avoid making the target spaces forests also
-		if adj ~= p2 and adj ~= p3 and forestUtils.isSpaceFloraformable(adj) then
-			forestUtils:floraformSpace(effect, adj, DAMAGE_ZERO)
-		end
+		forestUtils:floraformSpace(effect, point + DIR_VECTORS[i], DAMAGE_ZERO)
 	end
 end
 
@@ -103,47 +103,23 @@ end
 
 
 function Treeherders_Overgrowth:GetPassiveSkillEffect_NextTurnHook(mission)
-	LOG("next turn "..Game:GetTeamTurn())
 	if Game:GetTeamTurn() == TEAM_PLAYER then
-		-- find overgrowth and flip/damage
-		local points = forestUtils.findAncientForests()
-			for _, point in pairs(points) do
-					if Board:IsPawnSpace(point) and not Board:GetPawn(point):IsPlayer() then
-					  local effect = SkillEffect()
-	  				effect:AddDamage(SpaceDamage(point, self.Damage, DIR_FLIP))
-					  effect:AddBounce(point, 3)
-					  effect:AddBoardShake(0.5)
-	  				effect:AddDelay(0.1)
-							 Board:AddEffect(effect)
-					end
+		-- find overgrowth and flip
+		for x = 0, 7 do
+			for y = 0,7 do
+				if Board:GetCustomTile(Point(x, y)) == self.Overgrowth then
+					local effect = SkillEffect()
+					effect:AddDamage(SpaceDamage(point, self.Damage, DIR_FLIP))
+					effect:AddBounce(point, 3)
+					effect:AddBoardShake(0.5)
+					effect:AddDelay(0.1)
+					Board:AddEffect(effect)
 				end
-			-- clear any moving vek to prevent pushing them not
-			-- to work as expected
-			self.MovingVek = {}
-end
-		
-function Treeherders_Overgrowth:GetPassiveSkillEffect_VekMoveStartHook(mission, pawn)
-		-- vek move end is fired before the vek actually moves so
-		-- just handle clearing here first by setting to a new table
-		self.MovingVek = { Pawn = pawn }
-	LOG("moving vek id "..pawn:GetId().." type ".. pawn:GetType() .. " at "..pawn:GetSpace():GetString())
-end
-		
-function Treeherders_Overgrowth:GetPassiveSkillEffect_PawnPositionChangedHook(mission, pawn, oldPos)
-	LOG("PAWN MOVING "..pawn:GetId().." type ".. pawn:GetType() .. " from "..oldPos:GetString()) 
-	if self.MovingVek.Pawn and self.MovingVek.Pawn:GetId() == pawn:GetId() then
-		LOG("SELECTED PAWN MOVING")
-			local newPos = pawn:GetSpace()
-		if self.MovingVek.TrappedSpace and newPos ~= self.MovingVek.TrappedSpace then
-			pawn:SetSpace(self.MovingVek.TrappedSpace)
-			LOG("reset vek space")
-		elseif forestUtils.isAnAncientForest(newPos) then
-				LOG("TRAPPED!")
-				self.MovingVek.TrappedSpace = newPos
+			end
 		end
 	end
 end
 
 Treeherders_Overgrowth.passiveEffect:addPassiveEffect("Treeherders_Overgrowth",
-		{"nextTurnHook", "vekMoveStartHook", "pawnPositionChangedHook"},
+		{"nextTurnHook"},
 		true) -- not passive only

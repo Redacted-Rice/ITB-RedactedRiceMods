@@ -44,6 +44,9 @@ function mod:init()
 
 	require(self.scriptPath .. "weapons/th_waketheforest")
 	modApi:addWeaponDrop("Treeherders_Passive_WakeTheForest")
+	
+	require(self.scriptPath .. "weapons/th_overgrowth")
+	modApi:addWeaponDrop("Treeherders_Overgrowth")
 end
 
 function mod:load(options, version)
