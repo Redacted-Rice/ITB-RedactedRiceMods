@@ -44,11 +44,11 @@ a.th_entborg_broken =  a.MechUnit:new{Image = "units/player/th_entborg_broken.pn
 a.th_entborgw_broken = a.MechUnit:new{Image = "units/player/th_entborg_w_broken.png", PosX = -17, PosY =  1 }
 a.th_entborg_ns =      a.MechIcon:new{Image = "units/player/th_entborg_ns.png" }
 
-
 local class = "TechnoVek"
 if cyborg == 0 then
 	class = "Prime"
 end
+
 Treeherders_EntborgMech = Pawn:new{	
 	Name = "Entborg",
 	Class = class,
@@ -56,13 +56,9 @@ Treeherders_EntborgMech = Pawn:new{
 	MoveSpeed = 4,
 	Image = "th_entborg",
 	ImageOffset = treeherdersColor,
-	SkillList = { "Treeherders_Treevenge" },
+	SkillList = { "Treeherders_Treevenge", "Treeherders_Overgrowth" },
 	SoundLocation = "/mech/prime/punch_mech/",
 	DefaultTeam = TEAM_PLAYER,
 	ImpactMaterial = IMPACT_METAL,
 	Massive = true,
 }
-
-function Treeherders_EntborgMech:configureAsCyborg()
-
-end
