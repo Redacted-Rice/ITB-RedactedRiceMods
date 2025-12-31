@@ -47,7 +47,7 @@ a.th_entborg_ns =      a.MechIcon:new{Image = "units/player/th_entborg_ns.png" }
 
 local class = "TechnoVek"
 if cyborg == 0 then
-	class = "Brute"
+	class = "Prime"
 end
 Treeherders_EntborgMech = Pawn:new{	
 	Name = "Entborg",
