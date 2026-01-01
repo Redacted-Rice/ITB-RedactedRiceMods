@@ -8,6 +8,7 @@ local mod = {
 	dependencies = {
         modApiExt = "1.21",
         memedit = "1.2.0",
+        easyEdit = "2.0.8",
     },
 	libs = {},
 }
@@ -47,6 +48,8 @@ function mod:init()
 	
 	require(self.scriptPath .. "weapons/th_overgrowth")
 	modApi:addWeaponDrop("Treeherders_Overgrowth")
+	
+	Treeherders_Overgrowth:init()
 end
 
 function mod:load(options, version)

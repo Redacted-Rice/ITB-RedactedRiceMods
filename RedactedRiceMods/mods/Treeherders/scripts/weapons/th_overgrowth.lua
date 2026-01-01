@@ -35,6 +35,17 @@ end
 
 Treeherders_Overgrowth.passiveEffect = mod_loader.mods[modApi.currentMod].libs.passiveEffect
 
+function Treeherders_Overgrowth:init() 
+	local tileset = easyEdit.tileset:get("grass")
+	tileset:appendAssets("img/combat/tile_icon")
+	tileset:addTile("overgrowth", Point(-28,-3))
+	easyEdit.tileset:get("grass"):setTileTooltip{
+		tile = "overgrowth",
+		title = "Ancient Forest",
+		text = "Damages vek and confuses them causing them to attack opposite direction"
+	}
+end
+
 Weapon_Texts.Treeherders_Overgrowth_Upgrade1 = "+ Target"
 Treeherders_Overgrowth_A = Treeherders_Overgrowth:new
 {
@@ -57,11 +68,13 @@ Treeherders_Overgrowth_AB = Treeherders_Overgrowth_A:new
 function Treeherders_Overgrowth:GetTargetArea(point)
 	local ret = PointList()
 
-	-- Can target anywhere
-	-- TODO: Exclude some tiles (custom and water and holes)
+	-- Can target anywhere as long as its formable
 	for x = 0, 7 do
 		for y = 0,7 do
-			ret:push_back(Point(x, y))
+			local point = Point(x, y)
+			if forestUtils.isSpaceFloraformable(point) then
+				ret:push_back(point)
+			end
 		end
 	end
 	
@@ -70,7 +83,7 @@ end
 
 function Treeherders_Overgrowth:AddEffectForTarget(effect, point)
 	local damage = SpaceDamage(point, self.Damage, DIR_FLIP)
-	damage.iTerrain = TERRAIN_FOREST
+	damage.iTerrain = TERRAIN_ROAD
 	damage.sScript = [[ Board:SetCustomTile(]] .. point:GetString() .. [[, "]].. self.Overgrowth .. [[")]]
 	
 	effect:AddDamage(damage)
@@ -79,7 +92,11 @@ function Treeherders_Overgrowth:AddEffectForTarget(effect, point)
 	effect:AddDelay(0.1)
 	
 	for i = 0, 3 do
-		forestUtils:floraformSpace(effect, point + DIR_VECTORS[i], DAMAGE_ZERO)
+		local adj = point + DIR_VECTORS[i]
+		-- avoid making the target spaces forests also
+		if adj ~= p2 and adj ~= p3 and forestUtils.isSpaceFloraformable(adj) then
+			forestUtils:floraformSpace(effect, adj, DAMAGE_ZERO)
+		end
 	end
 end
 
@@ -107,7 +124,8 @@ function Treeherders_Overgrowth:GetPassiveSkillEffect_NextTurnHook(mission)
 		-- find overgrowth and flip
 		for x = 0, 7 do
 			for y = 0,7 do
-				if Board:GetCustomTile(Point(x, y)) == self.Overgrowth then
+				local point = Point(x, y)
+				if Board:GetCustomTile(point) == self.Overgrowth and Board:IsPawnSpace(point) and not Board:GetPawn(point):IsPlayer() then
 					local effect = SkillEffect()
 					effect:AddDamage(SpaceDamage(point, self.Damage, DIR_FLIP))
 					effect:AddBounce(point, 3)
