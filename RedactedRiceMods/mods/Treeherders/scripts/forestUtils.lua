@@ -55,7 +55,8 @@ end
 function forestUtils.terrainFloraformableMatcher(p)
 	local terrain = Board:GetTerrain(p)
 	return (terrain == TERRAIN_FOREST or terrain == TERRAIN_ROAD or terrain == TERRAIN_RUBBLE or terrain == TERRAIN_SAND) and
-			not(Board:IsAcid(p)) and not(Board:IsFire(p))
+			-- acid can't be easily converted. I guess I could first remove acid but this is easier and makes sense
+			not(Board:IsAcid(p)) and Board:GetCustomTile(p) ~= "overgrowth.png"
 end
 
 function forestUtils.isSpaceFloraformable(space)
