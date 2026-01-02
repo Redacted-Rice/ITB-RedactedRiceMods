@@ -25,6 +25,11 @@ Forest Firer teleport and launch SFX just sometimes don't play. Not sure why thi
 
 World Builders:
 Final playthrough/testing
+	Move hover preview is not right
+	Remove pathing over holes without flying?
+	unpushable/killable pawns + permanance doesn't work right - should allow self target and should also not prevent rocks from spawning
+	Pawn + spawning (+ self bump?) odd interaction?
+	teleporting iced building (2nd move with silica) didn't break source ice
 
 Next release candidates:
 Visual "bug" showing push damage when swap pushed with adjacent mountain or building. Not sure there is a way around this (bHide?)
