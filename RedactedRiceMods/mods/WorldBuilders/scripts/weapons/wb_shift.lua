@@ -320,6 +320,11 @@ function WorldBuilders_Shift:ApplyTerrain(spaceDamage, spaceDamagePreform, space
 
 	-- And set frozen after
 	if spaceData.frozen then
+					-- if the space was already frozen, unfreeze it to break any ice
+ 	if oldSpaceData.frozen then
+		  spaceDamage.sScript = spaceDamage.sScript .. [[
+ 				Board:SetFrozen(]] .. spaceDamage.loc:GetString() .. [[,false,no_animation)]]
+	 end
 		spaceDamage.sScript = spaceDamage.sScript .. [[
 				Board:SetFrozen(]] .. spaceDamage.loc:GetString() .. [[,true,no_animation)]]
 	end

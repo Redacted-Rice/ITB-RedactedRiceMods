@@ -168,7 +168,7 @@ function WorldBuilders_Mold:GetFinalEffect(p1,p2,p3)
 			local adjSpace = p2 + DIR_VECTORS[dir]
 			local adjDamage = SpaceDamage(adjSpace, 0)
 			local terrain = Board:GetTerrain(adjSpace)
-			if (not isPawnTargetted or p3 ~= adjSpace) and terrain ~= TERRAIN_BUILDING and terrain ~= TERRAIN_MOUNTAIN and Board:GetPawn(adjSpace) == nil then
+			if (pawnWillDie or isUnpushablePawn or not isPawnTargetted or p3 ~= adjSpace) and terrain ~= TERRAIN_BUILDING and terrain ~= TERRAIN_MOUNTAIN and Board:GetPawn(adjSpace) == nil then
 				self:AddRock(adjDamage, adjSpace)
 				ret:AddBounce(adjSpace, -3)
 			end
