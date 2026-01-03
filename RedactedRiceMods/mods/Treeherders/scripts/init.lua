@@ -27,6 +27,7 @@ function mod:init()
 	require(self.scriptPath .. "achievements")
 
 	require(self.scriptPath.. "forestUtils")
+ forestUtils:init()
 
 	-- Pawns
 	require(self.scriptPath .. "mechs/th_entborg")
@@ -48,8 +49,6 @@ function mod:init()
 	
 	require(self.scriptPath .. "weapons/th_overgrowth")
 	modApi:addWeaponDrop("Treeherders_Overgrowth")
-	
-	Treeherders_Overgrowth:init()
 end
 
 function mod:load(options, version)

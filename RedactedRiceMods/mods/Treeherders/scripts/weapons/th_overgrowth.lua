@@ -18,7 +18,7 @@ Treeherders_Overgrowth = Skill:new
 	
 	--custom
 	ForestPawns = false,
-	Overgrowth = "overgrowth.png",
+		MovingVek = {}
 	
     TipImage = {
 		Unit = Point(2,3),
@@ -34,17 +34,6 @@ if cyborg == 1 then
 end
 
 Treeherders_Overgrowth.passiveEffect = mod_loader.mods[modApi.currentMod].libs.passiveEffect
-
-function Treeherders_Overgrowth:init() 
-	local tileset = easyEdit.tileset:get("grass")
-	tileset:appendAssets("img/combat/tile_icon")
-	tileset:addTile("overgrowth", Point(-28,-3))
-	easyEdit.tileset:get("grass"):setTileTooltip{
-		tile = "overgrowth",
-		title = "Ancient Forest",
-		text = "Damages vek and confuses them causing them to attack opposite direction"
-	}
-end
 
 Weapon_Texts.Treeherders_Overgrowth_Upgrade1 = "+ Target"
 Treeherders_Overgrowth_A = Treeherders_Overgrowth:new
@@ -82,14 +71,8 @@ function Treeherders_Overgrowth:GetTargetArea(point)
 end
 
 function Treeherders_Overgrowth:AddEffectForTarget(effect, point)
-	local damage = SpaceDamage(point, self.Damage, DIR_FLIP)
-	damage.iTerrain = TERRAIN_ROAD
-	damage.sScript = [[ Board:SetCustomTile(]] .. point:GetString() .. [[, "]].. self.Overgrowth .. [[")]]
-	
-	effect:AddDamage(damage)
-	effect:AddBounce(point, 6)
-	effect:AddBoardShake(0.5)
-	effect:AddDelay(0.1)
+		forestUtils.createAncientForestSpaceDamage(point, self.Damage, effect)
+		effect:AddDelay(0.1)
 	
 	for i = 0, 3 do
 		local adj = point + DIR_VECTORS[i]
@@ -122,48 +105,45 @@ end
 function Treeherders_Overgrowth:GetPassiveSkillEffect_NextTurnHook(mission)
 	LOG("next turn "..Game:GetTeamTurn())
 	if Game:GetTeamTurn() == TEAM_PLAYER then
-		-- find overgrowth and flip
-		for x = 0, 7 do
-			for y = 0,7 do
-				local point = Point(x, y)
-				if Board:GetCustomTile(point) == self.Overgrowth and Board:IsPawnSpace(point) and not Board:GetPawn(point):IsPlayer() then
-					local effect = SkillEffect()
-					effect:AddDamage(SpaceDamage(point, self.Damage, DIR_FLIP))
-					effect:AddBounce(point, 3)
-					effect:AddBoardShake(0.5)
-					effect:AddDelay(0.1)
-					Board:AddEffect(effect)
+		-- find overgrowth and flip/damage
+		local points = forestUtils.findAncientForests()
+			for _, point in pairs(points) do
+					if Board:IsPawnSpace(point) and not Board:GetPawn(point):IsPlayer() then
+					  local effect = SkillEffect()
+	  				effect:AddDamage(SpaceDamage(point, self.Damage, DIR_FLIP))
+					  effect:AddBounce(point, 3)
+					  effect:AddBoardShake(0.5)
+	  				effect:AddDelay(0.1)
+							 Board:AddEffect(effect)
+					end
 				end
-			end
-		end
-	end
+			-- clear any moving vek to prevent pushing them not
+			-- to work as expected
+			self.MovingVek = {}
 end
-
-Treeherders_Overgrowth.movingVek = {}
+		
 function Treeherders_Overgrowth:GetPassiveSkillEffect_VekMoveStartHook(mission, pawn)
-	self.movingVek.pawn = pawn
-	self.movingVek.startSpace = pawn:GetSpace()
-	LOG("moving vek id "..pawn:GetId().." type ".. pawn:GetType() .. " at "..self.movingVek.startSpace:GetString())
+		-- vek move end is fired before the vek actually moves so
+		-- just handle clearing here first by setting to a new table
+		self.MovingVek = { Pawn = pawn }
+	LOG("moving vek id "..pawn:GetId().." type ".. pawn:GetType() .. " at "..pawn:GetSpace():GetString())
 end
-
-function Treeherders_Overgrowth:GetPassiveSkillEffect_VekMoveEndHook(mission, pawn)
-	LOG("End moving vek")
-	-- TODO: Clear on turn end instead
-	--self.movingVek = {}
-end
-
--- todo: still not working great
+		
 function Treeherders_Overgrowth:GetPassiveSkillEffect_PawnPositionChangedHook(mission, pawn, oldPos)
 	LOG("PAWN MOVING "..pawn:GetId().." type ".. pawn:GetType() .. " from "..oldPos:GetString()) 
-	if self.movingVek.pawn and self.movingVek.pawn:GetId() == pawn:GetId() then
+	if self.MovingVek.Pawn and self.MovingVek.Pawn:GetId() == pawn:GetId() then
 		LOG("SELECTED PAWN MOVING")
-		if oldPos ~= self.movingVek.startSpace and Board:GetCustomTile(oldPos) == self.Overgrowth then
-			pawn:SetSpace(oldPos)
+			local newPos = pawn:GetSpace()
+		if self.MovingVek.TrappedSpace and newPos ~= self.MovingVek.TrappedSpace then
+			pawn:SetSpace(self.MovingVek.TrappedSpace)
 			LOG("reset vek space")
+		elseif forestUtils.isAnAncientForest(newPos) then
+				LOG("TRAPPED!")
+				self.MovingVek.TrappedSpace = newPos
 		end
 	end
 end
 
 Treeherders_Overgrowth.passiveEffect:addPassiveEffect("Treeherders_Overgrowth",
-		{"nextTurnHook", "vekMoveStartHook", "vekMoveEndHook", "pawnPositionChangedHook"},
+		{"nextTurnHook", "vekMoveStartHook", "pawnPositionChangedHook"},
 		true) -- not passive only
