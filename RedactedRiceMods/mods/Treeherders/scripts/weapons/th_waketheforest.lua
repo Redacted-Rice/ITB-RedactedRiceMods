@@ -1,7 +1,7 @@
 Treeherders_Passive_WakeTheForest = PassiveSkill:new
 {
 	Name = "Wake the Forest",
-	Description = "Mechs on forest tiles take one less damage. Randomly expands forests two tiles at the start of each mission and each turn",
+	Description = "Mechs on forest tiles take one less damage and on Ancient Forests take no (non-lethal) damage. Randomly expands forests two tiles at mission start and each turn",
 	Icon = "weapons/passives/passive_th_forestArmor.png",
 	Rarity = 2,
 
@@ -155,7 +155,9 @@ Treeherders_Passive_WakeTheForest.storedForestArmorIcon = {}
 function Treeherders_Passive_WakeTheForest:SetForestArmorIcon(id, point)
 	self:UnsetPrevForestArmorIcon(id)
 
-	if self.Evacuate then
+	if forestUtils.isAnAncientForest(point) then
+		 Board:SetTerrainIcon(point, "forestArmor_ancient")
+	elseif self.Evacuate then
 		Board:SetTerrainIcon(point, "forestArmor_treevac")
 	else
 		Board:SetTerrainIcon(point, "forestArmor")
@@ -197,7 +199,8 @@ end
 function Treeherders_Passive_WakeTheForest:ApplyForestArmorToSpaceDamage(spaceDamage)
 	if self.ForestArmor then
 		if spaceDamage.iDamage ~= DAMAGE_ZERO and spaceDamage.iDamage ~= DAMAGE_DEATH then
-			if spaceDamage.iDamage ~= 1 then
+			-- prevent all (non-lethal) damage on ancient forest
+			if spaceDamage.iDamage ~= 1 and not forestUtils.isAnAncientForest(spaceDamage.loc) then
 				spaceDamage.iDamage = spaceDamage.iDamage - 1
 			else
 				spaceDamage.iDamage = DAMAGE_ZERO
