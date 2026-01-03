@@ -120,6 +120,7 @@ end
 
 
 function Treeherders_Overgrowth:GetPassiveSkillEffect_NextTurnHook(mission)
+	LOG("next turn "..Game:GetTeamTurn())
 	if Game:GetTeamTurn() == TEAM_PLAYER then
 		-- find overgrowth and flip
 		for x = 0, 7 do
@@ -138,6 +139,31 @@ function Treeherders_Overgrowth:GetPassiveSkillEffect_NextTurnHook(mission)
 	end
 end
 
+Treeherders_Overgrowth.movingVek = {}
+function Treeherders_Overgrowth:GetPassiveSkillEffect_VekMoveStartHook(mission, pawn)
+	self.movingVek.pawn = pawn
+	self.movingVek.startSpace = pawn:GetSpace()
+	LOG("moving vek id "..pawn:GetId().." type ".. pawn:GetType() .. " at "..self.movingVek.startSpace:GetString())
+end
+
+function Treeherders_Overgrowth:GetPassiveSkillEffect_VekMoveEndHook(mission, pawn)
+	LOG("End moving vek")
+	-- TODO: Clear on turn end instead
+	--self.movingVek = {}
+end
+
+-- todo: still not working great
+function Treeherders_Overgrowth:GetPassiveSkillEffect_PawnPositionChangedHook(mission, pawn, oldPos)
+	LOG("PAWN MOVING "..pawn:GetId().." type ".. pawn:GetType() .. " from "..oldPos:GetString()) 
+	if self.movingVek.pawn and self.movingVek.pawn:GetId() == pawn:GetId() then
+		LOG("SELECTED PAWN MOVING")
+		if oldPos ~= self.movingVek.startSpace and Board:GetCustomTile(oldPos) == self.Overgrowth then
+			pawn:SetSpace(oldPos)
+			LOG("reset vek space")
+		end
+	end
+end
+
 Treeherders_Overgrowth.passiveEffect:addPassiveEffect("Treeherders_Overgrowth",
-		{"nextTurnHook"},
+		{"nextTurnHook", "vekMoveStartHook", "vekMoveEndHook", "pawnPositionChangedHook"},
 		true) -- not passive only

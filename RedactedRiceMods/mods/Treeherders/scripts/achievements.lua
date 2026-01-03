@@ -152,21 +152,16 @@ function TreeherdersAchievements.onSkillBuildHook(mission, pawn, weaponId, p1, p
 		
 		-- check the conditions to see if this built skill satisfies the requirement
 
-		LOG(weaponId)
 		if string.sub(weaponId, 1 , string.len("Treeherders_Treevenge")) == "Treeherders_Treevenge" then
 			-- reset the flag. We do this inside the check because other
 			-- weapons can be called between the final skill build hook and the
 			-- skill end hook
 			TreeherdersAchievements.myfriendsSkillBuilt = false
 		
-			LOG("BUILDING TREEVENGE")
 			if Board:GetPawn(p2) ~= nil and Board:GetPawn(p2):IsEnemy() then
-				LOG("Attacking enemy")
 				for _, damage in pairs(extract_table(skillEffect.effect)) do	
 					if damage.loc == p2 then
-						LOG("Damage at loc p2 " .. damage.iDamage)	
 						if damage.iDamage == Treeherders_Treevenge.DamageCap then
-							LOG("CAPPED!")	
 							TreeherdersAchievements.myfriendsSkillBuilt = true
 						end
 						break
