@@ -13,13 +13,18 @@ local oldGetStatusTooltip = GetStatusTooltip
 local forestArmorDescription = "Weapon damage to this unit is reduced by 1."
 local forestArmorTreevacDescriptionP1 = "\n"..forestArmorDescription.." When attacked, this unit will be pushed in the "
 local forestArmorTreevacDescriptionP2 = " direction before catching fire (prefs rel. to atk: right, left, same, oppo.)"
+local forestArmorAncientDescription = "Non-lethal weapon damage to this unit is reduced to 0."
+local forestArmorDescriptionP2 = " All other damage (Push, Blocking, Fire, etc.) is unaffected."
 
 local forestArmorName = "Forest Armor"
 local forestArmorTreevacName = forestArmorName.." +\nTree-vacuate"
+local forestArmorAncientName = "Ancient Armor"
 
 function GetStatusTooltip(id)
 	if id == "forestArmor" then
-		return {forestArmorName, forestArmorDescription.." All other damage (Push, Blocking, Fire, etc.) is unaffected."};
+		return {forestArmorName, forestArmorDescription..forestArmorDescriptionP2};
+	elseif id == "forestArmor_ancient" then
+		return {forestArmorAncientName, forestArmorAncientDescription..forestArmorDescriptionP2};
 	elseif id == "forestArmor_treevac" then
 		return {forestArmorTreevacName, "\n"..forestArmorDescription.." If damaged this unit is pushed to an adjacent tile before catching fire (prefs rel. to atk: right, left, same, oppo.)" };
 	elseif id == "forestArmor_push_0" then
@@ -40,6 +45,11 @@ modApi:appendAsset("img/combat/icons/icon_forestArmor_glow.png", Treeherders_Res
 Location["combat/icons/icon_forestArmor.png"] = Point(-12, 22)
 Location["combat/icons/icon_forestArmor_glow.png"] = Location["combat/icons/icon_forestArmor.png"]
 
+modApi:appendAsset("img/combat/icons/icon_forestArmor_ancient.png", Treeherders_ResourcePath.."img/combat/icons/icon_forestArmor_ancient.png")
+modApi:appendAsset("img/combat/icons/icon_forestArmor_ancient_glow.png", Treeherders_ResourcePath.."img/combat/icons/icon_forestArmor_ancient_glow.png")
+Location["combat/icons/icon_forestArmor_ancient.png"] = Point(-13, 23)
+Location["combat/icons/icon_forestArmor_ancient_glow.png"] = Location["combat/icons/icon_forestArmor_ancient.png"]
+
 modApi:appendAsset("img/combat/icons/icon_forestArmor_treevac.png", Treeherders_ResourcePath.."img/combat/icons/icon_forestArmor_treevac.png")
 modApi:appendAsset("img/combat/icons/icon_forestArmor_treevac_glow.png", Treeherders_ResourcePath.."img/combat/icons/icon_forestArmor_treevac_glow.png")
 Location["combat/icons/icon_forestArmor_treevac.png"] = Location["combat/icons/icon_forestArmor.png"]
@@ -55,6 +65,9 @@ end
 
 modApi:appendAsset("img/combat/icons/damage_floraform.png", Treeherders_ResourcePath.."img/combat/icons/damage_floraform.png")
 Location["combat/icons/damage_floraform.png"] = Point(-12, 22)
+
+modApi:appendAsset("img/combat/icons/damage_floraform_ancient.png", Treeherders_ResourcePath.."img/combat/icons/damage_floraform.png")
+Location["combat/icons/damage_floraform_ancient.png"] = Point(-13, 23)
 
 modApi:appendAsset("img/combat/icons/icon_th_forest_burn_cover.png", Treeherders_ResourcePath.."img/combat/icons/icon_th_forest_burn_cover.png")
 Location["combat/icons/icon_th_forest_burn_cover.png"] = Point(-12, 22)

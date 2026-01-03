@@ -5,13 +5,13 @@ None
 ------------------------------------------------------------------------------
 
 Tree Herders:
-Make single use skill for balancing the curve
-make blink and 2 images for entborg
-refresh achievement image
+add shadow for ancient icons
+ancient tile 
+ancient weapon image
+test and finish ancient armor and pawn stopping
 
 Next release candidates:
 1. Treevac doesn't distinguish between damage in the attack that causes the push vs follow on attacks when checking for spaces to push to
-2. Violent growth attack cancelled when attacking allies
 
 Known issues:
 Forest Firer bounce happens after push. Doesn't seem to be a way around this
