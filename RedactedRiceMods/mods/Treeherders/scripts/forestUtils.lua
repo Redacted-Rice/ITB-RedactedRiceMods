@@ -2,9 +2,21 @@ forestUtils = {}
 
 forestUtils.predictableRandom = mod_loader.mods[modApi.currentMod].libs.predictableRandom
 
+forestUtils.overgrowth = "overgrowth.png",
 forestUtils.floraformBounce = -3
 forestUtils.soundGrow = "/impact/dynamic/rock"
 forestUtils.soundDamage = "/impact/dynamic/rock"
+
+function forestUtils.init() 
+	local tileset = easyEdit.tileset:get("grass")
+	tileset:appendAssets("img/combat/tile_icon")
+	tileset:addTile("overgrowth", Point(-28,-3))
+	easyEdit.tileset:get("grass"):setTileTooltip{
+		tile = "overgrowth",
+		title = "Ancient Forest",
+		text = "Damages vek and confuses them causing them to attack opposite direction"
+	}
+end
 
 function forestUtils.arrayLength(array)
 	local count = 0
@@ -41,13 +53,16 @@ function forestUtils.isAForestFire(p)
 
 	--normal logic
 	else
-		return Board:IsForestFire(p) or
-				(Board:GetTerrain(p) == TERRAIN_FOREST and Board:IsFire(p))
+		return forestUtils.isAForest(p) and Board:IsFire(p)
 	end
 end
 
 function forestUtils.isAForest(p)
-	return Board:GetTerrain(p) == TERRAIN_FOREST or forestUtils.isAForestFire(p)
+	return Board:GetTerrain(p) == TERRAIN_FOREST or forestUtils.isAForestFire(p) or forestUtils.isAnAncientForest(p)
+end
+
+function forestUtils.isAnAncientForest(p)
+	return Board:GetCustomTile(p) == forestUtils.overgrowth
 end
 
 -------------------  SPACE DAMAGE FUNCTIONS  ----------------------------
@@ -56,7 +71,7 @@ function forestUtils.terrainFloraformableMatcher(p)
 	local terrain = Board:GetTerrain(p)
 	return (terrain == TERRAIN_FOREST or terrain == TERRAIN_ROAD or terrain == TERRAIN_RUBBLE or terrain == TERRAIN_SAND) and
 			-- acid can't be easily converted. I guess I could first remove acid but this is easier and makes sense
-			not(Board:IsAcid(p)) and Board:GetCustomTile(p) ~= "overgrowth.png"
+			not(Board:IsAcid(p)) and Board:GetCustomTile(p) ~= forestUtils.overgrowth
 end
 
 function forestUtils.isSpaceFloraformable(space)
@@ -222,7 +237,29 @@ function forestUtils:floraformNumOfRandomSpaces(effect, randId, candidates, numT
 		end
 	end
 
-
+function forestUtils.addCreateAncientForest(p, damage, fx)
+	 local sd = SpaceDamage(point, damage, DIR_FLIP)
+	 sd.iTerrain = TERRAIN_ROAD
+	 sd.sScript = [[ Board:SetCustomTile(]] .. point:GetString() .. [[, "]].. forestUtils.overgrowth .. [[")]]
+	 sx:AddDamage(sd)
+	 sx:AddDamage(damage)
+	 sx:AddBounce(point, 6)
+	 sx:AddBoardShake(0.5)
+end
+	
+	function forestUtils.findAncientForests()
+		 local ret = {}
+ 	for x = 0, 7 do
+	 		for y = 0,7 do
+	 			local point = Point(x, y)
+				  if Board:GetCustomTile(point) == forestUtils.overgrowth then
+				  	 table_insert(ret, point)
+				  end
+			end
+		end
+		return ret
+	end
+	
 	--Reset the roll at the end to keep the state clean in case this is rebuilt
 	forestUtils.predictableRandom:resetToLastRoll(randId)
 
