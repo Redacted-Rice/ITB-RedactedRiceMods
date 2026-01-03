@@ -241,6 +241,7 @@ function forestUtils.addCreateAncientForest(p, damage, fx)
 	 local sd = SpaceDamage(point, damage, DIR_FLIP)
 	 sd.iTerrain = TERRAIN_ROAD
 	 sd.sScript = [[ Board:SetCustomTile(]] .. point:GetString() .. [[, "]].. forestUtils.overgrowth .. [[")]]
+	 sd.sImageMark = "combat/icons/damage_floraform_ancient.png"
 	 sx:AddDamage(sd)
 	 sx:AddDamage(damage)
 	 sx:AddBounce(point, 6)
