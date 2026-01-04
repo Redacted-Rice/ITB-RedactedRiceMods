@@ -46,13 +46,13 @@ function WorldBuilders_Passive_Move:GetPassiveSkillEffect_TargetAreaBuildHook(mi
 		    targetArea:erase(0)
 		end
 		-- Add the new points
-		self.boardUtils.addReachableTiles(p1, targetArea)
+		self.boardUtils.getReachableInRange(targetArea, pawn:GetMoveSpeed(), p1, self.boardUtils.makeAllTerrainMatcher(pawn))
 	end
 end
 
 function WorldBuilders_Passive_Move:GetPassiveSkillEffect_SkillBuildHook(mission, pawn, weaponId, p1, p2, skillEffect)
 	if weaponId == "Move" and pawn:IsMech() then
-		local path = self.boardUtils.getDirectPath(p1, p2)
+		local path = self.boardUtils.findBfsPath(p1, p2, self.boardUtils.makeAllTerrainMatcher(paw))
 		self.boardUtils.addForcedMove(skillEffect, path)
 	end
 end
