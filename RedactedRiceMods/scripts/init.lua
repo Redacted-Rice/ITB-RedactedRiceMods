@@ -15,7 +15,7 @@ local mod =  {
 }
 
 local libs = {
- "boardUtils"
+	"boardUtils",
 	"passiveEffect",
 	"predictableRandom",
 }
