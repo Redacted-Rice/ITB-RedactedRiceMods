@@ -24,11 +24,7 @@ Forest Firer teleport and launch SFX just sometimes don't play. Not sure why thi
 ------------------------------------------------------------------------------
 
 World Builders:
-Final playthrough/testing
-	Remove pathing over holes without flying?
-	* unpushable/killable pawns + permanance doesn't work right - should allow self target and should also not prevent rocks from spawning
-	Pawn + spawning (+ self bump?) odd interaction?
-  cant remeber what this is. consuming an occupied spawn space seems to work fine
+Final playthrough/testing`	`
 *	teleporting iced building (2nd move with silica) didn't break source ice
    looks fine. it was on ice world so maybe both tiles were frozen? maybe break and unbreak ice if it change to/from building? can you freeze mountains
 Next release candidates:

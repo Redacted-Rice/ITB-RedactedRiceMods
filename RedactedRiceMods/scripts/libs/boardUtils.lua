@@ -1,18 +1,16 @@
 local boardUtils = {
 	Version="1.0.0",
-	DebugLog = false,
 }
-
+	
 function boardUtils.addForcedMove(skillEffect, path)
 	-- Clear the existing move from the skilleffect
 	skillEffect.effect = SkillEffect().effect
 	
-	-- Add move for display purposes. This won't let us move onto unmovable spaces
-	-- reliably
+	-- Add move for display purposes. This won't let us move onto unmovable spaces reliably
 	skillEffect:AddMove(path, FULL_DELAY)
 
-		--maybe needs to be p1?
-	local pawnId = Board:GetPawn(path[1]):GetId()
+	--maybe needs to be p1?
+	local pawnId = Board:GetPawn(path:index(1)):GetId()
 	local secondToLastSpace = path:index(path:size() - 1)
 	local lastSpace = path:index(path:size())
 	local moveDamage = SpaceDamage(secondToLastSpace, 0)
@@ -26,15 +24,16 @@ function boardUtils.makeInSubsetMatcher(tiles)
 	 end
 end
 
-function boardUtils.makeAllTerrainMatcher(pawn)
+function boardUtils.makeAllTerrainMatcher(pawn, skipPawnCheck)
 	 return function(point, hash) 
-	 	 return pawn:isFlying() or Board:GetTerrain(point) ~= TERRAIN_HOLE
+	 	 return (skipPawnCheck or not Board:IsPawnSpace(point)) and 
+			(pawn:IsFlying() or Board:GetTerrain(point) ~= TERRAIN_HOLE)
 	 end
 end
 
 
-function boardUtils.getReachableInRange(reachable, range, start, predicate)
-		   -- dont include start in reachable
+function boardUtils.getReachableInRange(reachable, range, start, predicatePassable, predicateStoppable)
+	-- dont include start in reachable
     local visited = {}
     visited[boardUtils.getSpaceHash(start)] = true
 
@@ -47,18 +46,20 @@ function boardUtils.getReachableInRange(reachable, range, start, predicate)
         local curDist = dist[boardUtils.getSpaceHash(cur)]
 
         if curDist < range then
-            for _, dir in ipairs(DIR_VECTORS) do
-                local adj = cur + dir
+            for idx = 0, 3 do
+                local adj = cur + DIR_VECTORS[idx]
 
                 if adj.x >= 0 and adj.x < size and adj.y >= 0 and adj.y < size then
                     local adjHash = boardUtils.getSpaceHash(adj)
 
                     if not visited[adjHash] then
-                        if not predicate or predicate(adj, adjHash) then
+                        if not predicatePassable or predicatePassable(adj, adjHash) then
                             visited[adjHash] = true
                             dist[adjHash] = curDist + 1
-                            reachable:push_back(adj)
-                            table.insert(queue, adj)
+							if not predicateStoppable or predicateStoppable(adj, adjHash) then
+								reachable:push_back(adj)
+							end
+							table.insert(queue, adj)
                         end
                     end
                 end
@@ -67,7 +68,7 @@ function boardUtils.getReachableInRange(reachable, range, start, predicate)
     end
 end
 
-function boardUtils.findBfsPath(p1, p2, predicate)
+function boardUtils.findBfsPath(p1, p2, predicate, asPointList)
     local queue = {p1}
     local head = 1
 
@@ -75,7 +76,6 @@ function boardUtils.findBfsPath(p1, p2, predicate)
     cameFrom[boardUtils.getSpaceHash(p1)] = false
 
     while queue[head] do
-		LOG("Checking "..queue[head]:GetString())
         local cur = queue[head]
         head = head + 1
 
@@ -86,14 +86,21 @@ function boardUtils.findBfsPath(p1, p2, predicate)
 
             while k do
                 local x, y = boardUtils.unhashSpace(k)
-                table.insert(path, 1, Point(x, y))
+				table.insert(path, 1, Point(x, y))
                 k = cameFrom[k]
             end
+			if asPointList then
+				pointsPath = PointList()
+				for _, point in ipairs(path) do
+					pointsPath:push_back(point)
+				end
+				return pointsPath
+			end
             return path
         end
 
-        for _, dir in pairs(DIR_VECTORS) do
-            local adj = cur + dir
+		for idx = 0, 3 do
+            local adj = cur + DIR_VECTORS[idx]
             local h = boardUtils.getSpaceHash(adj)
             -- only walk tiles if there is no subset or that exist in the subset
             if (not predicate or predicate(adj, h)) and cameFrom[h] == nil then

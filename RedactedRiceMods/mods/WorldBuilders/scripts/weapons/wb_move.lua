@@ -46,13 +46,14 @@ function WorldBuilders_Passive_Move:GetPassiveSkillEffect_TargetAreaBuildHook(mi
 		    targetArea:erase(0)
 		end
 		-- Add the new points
-		self.boardUtils.getReachableInRange(targetArea, pawn:GetMoveSpeed(), p1, self.boardUtils.makeAllTerrainMatcher(pawn))
+		self.boardUtils.getReachableInRange(targetArea, pawn:GetMoveSpeed(), p1, self.boardUtils.makeAllTerrainMatcher(pawn, true), self.boardUtils.makeAllTerrainMatcher(pawn, false))
 	end
 end
 
 function WorldBuilders_Passive_Move:GetPassiveSkillEffect_SkillBuildHook(mission, pawn, weaponId, p1, p2, skillEffect)
 	if weaponId == "Move" and pawn:IsMech() then
-		local path = self.boardUtils.findBfsPath(p1, p2, self.boardUtils.makeAllTerrainMatcher(paw))
+		-- true == as point list
+		local path = self.boardUtils.findBfsPath(p1, p2, self.boardUtils.makeAllTerrainMatcher(pawn, true), true)
 		self.boardUtils.addForcedMove(skillEffect, path)
 	end
 end
@@ -144,7 +145,10 @@ end
 function WorldBuilders_Passive_Move:GetSkillEffect(p1, p2)
 	Board:GetPawn(p1):SetFlying(true)
 	local ret = SkillEffect()
-	self.addForcedMove(ret, p1, p2)
+    local path = PointList()
+	path:push_back(p1)
+	path:push_back(p2)
+	self.boardUtils.addForcedMove(ret, path)
 	return ret
 end
 

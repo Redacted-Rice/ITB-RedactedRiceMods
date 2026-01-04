@@ -83,7 +83,8 @@ end
 function WorldBuilders_Mold:GetSecondTargetArea(p1,p2)
 	local ret = PointList()
 	
-	if self:NoPawnOrWillDie(p1, p2) then
+	local isPawnTargetted = Board:IsPawnSpace(p2)
+	if self:NoPawnOrWillDie(p1, p2) or (isPawnTargetted and Board:GetPawn(p2):IsGuarding()) then
 		ret:push_back(p2)
 	end
 
@@ -91,9 +92,7 @@ function WorldBuilders_Mold:GetSecondTargetArea(p1,p2)
 	-- include point
 	local size = self.ThrowRange
 	local corner = p2 - Point(size, size)
-
 	local p = Point(corner)
-	local isPawnTargetted = Board:IsPawnSpace(p2)
 
 	for i = 0, ((size*2+1)*(size*2+1)) do
 		local diff = p2 - p
