@@ -20,53 +20,103 @@ function boardUtils.addForcedMove(skillEffect, path)
 	skillEffect:AddDamage(moveDamage)
 end
 
--- Generic pathfinder that can go over holes
-function boardUtils.addReachableTiles(start, targetArea)
-	-- "borrowed" from general_DiamondTarget and modified to not
-	-- include point
-	local pawn = Board:GetPawn(start)
-	local isFlying = pawn:IsFlying()
-	local size = pawn:GetBaseMove()
-	local corner = start - Point(size, size)
-
-	local p = Point(corner)
-
-	for i = 0, ((size*2+1)*(size*2+1)) do
-		local diff = start - p
-		local dist = math.abs(diff.x) + math.abs(diff.y)
-		-- If its a valid, unoccupied space, allow it
-		if Board:IsValid(p) and dist <= size and not Board:IsPawnSpace(p) and (isFlying or Board:GetTerrain(p) ~= TERRAIN_HOLE) then
-			targetArea:push_back(p)
-		end
-		p = p + VEC_RIGHT
-		if math.abs(p.x - corner.x) == (size*2+1) then
-			p.x = p.x - (size*2+1)
-			p = p + VEC_DOWN
-		end
-	end
+function boardUtils.makeInSubsetMatcher(tiles)
+	 return function(point, hash)
+	 	   return tiles[hash] ~= nil
+	 end
 end
 
-function boardUtils.getDirect Path(start, target)
-    local path = PointList()
-	path:push_back(start)
-    local current = Point(start.x, start.y)
+function boardUtils.makeAllTerrainMatcher(pawn)
+	 return function(point, hash) 
+	 	 return pawn:isFlying() or Board:GetTerrain(point) ~= TERRAIN_HOLE
+	 end
+end
 
-    local dx = target.x - start.x
-    local dy = target.y - start.y
 
-    local stepX = dx > 0 and 1 or -1
-    for i = 1, math.abs(dx) do
-        current = Point(current.x + stepX, current.y)
-        path:push_back(current)
+function boardUtils.getReachableInRange(reachable, range, start, predicate)
+		   -- dont include start in reachable
+    local visited = {}
+    visited[boardUtils.getSpaceHash(start)] = true
+
+    local queue = { start }
+    local dist = { [boardUtils.getSpaceHash(start)] = 0 }
+
+    local size = 8
+    while #queue > 0 do
+        local cur = table.remove(queue, 1)
+        local curDist = dist[boardUtils.getSpaceHash(cur)]
+
+        if curDist < range then
+            for _, dir in ipairs(DIR_VECTORS) do
+                local adj = cur + dir
+
+                if adj.x >= 0 and adj.x < size and adj.y >= 0 and adj.y < size then
+                    local adjHash = boardUtils.getSpaceHash(adj)
+
+                    if not visited[adjHash] then
+                        if not predicate or predicate(adj, adjHash) then
+                            visited[adjHash] = true
+                            dist[adjHash] = curDist + 1
+                            reachable:push_back(adj)
+                            table.insert(queue, adj)
+                        end
+                    end
+                end
+            end
+        end
     end
+end
 
-    local stepY = dy > 0 and 1 or -1
-    for i = 1, math.abs(dy) do
-        current = Point(current.x, current.y + stepY)
-        path:push_back(current)
+function boardUtils.findBfsPath(p1, p2, predicate)
+    local queue = {p1}
+    local head = 1
+
+    local cameFrom = {}
+    cameFrom[boardUtils.getSpaceHash(p1)] = false
+
+    while queue[head] do
+		LOG("Checking "..queue[head]:GetString())
+        local cur = queue[head]
+        head = head + 1
+
+        if cur == p2 then
+            -- Convert to points list
+            local path = {}
+			local k = boardUtils.getSpaceHash(cur)
+
+            while k do
+                local x, y = boardUtils.unhashSpace(k)
+                table.insert(path, 1, Point(x, y))
+                k = cameFrom[k]
+            end
+            return path
+        end
+
+        for _, dir in pairs(DIR_VECTORS) do
+            local adj = cur + dir
+            local h = boardUtils.getSpaceHash(adj)
+            -- only walk tiles if there is no subset or that exist in the subset
+            if (not predicate or predicate(adj, h)) and cameFrom[h] == nil then
+                cameFrom[h] = boardUtils.getSpaceHash(cur)
+                table.insert(queue, adj)
+            end
+        end
     end
+    return nil
+end
 
-    return path
+function boardUtils.getSpaceHash(spaceOrX, y)
+    local pX = spaceOrX
+    local pY = y
+    if not y then
+        pX = spaceOrX.x
+        pY = spaceOrX.y
+    end
+    return pY * 10 + pX
+end
+
+function boardUtils.unhashSpace(hash)
+	return hash % 10, math.floor(hash / 10)
 end
 
 return boardUtils
