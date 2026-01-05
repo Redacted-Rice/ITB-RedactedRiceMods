@@ -156,7 +156,7 @@ function Treeherders_Passive_WakeTheForest:SetForestArmorIcon(id, point)
 	self:UnsetPrevForestArmorIcon(id)
 
 	if forestUtils.isAnAncientForest(point) then
-		 Board:SetTerrainIcon(point, "forestArmor_ancient")
+		Board:SetTerrainIcon(point, "forestArmor_ancient")
 	elseif self.Evacuate then
 		Board:SetTerrainIcon(point, "forestArmor_treevac")
 	else
