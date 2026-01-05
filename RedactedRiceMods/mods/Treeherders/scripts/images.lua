@@ -27,14 +27,6 @@ function GetStatusTooltip(id)
 		return {forestArmorAncientName, forestArmorAncientDescription..forestArmorDescriptionP2};
 	elseif id == "forestArmor_treevac" then
 		return {forestArmorTreevacName, "\n"..forestArmorDescription.." If damaged this unit is pushed to an adjacent tile before catching fire (prefs rel. to atk: right, left, same, oppo.)" };
-	elseif id == "forestArmor_push_0" then
-		return {forestArmorTreevacName, forestArmorTreevacDescriptionP1.."up-right"..forestArmorTreevacDescriptionP2 };
-	elseif id == "forestArmor_push_1" then
-		return {forestArmorTreevacName, forestArmorTreevacDescriptionP1.."down-right"..forestArmorTreevacDescriptionP2 };
-	elseif id == "forestArmor_push_2" then
-		return {forestArmorTreevacName, forestArmorTreevacDescriptionP1.."down-left"..forestArmorTreevacDescriptionP2 };
-	elseif id == "forestArmor_push_3" then
-		return {forestArmorTreevacName, forestArmorTreevacDescriptionP1.."up-left"..forestArmorTreevacDescriptionP2 };
 	else
 		return oldGetStatusTooltip(id)
 	end
@@ -42,35 +34,27 @@ end
 
 modApi:appendAsset("img/combat/icons/icon_forestArmor.png", Treeherders_ResourcePath.."img/combat/icons/icon_forestArmor.png")
 modApi:appendAsset("img/combat/icons/icon_forestArmor_glow.png", Treeherders_ResourcePath.."img/combat/icons/icon_forestArmor_glow.png")
-Location["combat/icons/icon_forestArmor.png"] = Point(-12, 22)
+Location["combat/icons/icon_forestArmor.png"] = Point(-12, 25)
 Location["combat/icons/icon_forestArmor_glow.png"] = Location["combat/icons/icon_forestArmor.png"]
 
 modApi:appendAsset("img/combat/icons/icon_forestArmor_ancient.png", Treeherders_ResourcePath.."img/combat/icons/icon_forestArmor_ancient.png")
 modApi:appendAsset("img/combat/icons/icon_forestArmor_ancient_glow.png", Treeherders_ResourcePath.."img/combat/icons/icon_forestArmor_ancient_glow.png")
-Location["combat/icons/icon_forestArmor_ancient.png"] = Point(-13, 23)
+Location["combat/icons/icon_forestArmor_ancient.png"] = Location["combat/icons/icon_forestArmor.png"]
 Location["combat/icons/icon_forestArmor_ancient_glow.png"] = Location["combat/icons/icon_forestArmor_ancient.png"]
 
 modApi:appendAsset("img/combat/icons/icon_forestArmor_treevac.png", Treeherders_ResourcePath.."img/combat/icons/icon_forestArmor_treevac.png")
 modApi:appendAsset("img/combat/icons/icon_forestArmor_treevac_glow.png", Treeherders_ResourcePath.."img/combat/icons/icon_forestArmor_treevac_glow.png")
 Location["combat/icons/icon_forestArmor_treevac.png"] = Location["combat/icons/icon_forestArmor.png"]
 Location["combat/icons/icon_forestArmor_treevac_glow.png"] = Location["combat/icons/icon_forestArmor.png"]
---load the directional icons
-for i = 1, 4 do
-	local dir = i - 1
-	modApi:appendAsset("img/combat/icons/icon_forestArmor_push_"..dir..".png", Treeherders_ResourcePath.."img/combat/icons/icon_forestArmor_push_"..dir..".png")
-	modApi:appendAsset("img/combat/icons/icon_forestArmor_push_"..dir.."_glow.png", Treeherders_ResourcePath.."img/combat/icons/icon_forestArmor_push_"..dir.."_glow.png")
-	Location["combat/icons/icon_forestArmor_push_"..dir..".png"] = Location["combat/icons/icon_forestArmor.png"]
-	Location["combat/icons/icon_forestArmor_push_"..dir.."_glow.png"] = Location["combat/icons/icon_forestArmor.png"]
-end
 
 modApi:appendAsset("img/combat/icons/damage_floraform.png", Treeherders_ResourcePath.."img/combat/icons/damage_floraform.png")
-Location["combat/icons/damage_floraform.png"] = Point(-12, 22)
+Location["combat/icons/damage_floraform.png"] = Location["combat/icons/icon_forestArmor.png"]
 
 modApi:appendAsset("img/combat/icons/damage_floraform_ancient.png", Treeherders_ResourcePath.."img/combat/icons/damage_floraform_ancient.png")
-Location["combat/icons/damage_floraform_ancient.png"] = Point(-13, 23)
+Location["combat/icons/damage_floraform_ancient.png"] = Location["combat/icons/icon_forestArmor.png"]
 
 modApi:appendAsset("img/combat/icons/icon_th_forest_burn_cover.png", Treeherders_ResourcePath.."img/combat/icons/icon_th_forest_burn_cover.png")
-Location["combat/icons/icon_th_forest_burn_cover.png"] = Point(-12, 22)
+Location["combat/icons/icon_th_forest_burn_cover.png"] = Location["combat/icons/icon_forestArmor.png"]
 
 
 --Projectiles
