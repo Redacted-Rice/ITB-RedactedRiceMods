@@ -230,9 +230,14 @@ function WorldBuilders_Shift:GetFinalEffect(p1,p2,p3)
 end
 
 function WorldBuilders_Shift:GetTerrainAndEffectData(space)
+	local terrainTemp = self:GetTerrainOrLava(space)
+	local isFreezableTerrain = false
+					or terrainTemp == TERRAIN_MOUNTAIN
+					or terrainTemp == TERRAIN_BUILDING
+
 	return {
 		origSpace = space,
-		terrain = self:GetTerrainOrLava(space),
+		terrain = terrainTemp,
 		customTile = Board:GetCustomTile(space),
 		item = Board:GetItem(space),
 		populated = Board:IsPowered(space),
@@ -241,7 +246,7 @@ function WorldBuilders_Shift:GetTerrainAndEffectData(space)
 		currHealth = Board:GetHealth(space),
 		maxHealth = Board:GetMaxHealth(space),
 		fireType = Board:GetFireType(space),
-		frozen = Board:IsFrozen(space),
+		frozen = Board:IsFrozen(space) and isFreezableTerrain,
 		acid = Board:IsAcid(space),
 		smoke = Board:IsSmoke(space),
 		emerging = Board:IsSpawning(space),
@@ -309,9 +314,11 @@ function WorldBuilders_Shift:ApplyTerrain(spaceDamage, spaceDamagePreform, space
 	end
 
 	-- Unset frozen first
-	if not spaceData.frozen then
+	if not spaceData.frozen and oldSpaceData.frozen then
+		-- Board:SetFrozen(..., false) does not work right for this. Instead use the memedit 
+		-- call directly
 		spaceDamage.sScript = spaceDamage.sScript .. [[
-				Board:SetFrozen(]] .. spaceDamage.loc:GetString() .. [[,false,no_animation)]]
+				memedit:get().board.setFrozen(]] .. spaceDamage.loc:GetString() .. [[,false)]]				
 	end
 
 	-- Set the terrain to the new terrain
@@ -319,12 +326,7 @@ function WorldBuilders_Shift:ApplyTerrain(spaceDamage, spaceDamagePreform, space
 			Board:SetTerrain(]] .. spaceDamage.loc:GetString() .. [[,]] .. spaceData.terrain .. [[)]]
 
 	-- And set frozen after
-	if spaceData.frozen then
-					-- if the space was already frozen, unfreeze it to break any ice
- 	if oldSpaceData.frozen then
-		  spaceDamage.sScript = spaceDamage.sScript .. [[
- 				Board:SetFrozen(]] .. spaceDamage.loc:GetString() .. [[,false,no_animation)]]
-	 end
+	if spaceData.frozen and not oldSpaceData.frozen then
 		spaceDamage.sScript = spaceDamage.sScript .. [[
 				Board:SetFrozen(]] .. spaceDamage.loc:GetString() .. [[,true,no_animation)]]
 	end
