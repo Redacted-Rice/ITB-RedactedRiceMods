@@ -2,7 +2,7 @@ forestUtils = {}
 
 forestUtils.predictableRandom = mod_loader.mods[modApi.currentMod].libs.predictableRandom
 
-forestUtils.overgrowth = "overgrowth.png",
+forestUtils.overgrowth = "overgrowth.png"
 forestUtils.floraformBounce = -3
 forestUtils.soundGrow = "/impact/dynamic/rock"
 forestUtils.soundDamage = "/impact/dynamic/rock"
@@ -58,7 +58,7 @@ function forestUtils.isAForestFire(p)
 end
 
 function forestUtils.isAForest(p)
-	return Board:GetTerrain(p) == TERRAIN_FOREST or forestUtils.isAForestFire(p) or forestUtils.isAnAncientForest(p)
+	return Board:GetTerrain(p) == TERRAIN_FOREST or Board:GetFireType(p) == FIRE_TYPE_FOREST_FIRE or forestUtils.isAnAncientForest(p)
 end
 
 function forestUtils.isAnAncientForest(p)
@@ -236,35 +236,33 @@ function forestUtils:floraformNumOfRandomSpaces(effect, randId, candidates, numT
 			end
 		end
 	end
+	
+	--Reset the roll at the end to keep the state clean in case this is rebuilt
+	forestUtils.predictableRandom:resetToLastRoll(randId)
+	return retList
+end
 
-function forestUtils.addCreateAncientForest(p, damage, fx)
+function forestUtils.addCreateAncientForest(point, damage, fx)
 	 local sd = SpaceDamage(point, damage, DIR_FLIP)
 	 sd.iTerrain = TERRAIN_ROAD
 	 sd.sScript = [[ Board:SetCustomTile(]] .. point:GetString() .. [[, "]].. forestUtils.overgrowth .. [[")]]
 	 sd.sImageMark = "combat/icons/damage_floraform_ancient.png"
-	 sx:AddDamage(sd)
-	 sx:AddDamage(damage)
-	 sx:AddBounce(point, 6)
-	 sx:AddBoardShake(0.5)
+	 fx:AddDamage(sd)
+	 fx:AddBounce(point, -6)
+	 fx:AddBoardShake(0.5)
 end
 	
-	function forestUtils.findAncientForests()
-		 local ret = {}
+function forestUtils.findAncientForests()
+	local ret = {}
  	for x = 0, 7 do
-	 		for y = 0,7 do
-	 			local point = Point(x, y)
-				  if Board:GetCustomTile(point) == forestUtils.overgrowth then
-				  	 table_insert(ret, point)
-				  end
+		for y = 0,7 do
+			local point = Point(x, y)
+			if Board:GetCustomTile(point) == forestUtils.overgrowth then
+				table.insert(ret, point)
 			end
 		end
-		return ret
 	end
-	
-	--Reset the roll at the end to keep the state clean in case this is rebuilt
-	forestUtils.predictableRandom:resetToLastRoll(randId)
-
-	return retList
+	return ret
 end
 
 --TODO remove once isolated to library or mod utils
