@@ -1,9 +1,9 @@
 Treeherders_Overgrowth = Skill:new
 {
-	Name = "Summon the Ancients",
+	Name = "Summon Ancients",
 	Class = "Prime",
 	Description = "Create an overgrowth tile with forest tiles surounding it. Flip target's direction",
-	Icon = "weapons/prime_th_Overgrowth.png",
+	Icon = "weapons/prime_th_summonTheAncients.png",
 	Rarity = 2,
 	
 	Explosion = "",
