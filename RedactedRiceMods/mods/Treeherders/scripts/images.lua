@@ -3,6 +3,7 @@ local Treeherders_ResourcePath = mod_loader.mods[modApi.currentMod].resourcePath
 --Weapons
 modApi:appendAsset("img/weapons/ranged_th_forestFirer.png",            Treeherders_ResourcePath .. "img/weapons/ranged_th_forestFirer.png")
 modApi:appendAsset("img/weapons/prime_th_treevenge.png",               Treeherders_ResourcePath .. "img/weapons/prime_th_treevenge.png")
+modApi:appendAsset("img/weapons/prime_th_summonTheAncients.png",               Treeherders_ResourcePath .. "img/weapons/prime_th_summonTheAncients.png")
 modApi:appendAsset("img/weapons/science_th_violentGrowth.png",         Treeherders_ResourcePath .. "img/weapons/science_th_violentGrowth.png")
 modApi:appendAsset("img/weapons/passives/passive_th_forestArmor.png",  Treeherders_ResourcePath .. "img/weapons/passives/passive_th_forestArmor.png")
 
