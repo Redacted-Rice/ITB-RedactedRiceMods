@@ -5,8 +5,10 @@ None
 ------------------------------------------------------------------------------
 
 Tree Herders:
-Redo/finish ancient tile 
-Create ancient weapon image
+Redo/finish ancient tile
+	Looks okay enough for now to me. Try adding shadow though
+Create ancient weapon image (need to think on this one)
+Update forest armor weapon image with new sprite
 
 Bugs
 Forest armor doesn't work on own pawn attacks - only vek. Seems to not update on moving into either
