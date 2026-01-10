@@ -10,7 +10,24 @@ Please enjoy and contact us if you run into any issues.
 * Email: RedactedRice@gmail.com
 
 # Releases
-Latest release: 2.0.0
+Latest release: 3.0.0
+
+## 3.0.0
+Released: 01/XX/2026 
+compatible with:
+* ItB AE        1.2.93
+* ModLoader     2.9.4
+* ModLoaderExt  1.21 
+* memedit       1.2.0
+
+### Notes
+* Modified Entborg to be cyborg
+	* option to change back to brute in mod options
+* Added new, single-use weapon, Summon Ancients, to smooth out early game curve
+	* Added new custom Ancient Forest tile with custom effects for this
+	* Also added super forest armor effect on Ancient Forest
+* Re-fixing forest armor icons (hopefully)
+* Other minor balance changes
 
 ## 2.0.0
 Released: 12/19/2025 
