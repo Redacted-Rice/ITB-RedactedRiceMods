@@ -10,10 +10,22 @@ Please enjoy and contact us if you run into any issues.
 * Email: RedactedRice@gmail.com
 
 # Releases
-Latest release: 0.8.0
+Latest release: 1.0.0
+
+## 1.0.0
+Released: 01/10/2026
+compatible with:
+* ItB AE        1.2.93
+* ModLoader     2.9.4
+* ModLoaderExt  1.21
+* Memedit       1.2.1* (custom version)
+
+### Notes
+Initial release of WorldBuilders!
+Still requires custom memedit version
 
 ## 0.8.0
-Released: XX/XX/2025 
+Released: 12/19/2025 
 compatible with:
 * ItB AE        1.2.93
 * ModLoader     2.9.4
