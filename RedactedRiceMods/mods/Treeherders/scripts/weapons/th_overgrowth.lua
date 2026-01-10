@@ -10,7 +10,7 @@ Treeherders_Overgrowth = Skill:new
 	LaunchSound = "/weapons/titan_fist",
 	
 	Projectile = false,
-    Damage = 1,
+    Damage = 2,
     PowerCost = 0,
 	Limited = 1,
     Upgrades = 2,
@@ -101,7 +101,8 @@ function Treeherders_Overgrowth:GetFinalEffect(p1,p2,p3)
 	return ret
 end
 
-
+-- TODO: Really should be with overgrowth tile logic but this is the only way
+-- to get them anyways :shrug:
 function Treeherders_Overgrowth:GetPassiveSkillEffect_NextTurnHook(mission)
 	--LOG("next turn "..Game:GetTeamTurn())
 	if Game:GetTeamTurn() == TEAM_PLAYER then
@@ -110,7 +111,8 @@ function Treeherders_Overgrowth:GetPassiveSkillEffect_NextTurnHook(mission)
 		for _, point in pairs(points) do
 			if Board:IsPawnSpace(point) and not Board:GetPawn(point):IsPlayer() then
 				local effect = SkillEffect()
-				effect:AddDamage(SpaceDamage(point, self.Damage, DIR_FLIP))
+				-- only does 1 damage passively
+				effect:AddDamage(SpaceDamage(point, 1, DIR_FLIP))
 				effect:AddBounce(point, 3)
 				effect:AddBoardShake(0.5)
 				effect:AddDelay(0.1)

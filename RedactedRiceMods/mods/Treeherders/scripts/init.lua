@@ -66,6 +66,7 @@ function mod:load(options, version)
 	)
 
 	TreeherdersAchievements:addHooks()
+	forestUtils:addHooks()
 	-- Libs initialized once in the lib init script
 	--self.libs.passiveEffect:load()
 	--self.libs.predictableRandom:load()
