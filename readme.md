@@ -12,7 +12,7 @@ ItB Discord: Das Keifer
 Email: RedactedRice@gmail.com
 
 # Squads
-* Treeherders - v2.0.0 - Inspired by ents, this squad focuses on using forests tiles to increase their power. The flagship entborg mech gets stronger as the forests get destroyed
+* Treeherders - v3.0.0 - Inspired by ents, this squad focuses on using forests tiles to increase their power. The flagship entborg mech gets stronger as the forests get destroyed
 * WorldBuilders - v0.8.0 - This squad focuses on terrain manipulation to block and avoid damage. It has some strong single target effects but you can easily get overwhelmed by numbers if not strategically manipulating the terrain
 
 # Libs
@@ -31,13 +31,22 @@ Email: RedactedRice@gmail.com
 To uninstall, delete the folder in mods
 
 # Releases
-Latest release: 1.0.1
+Latest release: 1.1.0
+
+## 1.1.0
+Treeherders 3.0
+
+Released: XX/XX/2025 
+Treeherders 3.0.0
+WorldBuilders 0.8.0
+Libs 1.1.0
 
 ## 1.0.1
 Pre-release of WorldBuilders. Requires custom memedit
 
 Released: 12/19/2025 
 Treeherders 2.0.0
+WorldBuilders 0.8.0
 Libs 1.1.0
 
 ## 1.0.0
