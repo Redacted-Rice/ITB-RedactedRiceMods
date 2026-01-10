@@ -2,21 +2,10 @@ forestUtils = {}
 
 forestUtils.predictableRandom = mod_loader.mods[modApi.currentMod].libs.predictableRandom
 
-forestUtils.overgrowth = "overgrowth.png"
 forestUtils.floraformBounce = -3
 forestUtils.soundGrow = "/impact/dynamic/rock"
 forestUtils.soundDamage = "/impact/dynamic/rock"
 
-function forestUtils.init() 
-	local tileset = easyEdit.tileset:get("grass")
-	tileset:appendAssets("img/combat/tile_icon")
-	tileset:addTile("overgrowth", Point(-28,-3))
-	easyEdit.tileset:get("grass"):setTileTooltip{
-		tile = "overgrowth",
-		title = "Ancient Forest",
-		text = "Damages vek and confuses them causing them to attack opposite direction"
-	}
-end
 
 function forestUtils.arrayLength(array)
 	local count = 0
@@ -43,6 +32,50 @@ function forestUtils.isAVek(pawn)
 	return isVek
 end
 
+------------------ ACNIENT FOREST TILE STUFF --------------------------
+
+forestUtils.overgrowth = "overgrowth.png"
+forestUtils.overgrowthTileName = "Ancient Forest"
+forestUtils.overgrowthTileText = "Stops vek when moved to. At end of vek's turn deals 1 damage and flips their attack. Does not ignite on damaged."
+
+function forestUtils.init() 
+	local tileset = easyEdit.tileset:get("grass")
+	tileset:appendAssets("img/combat/tile_icon")
+	tileset:addTile("overgrowth", Point(-28,-3))
+	easyEdit.tileset:get("grass"):setTileTooltip{
+		tile = "overgrowth",
+		title = forestUtils.overgrowthTileName,
+		text = forestUtils.overgrowthTileText
+	}
+end
+
+-- Thanks tosx for these
+local groundTitle = ""
+local groundText = ""
+
+function forestUtils.onTileHighlighted(mission, point)	
+	-- Override ground tile tooltip when highlighting Ancient forest
+	-- Board:MarkSpaceDesc is used by environment effects and could conflict
+	if Board:IsValid(point) and Board:GetTerrain(point) == TERRAIN_ROAD and Board:GetCustomTile(point) == forestUtils.overgrowth then
+		groundTitle = modApi.modLoaderDictionary["Tile_ground_Title"]
+		groundText = modApi.modLoaderDictionary["Tile_ground_Text"]
+		
+		modApi.modLoaderDictionary["Tile_ground_Title"] = forestUtils.overgrowthTileName
+		modApi.modLoaderDictionary["Tile_ground_Text"] = forestUtils.overgrowthTileText
+	end
+end
+
+function forestUtils.onTileUnhighlighted(mission, point)
+	if Board:IsValid(point) and Board:GetTerrain(point) == TERRAIN_ROAD and Board:GetCustomTile(point) == forestUtils.overgrowth then	   
+		modApi.modLoaderDictionary["Tile_ground_Title"] = groundTitle
+		modApi.modLoaderDictionary["Tile_ground_Text"] = groundText
+	end
+end
+
+function forestUtils.addHooks()
+	modapiext:addTileHighlightedHook(forestUtils.onTileHighlighted)
+	modapiext:addTileUnhighlightedHook(forestUtils.onTileUnhighlighted)
+end
 
 -------------------  FOREST CHECKER FUNCTIONS  ----------------------------
 
@@ -243,13 +276,18 @@ function forestUtils:floraformNumOfRandomSpaces(effect, randId, candidates, numT
 end
 
 function forestUtils.addCreateAncientForest(point, damage, fx)
-	 local sd = SpaceDamage(point, damage, DIR_FLIP)
-	 sd.iTerrain = TERRAIN_ROAD
-	 sd.sScript = [[ Board:SetCustomTile(]] .. point:GetString() .. [[, "]].. forestUtils.overgrowth .. [[")]]
-	 sd.sImageMark = "combat/icons/damage_floraform_ancient.png"
-	 fx:AddDamage(sd)
-	 fx:AddBounce(point, -6)
-	 fx:AddBoardShake(0.5)
+	local sd = SpaceDamage(point, damage, DIR_FLIP)
+	
+	sd.iTerrain = TERRAIN_ROAD
+	sd.sScript = [[ Board:SetCustomTile(]] .. point:GetString() .. [[, "]].. forestUtils.overgrowth .. [[")]]
+	sd.sImageMark = "combat/icons/damage_floraform_ancient.png"
+	--cover up the forest fire icon if needed
+	if damage > 0 and damage ~= DAMAGE_ZERO and Board:GetTerrain(point) == TERRAIN_FOREST and not Board:IsFire(point) then
+		sd.sImageMark = "combat/icons/icon_th_ancientForest_burn_cover.png"
+	end
+	fx:AddDamage(sd)
+	fx:AddBounce(point, -6)
+	fx:AddBoardShake(0.5)
 end
 	
 function forestUtils.findAncientForests()

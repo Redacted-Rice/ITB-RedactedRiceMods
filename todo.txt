@@ -5,14 +5,10 @@ None
 ------------------------------------------------------------------------------
 
 Tree Herders:
-Redo/finish ancient tile
-	Looks okay enough for now to me. Try adding shadow though
-Create ancient weapon image (need to think on this one)
-Update forest armor weapon image with new sprite
+Sfx for summon ancients
 
 Bugs
 Forest armor doesn't work on own pawn attacks - only vek. Seems to not update on moving into either
-Add forest fire covering ancient floraformer icon
 
 Next release candidates:
 1. Treevac doesn't distinguish between damage in the attack that causes the push vs follow on attacks when checking for spaces to push to
