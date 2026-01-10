@@ -57,6 +57,9 @@ Location["combat/icons/damage_floraform_ancient.png"] = Location["combat/icons/i
 modApi:appendAsset("img/combat/icons/icon_th_forest_burn_cover.png", Treeherders_ResourcePath.."img/combat/icons/icon_th_forest_burn_cover.png")
 Location["combat/icons/icon_th_forest_burn_cover.png"] = Location["combat/icons/icon_forestArmor.png"]
 
+modApi:appendAsset("img/combat/icons/icon_th_ancientForest_burn_cover.png", Treeherders_ResourcePath.."img/combat/icons/icon_th_ancientForest_burn_cover.png")
+Location["combat/icons/icon_th_ancientForest_burn_cover.png"] = Location["combat/icons/icon_forestArmor.png"]
+
 
 --Projectiles
 modApi:appendAsset("img/effects/shotup_th_deadtree.png", Treeherders_ResourcePath.."img/effects/shotup_th_deadtree.png")
