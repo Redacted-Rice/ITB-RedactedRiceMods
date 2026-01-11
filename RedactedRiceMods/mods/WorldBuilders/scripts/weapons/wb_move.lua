@@ -73,18 +73,10 @@ function WorldBuilders_Passive_Move:UnsetFlyingIfTemporarilyAdded(pawn)
 	end
 end
 
--- On start and load, make them flying
-function WorldBuilders_Passive_Move:GetPassiveSkillEffect_MissionStartHook(mission)
-	for idx = 0,2 do
-		self:SetTemporarilyFlyingIfNeeded(Board:GetPawn(idx))
-	end
-end	
-
-function WorldBuilders_Passive_Move:GetPassiveSkillEffect_PostLoadGameHook(mission)
-	for idx = 0,2 do
-		self:SetTemporarilyFlyingIfNeeded(Board:GetPawn(idx))
-	end
-end	
+-- MissionStartHook seems better to use the onGameSave but it does not 
+-- fire on final mission. The on next phase fires too early before 
+-- pawns/board is made so it won't work right on that mission. For ease
+-- I just use on save which will fire after mission starts anyways
 
 -- unset everything on end
 function WorldBuilders_Passive_Move:GetPassiveSkillEffect_MissionEndHook(...)
@@ -137,9 +129,13 @@ function WorldBuilders_Passive_Move:GetPassiveSkillEffect_SaveGameHook(...)
 		end
 	end
 	self.loadHackedPawns = {}
+	
+	if Board then
+		for idx = 0,2 do
+			self:SetTemporarilyFlyingIfNeeded(Board:GetPawn(idx))
+		end
+	end
 end
-
-
 
 --only a preview for passive skills
 function WorldBuilders_Passive_Move:GetSkillEffect(p1, p2)
@@ -154,5 +150,5 @@ end
 
 WorldBuilders_Passive_Move.passiveEffect:addPassiveEffect("WorldBuilders_Passive_Move",
 		{"targetAreaBuildHook", "skillBuildHook", 
-		"missionStartHook", "postLoadGameHook", "missionEndHook",
+		"postLoadGameHook", "missionEndHook",
 		"postLoadGameHook", "saveGameHook"})

@@ -3,7 +3,7 @@ Passive Effect Library
 This library allows for easily creating passive effect for weapons tying into exiting game hooks
 
 Author: Das Keifer of Redacted Rice
-Version: 1.1.0
+Version: 1.2.0
 Discord Server: https://discord.gg/CNjTVrpN4v
 
 See the Treeherder's "Wake the Forest" passive ability for an example of usage
@@ -40,8 +40,8 @@ Special thanks to KartoFlane for helping strucutre this as a reusable library
  ]]--
 
 local passiveEffect = {
-	Version="1.1.0",
-	DebugLog = false,
+	Version="1.2.0",
+	DebugLog = true,
 }
 
 --shouldn't change this. Treat it as a constant. Changing in later version would cause incompatibility
@@ -51,6 +51,7 @@ passiveEffect.data = {}
 passiveEffect.data.autoPassivedWeapons = {}
 passiveEffect.data.possibleEffects = {}
 passiveEffect.data.activeEffects = {}
+passiveEffect.data.activePassives = {}
 
 passiveEffect.IsMechTest = false
 passiveEffect.hasEvaluatedForMechTest = false
@@ -130,6 +131,15 @@ function passiveEffect:addPassiveEffect(weapon, hook, weaponIsNotPassiveOnly)
 	end
 end
 
+--Checks if the any weapon with the passed base name is active
+function passiveEffect:isAnyVersionOfPassiveActive(weaponBaseName)
+	for	activeWeapon, _ in pairs(self.data.activePassives) do
+		if string.sub(activeWeapon, 1, string.len(weaponBaseName)) == weaponBaseName then
+			return true
+		end
+	end
+end
+
 --checks if the passed weapon data is in the list of potential passive weapons
 --and if it is construct the data needed and add it to the active passive
 --weapons list
@@ -152,6 +162,9 @@ function passiveEffect:checkAndAddIfPassive(weaponTable, owningPawnId)
 				--if the weapon is powerd
 				if self:isWeaponPowered(weaponTable) then
 					if passiveEffect.DebugLog then LOG("And it is active/powered") end
+					
+					-- add weapon to active passives
+					passiveEffect.data.activePassives[wName] = true
 
 					--get the weapon object and the effect function to use when the hook is fired
 					local wObj = _G[wName]
@@ -191,6 +204,9 @@ function passiveEffect:checkAndAddIfPassiveByPoweredWeaponName(weaponNameWithSuf
 			if string.sub(weaponNameWithSuffix,1,string.len(weapon)) == weapon then
 				if passiveEffect.DebugLog then LOG("FOUND POWERED PASSIVE WEAPON!: "..weaponNameWithSuffix) end
 
+				-- add weapon to active passives
+				passiveEffect.data.activePassives[weaponNameWithSuffix] = true
+					
 				--get the weapon object and the effect function to use when the hook is fired
 				local wObj = _G[weaponNameWithSuffix]
 				local wEffect = wObj[getFunctionNameForHook(hook)]
@@ -279,6 +295,7 @@ end
 
 function passiveEffect.clearActivePassives()
 	passiveEffect.data.activeEffects = {}
+	passiveEffect.data.activePassives = {}
 end
 
 --Function that is called after the mods are loaded that will set the passive
@@ -299,7 +316,7 @@ end
 --passive effects
 function buildPassiveEffectHookFn(hook)
 	return function(...)
-		if not (Pawn and Board and modapiext.weapon:isTipImage()) then
+		if not (Pawn and Board and Board:IsTipImage()) then
 			local previousPawn = Pawn
 			if passiveEffect.data.activeEffects[hook] then
 				if passiveEffect.DebugLog then LOG("Evaluating #"..#passiveEffect.data.activeEffects[hook].." active(powered) passive effects for hook: "..hook) end
@@ -334,9 +351,8 @@ end
 function passiveEffect:addHooks()
 	modApi:addMissionStartHook(self.determineIfPassivesAreActive) --covers starting a new
 	modApi:addPostLoadGameHook(self.determineIfPassivesAreActiveFromSaveData) --covers loading into (continuing) a mission
-	modApi:addMissionNextPhaseCreatedHook(self.determineIfPassivesAreActive) --covers transition from first phase of final fight to second phase
-	modApi:addMissionEndHook(self.clearActivePassives) --covers ending a mission (prevents adding multiple times)`
-	
+	-- existing will be cleared when we load again
+
 	-- Test mech requires special handling. The event is fired before the board is set so we
 	-- use the skill build as a trigger for loading the powered weapons as it will be done
 	-- right at the start since it starts with move active
