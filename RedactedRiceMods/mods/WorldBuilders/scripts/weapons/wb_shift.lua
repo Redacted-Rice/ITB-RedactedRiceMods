@@ -30,6 +30,7 @@ WorldBuilders_Shift = Skill:new{
 }
 
 WorldBuilders_Shift.weaponPreview = mod_loader.mods[modApi.currentMod].libs.weaponPreview
+WorldBuilders_Shift.passiveEffect = mod_loader.mods[modApi.currentMod].libs.passiveEffect
 
 Weapon_Texts.WorldBuilders_Shift_Upgrade1 = "+ Range"
 WorldBuilders_Shift_A = WorldBuilders_Shift:new
@@ -67,12 +68,18 @@ function WorldBuilders_Shift:GetTerrainOrLava(space)
 	return terrain
 end
 
-function WorldBuilders_Shift:CanSpaceBeOccupied(point)
-	return Board:GetTerrain(point) ~= TERRAIN_BUILDING and Board:GetTerrain(point) ~= TERRAIN_MOUNTAIN
+function WorldBuilders_Shift:CanSpaceBeOccupied(point, maybePawn)
+	-- if all terrain is active, we can "occupy" any
+	if maybePawn and maybePawn:IsMech() and 
+			WorldBuilders_Shift.passiveEffect:isAnyVersionOfPassiveActive("WorldBuilders_Passive_Move") then
+		return true
+	else 
+		return Board:GetTerrain(point) ~= TERRAIN_BUILDING and Board:GetTerrain(point) ~= TERRAIN_MOUNTAIN
+	end
 end
 
-function WorldBuilders_Shift:IsOpenForPawn(space)
-	return self:CanSpaceBeOccupied(space) and not Board:IsPawnSpace(space)
+function WorldBuilders_Shift:IsOpenForPawn(space, maybePawn)
+	return self:CanSpaceBeOccupied(space, maybePawn) and not Board:IsPawnSpace(space)
 end
 
 function WorldBuilders_Shift:IsUnshiftableCustomTile(p)
@@ -134,13 +141,13 @@ function WorldBuilders_Shift:GetSecondTargetArea(center, target1)
 		if Board:IsValid(target2) and dist <= size and target2 ~= target1 and not self:IsInvalidTargetSpace(target2) then
 			local goodTarget = true
 			-- if the space we are swapping in can't be occupied
-			if not self:CanSpaceBeOccupied(target2) then
+			if not self:CanSpaceBeOccupied(target2, Board:GetPawn(target1)) then
 				-- if its a pod or item, don't allow it -- too much work to swap pods as its mostly hardcoded in the game and I don't want to deal with memedit and no way to unset and item
 				if Board:IsPawnSpace(target1) and self:GetPushDirToOpenSpace(target1, target2) == DIR_NONE then
 					goodTarget = false
 				end
 			end
-			if not self:CanSpaceBeOccupied(target1) then
+			if not self:CanSpaceBeOccupied(target1, Board:GetPawn(target2)) then
 				-- if its a pod or item, don't allow it -- too much work to swap pods as its mostly hardcoded in the game and I don't want to deal with memedit and no way to unset and item
 				if Board:IsPawnSpace(target2) and self:GetPushDirToOpenSpace(target2, target1) == DIR_NONE then
 					goodTarget = false
@@ -163,7 +170,9 @@ function WorldBuilders_Shift:GetSecondTargetArea(center, target1)
 end
 
 function WorldBuilders_Shift:PushIfUnoccupiableSpace(p1, p2, terrainDamage, pushDamage)
-	if Board:IsPawnSpace(p1) and not self:CanSpaceBeOccupied(p2) then
+	LOG("PUSH CHECK")
+	if Board:IsPawnSpace(p1) and not self:CanSpaceBeOccupied(p2, Board:GetPawn(p1)) then
+		LOG("PUSHING")
 		local pushDir = self:GetPushDirToOpenSpace(p1, p2)
 		-- for some reason trying to apply a building too causes it
 		-- to not push so we add it twice. Also hide the push so it
@@ -399,7 +408,7 @@ function WorldBuilders_Shift:GetPushDirToOpenSpace(p1, p2)
 		local pushSpace = Point(p1 + DIR_VECTORS[dir])
 		-- if its a valid space and either is open for the pawn or its the other space and that space
 		-- can be occupied
-		if Board:IsValid(pushSpace) and (self:IsOpenForPawn(pushSpace) or (pushSpace == p2 and self:CanSpaceBeOccupied(p1))) then
+		if Board:IsValid(pushSpace) and (self:IsOpenForPawn(pushSpace) or (pushSpace == p2 and self:CanSpaceBeOccupied(p1) and self:IsOpenForPawn(p2))) then
 			return dir
 		end
 	end

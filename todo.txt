@@ -24,10 +24,7 @@ Forest Firer teleport and launch SFX just sometimes don't play. Not sure why thi
 ------------------------------------------------------------------------------
 
 World Builders:
-Final playthrough/testing`	`
-
-Next release candidates:
-Visual "bug" showing push damage when swap pushed with adjacent mountain or building. Not sure there is a way around this (bHide?)
+Test flying more and make sure its working right
 
 Known Issues:
 1. Move range hovering does not display right. This is not currently able to be changed
@@ -64,4 +61,4 @@ Squad 3: Mini Expansion - Its still a secret ;)
 ------------------------------------------------------------------------------
 
 Libs:
-None
+Make libs global so things like getting active passives in passive weapon will working correctly

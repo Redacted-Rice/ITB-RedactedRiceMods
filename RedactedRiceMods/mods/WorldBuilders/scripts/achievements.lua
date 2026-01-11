@@ -13,7 +13,7 @@ local achievements = {
 	utilitarian = modApi.achievements:add{
 		id = "utilitarian",
 		name = "Utilitarian",
-		tooltip = "Consume a building to prevent even more grid damage from happening",
+		tooltip = "Consume a building to prevent even more grid damage from happening (consumed building doesn't count)",
 		image = mod.resourcePath .. "img/achievements/utilitarian.png",
 		squad = squad,
 	},
