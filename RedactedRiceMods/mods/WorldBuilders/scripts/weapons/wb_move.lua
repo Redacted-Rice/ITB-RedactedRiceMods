@@ -60,14 +60,14 @@ end
 
 
 function WorldBuilders_Passive_Move:SetTemporarilyFlyingIfNeeded(pawn)
-	if pawn:IsMech() and self.Flying and not pawn:IsFlying() then
+	if pawn and pawn:IsMech() and self.Flying and not pawn:IsFlying() then
 		pawn:SetFlying(true)
 		self.MadeFlying[pawn:GetId()] = true
 	end
 end
 
 function WorldBuilders_Passive_Move:UnsetFlyingIfTemporarilyAdded(pawn)
-	if pawn:IsMech() and self.MadeFlying[pawn:GetId()] then
+	if pawn and pawn:IsMech() and self.MadeFlying[pawn:GetId()] then
 		pawn:SetFlying(false)
 		self.MadeFlying[pawn:GetId()] = nil
 	end
@@ -78,21 +78,9 @@ end
 -- pawns/board is made so it won't work right on that mission. For ease
 -- I just use on save which will fire after mission starts anyways
 
--- unset everything on end
-function WorldBuilders_Passive_Move:GetPassiveSkillEffect_MissionEndHook(...)
-	for idx = 0,2 do
-		self:UnsetFlyingIfTemporarilyAdded(Board:GetPawn(idx))
-	end
-end
-
---[[function WorldBuilders_Passive_Move:GetPassiveSkillEffect_SkillEndHook(mission, pawn, skill, p1, p2)
-	if p1 == TERRAIN_HOLE and Board:IsPawnSpace(p1) then
-		self:SetTemporarilyFlyingIfNeeded(Board:GetPawn(p1))
-	end
-	if p2 == TERRAIN_HOLE and Board:IsPawnSpace(p2) then
-		self:SetTemporarilyFlyingIfNeeded(Board:GetPawn(p2))
-	end
-end--]]
+-- MissionEndHook has issues too - its too early and mechs will fall to
+-- to their death... instead just tie into save game hook and do it based
+-- on if we are in a mission or not
 
 -- This is ugly but this is the only hacky way I could find to get resets
 -- and loads to work because the hooks are either before board is created
@@ -108,7 +96,6 @@ function WorldBuilders_Passive_Move:GetPassiveSkillEffect_PostLoadGameHook(...)
 				if type(v) == "table" and v.mech and v.type then
 					local pawnClass = _G[v.type]
 					if not pawnClass.Flying then
-						LOG("Set pawn type ".. k .." to flying")
 						self.loadHackedPawns[v.type] = true
 						pawnClass.Flying = true
 					end
@@ -130,9 +117,15 @@ function WorldBuilders_Passive_Move:GetPassiveSkillEffect_SaveGameHook(...)
 	end
 	self.loadHackedPawns = {}
 	
-	if Board then
+	-- if we are set to flying and there is a mission, add flying
+	if self.Flying and GetCurrentMission() then
 		for idx = 0,2 do
-			self:SetTemporarilyFlyingIfNeeded(Board:GetPawn(idx))
+			self:SetTemporarilyFlyingIfNeeded(Game:GetPawn(idx))
+		end
+	-- Otherwise try to unset in case its no longer enabled
+	else 
+		for idx = 0,2 do
+			self:UnsetFlyingIfTemporarilyAdded(Game:GetPawn(idx))
 		end
 	end
 end
@@ -150,5 +143,4 @@ end
 
 WorldBuilders_Passive_Move.passiveEffect:addPassiveEffect("WorldBuilders_Passive_Move",
 		{"targetAreaBuildHook", "skillBuildHook", 
-		"postLoadGameHook", "missionEndHook",
 		"postLoadGameHook", "saveGameHook"})

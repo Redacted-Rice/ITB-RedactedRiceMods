@@ -41,7 +41,7 @@ Special thanks to KartoFlane for helping strucutre this as a reusable library
 
 local passiveEffect = {
 	Version="1.2.0",
-	DebugLog = true,
+	DebugLog = false,
 }
 
 --shouldn't change this. Treat it as a constant. Changing in later version would cause incompatibility
@@ -132,12 +132,16 @@ function passiveEffect:addPassiveEffect(weapon, hook, weaponIsNotPassiveOnly)
 end
 
 --Checks if the any weapon with the passed base name is active
-function passiveEffect:isAnyVersionOfPassiveActive(weaponBaseName)
-	for	activeWeapon, _ in pairs(self.data.activePassives) do
-		if string.sub(activeWeapon, 1, string.len(weaponBaseName)) == weaponBaseName then
-			return true
+function passiveEffect:countAnyVersionOfPassiveActive(weaponBaseName)
+	local count = 0
+	for pawn, activeWeapons in pairs(self.data.activePassives) do
+		for	_, activeWeapon in pairs(activeWeapons) do
+			if string.sub(activeWeapon, 1, string.len(weaponBaseName)) == weaponBaseName then
+				count = count + 1
+			end
 		end
 	end
+	return count
 end
 
 --checks if the passed weapon data is in the list of potential passive weapons
@@ -164,7 +168,10 @@ function passiveEffect:checkAndAddIfPassive(weaponTable, owningPawnId)
 					if passiveEffect.DebugLog then LOG("And it is active/powered") end
 					
 					-- add weapon to active passives
-					passiveEffect.data.activePassives[wName] = true
+					if not passiveEffect.data.activePassives[owningPawnId] then
+						passiveEffect.data.activePassives[owningPawnId] = {}
+					end
+					table.insert(passiveEffect.data.activePassives[owningPawnId], wName)
 
 					--get the weapon object and the effect function to use when the hook is fired
 					local wObj = _G[wName]
@@ -205,7 +212,10 @@ function passiveEffect:checkAndAddIfPassiveByPoweredWeaponName(weaponNameWithSuf
 				if passiveEffect.DebugLog then LOG("FOUND POWERED PASSIVE WEAPON!: "..weaponNameWithSuffix) end
 
 				-- add weapon to active passives
-				passiveEffect.data.activePassives[weaponNameWithSuffix] = true
+				if not passiveEffect.data.activePassives[owningPawnId] then
+					passiveEffect.data.activePassives[owningPawnId] = {}
+				end
+				table.insert(passiveEffect.data.activePassives[owningPawnId], weaponNameWithSuffix)
 					
 				--get the weapon object and the effect function to use when the hook is fired
 				local wObj = _G[weaponNameWithSuffix]
@@ -260,7 +270,7 @@ function passiveEffect.determineIfPassivesAreActiveFromSaveData()
 
 	   --if it has a secondary then check if it is in the passive effects list
         if secondary.id then
-            if passiveEffect.DebugLog then LOG("Checking secondary weapon: "..secondary.id) end
+			if passiveEffect.DebugLog then LOG("Checking secondary weapon: "..secondary.id) end
             passiveEffect:checkAndAddIfPassive(secondary, pawnData.id)
 		end
 	end
@@ -268,17 +278,44 @@ end
 
 function passiveEffect.determineIfPassivesAreActive()
 	if passiveEffect.DebugLog then LOG("Determining what Passive Effects are active (powered)...") end
+	if passiveEffect.IsMechTest then 
+		if passiveEffect.DebugLog then LOG("Test scenario! Aborting update") end
+		return
+	end
 
 	--clear the previous list of active effects
 	passiveEffect.clearActivePassives()
 
 	--loop through the player mechs to see if they have one of the passive weapons equiped and powered
-	local pawns = Board:GetPawns(TEAM_ANY)
-	for _, pawnId in pairs(extract_table(pawns)) do
-		if passiveEffect.DebugLog then LOG("Checking pawn: "..pawnId) end
+	-- If we have a board use that
+	if GetCurrentMission() then
+		if passiveEffect.DebugLog then LOG("Mission available. Checking it") end
+		local pawns = Board:GetPawns(TEAM_ANY)
+		for _, pawnId in pairs(extract_table(pawns)) do
+			if passiveEffect.DebugLog then LOG("Checking pawn: "..pawnId) end
 
-		--get the weapon data
-		local pawn = Board:GetPawn(pawnId)
+			--get the weapon data
+			local pawn = Board:GetPawn(pawnId)
+			local weapons = pawn:GetPoweredWeaponTypes()
+			for _, result in pairs(weapons) do
+				passiveEffect:checkAndAddIfPassiveByPoweredWeaponName(result, pawnId)
+			end
+		end
+	else 
+		-- Otherwise do our best with Game
+		if passiveEffect.DebugLog then LOG("Mission not available. Updating player mechs only") end
+		for pawnId = 0, 2 do
+			passiveEffect.addPassivesGamePawn(pawnId)
+		end
+	end
+end
+
+function passiveEffect.addPassivesGamePawn(pawnId)
+	if passiveEffect.DebugLog then LOG("Checking Game pawn: "..pawnId) end
+	--get the weapon data
+	local pawn = Game:GetPawn(pawnId)
+	if pawn then 
+		if passiveEffect.DebugLog then LOG("found pawn. Checking weapons...") end
 		local weapons = pawn:GetPoweredWeaponTypes()
 		for _, result in pairs(weapons) do
 			passiveEffect:checkAndAddIfPassiveByPoweredWeaponName(result, pawnId)
@@ -286,10 +323,24 @@ function passiveEffect.determineIfPassivesAreActive()
 	end
 end
 
-function passiveEffect.testMechSetIfNotSet()
-	if passiveEffect.IsMechTest and not passiveEffect.hasEvaluatedForMechTest then
+function passiveEffect.saveGameRefreshPassives()
+	if passiveEffect.IsMechTest then
+		if not passiveEffect.hasEvaluatedForMechTest then
+			if passiveEffect.DebugLog then LOG("Refreshing test mechs passives") end
+			-- if its a test, just refresh this mechs stuff
+			passiveEffect.hasEvaluatedForMechTest = true
+			-- only one should be non-nil but this will handle regardless
+			for pawnId = 0, 2 do
+				if Game:GetPawn(pawnId) then
+					passiveEffect.data.activePassives[pawnId] = nil
+					passiveEffect.addPassivesGamePawn(pawnId)
+				end
+			end
+		end
+	else
+		-- Otherwise refresh for all our mechs
+		if passiveEffect.DebugLog then LOG("Updating all passives") end
 		passiveEffect.determineIfPassivesAreActive()
-		passiveEffect.hasEvaluatedForMechTest = true
 	end
 end
 
@@ -336,7 +387,7 @@ function buildPassiveEffectHookFn(hook)
 	end
 end
 
-function passiveEffect.setIsTestMech()
+function passiveEffect.setIsTestMech(mission)
 	passiveEffect.IsMechTest = true
 	passiveEffect.hasEvaluatedForMechTest = false
 end
@@ -344,6 +395,7 @@ end
 function passiveEffect.unsetIsTestMech()
 	passiveEffect.IsMechTest = false
 	passiveEffect.hasEvaluatedForMechTest = false
+	passiveEffect.saveGameRefreshPassives()
 end
 
 --The function that adds the required hooks to the game for passive weapons
@@ -351,14 +403,14 @@ end
 function passiveEffect:addHooks()
 	modApi:addMissionStartHook(self.determineIfPassivesAreActive) --covers starting a new
 	modApi:addPostLoadGameHook(self.determineIfPassivesAreActiveFromSaveData) --covers loading into (continuing) a mission
-	-- existing will be cleared when we load again
-
+	-- Guards for things only added during a mission or any edge cases as we save after any change that should result in them changing or testing the changes
+	modApi:addSaveGameHook(self.saveGameRefreshPassives) 
+	
 	-- Test mech requires special handling. The event is fired before the board is set so we
 	-- use the skill build as a trigger for loading the powered weapons as it will be done
 	-- right at the start since it starts with move active
 	modApi:addTestMechEnteredHook(self.setIsTestMech)
 	modApi:addTestMechExitedHook(self.unsetIsTestMech)
-	modapiext:addSkillBuildHook(self.testMechSetIfNotSet)
 
 	--Create the needed hook objects and add the functions that handle executing
 	--the active passive effects
