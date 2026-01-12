@@ -71,7 +71,7 @@ end
 function WorldBuilders_Shift:CanSpaceBeOccupied(point, maybePawn)
 	-- if all terrain is active, we can "occupy" any
 	if maybePawn and maybePawn:IsMech() and 
-			WorldBuilders_Shift.passiveEffect:isAnyVersionOfPassiveActive("WorldBuilders_Passive_Move") then
+			WorldBuilders_Shift.passiveEffect:countAnyVersionOfPassiveActive("WorldBuilders_Passive_Move") > 0 then
 		return true
 	else 
 		return Board:GetTerrain(point) ~= TERRAIN_BUILDING and Board:GetTerrain(point) ~= TERRAIN_MOUNTAIN
