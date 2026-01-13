@@ -24,7 +24,7 @@ Forest Firer teleport and launch SFX just sometimes don't play. Not sure why thi
 ------------------------------------------------------------------------------
 
 World Builders:
-Test with new passive effect changes
+None
 
 Next release candidates:
 1. Add icon for all terrain movement
@@ -32,6 +32,7 @@ Next release candidates:
 Known Issues:
 1. Move range hovering does not display right. This is not currently able to be changed
 2. When you move over a frozen tile, the ice will visually disappear but will still be there
+3. When you use mold with acid, damage on second effect will show base damage on the space but will show right damage on pawn itself. This seems to be just related to how ItB handles damage and acid and throws
 
 ------------------------------------------------------------------------------
 

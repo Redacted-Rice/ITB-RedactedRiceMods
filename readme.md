@@ -38,9 +38,9 @@ Latest release: 1.1.1
 ## 1.1.1
 Bug fix for Worldbuilders and PassiveEffect lib. Requires custom memedit
 
-Released: 01/13/2025 
+Released: 01/13/2026
 Treeherders 2.0.0
-WorldBuilders 1.0.0
+WorldBuilders 1.1.0
 
 Libs:
 BoardUtils 1.1.0
@@ -51,7 +51,7 @@ PredictableRandom 1.1.0
 Release of WorldBuilders! Still Requires custom memedit
 Also first release of BoardUtils lib
 
-Released: 01/10/2025 
+Released: 01/10/2026
 Treeherders 2.0.0
 WorldBuilders 1.0.0
 
