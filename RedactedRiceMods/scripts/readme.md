@@ -10,8 +10,20 @@ ItB Discord: Das Keifer
 Email: RedactedRice@gmail.com
 
 # Releases:
-## PassiveEffect
+
+## BoardUtils
 Current Release: 1.1.0
+
+### 1.1.0
+Released: 01/10/2025
+Initial release to keep in sync with other libs
+
+## PassiveEffect
+Current Release: 1.2.0
+
+### 1.2.0
+Released: 01/13/2025
+Fixed some passive effect issues specifically with not being added correctly to the second part of the final mission
 
 ### 1.1.0
 Released: 12/19/2025
@@ -21,7 +33,7 @@ Made it support multiple instances correctly
 Released: ?
 Initial Release.
 	
-## predictableRandom
+## PredictableRandom
 Current Release: 1.1.0
 
 ### 1.1.0

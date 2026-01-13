@@ -10,7 +10,24 @@ Please enjoy and contact us if you run into any issues.
 * Email: RedactedRice@gmail.com
 
 # Releases
-Latest release: 1.0.0
+Latest release: 1.1.0
+
+## 1.1.0
+Released: 01/13/2026
+compatible with:
+* ItB AE        1.2.93
+* ModLoader     2.9.4
+* ModLoaderExt  1.21
+* Memedit       1.2.1* (custom version)
+
+### Notes
+Some important bug fixes:
+1. Ending a mission with All-Terrain with Hover upgrade with a non-flying mech over a hole would cause it to fall into
+2. Fixing issue with passive not triggering correctly on second part of final mission and tracking in general
+3. "Fix" So pawns with All-Terrain active are not pushed by terrain swap
+4. Fix issue where All-Terrain did not properly check if it can push when swapping adjacent tiles
+5. Update text on Utilitarian achievement to clarify how it accounts for damage prevented
+Maybe a few other small ones too
 
 ## 1.0.0
 Released: 01/10/2026
