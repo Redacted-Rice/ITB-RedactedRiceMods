@@ -28,7 +28,6 @@ Test with new passive effect changes
 
 Next release candidates:
 1. Add icon for all terrain movement
-2. Passive for mechs other than equiped mech half works in test
 
 Known Issues:
 1. Move range hovering does not display right. This is not currently able to be changed
@@ -66,7 +65,3 @@ Squad 3: Mini Expansion - Its still a secret ;)
 
 Libs:
 Make libs global so things like getting active passives in passive weapon will working correctly
-
-Known Issues:
-	PassiveEffect:
-		1. If you power an upgrade, then shift to another pawn without testing or closing out the hangar, it won't update for the change until after closing the window or testing a mech. I don't think there is any reasonable way around this

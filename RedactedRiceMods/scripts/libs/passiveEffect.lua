@@ -398,6 +398,7 @@ function passiveEffect.unsetIsTestMech()
 	passiveEffect.saveGameRefreshPassives()
 end
 
+
 --The function that adds the required hooks to the game for passive weapons
 --This should only be called once for all instances of ModUtils!
 function passiveEffect:addHooks()
@@ -411,6 +412,8 @@ function passiveEffect:addHooks()
 	-- right at the start since it starts with move active
 	modApi:addTestMechEnteredHook(self.setIsTestMech)
 	modApi:addTestMechExitedHook(self.unsetIsTestMech)
+	
+
 
 	--Create the needed hook objects and add the functions that handle executing
 	--the active passive effects
