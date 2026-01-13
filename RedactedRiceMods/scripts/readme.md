@@ -15,7 +15,7 @@ Email: RedactedRice@gmail.com
 Current Release: 1.1.0
 
 ### 1.1.0
-Released: 01/10/2025
+Released: 01/10/2026
 Initial release to keep in sync with other libs
 
 ## PassiveEffect
