@@ -170,9 +170,7 @@ function WorldBuilders_Shift:GetSecondTargetArea(center, target1)
 end
 
 function WorldBuilders_Shift:PushIfUnoccupiableSpace(p1, p2, terrainDamage, pushDamage)
-	LOG("PUSH CHECK")
 	if Board:IsPawnSpace(p1) and not self:CanSpaceBeOccupied(p2, Board:GetPawn(p1)) then
-		LOG("PUSHING")
 		local pushDir = self:GetPushDirToOpenSpace(p1, p2)
 		-- for some reason trying to apply a building too causes it
 		-- to not push so we add it twice. Also hide the push so it
