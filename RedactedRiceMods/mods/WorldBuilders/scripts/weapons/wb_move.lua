@@ -1,6 +1,6 @@
 WorldBuilders_Passive_Move = PassiveSkill:new{
 	Name = "All Terrain",
-	Description = "Mechs can move through and on buildings and mountains and can move over pawns and holes",
+	Description = "Mechs can move through and on buildings and mountains and can move over pawns",
 	Icon = "weapons/passives/passive_wb_move.png",
 	Rarity = 2,
 
