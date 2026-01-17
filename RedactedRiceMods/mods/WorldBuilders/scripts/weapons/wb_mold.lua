@@ -1,6 +1,6 @@
 WorldBuilders_Mold = Skill:new{
 	Name = "Mold",
-	Description = "Uplift the terrain to deal damage, throw the target and create a barrier. Target pawn must die or be able to be moved to adj space",
+	Description = "Uplift the terrain to deal damage, throw the target and create a barrier. Target unit must die or be able to be moved to adj space",
 	Class = "Prime",
 	Icon = "weapons/prime_wb_mold.png",
 	Rarity = 1,
@@ -34,7 +34,7 @@ WorldBuilders_Mold = Skill:new{
 Weapon_Texts.WorldBuilders_Mold_Upgrade1 = "Permanence"
 WorldBuilders_Mold_A = WorldBuilders_Mold:new
 {
-	UpgradeDescription = "Create mountains instead of rocks",
+	UpgradeDescription = "Increase damage 1 and creates mountains instead of rocks",
 	MakeMountains = true,
 	Damage = 2,
 }
@@ -73,18 +73,20 @@ function WorldBuilders_Mold:GetTargetArea(p1)
 	local ret = PointList()
 	for dir = DIR_START, DIR_END do
 		local targetSpace = p1 + DIR_VECTORS[dir]
-		if Board:IsValid(targetSpace) then
+		if Board:IsValid(targetSpace) and self:GetSecondTargetArea(p1, targetSpace):size() > 0 then
 			ret:push_back(targetSpace)
 		end
 	end
 	return ret
 end
 
-function WorldBuilders_Mold:GetSecondTargetArea(p1,p2)
+function WorldBuilders_Mold:GetSecondTargetArea(p1, p2)
 	local ret = PointList()
 	
 	local isPawnTargetted = Board:IsPawnSpace(p2)
-	if self:NoPawnOrWillDie(p1, p2) or (isPawnTargetted and Board:GetPawn(p2):IsGuarding()) then
+	-- if the pawn will die, allow any adj target
+	local anyValid = self:NoPawnOrWillDie(p1, p2) or (isPawnTargetted and Board:GetPawn(p2):IsGuarding())
+	if anyValid then
 		ret:push_back(p2)
 	end
 
@@ -98,8 +100,9 @@ function WorldBuilders_Mold:GetSecondTargetArea(p1,p2)
 		local diff = p2 - p
 		local dist = math.abs(diff.x) + math.abs(diff.y)
 		-- If the space is not an invalid target (multispace, non pushable pawn)
-		if dist <= size and Board:IsValid(p) and
-				(not isPawnTargetted or not Board:IsBlocked(p, PATH_FLYER)) then
+		if dist <= size and Board:IsValid(p) and 
+				(anyValid or
+					(not isPawnTargetted or not Board:IsBlocked(p, PATH_FLYER))) then
 			ret:push_back(p)
 		end
 		p = p + VEC_RIGHT
