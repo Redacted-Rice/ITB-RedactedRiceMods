@@ -2,7 +2,7 @@ WorldBuilders_Consume = Skill:new
 {
 	Name = "Consume",
     Class = "Brute",
-    Description = "Consume the tile behind you and blast it at the target. The effect & damage varies based on the consumed tile. Can't consume pawns (except rocks)",
+    Description = "Consume the tile behind you and blast it at the target. The effect & damage varies based on the consumed tile. Can't consume units (except rocks)",
 	Icon = "weapons/brute_wb_consume.png",
 	Rarity = 1,
 

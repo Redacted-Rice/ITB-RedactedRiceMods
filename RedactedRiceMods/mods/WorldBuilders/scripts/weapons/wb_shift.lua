@@ -1,6 +1,6 @@
 WorldBuilders_Shift = Skill:new{
 	Name = "Shift",
-	Description = "Swap solid terrain, effects, and items of two tiles. Does not swap unique buildings, holes, liquid, pawns, or time pods",
+	Description = "Swap solid terrain, effects, and items of two tiles. Does not swap unique buildings, holes, liquid, units, or time pods",
 	Class = "Science",
 	Icon = "weapons/science_wb_shift.png",
 	Rarity = 1,
