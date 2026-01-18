@@ -13,7 +13,7 @@ Email: RedactedRice@gmail.com
 
 # Squads
 * Treeherders - v2.0.0 - Inspired by ents, this squad focuses on using forests tiles to increase their power. The flagship entborg mech gets stronger as the forests get destroyed
-* WorldBuilders - v1.1.0 - This squad focuses on terrain manipulation to block and avoid damage. It has some strong single target effects but you can easily get overwhelmed by numbers if not strategically manipulating the terrain
+* WorldBuilders - v1.1.1 - This squad focuses on terrain manipulation to block and avoid damage. It has some strong single target effects but you can easily get overwhelmed by numbers if not strategically manipulating the terrain
 
 # Libs
 * BoardUtils - v1.1.0 - Library for board related functions and pathing
@@ -33,7 +33,19 @@ Email: RedactedRice@gmail.com
 To uninstall, delete the folder in mods
 
 # Releases
-Latest release: 1.1.1
+Latest release: 1.1.2
+
+## 1.1.1
+Minor bug fixes/updates for Worldbuilders. Requires custom memedit
+
+Released: 01/17/2026
+Treeherders 2.0.0
+WorldBuilders 1.1.1
+
+Libs:
+BoardUtils 1.1.0
+PassiveEffect 1.2.0
+PredictableRandom 1.1.0
 
 ## 1.1.1
 Bug fix for Worldbuilders and PassiveEffect lib. Requires custom memedit

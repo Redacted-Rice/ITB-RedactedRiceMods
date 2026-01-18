@@ -10,7 +10,23 @@ Please enjoy and contact us if you run into any issues.
 * Email: RedactedRice@gmail.com
 
 # Releases
-Latest release: 1.1.0
+Latest release: 1.1.1
+
+## 1.1.1
+Released: 01/17/2026
+compatible with:
+* ItB AE        1.2.93
+* ModLoader     2.9.4
+* ModLoaderExt  1.21
+* Memedit       1.2.1* (custom version)
+
+### Notes
+Changes
+1. Reworked Mold targetting to be more intuitive
+	a. Can now target any adjacent space if the unit would die
+	b. Made it so it won't show first target areas that have no valid second target
+2. Replaced "pawn" with "unit" in descriptions to be more inline with vanilla
+3. Updated Permanence to mention it increases damage as well
 
 ## 1.1.0
 Released: 01/13/2026
