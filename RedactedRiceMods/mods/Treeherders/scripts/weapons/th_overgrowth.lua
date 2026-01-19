@@ -24,6 +24,7 @@ Treeherders_Overgrowth = Skill:new
 		Unit = Point(2,3),
 		Target = Point(2,1),
 		Enemy = Point(2,1),
+		Enemy2 = Point(3,2),
 	},
 }
 
@@ -40,6 +41,13 @@ Treeherders_Overgrowth_A = Treeherders_Overgrowth:new
 {
 	UpgradeDescription = "Repeat effect on a second target",
 	TwoClick = true,
+    TipImage = {
+		Unit = Point(2,3),
+		Target = Point(2,1),
+		Enemy = Point(2,1),
+		Enemy2 = Point(3,2),
+		Second_Click = Point(3,2),
+	},
 }
 
 Weapon_Texts.Treeherders_Overgrowth_Upgrade2 = "Extra Forests"
@@ -54,50 +62,94 @@ Treeherders_Overgrowth_AB = Treeherders_Overgrowth_A:new
 	ForestPawns = true,
 }
 
-function Treeherders_Overgrowth:GetTargetArea(point)
+function Treeherders_Overgrowth:DetermineTargetArea(point, toExclude)
 	local ret = PointList()
 
 	-- Can target anywhere as long as its formable
 	for x = 0, 7 do
 		for y = 0,7 do
 			local point = Point(x, y)
-			if forestUtils.isSpaceFloraformable(point) then
+			if forestUtils.isSpaceFloraformable(point) and 
+					not (toExclude and toExclude == point) then
 				ret:push_back(point)
 			end
 		end
 	end
 	
 	return ret
+
 end
 
-function Treeherders_Overgrowth:AddEffectForTarget(effect, point)
+function Treeherders_Overgrowth:GetTargetArea(point)
+	return self:DetermineTargetArea(point)
+end
+
+function Treeherders_Overgrowth:AddEffectForTarget(effect, point, otherPoint)
 	forestUtils.addCreateAncientForest(point, self.Damage, effect)
 	effect:AddDelay(0.1)
 	
 	for i = 0, 3 do
 		local adj = point + DIR_VECTORS[i]
 		-- avoid making the target spaces forests also
-		if adj ~= p2 and adj ~= p3 and forestUtils.isSpaceFloraformable(adj) then
-			forestUtils:floraformSpace(effect, adj, DAMAGE_ZERO)
+		if adj ~= otherPoint and forestUtils.isSpaceFloraformable(adj) then
+			forestUtils:floraformSpace(effect, adj)
 		end
+	end
+end
+
+function Treeherders_Overgrowth:AddForestPawns(effect, p2, p3)
+	if self.ForestPawns then
+		local pawns = Board:GetPawns(TEAM_ANY)
+		for i = 1, pawns:size() do
+			effect:AddDelay(0.2)
+			local pawnSpace = Board:GetPawnSpace(pawns:index(i))
+			if pawnSpace ~= p2 and pawnSpace ~= p3 and not Board:IsTerrain(pawnSpace, TERRAIN_FOREST) then
+				forestUtils:floraformSpace(effect, pawnSpace)
+			end
+		end
+	end
+end
+
+-- For the tip image to replay, we need to clear custom tiles out
+-- Not really sure why this prevents it from replaying
+function Treeherders_Overgrowth:ResetForTipImage(effect, p2, p3)
+	if Board:IsTipImage() then
+		effect:AddDelay(2)
+		local sd = SpaceDamage(p2) -- p doesn't matter...
+		sd.sScript = sd.sScript .. [[
+				Board:SetCustomTile(]] .. p2:GetString() .. [[, "")]]
+		if p3 then
+			sd.sScript = sd.sScript .. [[
+					Board:SetCustomTile(]] .. p3:GetString() .. [[, "")]]
+		end
+		effect:AddDamage(sd)
 	end
 end
 
 function Treeherders_Overgrowth:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
 	self:AddEffectForTarget(ret, p2)
+	
+	self:AddForestPawns(ret, p2)
+	
+	self:ResetForTipImage(ret, p2)
 	return ret
 end
 
 function Treeherders_Overgrowth:GetSecondTargetArea(p1,p2)
-	return self:GetTargetArea(p2)
+	return self:DetermineTargetArea(p1, p2)
 end
 
 function Treeherders_Overgrowth:GetFinalEffect(p1,p2,p3)
 	local ret = SkillEffect()
-	self:AddEffectForTarget(ret, p2)
+	self:AddEffectForTarget(ret, p2, p3)
+	ret:AddDelay(0.4)
+	self:AddEffectForTarget(ret, p3, p2)
 	ret:AddDelay(0.2)
-	self:AddEffectForTarget(ret, p3)
+	
+	self:AddForestPawns(ret, p2, p3)
+	
+	self:ResetForTipImage(ret, p2, p3)
 	return ret
 end
 
@@ -114,7 +166,7 @@ function Treeherders_Overgrowth:GetPassiveSkillEffect_NextTurnHook(mission)
 				-- only does 1 damage passively
 				effect:AddDamage(SpaceDamage(point, 1, DIR_FLIP))
 				effect:AddBounce(point, 3)
-				effect:AddBoardShake(0.5)
+				effect:AddBoardShake(forestUtils.shakeOvergrowth)
 				effect:AddDelay(0.1)
 				Board:AddEffect(effect)
 			end

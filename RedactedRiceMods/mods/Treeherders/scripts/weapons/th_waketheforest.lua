@@ -150,11 +150,8 @@ function Treeherders_Passive_WakeTheForest:FloraformSpaces()
 end
 
 ------------------- FOREST ARMOR AND TREEVAC ---------------------------
-Treeherders_Passive_WakeTheForest.storedForestArmorIcon = {}
 
 function Treeherders_Passive_WakeTheForest:SetForestArmorIcon(id, point)
-	self:UnsetPrevForestArmorIcon(id)
-
 	if forestUtils.isAnAncientForest(point) then
 		Board:SetTerrainIcon(point, "forestArmor_ancient")
 	elseif self.Evacuate then
@@ -162,22 +159,43 @@ function Treeherders_Passive_WakeTheForest:SetForestArmorIcon(id, point)
 	else
 		Board:SetTerrainIcon(point, "forestArmor")
 	end
-
-	self.storedForestArmorIcon[id] = point
 end
 
-function Treeherders_Passive_WakeTheForest:UnsetPrevForestArmorIcon(id)
-	if self.storedForestArmorIcon[id] then
-		Board:SetTerrainIcon(self.storedForestArmorIcon[id], "")
-		self.storedForestArmorIcon[id] = nil;
+function Treeherders_Passive_WakeTheForest:CleanNonMech()
+	local size = Board:GetSize()
+	for x = 1, size.x do
+		for y = 1, size.y do
+			local p = Point(x - 1, y - 1)
+			local pawn = Board:GetPawn(p)
+			if pawn and pawn:IsMech() and Board:IsTerrain(p, TERRAIN_FOREST) then
+				self:SetForestArmorIcon(id, p)
+			else
+				Board:SetTerrainIcon(p, "")
+			end
+		end
 	end
 end
 
-function Treeherders_Passive_WakeTheForest:UpdateForestArmorForMechAtSpace(id, point)
-	if forestUtils.isAForest(point) then
-		self:SetForestArmorIcon(id, point)
+function Treeherders_Passive_WakeTheForest:SetNonVek()
+	local size = Board:GetSize()
+	for x = 1, size.x do
+		for y = 1, size.y do
+			local p = Point(x - 1, y - 1)
+			local pawn = Board:GetPawn(p)
+			if (pawn and not pawn:IsMech()) or not Board:IsTerrain(p, TERRAIN_FOREST) then
+				Board:SetTerrainIcon(p, "")
+			else
+				self:SetForestArmorIcon(id, p)
+			end
+		end
+	end
+end
+
+function Treeherders_Passive_WakeTheForest:UpdateForestArmor()
+	if Game:GetTeamTurn() == TEAM_PLAYER then
+		self:SetNonVek()
 	else
-		self:UnsetPrevForestArmorIcon(id)
+		self:CleanNonMech()
 	end
 end
 
@@ -188,17 +206,11 @@ function Treeherders_Passive_WakeTheForest.EligibleForForestArmor(pawn)
 	return false
 end
 
-function Treeherders_Passive_WakeTheForest:RefreshForestArmorIconToAllMechs()
-	local mechs = Board:GetPawns(TEAM_MECH)
-	for _, mechId in pairs(extract_table(mechs)) do
-		local space = Board:GetPawnSpace(mechId)
-		self:UpdateForestArmorForMechAtSpace(mechId, space)
-	end
-end
-
 function Treeherders_Passive_WakeTheForest:ApplyForestArmorToSpaceDamage(spaceDamage)
 	if self.ForestArmor then
+		--LOG("ApplyForestArmorToSpaceDamage "..spaceDamage.loc:GetString())
 		if spaceDamage.iDamage ~= DAMAGE_ZERO and spaceDamage.iDamage ~= DAMAGE_DEATH then
+			--LOG("ApplyForestArmorToSpaceDamage2 "..spaceDamage.loc:GetString())
 			-- prevent all (non-lethal) damage on ancient forest
 			if spaceDamage.iDamage ~= 1 and not forestUtils.isAnAncientForest(spaceDamage.loc) then
 				spaceDamage.iDamage = spaceDamage.iDamage - 1
@@ -252,12 +264,15 @@ function Treeherders_Passive_WakeTheForest:ApplyForestArmorAndEvacuate(effect, a
 		--determine what spaces are being attacked
 		for _, spaceDamage in pairs(extract_table(effect)) do
 			evacuatedToOrAttackedSpaces[forestUtils:getSpaceHash(spaceDamage.loc)] = spaceDamage.loc
+			--LOG("targets "..spaceDamage.loc:GetString())
 		end
 
 		for _, spaceDamage in pairs(extract_table(effect)) do
 			local damagedPawn = Board:GetPawn(spaceDamage.loc)
+			--LOG("targets2 "..spaceDamage.loc:GetString())
 			if damagedPawn and forestUtils.isAForest(spaceDamage.loc) and
 						spaceDamage.iDamage > 0 and self.EligibleForForestArmor(damagedPawn) then
+				--LOG("damaging "..spaceDamage.loc:GetString())
 
 				self:ApplyForestArmorToSpaceDamage(spaceDamage)
 
@@ -281,6 +296,7 @@ end
 function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_PreEnvironmentHook(mission)	
 	--floraform the spaces
 	self:FloraformSpaces()
+	self:UpdateForestArmor()
 end
 
 function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_MissionStartHook(mission)
@@ -289,25 +305,62 @@ function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_MissionStartHoo
 end
 
 -- Skill build hooks
-function Treeherders_Passive_WakeTheForest:SkillBuildHook(weaponId, p1, p2, skillFx)
-	-- Sometimes the skill is nil? Not sure why
+function Treeherders_Passive_WakeTheForest:SkillBuildHook(pawn, weaponId, p1, p2, skillFx)
 	if weaponId ~= "Move" and skillFx ~= nil then
-		-- Just try both. AFAIK it will only be one but it doesn't hurt and we guarantee 
+		-- Just try both. AFAIK it will only be one but it doesn't hurt and we guarantee
 		-- covering all cases
 		self:ApplyForestArmorAndEvacuate(skillFx.effect, p1)
 		self:ApplyForestArmorAndEvacuate(skillFx.q_effect, p1)
 	end
-	self:RefreshForestArmorIconToAllMechs()
 end
 
 function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_SkillBuildHook(mission, pawn, weaponId, p1, p2, skillFx)
-	return self:SkillBuildHook(weaponId, p1, p2, skillFx)
+	return self:SkillBuildHook(pawn, weaponId, p1, p2, skillFx)
 end
 
-function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_FinalEffectBuildHook(mission, pawn, weaponId, p1, p2, p3, skillEffect)
-	return self:SkillBuildHook(weaponId, p1, p2, skillFx)
+function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_FinalEffectBuildHook(mission, pawn, weaponId, p1, p2, p3, skillFx)
+	return self:SkillBuildHook(pawn, weaponId, p1, p2, skillFx)
 end
 
+function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_NextTurnHook(mission)
+	self:UpdateForestArmor()
+end
+
+function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_PawnPositionChangedHook(mission, pawn, oldPoint)
+	self:UpdateForestArmor()
+end
+
+function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_PostLoadGameHook(mission)
+	-- Load is fired before board is ready. Run later works to let the
+	-- board populate first
+	modApi:runLater(function()
+		self:UpdateForestArmor()
+	end)
+end
+
+function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_OnPawnTracked(mission)
+	self:UpdateForestArmor()
+end
+
+function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_SkillEndHook(mission)
+	self:UpdateForestArmor()
+end
+
+function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_QueuedSkillEndHook(mission)
+	self:UpdateForestArmor()
+end
+
+function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_FinalEffectEndHook(mission)
+	self:UpdateForestArmor()
+end
+
+function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_QueuedFinalEffectEndHook(mission)
+	self:UpdateForestArmor()
+end
 
 Treeherders_Passive_WakeTheForest.passiveEffect:addPassiveEffect("Treeherders_Passive_WakeTheForest",
-		{"skillBuildHook",  "finalEffectBuildHook", "preEnvironmentHook", "missionStartHook"})
+		{"skillBuildHook",  "finalEffectBuildHook",  
+		"nextTurnHook", "pawnPositionChangedHook", 
+		"postLoadGameHook", "onPawnTracked", 
+		"skillEndHook", "queuedSkillEndHook", "finalEffectEndHook", "queuedFinalEffectEndHook",
+		"preEnvironmentHook", "missionStartHook"})

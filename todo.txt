@@ -5,10 +5,7 @@ None
 ------------------------------------------------------------------------------
 
 Tree Herders:
-Sfx for summon ancients
-
-Bugs
-Forest armor doesn't work on own pawn attacks - only vek. Seems to not update on moving into either
+Playtest!
 
 Next release candidates:
 1. Treevac doesn't distinguish between damage in the attack that causes the push vs follow on attacks when checking for spaces to push to
