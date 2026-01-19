@@ -35,6 +35,8 @@ end
 ------------------ ACNIENT FOREST TILE STUFF --------------------------
 
 forestUtils.overgrowth = "overgrowth.png"
+forestUtils.soundOvergrowth = "/prop/ground_breaking_tile"
+forestUtils.shakeOvergrowth = 0.4
 forestUtils.overgrowthTileName = "Ancient Forest"
 forestUtils.overgrowthTileText = "Stops vek when moved to. At end of vek's turn deals 1 damage and flips their attack. Does not ignite on damaged."
 
@@ -116,12 +118,17 @@ function forestUtils:getSpaceDamageWithoutSettingFire(p, damage, pushDir, allyIm
 	local pawn = Board:GetPawn(p)
 
 	local sDamage = damage
-	if sDamage == 0 or (allyImmune and ((pawn and pawn:IsPlayer()) or Board:IsPod(p))) or (buildingImmune and Board:IsBuilding(p)) then
+	if sDamage and sDamage == 0 or (allyImmune and ((pawn and pawn:IsPlayer()) or Board:IsPod(p))) or (buildingImmune and Board:IsBuilding(p)) then
 		sDamage = DAMAGE_ZERO
 	end
 
 	if pushDir then
+		if not sDamage then
+			sDamage = DAMAGE_ZERO
+		end
 		spaceDamage = SpaceDamage(p, sDamage, pushDir)
+	elseif not sDamage then
+		spaceDamage = SpaceDamage(p)
 	else
 		spaceDamage = SpaceDamage(p, sDamage)
 	end
@@ -138,7 +145,7 @@ function forestUtils:getSpaceDamageWithoutSettingFire(p, damage, pushDir, allyIm
 	end
 
 	--cover up the forest fire icon
-	if sDamage > 0 and sDamage ~= DAMAGE_ZERO and Board:GetTerrain(p) == TERRAIN_FOREST and not Board:IsFire(p) then
+	if sDamage and sDamage > 0 and sDamage ~= DAMAGE_ZERO and Board:GetTerrain(p) == TERRAIN_FOREST and not Board:IsFire(p) then
 		spaceDamage.sImageMark = "combat/icons/icon_th_forest_burn_cover.png"
 	end
 
@@ -183,8 +190,6 @@ function forestUtils:getNumForestsInPlus(p)
 end
 
 function forestUtils:floraformSpace(effect, point, damage, pushDir, allyImmune, buildingImmune)
-	damage = damage or DAMAGE_ZERO
-
 	effect:AddDamage(self:getFloraformSpaceDamage(point, damage, pushDir, allyImmune, buildingImmune))
 	effect:AddBounce(point, self.floraformBounce)
 end
@@ -281,13 +286,14 @@ function forestUtils.addCreateAncientForest(point, damage, fx)
 	sd.iTerrain = TERRAIN_ROAD
 	sd.sScript = [[ Board:SetCustomTile(]] .. point:GetString() .. [[, "]].. forestUtils.overgrowth .. [[")]]
 	sd.sImageMark = "combat/icons/damage_floraform_ancient.png"
+	sd.sSount = forestUtils.soundOvergrowth
 	--cover up the forest fire icon if needed
 	if damage > 0 and damage ~= DAMAGE_ZERO and Board:GetTerrain(point) == TERRAIN_FOREST and not Board:IsFire(point) then
 		sd.sImageMark = "combat/icons/icon_th_ancientForest_burn_cover.png"
 	end
 	fx:AddDamage(sd)
 	fx:AddBounce(point, -6)
-	fx:AddBoardShake(0.5)
+	fx:AddBoardShake(forestUtils.shakeOvergrowth)
 end
 	
 function forestUtils.findAncientForests()
@@ -507,7 +513,7 @@ function forestUtils:FindBfsPath(p1, p2, tiles)
     cameFrom[self:getSpaceHash(p1)] = false
 
     while queue[head] do
-		LOG("Checking "..queue[head]:GetString())
+		--LOG("Checking "..queue[head]:GetString())
         local cur = queue[head]
         head = head + 1
 

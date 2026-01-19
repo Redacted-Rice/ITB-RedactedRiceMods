@@ -49,10 +49,10 @@ Location["combat/icons/icon_forestArmor_treevac.png"] = Location["combat/icons/i
 Location["combat/icons/icon_forestArmor_treevac_glow.png"] = Location["combat/icons/icon_forestArmor.png"]
 
 modApi:appendAsset("img/combat/icons/damage_floraform.png", Treeherders_ResourcePath.."img/combat/icons/damage_floraform.png")
-Location["combat/icons/damage_floraform.png"] = Location["combat/icons/icon_forestArmor.png"]
+Location["combat/icons/damage_floraform.png"] = Point(-12, 21)
 
 modApi:appendAsset("img/combat/icons/damage_floraform_ancient.png", Treeherders_ResourcePath.."img/combat/icons/damage_floraform_ancient.png")
-Location["combat/icons/damage_floraform_ancient.png"] = Location["combat/icons/icon_forestArmor.png"]
+Location["combat/icons/damage_floraform_ancient.png"] = Location["combat/icons/damage_floraform.png"]
 
 modApi:appendAsset("img/combat/icons/icon_th_forest_burn_cover.png", Treeherders_ResourcePath.."img/combat/icons/icon_th_forest_burn_cover.png")
 Location["combat/icons/icon_th_forest_burn_cover.png"] = Location["combat/icons/icon_forestArmor.png"]
