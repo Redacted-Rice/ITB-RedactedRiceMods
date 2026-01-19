@@ -296,12 +296,7 @@ end
 function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_PreEnvironmentHook(mission)	
 	--floraform the spaces
 	self:FloraformSpaces()
-	self:UpdateForestArmor()
-end
-
-function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_MissionStartHook(mission)
-	--Fire on mission start as well
-	self:FloraformSpaces()
+	--self:UpdateForestArmor()
 end
 
 -- Skill build hooks
@@ -326,41 +321,50 @@ function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_NextTurnHook(mi
 	self:UpdateForestArmor()
 end
 
-function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_PawnPositionChangedHook(mission, pawn, oldPoint)
-	self:UpdateForestArmor()
+function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_PawnPositionChangedHook()
+	self:CleanNonMech()
 end
 
-function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_PostLoadGameHook(mission)
+function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_PostLoadGameHook()
 	-- Load is fired before board is ready. Run later works to let the
 	-- board populate first
 	modApi:runLater(function()
-		self:UpdateForestArmor()
+		self:CleanNonMech()
 	end)
 end
 
-function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_OnPawnTracked(mission)
+function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_PawnSelectedHook()
+	if pawn:IsMech() then
+		self:SetNonVek()
+	end
+end
+
+function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_PawnDeselectedHook()
+	self:CleanNonMech()
+end 
+
+function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_PawnTrackedHook()
 	self:UpdateForestArmor()
 end
 
-function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_SkillEndHook(mission)
+function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_SkillEndHook()
 	self:UpdateForestArmor()
 end
 
-function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_QueuedSkillEndHook(mission)
+function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_QueuedSkillEndHook()
 	self:UpdateForestArmor()
 end
 
-function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_FinalEffectEndHook(mission)
+function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_FinalEffectEndHook()
 	self:UpdateForestArmor()
 end
 
-function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_QueuedFinalEffectEndHook(mission)
+function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_QueuedFinalEffectEndHook()
 	self:UpdateForestArmor()
 end
 
 Treeherders_Passive_WakeTheForest.passiveEffect:addPassiveEffect("Treeherders_Passive_WakeTheForest",
 		{"skillBuildHook",  "finalEffectBuildHook",  
-		"nextTurnHook", "pawnPositionChangedHook", 
-		"postLoadGameHook", "onPawnTracked", 
-		"skillEndHook", "queuedSkillEndHook", "finalEffectEndHook", "queuedFinalEffectEndHook",
-		"preEnvironmentHook", "missionStartHook"})
+		"pawnSelectedHook", "pawnDeselectedHook", "pawnPositionChangedHook", "postLoadGameHook", 
+		--"pawnTrackedHook", "skillEndHook", "queuedSkillEndHook", "finalEffectEndHook", "queuedFinalEffectEndHook",
+		"preEnvironmentHook"})
