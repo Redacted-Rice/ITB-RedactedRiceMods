@@ -17,9 +17,21 @@ if cyborg == 1 then
 		Personality = "Vek",
 		Sex = SEX_VEK,
 		Rarity = 0,
-		Skill = "Survive_Death",
+		GetSkill = function() IsEnt = true; return "Survive_Death" end,
 		Blacklist = {"Invulnerable", "Popular"},
 	}
+end
+	
+-- Borrowed from Meta's Pokemon mod
+-- Needs to be in global space so just define it anyways. Won't
+-- cause issues if Entborg is not a cyborg
+local oldGetSkillInfo = GetSkillInfo
+function GetSkillInfo(skill)
+	if IsEnt then
+		IsEnt = nil
+		return PilotSkill("Ent", "Normal Pilots cannot be equipped. Revives at the end of battle.")
+	end
+	return oldGetSkillInfo(skill)
 end
 	
 local files = {
