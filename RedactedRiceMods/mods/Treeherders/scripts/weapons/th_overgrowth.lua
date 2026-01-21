@@ -2,7 +2,7 @@ Treeherders_Overgrowth = Skill:new
 {
 	Name = "Summon Ancients",
 	Class = "Prime",
-	Description = "Create an overgrowth tile with forest tiles surounding it. Flip target's direction",
+	Description = "Create an overgrowth tile with forest tiles on the sides. Flip target's direction",
 	Icon = "weapons/prime_th_summonTheAncients.png",
 	Rarity = 2,
 	
@@ -14,7 +14,7 @@ Treeherders_Overgrowth = Skill:new
     PowerCost = 0,
 	Limited = 1,
     Upgrades = 2,
-    UpgradeCost = { 1, 1 },
+    UpgradeCost = { 2, 1 },
 	
 	--custom
 	ForestPawns = false,
@@ -53,7 +53,7 @@ Treeherders_Overgrowth_A = Treeherders_Overgrowth:new
 Weapon_Texts.Treeherders_Overgrowth_Upgrade2 = "Extra Forests"
 Treeherders_Overgrowth_B = Treeherders_Overgrowth:new
 {
-	UpgradeDescription = "Grow forests on each tile with pawns",
+	UpgradeDescription = "Grow forests on each tile with an enemy",
 	ForestPawns = true,
 }
 
@@ -88,12 +88,16 @@ function Treeherders_Overgrowth:AddEffectForTarget(effect, point, otherPoint)
 	forestUtils.addCreateAncientForest(point, self.Damage, effect)
 	effect:AddDelay(0.1)
 	
-	for i = 0, 3 do
-		local adj = point + DIR_VECTORS[i]
-		-- avoid making the target spaces forests also
-		if adj ~= otherPoint and forestUtils.isSpaceFloraformable(adj) then
-			forestUtils:floraformSpace(effect, adj)
-		end
+	local adj = point + DIR_VECTORS[0]
+	-- avoid making the target spaces forests also
+	if adj ~= otherPoint and forestUtils.isSpaceFloraformable(adj) then
+		forestUtils:floraformSpace(effect, adj)
+	end
+	
+	adj = point + DIR_VECTORS[2]
+	-- avoid making the target spaces forests also
+	if adj ~= otherPoint and forestUtils.isSpaceFloraformable(adj) then
+		forestUtils:floraformSpace(effect, adj)
 	end
 end
 
@@ -102,8 +106,9 @@ function Treeherders_Overgrowth:AddForestPawns(effect, p2, p3)
 		local pawns = Board:GetPawns(TEAM_ANY)
 		for i = 1, pawns:size() do
 			effect:AddDelay(0.2)
-			local pawnSpace = Board:GetPawnSpace(pawns:index(i))
-			if pawnSpace ~= p2 and pawnSpace ~= p3 and not Board:IsTerrain(pawnSpace, TERRAIN_FOREST) then
+			local pawn = Board:GetPawn(pawns:index(i))
+			local pawnSpace = pawn:GetSpace()
+			if pawn:IsEnemy() and pawnSpace ~= p2 and pawnSpace ~= p3 and not Board:IsTerrain(pawnSpace, TERRAIN_FOREST) then
 				forestUtils:floraformSpace(effect, pawnSpace)
 			end
 		end
@@ -189,7 +194,10 @@ function Treeherders_Overgrowth:GetPassiveSkillEffect_PawnPositionChangedHook(mi
 	if self.MovingVek.Pawn and self.MovingVek.Pawn:GetId() == pawn:GetId() then
 		--LOG("SELECTED PAWN MOVING")
 		local newPos = pawn:GetSpace()
-		if self.MovingVek.TrappedSpace and newPos ~= self.MovingVek.TrappedSpace then
+		-- Only "trap" if the space is empty. We can't do this on the initial check
+		-- because by definition the space must be occupied since the pawn moved there...
+		if self.MovingVek.TrappedSpace and newPos ~= self.MovingVek.TrappedSpace and 
+				not Board:IsPawnSpace(self.MovingVek.TrappedSpace) then
 			pawn:SetSpace(self.MovingVek.TrappedSpace)
 			--LOG("reset vek space")
 		elseif forestUtils.isAnAncientForest(newPos) then

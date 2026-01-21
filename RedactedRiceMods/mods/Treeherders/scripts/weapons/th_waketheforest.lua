@@ -288,6 +288,12 @@ end
 
 ------------------- MAIN HOOK FUNCTIONS ---------------------------
 
+function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_MissionStartHook(mission)
+	--Fire on mission start as well
+	self:FloraformSpaces()
+	self:CleanNonMech()
+ end
+
 -- function to handle the postEnvironment hook functionality
 -- When post environment is called, it appears the board isn't updated at that point
 -- It doesn't recognize that tiles became water in the flood event. next turn hook can
@@ -296,7 +302,7 @@ end
 function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_PreEnvironmentHook(mission)	
 	--floraform the spaces
 	self:FloraformSpaces()
-	--self:UpdateForestArmor()
+	self:CleanNonMech()
 end
 
 -- Skill build hooks
@@ -317,8 +323,8 @@ function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_FinalEffectBuil
 	return self:SkillBuildHook(pawn, weaponId, p1, p2, skillFx)
 end
 
-function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_NextTurnHook(mission)
-	self:UpdateForestArmor()
+function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_NextTurnHook()
+	self:CleanNonMech()
 end
 
 function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_PawnPositionChangedHook()
@@ -333,38 +339,23 @@ function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_PostLoadGameHoo
 	end)
 end
 
-function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_PawnSelectedHook()
-	if pawn:IsMech() then
-		self:SetNonVek()
-	end
+function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_PawnSelectedHook(pawn)
+	-- For some reason the passed pawn is bad... However if I get it
+	-- using the same approach as the handler, it seems to work
+	local reGottenPawn = nil
+	if pawn then
+		reGottenPawn = Board:GetPawn(Board:GetSelectedPawnId())
+		if reGottenPawn and reGottenPawn:IsMech() then
+			self:SetNonVek()
+		end
+	end	
 end
 
 function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_PawnDeselectedHook()
 	self:CleanNonMech()
-end 
-
-function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_PawnTrackedHook()
-	self:UpdateForestArmor()
-end
-
-function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_SkillEndHook()
-	self:UpdateForestArmor()
-end
-
-function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_QueuedSkillEndHook()
-	self:UpdateForestArmor()
-end
-
-function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_FinalEffectEndHook()
-	self:UpdateForestArmor()
-end
-
-function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_QueuedFinalEffectEndHook()
-	self:UpdateForestArmor()
 end
 
 Treeherders_Passive_WakeTheForest.passiveEffect:addPassiveEffect("Treeherders_Passive_WakeTheForest",
 		{"skillBuildHook",  "finalEffectBuildHook",  
 		"pawnSelectedHook", "pawnDeselectedHook", "pawnPositionChangedHook", "postLoadGameHook", 
-		--"pawnTrackedHook", "skillEndHook", "queuedSkillEndHook", "finalEffectEndHook", "queuedFinalEffectEndHook",
-		"preEnvironmentHook"})
+		"preEnvironmentHook", "missionStartHook"})
