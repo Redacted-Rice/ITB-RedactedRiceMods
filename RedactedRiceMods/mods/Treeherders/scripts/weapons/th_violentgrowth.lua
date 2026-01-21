@@ -28,7 +28,7 @@ Treeherders_ViolentGrowth = Skill:new
 
 	ForestToExpand = 0,
 	SlowEnemy = false,
-	SlowEnemyAmount = 3,
+	SlowEnemyAmount = 2,
 	MinEnemyMove = 1,
 
     TipImage = {
@@ -45,7 +45,7 @@ Treeherders_ViolentGrowth = Skill:new
 Weapon_Texts.Treeherders_ViolentGrowth_Upgrade1 = "Ensnare"
 Treeherders_ViolentGrowth_A = Treeherders_ViolentGrowth:new
 {
-	UpgradeDescription = "For one turn all vek in the targeted forest lose three movement (minimum of 1)",
+	UpgradeDescription = "For one turn all vek in the targeted forest lose two movement (minimum of 1)",
 	SlowEnemy = true,
 }
 
