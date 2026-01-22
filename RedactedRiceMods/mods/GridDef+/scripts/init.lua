@@ -1,7 +1,6 @@
 local mod = {
-	id = "redactedrice_RebalCorePlus",
-	name = "Rebalanced Core Lvl Up Skills",
-	description = "Rebalances the core (none AE) level up skills to be more inline with AE skills",
+	id = "redactedrice_vanillaplus",
+	name = "AE Rebalance Base Skills",
 	icon = "mod_icon.png",
 	version = "1.0.0",
 	modApiVersion = "2.9.4",
@@ -11,7 +10,6 @@ local mod = {
         redactedrice_cplus_plus = "0.5.0", -- TBD
     },
 	cplusCategory = "RrVanillaPlus",
-	-- TODO: Align description with vanilla texts
 	HealthPlus = {id = "HealthPlus", shortName = "Health+", fullName = "Pilot_HealthName",
 			description = "Increase Health by 3.",
 			bonuses = {health = 3}, saveVal = 0, reusability = cplus_plus_ex.REUSABLILITY.REUSABLE
