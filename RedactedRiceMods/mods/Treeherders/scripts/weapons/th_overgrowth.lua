@@ -2,7 +2,7 @@ Treeherders_Overgrowth = Skill:new
 {
 	Name = "Summon Ancients",
 	Class = "Prime",
-	Description = "Create an overgrowth tile with forest tiles on the sides. Flip target's direction",
+	Description = "Create an overgrowth tile with forest tiles on the sides. Deals two damage and flip target's direction",
 	Icon = "weapons/prime_th_summonTheAncients.png",
 	Rarity = 2,
 	
@@ -209,4 +209,4 @@ end
 
 Treeherders_Overgrowth.passiveEffect:addPassiveEffect("Treeherders_Overgrowth",
 		{"nextTurnHook", "vekMoveStartHook", "pawnPositionChangedHook"},
-		true) -- not passive only
+		true) -- not passive only, Really passive should be separated out to overgrowth tile effect
