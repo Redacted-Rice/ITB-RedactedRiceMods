@@ -19,11 +19,12 @@ Forest armor icon will sometimes appear when environment effects are occuring. I
 ------------------------------------------------------------------------------
 
 World Builders:
-None
+Add icon for all terrain movement
+Allow custom tile swaps for non-vanilla
+Add icons for spawning rocks and mountains
 
 Next release candidates:
-1. Add icon for all terrain movement
-2. Allow custom tile swaps for non-vanilla
+None
 
 Known Issues:
 1. Move range hovering does not display right. This is not currently able to be changed

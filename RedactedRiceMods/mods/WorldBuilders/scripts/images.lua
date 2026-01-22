@@ -17,3 +17,10 @@ ANIMS["icon_wb_emerge_a"] = ANIMS.Animation:new{
 	PosX = -20,
 	PosY = -1
 }
+
+modApi:appendAsset("img/combat/icons/icon_wb_all_terrain.png", WorldBuilders_ResourcePath.."img/combat/icons/icon_wb_all_terrain.png")
+
+modApi:appendAsset("img/combat/icons/icon_wb_rock.png", WorldBuilders_ResourcePath.."img/combat/icons/icon_wb_rock.png")
+Location["combat/icons/icon_wb_rock.png"] = Point(-2, 8)
+modApi:appendAsset("img/combat/icons/icon_wb_mountain.png", WorldBuilders_ResourcePath.."img/combat/icons/icon_wb_mountain.png")
+Location["combat/icons/icon_wb_mountain.png"] = Point(0, 8)

@@ -21,8 +21,9 @@ WorldBuilders_Passive_Move = PassiveSkill:new{
 		Target = Point(2,2),
 	}
 }
-WorldBuilders_Passive_Move.passiveEffect = mod_loader.mods[modApi.currentMod].libs.passiveEffect
 WorldBuilders_Passive_Move.boardUtils = mod_loader.mods[modApi.currentMod].libs.boardUtils
+WorldBuilders_Passive_Move.passiveEffect = mod_loader.mods[modApi.currentMod].libs.passiveEffect
+WorldBuilders_Passive_Move.trait = mod_loader.mods[modApi.currentMod].libs.trait
 
 Weapon_Texts.WorldBuilders_Passive_Move_Upgrade1 = "Hover"
 WorldBuilders_Passive_Move_A = WorldBuilders_Passive_Move:new
@@ -38,6 +39,17 @@ WorldBuilders_Passive_Move_A = WorldBuilders_Passive_Move:new
 	Flying = true,
 }
 
+local function IsAllTerrainActive()
+	return true
+end
+
+WorldBuilders_Passive_Move.trait:add{
+	func = IsAllTerrainActive,
+	icon = "img/combat/icons/icon_wb_all_terrain.png",
+	icon_offset = Point(0,9),
+	desc_title = "All Terrain",
+	desc_text = "This unit can move past units and over/on buildings and mountains",
+}
 
 function WorldBuilders_Passive_Move:GetPassiveSkillEffect_TargetAreaBuildHook(mission, pawn, weaponId, p1, targetArea)
 	if weaponId == "Move" and pawn:IsMech() then
