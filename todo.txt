@@ -5,14 +5,15 @@ None
 ------------------------------------------------------------------------------
 
 Tree Herders:
-Playtest!
+None
 
 Next release candidates:
 1. Treevac doesn't distinguish between damage in the attack that causes the push vs follow on attacks when checking for spaces to push to
 
 Known issues:
-Forest Firer bounce happens after push. Doesn't seem to be a way around this
+Forest Firer bounce happens after push. Doesn't seem to be a way around this but its just visual anyways
 Forest Firer teleport and launch SFX just sometimes don't play. Not sure why this is
+Forest armor icon will sometimes appear when environment effects are occuring. I think this should be mostly fixed now but may show occasionally
 
 
 ------------------------------------------------------------------------------
@@ -22,6 +23,7 @@ None
 
 Next release candidates:
 1. Add icon for all terrain movement
+2. Allow custom tile swaps for non-vanilla
 
 Known Issues:
 1. Move range hovering does not display right. This is not currently able to be changed
