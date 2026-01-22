@@ -39,7 +39,7 @@ Latest release: 1.2.0
 Treeherders 3.0!
 Entborg is now a cyborg by default and has an additional single use item to help level out the early mission difficulty curve
 
-Released: 01/17/2026
+Released: 01/21/2026
 Treeherders 3.0.0
 WorldBuilders 1.1.1
 
