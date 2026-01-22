@@ -1,6 +1,6 @@
 local mod = {
 	id = "redactedrice_bettergriddef",
-	name = "+3 -> +8 Grid DEF",
+	name = "+3 -> +8 Grid Def",
 	icon = "mod_icon.png",
 	version = "0.1.0",
 	modApiVersion = "2.9.4",
@@ -9,20 +9,16 @@ local mod = {
         redactedrice_memhack = "0.1.0",
         redactedrice_cplus_plus = "0.1.0",
     },
-	cplusCategory = "RrBetterGrid",
-	betterGridDesc = "Grid Defense increased by 8. This affects the chance of resisting Building Damage in combat.",
-	betterGrid = {id = "BetterGrid", shortName = "+8 Grid DEF", fullName = "Pilot_GridName", description = betterGridDesc, bonuses = {grid = 8}, saveVal = 2 },
 }
 
 function mod:init()
-	cplus_plus_ex.plus_manager:registerSkill(self.cplusCategory, self.betterGrid)
+	cplus_plus_ex.plus_manager:registerSkill("RrBetterGrid", "BetterGrid", "+8 Grid Def", "+8 Grid Def", "Increase grid defence by 8%", {grid = 8}, skillType, saveVal = 2)
 end
 
 function mod:load(options, version)
 	-- Replace grid with better grid
 	cplus_plus_ex.plus_manager:disableSkill("Grid")
-	-- Just enable by category even though we have only one
-	cplus_plus_ex.plus_manager:enableCategory(self.cplusCategory)
+	cplus_plus_ex.plus_manager:enableCategory("RrBetterGrid")
 end
 
 return mod
