@@ -10,7 +10,8 @@ local mod = {
         redactedrice_cplus_plus = "0.1.0",
     },
 	cplusCategory = "RrBetterGrid",
-	betterGrid = {id = "BetterGrid", shortName = "+8 Grid DEF", fullName = "Pilot_GridName", description = "Grid Defense increased by 8. This affects the chance of resisting Building Damage in combat.", bonuses = {grid = 8}, saveVal = 2 },
+	betterGridDesc = "Grid Defense increased by 8. This affects the chance of resisting Building Damage in combat.",
+	betterGrid = {id = "BetterGrid", shortName = "+8 Grid DEF", fullName = "Pilot_GridName", description = betterGridDesc, bonuses = {grid = 8}, saveVal = 2 },
 }
 
 function mod:init()
