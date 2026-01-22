@@ -145,10 +145,12 @@ function WorldBuilders_Mold:GetFinalEffect(p1,p2,p3)
 	if self.MakeMountains then
 		if not unTerraformable then
 			terrain.iTerrain = TERRAIN_MOUNTAIN
+			damage.sImageMark = "combat/icons/icon_wb_mountain.png"
 		end
 		bounce = -6
 	elseif not unTerraformable then
 		self:AddRock(terrain, p2)
+		damage.sImageMark = "combat/icons/icon_wb_rock.png"
 	end
 
 	ret:AddDamage(damage)
