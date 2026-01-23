@@ -82,6 +82,28 @@ function WorldBuilders_Shift:IsOpenForPawn(space, maybePawn)
 	return self:CanSpaceBeOccupied(space, maybePawn) and not Board:IsPawnSpace(space)
 end
 
+local function startsWith(str, prefix)
+    return string.sub(str, 1, #prefix) == prefix
+end
+
+-- buildings are by default unallowed
+function WorldBuilders_Shift:IsAllowedCustomBuildingSwap(ct)
+	return startsWith(ct, "lmn_ground_meadow")
+end
+
+-- Terrain swaps are default allowed
+function WorldBuilders_Shift:IsUnallowedCustomTerrainSwap(ct)
+	return startsWith(ct, "square_misslesilo") or startsWith(ct, "supervolcano") or
+		startsWith(ct, "tele_") or startsWith(ct, "conveyor")  or
+		-- Into the Wild
+		startsWith(ct, "lmn_ground_geyser") or startsWith(ct, "lmn_ground_volcanic_vent") or
+		-- Nautilus
+		startsWith(ct, "ground_buried_s") or startsWith(ct, "ground_buried_f") or orstartsWith(ct, "ground_mineral")
+		-- todo incenerator? Is this an item?
+		-- candyland custom tiles can all be swapped
+		
+end
+
 function WorldBuilders_Shift:IsUnshiftableCustomTile(p)
 	local customTile = Board:GetCustomTile(p)
 	if customTile ~= "" then
@@ -89,20 +111,9 @@ function WorldBuilders_Shift:IsUnshiftableCustomTile(p)
 		-- custom buildings are generally objective specific and not movable
 		-- without modifying mission stuff. Just don't allow them at all
 		if terrain == TERRAIN_BUILDING then
-			return true
+			return not self:IsAllowedCustomBuildingSwap(customTile)
 		end
-		local spacePawn = Board:GetPawn(p)
-		-- Custom spaces with immovable pawns probably should not be swapped
-		-- either. Main case I think for this is the missle silos.
-		if spacePawn and spacePawn:IsGuarding() then
-			return true
-		end
-		-- If we have a terrain icon set, don't shift either. This indicates
-		-- custom logic for that space (e.g. conveyors & teleporters)
-		if Board:GetTerrainIcon(p) ~= "" then
-			return true
-		end
-		-- anything else, let it go
+		return self:IsUnallowedCustomTerrainSwap(customTile)
 	end
 	return false
 end
@@ -112,7 +123,6 @@ function WorldBuilders_Shift:IsInvalidTargetSpace(p)
 	-- Also just don't swap immovable pawns for simplicity
 	return self:IsUnshiftableCustomTile(p) or
 		(Board:IsPawnSpace(p) and Board:GetPawn(p):IsGuarding()) or
-		(not self.TargetUniques and Board:GetUniqueBuilding(p) ~= "") or
 		(not self.TargetDeathTiles and (Board:GetTerrain(p) == TERRAIN_WATER or Board:GetTerrain(p) == TERRAIN_HOLE))
 end
 
