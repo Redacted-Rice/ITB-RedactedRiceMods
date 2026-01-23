@@ -24,3 +24,6 @@ modApi:appendAsset("img/combat/icons/icon_wb_rock.png", WorldBuilders_ResourcePa
 Location["combat/icons/icon_wb_rock.png"] = Point(-2, 8)
 modApi:appendAsset("img/combat/icons/icon_wb_mountain.png", WorldBuilders_ResourcePath.."img/combat/icons/icon_wb_mountain.png")
 Location["combat/icons/icon_wb_mountain.png"] = Point(0, 8)
+
+modApi:appendAsset("img/combat/icons/icon_wb_unknown_item.png", WorldBuilders_ResourcePath.."img/combat/icons/icon_wb_unknown_item.png")
+Location["combat/icons/icon_wb_unknown_item.png"] = Point(-2, 8)

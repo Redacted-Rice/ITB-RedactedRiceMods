@@ -19,9 +19,11 @@ Forest armor icon will sometimes appear when environment effects are occuring. I
 ------------------------------------------------------------------------------
 
 World Builders:
-Add icon for all terrain movement
-Allow custom tile swaps for non-vanilla
-Add icons for spawning rocks and mountains
+Test All terrain Icon function
+Make and test unknown item image
+Continue working on custom tile rules
+	tosx islands
+	nautilus incenerator
 
 Next release candidates:
 None
@@ -45,7 +47,7 @@ Not equals scans?
 Get all heap memory?
 	Add a few copies of pilot/weapon
 	Can then search all memory for pilots and backtrace to hangar
-Get base game pointer?	
+Get base game pointer?
 	Can probably continue reverse engineering structure to get to hangar
 
 Mech upgrades
