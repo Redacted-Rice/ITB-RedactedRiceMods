@@ -104,15 +104,39 @@ function WorldBuilders_Consume:Consume_Spawn(skillEffect, p1, consumeSpace, dir)
 	skillEffect:AddDamage(spawnDamage)
 end
 
+function WorldBuilders_Consume:GetConsumedItem(consumeSpace)
+	local item = Board:GetItem(consumeSpace)
+	if item and item ~= "" then
+		-- If its a damaging/statusing effect, best guess is its something like a mine. Apply
+		-- the effect to each space
+		local itemDamage = _G[item].Damage
+		if itemDamage.iDamage ~= 0 and itemDamage.iDamage ~= DAMAGE_ZERO then
+			return nil, itemDamage
+		elseif itemDamage.iAcid ~= EFFECT_NONE or itemDamage.iFire ~= EFFECT_NONE or itemDamage.iFrozen ~= EFFECT_NONE then
+			return nil, itemDamage
+		elseif itemDamage.iShield ~= EFFECT_NONE or itemDamage.iSmoke ~= EFFECT_NONE then
+			return nil, itemDamage
+		end
+		-- Best guess is its a status like acid - return the item to add to spaces
+		return item, nil
+	end
+	return nil
+end
+
+function WorldBuilders_Consume:CombineDamages(spaceDamage, itemDamage)
+	-- TODO:
+end
+
 function WorldBuilders_Consume:AddConsumeDamage(skillEffect, consumeSpace, damage)
 	local consumeDamage = SpaceDamage(consumeSpace, damage)
 	consumeDamage.iTerrain = TERRAIN_HOLE
-	-- Remove any item
+	-- Just always remove item. If there is no item this does nothing
 	consumeDamage.sScript = consumeDamage.sScript .. [[
-			Board:RemoveItem(]] .. consumeDamage.loc:GetString() .. [[)]]
+				Board:RemoveItem(]] .. consumeDamage.loc:GetString() .. [[)]]
 	skillEffect:AddBounce(consumeSpace, self.ConsumeBounce)
 	skillEffect:AddDelay(0.2)
 	skillEffect:AddDamage(consumeDamage)
+	return item, itemDamage
 end
 
 function WorldBuilders_Consume:Consume_Building(skillEffect, p1, p2, consumeSpace, dir)
@@ -312,6 +336,11 @@ function WorldBuilders_Consume:GetSkillEffect(p1, p2)
 		end
 	end
 	-- if its not valid, it will be like a void space
+	
+	local item, itemDamage = self:GetConsumedItem(consumeSpace)
+	if item then
+		projectileDamage.sItem = item
+	end
 
 	-- in between spaces
 	local spaceInfront = p1 + DIR_VECTORS[dir]
@@ -326,9 +355,16 @@ function WorldBuilders_Consume:GetSkillEffect(p1, p2)
 		if projectileDamage.iSmoke == EFFECT_CREATE then
 			effectDamage.iSmoke = EFFECT_CREATE
 		end
+		if item then
+			effectDamage.sItem = item
+		end
 
 		ret:AddBounce(spaceInfront, self.ProjectilePathBounce1)
 		ret:AddDamage(effectDamage)
+		if itemDamage then
+			itemDamage.loc = effectDamage.loc
+			ret:AddDamage(itemDamage)
+		end
 		ret:AddDelay(0.1)
 		ret:AddBounce(spaceInfront, self.ProjectilePathBounce2)
 
@@ -341,10 +377,21 @@ function WorldBuilders_Consume:GetSkillEffect(p1, p2)
 	else 
 		ret:AddProjectile(projectileDamage, img)
 	end
+	if itemDamage then
+		itemDamage.loc = projectileDamage.loc
+		ret:AddDamage(itemDamage)
+	end
 
 	if extraDamage ~= nil then
 		for _, damage in ipairs(extraDamage) do
+			if item then
+				damage.sItem = item
+			end
 			ret:AddDamage(damage)
+			if itemDamage then
+				itemDamage.loc = damage.loc
+				ret:AddDamage(itemDamage)
+			end
 			ret:AddBounce(damage.loc, self.ProjectileHitBounce)
 		end
 	end

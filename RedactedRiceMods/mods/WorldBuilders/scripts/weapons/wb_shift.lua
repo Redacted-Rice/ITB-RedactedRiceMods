@@ -84,8 +84,27 @@ end
 
 function WorldBuilders_Shift:IsUnshiftableCustomTile(p)
 	local customTile = Board:GetCustomTile(p)
-	--LOG("Custom terrain: ".. customTile)
-	return customTile ~= "" and customTile ~= "snow.png" and customTile ~= "ground_grass.png"
+	if customTile ~= "" then
+		local terrain = Board:GetTerrain(p)
+		-- custom buildings are generally objective specific and not movable
+		-- without modifying mission stuff. Just don't allow them at all
+		if terrain == TERRAIN_BUILDING then
+			return true
+		end
+		local spacePawn = Board:GetPawn(p)
+		-- Custom spaces with immovable pawns probably should not be swapped
+		-- either. Main case I think for this is the missle silos.
+		if spacePawn and spacePawn:IsGuarding() then
+			return true
+		end
+		-- If we have a terrain icon set, don't shift either. This indicates
+		-- custom logic for that space (e.g. conveyors & teleporters)
+		if Board:GetTerrainIcon(p) ~= "" then
+			return true
+		end
+		-- anything else, let it go
+	end
+	return false
 end
 
 function WorldBuilders_Shift:IsInvalidTargetSpace(p)
