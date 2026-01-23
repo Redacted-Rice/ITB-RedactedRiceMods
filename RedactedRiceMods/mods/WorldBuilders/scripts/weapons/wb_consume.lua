@@ -132,15 +132,15 @@ function WorldBuilders_Consume:AddItemOrItemDamage(spaceDamage, item, itemDamage
 		if Board:IsPawnSpace(p) then
 			spaceDamage.sScript = spaceDamage.sScript .. [[
 				BoardEvents.onItemRemoved:dispatch(]] .. p:GetString() .. [[, "]] .. item .. [[")]]
-			LOG(spaceDamage.sScript)
+			spaceDamage.sImageMark = "combat/icons/icon_wb_unknown_item.png"
 		end
 		return
 	end
-	
-	if not itemDamage then 
+
+	if not itemDamage then
 		return
 	end
-	
+
 	if spaceDamage.iDamage ~= DAMAGE_DEATH then
 		if itemDamage.iDamage == DAMAGE_DEATH then
 			spaceDamage.iDamage = DAMAGE_DEATH
@@ -148,19 +148,19 @@ function WorldBuilders_Consume:AddItemOrItemDamage(spaceDamage, item, itemDamage
 			spaceDamage.iDamage = spaceDamage.iDamage + itemDamage.iDamage
 		end
 	end
-	if itemDamage.iAcid == EFFECT_CREATE then 
+	if itemDamage.iAcid == EFFECT_CREATE then
 		spaceDamage.iAcid = EFFECT_CREATE
 	end
-	if itemDamage.iFire == EFFECT_CREATE then 
+	if itemDamage.iFire == EFFECT_CREATE then
 		spaceDamage.iFire = EFFECT_CREATE
 	end
-	if itemDamage.iFrozen == EFFECT_CREATE then 
+	if itemDamage.iFrozen == EFFECT_CREATE then
 		spaceDamage.iFrozen = EFFECT_CREATE
 	end
-	if itemDamage.iSmoke == EFFECT_CREATE then 
+	if itemDamage.iSmoke == EFFECT_CREATE then
 		spaceDamage.iSmoke = EFFECT_CREATE
 	end
-	if itemDamage.iShield == EFFECT_CREATE then 
+	if itemDamage.iShield == EFFECT_CREATE then
 		spaceDamage.iShield = EFFECT_CREATE
 	end
 end
@@ -248,7 +248,7 @@ function WorldBuilders_Consume:Consume_Terrain(skillEffect, projectileDamage, ta
 	if consumedTerrain ~= TERRAIN_HOLE then
 		self:AddConsumeDamage(skillEffect, consumeSpace, 0)
 	end
-	
+
 	local projImg = "effects/shot_pull"
 	ImpactSound = "/impact/rock"
 
@@ -263,7 +263,7 @@ function WorldBuilders_Consume:Consume_Terrain(skillEffect, projectileDamage, ta
 		-- water
 		projImg = "effects/shot_firefly"
 		ImpactSound = "/impact/water"
-			
+
 		-- water is the default effect
 		-- For some reason get terrain seems to always return water. We have the isXXXX check to handle this but
 		-- left the terrain check in case something fixes this in the future
@@ -374,7 +374,7 @@ function WorldBuilders_Consume:GetSkillEffect(p1, p2)
 		end
 	end
 	-- if its not valid, it will be like a void space
-	
+
 	local item, itemDamage = self:GetConsumedItem(consumeSpace)
 	self:AddItemOrItemDamage(projectileDamage, item, itemDamage)
 
@@ -404,7 +404,7 @@ function WorldBuilders_Consume:GetSkillEffect(p1, p2)
 	ret:AddBounce(p2, self.ProjectileHitBounce)
 	if wasSpecialAnim then
 		ret:AddDamage(projectileDamage)
-	else 
+	else
 		ret:AddProjectile(projectileDamage, img)
 	end
 
