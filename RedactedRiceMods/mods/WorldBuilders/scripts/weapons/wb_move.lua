@@ -39,8 +39,11 @@ WorldBuilders_Passive_Move_A = WorldBuilders_Passive_Move:new
 	Flying = true,
 }
 
-local function IsAllTerrainActive()
-	return true
+local function IsAllTerrainActive(pawn)
+	if pawn:IsMech() then
+		return WorldBuilders_Passive_Move.passiveEffect:countAnyVersionOfPassiveActive("WorldBuilders_Passive_Move") > 0
+	end
+	return false
 end
 
 WorldBuilders_Passive_Move.trait:add{
@@ -85,8 +88,8 @@ function WorldBuilders_Passive_Move:UnsetFlyingIfTemporarilyAdded(pawn)
 	end
 end
 
--- MissionStartHook seems better to use the onGameSave but it does not 
--- fire on final mission. The on next phase fires too early before 
+-- MissionStartHook seems better to use the onGameSave but it does not
+-- fire on final mission. The on next phase fires too early before
 -- pawns/board is made so it won't work right on that mission. For ease
 -- I just use on save which will fire after mission starts anyways
 
@@ -128,14 +131,14 @@ function WorldBuilders_Passive_Move:GetPassiveSkillEffect_SaveGameHook(...)
 		end
 	end
 	self.loadHackedPawns = {}
-	
+
 	-- if we are set to flying and there is a mission, add flying
 	if self.Flying and GetCurrentMission() then
 		for idx = 0,2 do
 			self:SetTemporarilyFlyingIfNeeded(Game:GetPawn(idx))
 		end
 	-- Otherwise try to unset in case its no longer enabled
-	else 
+	else
 		for idx = 0,2 do
 			self:UnsetFlyingIfTemporarilyAdded(Game:GetPawn(idx))
 		end
@@ -154,5 +157,5 @@ function WorldBuilders_Passive_Move:GetSkillEffect(p1, p2)
 end
 
 WorldBuilders_Passive_Move.passiveEffect:addPassiveEffect("WorldBuilders_Passive_Move",
-		{"targetAreaBuildHook", "skillBuildHook", 
+		{"targetAreaBuildHook", "skillBuildHook",
 		"postLoadGameHook", "saveGameHook"})
