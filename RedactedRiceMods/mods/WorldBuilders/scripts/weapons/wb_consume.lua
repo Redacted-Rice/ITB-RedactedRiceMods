@@ -123,8 +123,46 @@ function WorldBuilders_Consume:GetConsumedItem(consumeSpace)
 	return nil
 end
 
-function WorldBuilders_Consume:CombineDamages(spaceDamage, itemDamage)
-	-- TODO:
+function WorldBuilders_Consume:AddItemOrItemDamage(spaceDamage, item, itemDamage)
+	if item then
+		spaceDamage.sItem = item
+		local p = spaceDamage.loc
+		-- if its a pawn space, it will trigger before the board events recognizes
+		-- the item so manually trigger it
+		if Board:IsPawnSpace(p) then
+			spaceDamage.sScript = spaceDamage.sScript .. [[
+				BoardEvents.onItemRemoved:dispatch(]] .. p:GetString() .. [[, "]] .. item .. [[")]]
+			LOG(spaceDamage.sScript)
+		end
+		return
+	end
+	
+	if not itemDamage then 
+		return
+	end
+	
+	if spaceDamage.iDamage ~= DAMAGE_DEATH then
+		if itemDamage.iDamage == DAMAGE_DEATH then
+			spaceDamage.iDamage = DAMAGE_DEATH
+		else
+			spaceDamage.iDamage = spaceDamage.iDamage + itemDamage.iDamage
+		end
+	end
+	if itemDamage.iAcid == EFFECT_CREATE then 
+		spaceDamage.iAcid = EFFECT_CREATE
+	end
+	if itemDamage.iFire == EFFECT_CREATE then 
+		spaceDamage.iFire = EFFECT_CREATE
+	end
+	if itemDamage.iFrozen == EFFECT_CREATE then 
+		spaceDamage.iFrozen = EFFECT_CREATE
+	end
+	if itemDamage.iSmoke == EFFECT_CREATE then 
+		spaceDamage.iSmoke = EFFECT_CREATE
+	end
+	if itemDamage.iShield == EFFECT_CREATE then 
+		spaceDamage.iShield = EFFECT_CREATE
+	end
 end
 
 function WorldBuilders_Consume:AddConsumeDamage(skillEffect, consumeSpace, damage)
@@ -338,9 +376,7 @@ function WorldBuilders_Consume:GetSkillEffect(p1, p2)
 	-- if its not valid, it will be like a void space
 	
 	local item, itemDamage = self:GetConsumedItem(consumeSpace)
-	if item then
-		projectileDamage.sItem = item
-	end
+	self:AddItemOrItemDamage(projectileDamage, item, itemDamage)
 
 	-- in between spaces
 	local spaceInfront = p1 + DIR_VECTORS[dir]
@@ -355,16 +391,10 @@ function WorldBuilders_Consume:GetSkillEffect(p1, p2)
 		if projectileDamage.iSmoke == EFFECT_CREATE then
 			effectDamage.iSmoke = EFFECT_CREATE
 		end
-		if item then
-			effectDamage.sItem = item
-		end
+		self:AddItemOrItemDamage(effectDamage, item, itemDamage)
 
 		ret:AddBounce(spaceInfront, self.ProjectilePathBounce1)
 		ret:AddDamage(effectDamage)
-		if itemDamage then
-			itemDamage.loc = effectDamage.loc
-			ret:AddDamage(itemDamage)
-		end
 		ret:AddDelay(0.1)
 		ret:AddBounce(spaceInfront, self.ProjectilePathBounce2)
 
@@ -377,21 +407,11 @@ function WorldBuilders_Consume:GetSkillEffect(p1, p2)
 	else 
 		ret:AddProjectile(projectileDamage, img)
 	end
-	if itemDamage then
-		itemDamage.loc = projectileDamage.loc
-		ret:AddDamage(itemDamage)
-	end
 
 	if extraDamage ~= nil then
 		for _, damage in ipairs(extraDamage) do
-			if item then
-				damage.sItem = item
-			end
+			self:AddItemOrItemDamage(damage, item, itemDamage)
 			ret:AddDamage(damage)
-			if itemDamage then
-				itemDamage.loc = damage.loc
-				ret:AddDamage(itemDamage)
-			end
 			ret:AddBounce(damage.loc, self.ProjectileHitBounce)
 		end
 	end
