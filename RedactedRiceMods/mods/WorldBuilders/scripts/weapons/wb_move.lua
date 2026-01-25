@@ -39,7 +39,7 @@ WorldBuilders_Passive_Move_A = WorldBuilders_Passive_Move:new
 	Flying = true,
 }
 
-local function IsAllTerrainActive(pawn)
+local function IsAllTerrainActive(trait, pawn)
 	if pawn:IsMech() then
 		return WorldBuilders_Passive_Move.passiveEffect:countAnyVersionOfPassiveActive("WorldBuilders_Passive_Move") > 0
 	end
