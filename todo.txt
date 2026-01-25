@@ -19,7 +19,6 @@ Forest armor icon will sometimes appear when environment effects are occuring. I
 ------------------------------------------------------------------------------
 
 World Builders:
-Test All terrain Icon function
 Make and test unknown item image
 Continue working on custom tile rules
 	tosx islands
