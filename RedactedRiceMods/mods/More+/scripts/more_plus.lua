@@ -1,71 +1,56 @@
 more_plus = more_plus or {}
 
-more_plus.skills = {}
+more_plus.skillsByCategory = {}
 more_plus.DEBUG = true
 
 local path = GetParentPath(...)
 
-function more_plus.getDirs(path)
-    local p = io.popen('dir "' .. path .. '" /b /ad')
-    local dirs = {}
-
-    for entry in p:lines() do
-        table.insert(dirs, entry)
-    end
-
-    p:close()
-    return dirs
-end
-
-function more_plus.getLuaFiles(path)
-    local p = io.popen('dir "' .. path .. '" /b')
-    local files = {}
-
-    for file in p:lines() do
-        if file:match("%.lua$") then
-            table.insert(files, file)
+function more_plus:scanAndReadSkillFiles()
+	if self.DEBUG then LOG("More+: Scanning subdirs in dir " .. path) end
+	
+	local numCats = 0
+	local numSkills = 0
+    local dir = Directory(path)
+    
+    if dir:exists() then
+        for _, subDir in ipairs(dir:directories()) do
+			local subDirPath = subDir:relative_path()
+			if self.DEBUG then LOG("More+: Checking sub dir " .. subDirPath) end
+			
+			local category = subDir:name()
+			local skillObjs = {}
+			for _, file in ipairs(subDir:files()) do
+				local filename = file:name():match("(.+)%.lua$") or file:name()
+				if self.DEBUG then LOG("More+: Found skill file " .. filename) end
+				
+				local requirePath = subDirPath .. filename				
+				local success, skillObj = pcall(require, requirePath)
+				if success and type(skillObj) == "table" then
+					skillObj.file = requirePath
+					skillObj.category = category
+					table.insert(skillObjs, skillObj)
+					numSkills = numSkills + 1
+				else
+					LOG("More+: Failed to load " .. requirePath .. ": " .. tostring(skillObj))
+				end
+			end
+			self.skillsByCategory[category] = skillObjs
+			numCats = numCats + 1
         end
     end
-
-    p:close()
-    return files
-end
-
-function more_plus:findAllSkills()
-	local basePath = path .. "scripts"
-	local categories =  more_plus.getDirs(basePath)
-	LOG(categories)
-	
-	-- auto gather all categories and skills
-	for _, category in pairs(categories) do
-		local folderPath = basePath .. "/" .. category
-		if self.DEBUG then LOG("Checking folder " .. folderPath) end
-		
-		local skillObjs = {}
-		local files = more_plus.getLuaFiles(folderPath)
-		LOG(files)
-		for _, file in pairs(files) do
-			local filepath = folderPath .. "/" .. file
-			if self.DEBUG then LOG("Adding file " .. filepath) end
-			
-			local skillObj = require(filepath)
-			skillObj.file = filepath
-			table.insert(skillObjs, skillObj)
-		end
-		self.skills[category] = skillObjs
-	end
+	if self.DEBUG then LOG("More+: Found " .. numSkills .. " in " .. numCats .. " categories") end
 end
 
 function more_plus:init()
 	if self.DEBUG then LOG("Finding all skills...") end
-	self:findAllSkills()
+	more_plus:scanAndReadSkillFiles(basePath)
 	
 	if self.DEBUG then LOG("Creating all skills...") end
 	-- Then go through and create the skills
-	for _, cateogry in pairs(self.skills) do
+	for category, skills in pairs(self.skillsByCategory) do
 		if self.DEBUG then LOG("Creating skills for category " .. cateogry) end
 		local cplusCategory = "Rr" .. cateogry
-		for _, skill in pairs(cateogry) do
+		for _, skill in pairs(skills) do
 			-- simulate continue with an added loop level
 		    repeat
 				if self.DEBUG then LOG("Creating skill " .. skill.id) end

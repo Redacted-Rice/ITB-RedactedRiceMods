@@ -25,7 +25,7 @@ function skill.setupEffect(skillId, isActive, pawnId, pilot, skill)
 		if nowActive and not wasActive then
 			-- add events
 			table.insert(events, modapiext.events.onNextTurn:subscribe(skill.decreaseMove))
-		else not notActive and wasActive then
+		elseif not notActive and wasActive then
 			-- remove events
 			self.clearEvents()
 		end

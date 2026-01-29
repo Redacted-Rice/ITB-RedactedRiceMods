@@ -34,7 +34,7 @@ function skill.setupEffect(skillId, isActive, pawnId, pilot, skill)
 			table.insert(events, modapiext.events.onSkillEnd:subscribe(skill.unsetAttackingMech))
 			table.insert(events, modapiext.events.onFinalEffectend:subscribe(skill.unsetAttackingMech))
 			table.insert(events, modapiext.events.onNextTurn:subscribe(skill.boostOnTurn))
-		else not notActive and wasActive then
+		elseif not notActive and wasActive then
 			-- remove events
 			self.clearEvents()
 		end
