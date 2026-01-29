@@ -3,7 +3,7 @@ local skill = {
 	name = "Ignorant",
 	desc = "Pilot gains boosted each turn but loses 2 xp per kill",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
-	events = {}
+	events = {},
 }
 
 -- no init needed
@@ -18,11 +18,11 @@ function skill:load()
 	self.clearEvents()
 	
 	if cplus_plus_ex.isSkillEnabled(self.id) then
-		cplus_plus_ex:addSkillActiveHook(self.updateEvents)
+		cplus_plus_ex:addSkillActiveHook(self.setupEffect)
 	end
 end
 
-function skill.updateEvents(skillId, isActive, pawnId, pilot, skill)
+function skill.setupEffect(skillId, isActive, pawnId, pilot, skill)
 	if skillId == skill.id then
 		local nowActive = #cplus_plus_ex.getMechsWithSkill(skillId) > 0
 		local wasActive = cplus_plus_ex.isSkillActive(skillId)
