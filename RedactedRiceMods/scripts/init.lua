@@ -18,6 +18,7 @@ local libs = {
 	"boardUtils",
 	"passiveEffect",
 	"predictableRandom",
+	"trait",
 }
 
 function mod:init(options)
