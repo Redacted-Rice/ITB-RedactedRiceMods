@@ -1,13 +1,14 @@
 
-local VERSION = "2.2.1"
+local VERSION = "2.3.0"
 ---------------------------------------------------------------------
--- Trait v2.2.1 - code library
+-- Trait v2.3.0 - code library
 --
 -- by Lemonymous
+-- Enhanced by Das Keifer to support multiple trait cycling
 ---------------------------------------------------------------------
 -- Provides functionality to add traits to pawns.
 -- Traits are purely visual - displaying an icon and a description.
--- Only one trait can be visible on a unit at the same time.
+-- Multiple traits can be active on a unit - they will cycle through icons.
 --
 --    Requires libraries:
 -- memedit
@@ -30,10 +31,13 @@ local VERSION = "2.2.1"
 --                Useful for traits that can change without
 --                pawns changing location
 --
---    Priority order when multiple traits appliest to a pawn:
+--    Order of cycling/descriptions when multiple traits apply to a pawn:
 -- func > pilotSkill > pawnType
 -- first created > last created
--- 
+--
+
+-- Time in seconds between icon changes
+local TRAIT_CYCLE_INTERVAL = 1.25
 
 local mod = modApi:getCurrentMod()
 local modApiExt = modapiext or require(mod.scriptPath.."modApiExt/modApiExt")
@@ -64,38 +68,61 @@ local function onModsInitialized()
 	Traits.initialized = true
 end
 
-local function getTraitIcon(loc)
-	local pawn = Board:GetPawn(loc)
+-- Global timer (seconds) for synchronized cycling
+local traitCycleTimer = 0
+local traitCycleIndex = 0
 
-	if pawn == nil then
-		return ""
-	end
+local function getAllActiveTraits(pawn)
+	local activeTraits = {}
 
+	-- Check func traits (highest priority)
 	for _, customTrait in ipairs(Traits.funcs) do
 		if customTrait:func(pawn) then
-			return customTrait.id
+			table.insert(activeTraits, customTrait)
 		end
 	end
 
+	-- Check pilotSkill traits
 	for pilotSkill, pilotTrait in pairs(Traits.pilotSkills) do
 		if pawn:IsAbility(pilotSkill) then
-			return pilotTrait.id
+			table.insert(activeTraits, pilotTrait)
 		end
 	end
 
+	-- Check pawnType traits
 	local pawnType = pawn:GetType()
 	local pawnTrait = Traits.pawnTypes[pawnType]
 	if pawnTrait then
-		return pawnTrait.id
+		table.insert(activeTraits, pawnTrait)
 	end
 
-	return ""
+	return activeTraits
+end
+
+-- Get the current icon to display based on cycling timer
+local function getCurrentIconFromTraits(traits)
+	if #traits == 0 then
+		return ""
+	end
+
+	if #traits == 1 then
+		return traits[1].id
+	end
+
+	-- Calculate which icon to show based on the timer
+	local traitIndex = traitCycleIndex % #traits + 1
+	return traits[traitIndex].id
+end
+
+local function getTraitIcon(loc)
+	local pawn = Board:GetPawn(loc)
+	local activeTraits = getAllActiveTraits(pawn)
+	return getCurrentIconFromTraits(activeTraits)
 end
 
 local function updateLoc(loc)
 	if not isMemeditAvailable then
 		Board:SetTerrainIcon(loc, getTraitIcon(loc))
-
 		return
 	end
 
@@ -134,25 +161,88 @@ local function pawnMoved(mission, pawn, loc_old)
 	updateLoc(loc)
 end
 
+local function maybeCycleTraits()
+	if not Board then return end
+	traitCycleTimer = os.clock()
+
+	-- Calculate current cycle index
+	local currentCycleIndex = math.ceil(traitCycleTimer / TRAIT_CYCLE_INTERVAL)
+
+	-- Only update icons when we've crossed to a new cycle
+	if currentCycleIndex ~= traitCycleIndex then
+		traitCycleIndex = currentCycleIndex
+		updateAll()
+	end
+end
+
 local function onModsLoaded()
 	modApiExt:addPawnTrackedHook(updatePawn)
 	modApiExt:addPawnUntrackedHook(updatePawn)
 	modApiExt:addPawnPositionChangedHook(pawnMoved)
+	modApi:addMissionUpdateHook(maybeCycleTraits)
+end
+
+local function tryGetTraitsFromSelectedPawn(targetId)
+	if not Board then return nil end
+	local selectedPawn = Board:GetSelectedPawn()
+	if selectedPawn then
+		local activeTraits = getAllActiveTraits(selectedPawn)
+
+		-- Check if the requested trait ID is in this pawn's active traits
+		for _, trait in ipairs(activeTraits) do
+			if trait.id == targetId then
+				return activeTraits
+			end
+		end
+
+		LOG("Warning: Trait tooltip requested for trait "..targetId.." but selected pawn does not have this trait active")
+	else
+		LOG("Warning: Trait tooltip requested for trait "..targetId.." but no pawn is selected")
+	end
+	return nil
+end
+
+local function combineTraitsDescriptions(traits)
+	local combinedText = ""
+
+	for i, trait in ipairs(traits) do
+		if i > 1 then
+			combinedText = combinedText .. "\n\n"
+		end
+		combinedText = combinedText .. trait.desc_title .. "\n" .. trait.desc_text
+	end
+
+	return {
+		"Modded Traits",
+		combinedText
+	}
 end
 
 local function overrideGetStatusTooltip()
 	local oldGetStatusTooltip = GetStatusTooltip
 	function GetStatusTooltip(id)
+		-- Check if this is a managed trait
+		local managedTrait = nil
 		for _, trait in ipairs(Traits) do
 			if id == trait.id then
-				return {
-					trait.desc_title,
-					trait.desc_text
-				}
+				managedTrait = trait
+				break
 			end
 		end
 
-		return oldGetStatusTooltip(id)
+		if not managedTrait then
+			return oldGetStatusTooltip(id)
+		end
+
+		local activeTraits = tryGetTraitsFromSelectedPawn(id)
+		if activeTraits and #activeTraits > 1 then
+			return combineTraitsDescriptions(activeTraits)
+		end
+
+		return {
+			managedTrait.desc_title,
+			managedTrait.desc_text
+		}
 	end
 end
 
@@ -209,9 +299,9 @@ local function add(self, trait)
 	trait.id = id
 
 	if icon then
-		icon = icon:match(".-.png$") or icon..".png"
-
+		local icon = icon:match(".-.png$") or icon..".png"
 		local is_vanilla_asset = icon:find("^img/")
+
 		if is_vanilla_asset then
 			if modApi:assetExists(icon) then
 				modApi:copyAsset(icon, "img/"..path)
@@ -227,8 +317,8 @@ local function add(self, trait)
 
 	if icon_glow then
 		icon_glow = icon_glow:match(".-.png$") or icon_glow..".png"
-
 		local is_vanilla_asset = icon_glow:find("^img/")
+
 		if is_vanilla_asset then
 			if modApi:assetExists(icon_glow) then
 				modApi:copyAsset(icon_glow, "img/"..pathGlow)
@@ -280,6 +370,9 @@ if isNewestVersion then
 		modApi.events.onModsLoaded:subscribe(onModsLoaded)
 		modApi.events.onMissionChanged:subscribe(function(mission, oldMission)
 			if mission then
+				-- Reset timer and state on mission start
+				traitCycleTimer = os.clock()
+				traitCycleIndex = 0
 				updateAll()
 			end
 		end)
