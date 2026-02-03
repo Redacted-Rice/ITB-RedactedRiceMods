@@ -19,6 +19,7 @@ Email: RedactedRice@gmail.com
 * BoardUtils - v1.1.0 - Library for board related functions and pathing
 * PassiveEffect - v1.2.0 - Library to help with adding passive weapons to the game. This will handle automatically detecting if the weapon is powered and only call hooks when it is
 * PredictableRandom - v1.1.0 - Library to get random numbers in a way that is repeatable for when undoing moves or resetting turns
+* Trait - v2.3.0 - Library originally created by Lemonymous and updated to v2.3.0 to support multiple traits via appending text and cycling images
 
 # Install
 - If playing with World Builders:
