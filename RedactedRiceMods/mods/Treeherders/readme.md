@@ -10,7 +10,18 @@ Please enjoy and contact us if you run into any issues.
 * Email: RedactedRice@gmail.com
 
 # Releases
-Latest release: 3.0.0
+Latest release: 3.0.1
+
+## 3.0.1
+Released: XX/XX/2026 
+compatible with:
+* ItB AE        1.2.93
+* ModLoader     2.9.4
+* ModLoaderExt  1.21 
+* memedit       1.2.0
+
+### Notes
+* Fixed some weapon wording to use "Ancient Forest" instead of "Overgrowth"
 
 ## 3.0.0
 Released: 01/21/2026 
