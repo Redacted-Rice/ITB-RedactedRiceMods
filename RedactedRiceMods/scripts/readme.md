@@ -43,3 +43,10 @@ Made it support multiple instances correctly
 ### 1.0.0
 Released: ?
 Initial Release.
+
+## Trait
+Current Release: 2.3.0
+
+### 2.3.0
+Released: XX/XX/2026
+Updated to handle multiple traits by appending text together and cycling through images
