@@ -115,7 +115,12 @@ local function getCurrentIconFromTraits(traits)
 end
 
 local function getTraitIcon(loc)
-	local pawn = Board:GetPawn(loc)
+	local pawn = Board:GetPawn(loc)	
+	-- We use this to update the old loc as well so make sure to 
+	-- handle nil pawn case
+	if pawn == nil then
+		return ""
+	end
 	local activeTraits = getAllActiveTraits(pawn)
 	return getCurrentIconFromTraits(activeTraits)
 end
