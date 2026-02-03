@@ -6,8 +6,7 @@ local mod = {
 	modApiVersion = "2.9.4",
 	gameVersion = "1.2.93",
 	dependencies = {
-        redactedrice_memhack = "0.1.0", -- TBD
-        redactedrice_cplus_plus = "0.1.0", -- TBD
+        redactedrice_cplus_plus = "0.7.0",
     }
 }
 
@@ -26,7 +25,7 @@ function mod:init()
 	modApi:setText("RebalCorePlus_GridPlus_FullName", "Grid DEF +8")
 	modApi:setText("RebalCorePlus_GridPlus_Description", "Grid Defense increased by 8")
 
-	local cplusCategory = "RrVanillaPlus"
+	local cplusCategory = "Vanilla+"
 
 	local healthPlus = {
 		id = "HealthPlus",
