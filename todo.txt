@@ -25,10 +25,10 @@ Continue working on custom tile rules
 	nautilus incenerator
 Vanilla unique building swapping?
 Investigate handling the destroy 2 mountains with consume
-Consider upgrades for consume other than + range. 
+Consider upgrades for consume other than + range.
 	Maybe two click and consume 1 or 3 spaces? Seems like it could be powerful
 		Or maybe easier to target different directions? (adj rows or cardinal directions with 90 consume?)
-	
+
 Next release candidates:
 None
 
@@ -37,24 +37,28 @@ Known Issues:
 2. When you move over a frozen tile, the ice will visually disappear but will still be there
 3. When you use mold with acid, damage on second effect will show base damage on the space but will show right damage on pawn itself. This seems to be just related to how ItB handles damage and acid and throws
 
+
 ------------------------------------------------------------------------------
 
 Vanilla+
 1. Test
 
-Pilot/Custom Skills:
-Not equals scans?
-	If so we can determine pilot fairly relialby (Double pointers for some reason)
-	Can then determine xp, level, name, id, etc
-	But NOT skills
-		Need to assume pointers and search for skill names at address to get skills
-Get all heap memory?
-	Add a few copies of pilot/weapon
-	Can then search all memory for pilots and backtrace to hangar
-Get base game pointer?
-	Can probably continue reverse engineering structure to get to hangar
 
-Mech upgrades
+------------------------------------------------------------------------------
+
+MoreLvlUpSkills:
+Working in separate branch
+
+
+------------------------------------------------------------------------------
+
+PilotStore:
+Planned out. To start work
+
+
+------------------------------------------------------------------------------
+
+Mech upgrades (to start in earnest):
 	Actual value stored somewhere else for both but a read only value is in pawn. Instantly reset back to the stored value when changed
 		Uses value 3 for distinct visual power - green power bar uses 2. Using a not scan would be more robust
 		Can potentially be made a read only value
@@ -70,7 +74,6 @@ Squad 3: Mini Expansion - Its still a secret ;)
 ------------------------------------------------------------------------------
 
 Squad 4: Full on Expansion - Its also still a secret ;)
-
 
 
 ------------------------------------------------------------------------------
