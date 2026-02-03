@@ -33,8 +33,7 @@ Known Issues:
 ------------------------------------------------------------------------------
 
 Vanilla+
-1. Make grid def configurable
-2. Exclusions are not registering correctly
+1. Test
 
 Pilot/Custom Skills:
 Not equals scans?
