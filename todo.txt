@@ -32,6 +32,10 @@ Known Issues:
 
 ------------------------------------------------------------------------------
 
+Vanilla+
+1. Make grid def configurable
+2. Exclusions are not registering correctly
+
 Pilot/Custom Skills:
 Not equals scans?
 	If so we can determine pilot fairly relialby (Double pointers for some reason)

@@ -15,15 +15,15 @@ function mod:init()
 	-- such as localization
 	modApi:setText("RebalCorePlus_HealthPlus_ShortName", "Health+")
 	modApi:setText("RebalCorePlus_HealthPlus_FullName", "Health +3")
-	modApi:setText("RebalCorePlus_HealthPlus_Description", "Increase Health by 3.")
+	modApi:setText("RebalCorePlus_HealthPlus_Description", "Piloted Mech health is increased by 3.")
 
 	modApi:setText("RebalCorePlus_MovePlus_ShortName", "Move+")
 	modApi:setText("RebalCorePlus_MovePlus_FullName", "Move +1, Grid DEF +4")
-	modApi:setText("RebalCorePlus_MovePlus_Description", "Increase Move by 1 and Grid DEF by 4.")
+	modApi:setText("RebalCorePlus_MovePlus_Description", "Piloted Mech movement is increased by 1 and Grid Defense increased by 4.")
 
 	modApi:setText("RebalCorePlus_GridPlus_ShortName", "Grid DEF+")
 	modApi:setText("RebalCorePlus_GridPlus_FullName", "Grid DEF +8")
-	modApi:setText("RebalCorePlus_GridPlus_Description", "Grid Defense increased by 8")
+	modApi:setText("RebalCorePlus_GridPlus_Description", "Grid Defense increased by 8.")
 
 	local cplusCategory = "Vanilla+"
 
@@ -63,8 +63,8 @@ function mod:init()
 	cplus_plus_ex:registerSkill(cplusCategory, gridPlus)
 
 	-- Respect the vanilla health exclusions
-	cplus_plus_ex:registerPilotSkillExclusions("Pilot_Rock", healthPlus)
-	cplus_plus_ex:registerPilotSkillExclusions("Pilot_Zoltan", healthPlus)
+	cplus_plus_ex:registerPilotSkillExclusions("Pilot_Rock", healthPlus.id)
+	cplus_plus_ex:registerPilotSkillExclusions("Pilot_Zoltan", healthPlus.id)
 end
 
 function mod:load(options, version)
