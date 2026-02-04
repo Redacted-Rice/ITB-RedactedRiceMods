@@ -93,15 +93,20 @@ end
 
 -- Terrain swaps are default allowed
 function WorldBuilders_Shift:IsUnallowedCustomTerrainSwap(ct)
-	return startsWith(ct, "square_misslesilo") or startsWith(ct, "supervolcano") or
+	unallowed = startsWith(ct, "square_misslesilo") or startsWith(ct, "supervolcano") or
 		startsWith(ct, "tele_") or startsWith(ct, "conveyor")  or
 		-- Into the Wild
 		startsWith(ct, "lmn_ground_geyser") or startsWith(ct, "lmn_ground_volcanic_vent") or
 		-- Nautilus
-		startsWith(ct, "ground_buried_s") or startsWith(ct, "ground_buried_f") or orstartsWith(ct, "ground_mineral")
-		-- todo incenerator? Is this an item?
+		-- todo incenerator? How to handle - this is a custom anim through the game. Add memedit scan so I can access? Maybe just don't worry about it
+		startsWith(ct, "ground_buried_s") or startsWith(ct, "ground_buried_f") or startsWith(ct, "ground_mineral") or
+		-- Farline (whirlpool is close to working - it removes the old one)
+		startsWith(ct, "tosx_whirlpool") or startsWith(ct, "tosx_vent_") or
+		-- Vertex
+		startsWith(ct, "tosx_evacsite")
 		-- candyland custom tiles can all be swapped
-		
+	--LOG("Custom Tile "..ct.. (unallowed and "unallowed" or "allowed"))
+	return unallowed
 end
 
 function WorldBuilders_Shift:IsUnshiftableCustomTile(p)
@@ -111,7 +116,9 @@ function WorldBuilders_Shift:IsUnshiftableCustomTile(p)
 		-- custom buildings are generally objective specific and not movable
 		-- without modifying mission stuff. Just don't allow them at all
 		if terrain == TERRAIN_BUILDING then
-			return not self:IsAllowedCustomBuildingSwap(customTile)
+			local unallowed = not self:IsAllowedCustomBuildingSwap(customTile)
+			--LOG("Custom building "..customTile.." "..(unallowed and "unallowed" or "allowed"))
+			return unallowed
 		end
 		return self:IsUnallowedCustomTerrainSwap(customTile)
 	end
