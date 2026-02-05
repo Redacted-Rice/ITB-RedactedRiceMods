@@ -132,8 +132,8 @@ function WorldBuilders_Consume:AddItemOrItemDamage(spaceDamage, item, itemDamage
 		if Board:IsPawnSpace(p) then
 			spaceDamage.sScript = spaceDamage.sScript .. [[
 				BoardEvents.onItemRemoved:dispatch(]] .. p:GetString() .. [[, "]] .. item .. [[")]]
-			spaceDamage.sImageMark = "combat/icons/icon_wb_unknown_item.png"
 		end
+		spaceDamage.sImageMark = "combat/icons/icon_wb_unknown_item.png"
 		return
 	end
 
