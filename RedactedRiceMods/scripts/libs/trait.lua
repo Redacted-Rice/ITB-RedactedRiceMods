@@ -122,7 +122,8 @@ local function getTraitIcon(loc)
 		return ""
 	end
 	local activeTraits = getAllActiveTraits(pawn)
-	return getCurrentIconFromTraits(activeTraits)
+	local icon = getCurrentIconFromTraits(activeTraits)
+	return icon
 end
 
 local function updateLoc(loc)
