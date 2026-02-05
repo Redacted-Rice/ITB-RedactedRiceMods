@@ -20,8 +20,9 @@ WorldBuilders_Consume = Skill:new
 
     PowerCost = 1,
     Upgrades = 2,
-    UpgradeCost = { 1, 2 },
+    UpgradeCost = { 1, 1 },
 
+	TwoClick = false,
 
     TipImage = {
 		Unit = Point(2,3),
@@ -36,7 +37,7 @@ Weapon_Texts.WorldBuilders_Consume_Upgrade1 = "+1 Range"
 WorldBuilders_Consume_A = WorldBuilders_Consume:new
 {
 	UpgradeDescription = "Can fire up to one more tile",
-	Range = 3,
+    Range = 3,
     TipImage = {
 		Unit = Point(2,3),
 		Target = Point(2,1),
@@ -44,21 +45,30 @@ WorldBuilders_Consume_A = WorldBuilders_Consume:new
 	},
 }
 
-Weapon_Texts.WorldBuilders_Consume_Upgrade2 = "+2 Range"
+Weapon_Texts.WorldBuilders_Consume_Upgrade2 = "Adj consume"
 WorldBuilders_Consume_B = WorldBuilders_Consume:new
 {
-	UpgradeDescription = "Can fire up to two more tiles",
-    Range = 4,
+	UpgradeDescription = "Can consume to left and right spaces instead of only behind space",
+	TwoClick = true,
     TipImage = {
 		Unit = Point(2,3),
-		Target = Point(2,1),
-		Enemy = Point(2,1),
+		Target = Point(2,2),
+		Foreset = Point(3,3),
+		Second_Click = Point(3,3),
+		Enemy = Point(2,2),
 	},
 }
 
 WorldBuilders_Consume_AB = WorldBuilders_Consume_B:new
 {
-	Range = 5,
+    Range = 3,
+    TipImage = {
+		Unit = Point(2,3),
+		Target = Point(2,1),
+		Foreset = Point(3,3),
+		Second_Click = Point(3,3),
+		Enemy = Point(2,1),
+	},
 }
 
 function WorldBuilders_Consume:GetTargetArea(point)
@@ -79,6 +89,16 @@ function WorldBuilders_Consume:GetTargetArea(point)
 		end
 	end
 
+	return ret
+end
+
+-- Choose any adj space too
+function WorldBuilders_Consume_B:GetSecondTargetArea(p1, p2)
+	local ret = PointList()
+	local dir = GetDirection(p2 - p1) % 4
+	ret:push_back(p1 + DIR_VECTORS[(dir + 1) % 4])
+	ret:push_back(p1 + DIR_VECTORS[(dir + 2) % 4])
+	ret:push_back(p1 + DIR_VECTORS[(dir + 3) % 4])
 	return ret
 end
 
@@ -343,6 +363,12 @@ function WorldBuilders_Consume:Consume_Terrain(skillEffect, projectileDamage, ta
 end
 
 function WorldBuilders_Consume:GetSkillEffect(p1, p2)
+	local dir = GetDirection(p2 - p1) % 4
+	local consumeSpace = p1 + DIR_VECTORS[(dir + 2) % 4]
+	return self:GetFinalEffect(p1, p2, consumeSpace)
+end
+
+function WorldBuilders_Consume:GetFinalEffect(p1,p2,consumeSpace)
 	local ret = SkillEffect()
 
 	ret:AddBoardShake(0.1)
@@ -350,7 +376,6 @@ function WorldBuilders_Consume:GetSkillEffect(p1, p2)
 
 	-- Note that this will be a valid space since we already checked in in get target area
 	local dir = GetDirection(p2 - p1) % 4
-	local consumeSpace = p1 + DIR_VECTORS[(dir + 2) % 4]
 
 	-- always at least push the space (except for building consume) - may be modified later
 	local projectileDamage = SpaceDamage(p2, 0, dir)
