@@ -1,31 +1,20 @@
-local skill = {
-	id = "RrJumpJets",
-	name = "Jump Jets",
-	desc = "Mech uses jump jets to leap instead of typical movement",
-	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
-	modified = {},
-}
+local skill = SkillTrait.new(
+	"RrJumpJets",
+	"Jump Jets",
+	"Mech uses jump jets to leap instead of typical movement",
+	cplus_plus_ex.REUSABLILITY.PER_PILOT
+)
 
--- no init needed
-
-function skill:load() 
-	if cplus_plus_ex.isSkillEnabled(self.id) then
-		cplus_plus_ex:addSkillActiveHook(self.applyEffect)
-	end
-end
-
-function skill.applyEffect(skillId, isActive, pawnId, pilot, skill)
-	if skillId == skill.id then
-		local pawn = Game:GetPawn(pawnId)
-		if isActive then
-			if not pawn:IsJumper() then
-				Game:GetPawn(pawnId):SetJumper(true)
-				modified[pawnId] = pawn
-			end
-		else
-			if modified[pawnId] then
-				Game:GetPawn(pawnId):SetJumper(false)
-			end
+function skill.applyEffect(pawnId, pawn, isActive)
+	if isActive then
+		if not pawn:IsJumper() then
+			pawn:SetJumper(true)
+			skill.modified[pawnId] = pawn
+		end
+	else
+		if skill.modified[pawnId] then
+			pawn:SetJumper(false)
+			skill.modified[pawnId] = nil
 		end
 	end
 end
