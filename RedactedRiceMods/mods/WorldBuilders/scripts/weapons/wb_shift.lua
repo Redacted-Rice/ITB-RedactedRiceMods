@@ -86,9 +86,26 @@ local function startsWith(str, prefix)
     return string.sub(str, 1, #prefix) == prefix
 end
 
+function WorldBuilders_Shift:isStandardObjectiveBuilding(unique)
+	local mission = GetCurrentMission()
+	if mission and mission.AssetLoc ~= nil then
+		return unique == _G[mission.AssetId].Image
+	end
+	return false
+end
+
+function WorldBuilders_Shift:IsCriticalObjectiveBuilding(unique)
+	local mission = GetCurrentMission()
+	if mission and mission.Criticals then
+		return unique == mission.Image 
+	end 
+	return false
+end
+
 -- buildings are by default unallowed
-function WorldBuilders_Shift:IsAllowedCustomBuildingSwap(ct)
-	return startsWith(ct, "lmn_ground_meadow")
+function WorldBuilders_Shift:IsAllowedCustomBuildingSwap(unique, ct)
+	return self:isStandardObjectiveBuilding(unique) or self:IsCriticalObjectiveBuilding(unique) or
+			startsWith(ct, "lmn_ground_meadow")
 end
 
 -- Terrain swaps are default allowed
@@ -111,15 +128,14 @@ end
 
 function WorldBuilders_Shift:IsUnshiftableCustomTile(p)
 	local customTile = Board:GetCustomTile(p)
+	local customBuilding = Board:GetUniqueBuilding(p) or ""
+	local terrain = Board:GetTerrain(p)
+	-- Default disallow custom building swaps
+	if terrain == TERRAIN_BUILDING and customBuilding ~= "" then
+		local unallowed = not self:IsAllowedCustomBuildingSwap(customBuilding, customTile)
+		return unallowed
+	end
 	if customTile ~= "" then
-		local terrain = Board:GetTerrain(p)
-		-- custom buildings are generally objective specific and not movable
-		-- without modifying mission stuff. Just don't allow them at all
-		if terrain == TERRAIN_BUILDING then
-			local unallowed = not self:IsAllowedCustomBuildingSwap(customTile)
-			--LOG("Custom building "..customTile.." "..(unallowed and "unallowed" or "allowed"))
-			return unallowed
-		end
 		return self:IsUnallowedCustomTerrainSwap(customTile)
 	end
 	return false
@@ -294,7 +310,8 @@ function WorldBuilders_Shift:GetTerrainAndEffectData(space)
 		smoke = Board:IsSmoke(space),
 		emerging = Board:IsSpawning(space),
 		people1 = Board:GetPeoplePopulated(space),
-		unique = Board:GetUniqueBuilding(space),
+		people2 = Board:GetPeopleEvacuated(space),
+		unique = Board:GetUniqueBuilding(space) or "",
 	}
 end
 
@@ -319,6 +336,27 @@ function WorldBuilders_Shift:ApplyEffect(spaceDamage, spaceData, oldSpaceData)
 	end
 end
 
+function WorldBuilders_Shift:handleCustomBuildingSet(spaceDamage, spaceData)
+	-- set the building
+	spaceDamage.sScript = spaceDamage.sScript .. [[
+			Board:SetUniqueBuilding(]] .. spaceDamage.loc:GetString() .. [[, "]] .. spaceData.unique .. [[")]]
+	
+	if self:isStandardObjectiveBuilding(spaceData.unique) then
+		spaceDamage.sScript = spaceDamage.sScript .. [[
+				GetCurrentMission().AssetLoc = ]] .. spaceDamage.loc:GetString()
+	elseif self:IsCriticalObjectiveBuilding(spaceData.unique) then
+		local buildings = GetCurrentMission().Criticals
+		local swappedBuilding = nil
+		for idx = 1, #buildings do
+			if buildings[idx] == spaceData.origSpace then
+				swappedBuilding = idx
+			end
+		end
+		spaceDamage.sScript = spaceDamage.sScript .. [[
+				GetCurrentMission().Criticals[]] .. swappedBuilding .. [[] = ]] .. spaceDamage.loc:GetString()
+	end
+end
+
 -- If swapping a building in, the tile terrain doesn't always update rigth. For example, if
 -- its a water tile, it will remain visually a water tile until its swapped with land
 -- despite being ocnsidered a road tile. To get around we do a pre damage to change it
@@ -336,8 +374,12 @@ function WorldBuilders_Shift:ApplyTerrain(spaceDamage, spaceDamagePreform, space
 		spaceDamagePreform.iTerrain = TERRAIN_WATER
 	-- If it was a building, change it to a road first and clear the building info
 	elseif oldSpaceData.terrain == TERRAIN_BUILDING then
+		-- clear people data and set unpopulated
 		spaceDamagePreform.sScript = [[
-				Board:UnsetScoredBuilding(]] .. spaceDamagePreform.loc:GetString() .. [[, ]].. TERRAIN_ROAD ..[[)]]
+				Board:SetPopulated(false, ]] .. spaceDamagePreform.loc:GetString() .. [[)
+				Board:SetPeoplePopulated (]] .. spaceDamagePreform.loc:GetString() .. [[, 0)
+				Board:SetPeopleEvacuated (]] .. spaceDamagePreform.loc:GetString() .. [[, 0)]]
+		-- if it was a unique building, clear it
 		if oldSpaceData.unique ~= nil then
 			spaceDamagePreform.sScript = [[
 					Board:SetUniqueBuilding(]] .. spaceDamagePreform.loc:GetString() .. [[, "")]]
@@ -388,10 +430,14 @@ function WorldBuilders_Shift:ApplyTerrain(spaceDamage, spaceDamagePreform, space
 			spaceDamage.sScript = spaceDamage.sScript .. [[
 					Board:SetPopulated(true]] .. [[,]] .. spaceDamage.loc:GetString() .. [[)]]
 		end
-		if spaceData.unique ~= nil then
+		-- update the people values always
 		spaceDamage.sScript = spaceDamage.sScript .. [[
-				Board:SetUniqueBuilding(]] .. spaceDamage.loc:GetString() .. [[, "]] .. spaceData.unique .. [[")
-				Board:SetPeoplePopulated(]] .. spaceDamage.loc:GetString() .. [[, ]] .. spaceData.people1 .. [[)]]
+				Board:SetPeoplePopulated(]] .. spaceDamage.loc:GetString() .. [[, ]] .. spaceData.people1 .. [[)
+				Board:SetPeopleEvacuated(]] .. spaceDamage.loc:GetString() .. [[, ]] .. spaceData.people2 .. [[)]]
+
+		-- if it was a unique building, set it
+		if spaceData.unique ~= nil then
+			self:handleCustomBuildingSet(spaceDamage, spaceData)	
 		end
 
 	end
