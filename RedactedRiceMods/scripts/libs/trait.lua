@@ -116,8 +116,12 @@ end
 
 local function getTraitIcon(loc)
 	local pawn = Board:GetPawn(loc)
+	if pawn == nil then
+		return ""
+	end
 	local activeTraits = getAllActiveTraits(pawn)
-	return getCurrentIconFromTraits(activeTraits)
+	local icon = getCurrentIconFromTraits(activeTraits)
+	return icon
 end
 
 local function updateLoc(loc)
