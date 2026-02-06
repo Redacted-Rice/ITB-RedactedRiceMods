@@ -1,14 +1,32 @@
-local SkillActive = {}
+local SkillActive = {
+	events = {}
+}
 SkillActive.__index = SkillActive
 
-function SkillActive.new(id, name, desc, reusability)
-	local self = setmetatable({}, SkillActive)
-	self.id = id
-	self.name = name
-	self.desc = desc
-	self.reusability = reusability
-	self.events = {}
-	return self
+--[[ TODO: take table instead
+function CreateClass(newclass)
+	local members = {}
+	
+	for i,v in pairs(newclass) do
+		members[#members + 1] = i 
+	end
+	
+	for i = 1, #members do
+		newclass["Get" .. members[i] ] = function (self, pawn) return self[members[i] ] end
+	end
+	
+	newclass.new = 	function(self,o)
+						o = o or {} -- create table if user does not provide one
+						setmetatable(o, self)
+						self.__index = self
+						return o
+					end
+end]]--
+
+function SkillActive:new(tbl)
+	tbl = tbl or {}
+	setmetatable(tbl, self)
+	return tbl
 end
 
 function SkillActive.setupEffect()
@@ -22,7 +40,9 @@ function SkillActive.clearEvents()
 end
 
 function SkillActive:load()
+	LOG("LOAD ".. self.id)
 	if cplus_plus_ex.isSkillEnabled(self.id) then
+		LOG("SETTING HOOKS")
 		cplus_plus_ex:addSkillActiveHook(self.clearAndResetupEffect)
 	else
 		self.clearEvents()
@@ -41,4 +61,4 @@ function SkillActive.clearAndResetupEffect(skillId, isActive, pawnId, pilot, ski
 	end
 end
 
-return CustomSkill
+return SkillActive

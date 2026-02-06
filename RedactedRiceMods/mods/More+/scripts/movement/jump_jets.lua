@@ -1,11 +1,11 @@
-local skill = SkillTrait.new(
-	"RrJumpJets",
-	"Jump Jets",
-	"Mech uses jump jets to leap instead of typical movement",
-	cplus_plus_ex.REUSABLILITY.PER_PILOT
-)
+local skill = more_plus.SkillTrait:new{
+	id = "RrJumpJets",
+	name = "Jump Jets",
+	description = "Mech uses jump jets to leap instead of typical movement",
+	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT
+}
 
-function skill.applyEffect(pawnId, pawn, isActive)
+function skill.applyTrait(pawnId, pawn, isActive)
 	if isActive then
 		if not pawn:IsJumper() then
 			pawn:SetJumper(true)
