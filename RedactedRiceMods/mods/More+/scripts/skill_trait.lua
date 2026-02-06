@@ -1,14 +1,12 @@
-local SkillTrait = {}
+local SkillTrait = {
+	modified = {}
+}
 SkillTrait.__index = SkillTrait
 
-function SkillTrait.new(id, name, desc, reusability)
-	local self = setmetatable({}, SkillTrait)
-	self.id = id
-	self.name = name
-	self.desc = desc
-	self.reusability = reusability
-	modified = {},
-	return self
+function SkillTrait:new(tbl)
+	tbl = tbl or {}
+	setmetatable(tbl, self)
+	return tbl
 end
 
 -- no init needed
@@ -18,8 +16,10 @@ function SkillTrait.applyTrait(pawn, isActive)
 end
 
 function SkillTrait:load()
+	LOG("LOAD ".. self.id)
 	if cplus_plus_ex.isSkillEnabled(self.id) then
-		cplus_plus_ex:addSkillActiveHook(self.applyEffect)
+		LOG("SETTING HOOKS")
+		cplus_plus_ex:addSkillActiveHook(self.applyTrait)
 	end
 end
 

@@ -1,9 +1,9 @@
-local customSkill = SkillActive.new(
-	"RrIgnorant",
-	"Ignorant",
-	"Pilot gains boosted each turn but loses 2 XP per kill",
-	cplus_plus_ex.REUSABLILITY.PER_PILOT
-)
+local customSkill = more_plus.SkillActive:new{
+	id = "RrIgnorant",
+	name = "Ignorant",
+	description = "Pilot gains boosted each turn but loses 2 XP per kill",
+	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT
+}
 
 function customSkill.setupEffect()
 	table.insert(customSkill.events, modapiext.events.onPawnKilled:subscribe(customSkill.killedPawn))
@@ -11,7 +11,7 @@ function customSkill.setupEffect()
 end
 
 function customSkill.killedPawn(mission, pawn, killer)
-	if killer ~= nil and pawn:isEnemy() then
+	if killer and pawn:isEnemy() then
 		local pilot = killer:GetPilot()
 		if cplus_plus_ex.isSkillOnPilot(customSkill.id, pilot) then
 			pilot:addXp(-2)
