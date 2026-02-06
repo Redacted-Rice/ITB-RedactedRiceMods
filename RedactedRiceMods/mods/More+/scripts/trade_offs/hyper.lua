@@ -1,13 +1,13 @@
 local BASE_MOVE = 3
 
-local customSkill = SkillActive.new(
-	"RrHyper",
-	"Hyper",
-	"+3 movement, lose 1 movement at the end of each turn (min +0)",
-	cplus_plus_ex.REUSABLILITY.REUSABLE
-)
-customSkill.bonuses = {move = BASE_MOVE}
-customSkill.modified = {}
+local customSkill = more_plus.SkillActive:new{
+	id = "RrHyper",
+	name = "Hyper",
+	description = "+3 movement, lose 1 movement at the end of each turn (min +0)",
+	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
+	bonuses = {move = BASE_MOVE},
+	modified = {}
+}
 
 function customSkill.setupEffect()
 	table.insert(customSkill.events, modapiext.events.onNextTurn:subscribe(customSkill.decreaseMove))
