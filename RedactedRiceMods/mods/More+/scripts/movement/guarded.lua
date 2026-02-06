@@ -1,9 +1,9 @@
-local skill = SkillTrait.new(
-		"RrGuarded",
-		"Guarded",
-		"Mech is guarding and cannot be pushed",
-		cplus_plus_ex.REUSABLILITY.PER_PILOT
-)
+local skill = more_plus.SkillTrait:new{
+	id = "RrGuarded",
+	name = "Guarded",
+	description = "Mech is guarding and cannot be pushed",
+	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT
+}
 
 function skill.applyTrait(pawnId, pawn, isActive)
 	if isActive then

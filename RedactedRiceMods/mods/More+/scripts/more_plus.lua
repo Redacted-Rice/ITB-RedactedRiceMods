@@ -5,6 +5,9 @@ more_plus.DEBUG = true
 
 local path = GetParentPath(...)
 
+more_plus.SkillTrait = require(path.."skill_trait")
+more_plus.SkillActive = require(path.."skill_active")
+
 function more_plus:scanAndReadSkillFiles()
 	if self.DEBUG then LOG("More+: Scanning subdirs in dir " .. path) end
 	
@@ -48,8 +51,8 @@ function more_plus:init()
 	if self.DEBUG then LOG("Creating all skills...") end
 	-- Then go through and create the skills
 	for category, skills in pairs(self.skillsByCategory) do
-		if self.DEBUG then LOG("Creating skills for category " .. cateogry) end
-		local cplusCategory = "Rr" .. cateogry
+		if self.DEBUG then LOG("Creating skills for category " .. category) end
+		local cplusCategory = "Rr" .. category
 		for _, skill in pairs(skills) do
 			-- simulate continue with an added loop level
 		    repeat
@@ -59,26 +62,35 @@ function more_plus:init()
 					LOG("More+: Failed to find id for skill at: " .. skill.path)
 					break
 				end
-				if not skill.desc then
+				if not skill.description then
 					LOG("More+: Failed to description for skill at: " .. skill.path)
 					break
 				end
 				
 				-- If we just use name, set short and full name
 				-- Also create the text in modloader
-				local shortName = ""
-				local fullName = ""
 				if skill.name then
-					skill.shortName = skill.name
-					skill.fullName = skill.name
-					shortName = "MorePlus_" .. skill.name .. "_Name"
-					fullName = shortName
-					modApi:setText(shortName, name)
+					-- store original values
+					skill._name = skill.name
+					skill._shortName = skill.name
+					skill._fullName = skill.name
+					
+					-- Create a dictionary entry to use instead
+					-- for the expected fields
+					skill.shortName = "MorePlus_" .. skill.id .. "_Name"
+					skill.fullName = "MorePlus_" .. skill.id .. "_Name"
+					modApi:setText(skill.shortName, skill._name)
 				elseif skill.shortName and skill.fullName then
-					shortName = "MorePlus_" .. skill.shortName .. "_ShortName"
-					fullName = "MorePlus_" .. skill.fullName .. "_FullName"
-					modApi:setText(shortName, skill.shortName)
-					modApi:setText(fullName, skill.fullName)
+					-- store original values
+					skill._shortName = skill.shortName
+					skill._fullName = skill.fullName
+					
+					-- Create a dictionary entry to use instead
+					-- for the expected fields
+					skill.shortName = "MorePlus_" .. skill.id .. "_ShortName"
+					skill.fullName = "MorePlus_" .. skill.id .. "_FullName"
+					modApi:setText(skill.shortName, skill._shortName)
+					modApi:setText(skill.fullName, skill._fullName)
 				else
 					LOG("More+: Failed to find name or short name and full name for skill at: " .. skill.path)
 					break
@@ -86,10 +98,11 @@ function more_plus:init()
 				
 				-- Make description text in modloader. Not necessary but does allow for easier
 				-- text replacing
-				local desc = "MorePlus_" .. skill.desc .. "_Description"
-				modApi:setText(desc, skill.desc)
+				skill._description = skill.description
+				skill.description = "MorePlus_" .. skill.id .. "_Description"
+				modApi:setText(skill.description, skill._description)
 				
-				-- Actually register the skill
+				-- Actually register the skill now we have it all set up
 				cplus_plus_ex:registerSkill(cplusCategory, skill)
 				
 				-- Call init on the function if it exists
@@ -105,10 +118,10 @@ end
 
 function more_plus:load()
 	if self.DEBUG then LOG("Loading all skills...") end
-	for _, cateogry in pairs(self.skills) do
-		if self.DEBUG then LOG("Loading skills for category " .. cateogry) end
-		for _, skill in pairs(cateogry) do
-			if self.DEBUG then LOG("Loading skill " .. skill) end
+	for category, skills in pairs(more_plus.skillsByCategory) do
+		if self.DEBUG then LOG("Loading skills for category " .. category) end
+		for _, skill in pairs(skills) do
+			if self.DEBUG then LOG("Loading skill " .. skill.id) end
 			-- Call load on the function if it exists
 			if skill.load then
 				skill:load()
