@@ -1,3 +1,5 @@
+local Skills = {}
+
 local SkillTrait = {
 	modified = {}
 }
@@ -6,27 +8,29 @@ SkillTrait.__index = SkillTrait
 function SkillTrait:new(tbl)
 	tbl = tbl or {}
 	setmetatable(tbl, self)
+	Skills[tbl.id] = tbl
 	return tbl
 end
 
 -- no init needed
 
-function SkillTrait.applyTrait(pawn, isActive)
+function SkillTrait:applyTrait(pawn, isActive)
 	LOG("ERROR: SkillTrait applyTrait not implemented for skill %s", self.id)
 end
 
 function SkillTrait:load()
-	LOG("LOAD ".. self.id)
-	if cplus_plus_ex.isSkillEnabled(self.id) then
-		LOG("SETTING HOOKS")
-		cplus_plus_ex:addSkillActiveHook(self.applyTrait)
+	if cplus_plus_ex:isSkillEnabled(self.id) then
+		cplus_plus_ex:addSkillActiveHook(self.checkAndApplyTrait)
 	end
 end
 
 function SkillTrait.checkAndApplyTrait(skillId, isActive, pawnId, pilot, skill)
-	if skillId == skill.id then
+	LOG("Skill "..skillId)
+	local skillClass = Skills[skillId]
+	if skillClass then
+		LOG("Skill FOUND TRAIT")
 		local pawn = Game:GetPawn(pawnId)
-		SkillTrait.applyTrait(pawnId, pawn, isActive)
+		skillClass:applyTrait(pawnId, pawn, isActive)
 	end
 end
 
