@@ -1,22 +1,22 @@
-local skill = more_plus.SkillTrait:new{
+local customSkill = more_plus.SkillTrait:new{
 	id = "RrGuarded",
 	name = "Guarded",
-	description = "Mech is guarding and cannot be pushed",
+	description = "Piloted Mech is Stable and cannot be moved by weapon effects",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT
 }
 
-function skill.applyTrait(pawnId, pawn, isActive)
+function customSkill:applyTrait(pawnId, pawn, isActive)
 	if isActive then
 		if not pawn:IsGuarding() then
-			pawn:SetPushable(true)
-			skill.modified[pawnId] = pawn
+			pawn:SetPushable(false)
+			customSkill.modified[pawnId] = pawn
 		end
 	else
-		if skill.modified[pawnId] then
-			pawn:SetPushable(false)
-			skill.modified[pawnId] = nil
+		if customSkill.modified[pawnId] then
+			pawn:SetPushable(true)
+			customSkill.modified[pawnId] = nil
 		end
 	end
 end
 
-return skill
+return customSkill

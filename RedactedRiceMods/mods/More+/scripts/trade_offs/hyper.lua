@@ -9,7 +9,7 @@ local customSkill = more_plus.SkillActive:new{
 	modified = {}
 }
 
-function customSkill.setupEffect()
+function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onNextTurn:subscribe(customSkill.decreaseMove))
 end
 
