@@ -1,11 +1,11 @@
 local customSkill = more_plus.SkillActive:new{
-	id = "RrIgnorant",
-	name = "Ignorant",
-	description = "Pilot gains boosted each turn but loses 2 XP per kill",
+	id = "RrHotHeaded",
+	name = "Hot Headed",
+	description = "Gains boosted each turn but loses 2 XP per kill",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT
 }
 
-function customSkill.setupEffect()
+function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onPawnKilled:subscribe(customSkill.killedPawn))
 	table.insert(customSkill.events, modapiext.events.onNextTurn:subscribe(customSkill.boostOnTurn))
 end
