@@ -1,14 +1,13 @@
-local Skills = {}
+local SkillActive = {}
+SkillActive.skills = {}
 
-local SkillActive = {
-	events = {}
-}
 SkillActive.__index = SkillActive
 
 function SkillActive:new(tbl)
 	tbl = tbl or {}
+	tbl.events = {}
 	setmetatable(tbl, self)
-	Skills[tbl.id] = tbl
+	self.skills[tbl.id] = tbl
 	return tbl
 end
 
@@ -22,24 +21,18 @@ function SkillActive:clearEvents()
 	end
 end
 
-function SkillActive:load()
-	if cplus_plus_ex:isSkillEnabled(self.id) then
-		cplus_plus_ex:addSkillActiveHook(self.clearAndResetupEffect)
-	else
-		self:clearEvents()
-	end
+function SkillActive:base_load()
+	cplus_plus_ex:addSkillActiveHook(self.clearAndReSetUpEffect)
 end
 
-function SkillActive.clearAndResetupEffect(skillId, isActive, pawnId, pilot, skillStruct)
-	LOG("Skill "..skillId)
-	local skillClass = Skills[skillId]
+function SkillActive.clearAndReSetUpEffect(skillId, isActive, pawnId, pilot, skillStruct)
+	local skillClass = SkillActive.skills[skillId]
 	if skillClass then
-		LOG("Skill FOUND ACTIVE")
 		-- Clear events
 		skillClass:clearEvents()
 
 		-- Then add them back if any are active
-		if cplus_plus_ex.isSkillActive(skillId) then
+		if cplus_plus_ex:isSkillActive(skillId) then
 			skillClass:setupEffect()
 		end
 	end
