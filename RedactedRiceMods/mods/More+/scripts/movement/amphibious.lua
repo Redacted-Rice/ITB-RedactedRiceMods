@@ -1,16 +1,13 @@
-local BASE_MOVE = 3
-
 local customSkill = more_plus.SkillActive:new{
-	id = "RrHyper",
-	name = "Hyper",
-	description = "+3 movement, lose 1 movement at the end of each turn (min +0)",
-	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
-	bonuses = {move = BASE_MOVE},
+	id = "RrAmphibious",
+	name = "Amphibious",
+	description = "Mech hovers on liquid tiles and gains +1 damage when attacking from liquid tiles",
+	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 	modified = {}
 }
 
 function customSkill:setupEffect()
-	table.insert(customSkill.events, modApi.events.onNextTurn:subscribe(customSkill.decreaseMove))
+	table.insert(customSkill.events, modApi.events.onPawnPositionChanged:subscribe(customSkill.addFlyingIfNeeded))
 end
 
 function customSkill.decreaseMove()
