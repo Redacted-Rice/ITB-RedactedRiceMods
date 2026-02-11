@@ -141,10 +141,18 @@ function WorldBuilders_Shift:IsUnshiftableCustomTile(p)
 	return false
 end
 
+function WorldBuilders_Shift:IsSpecialExclusion(p)
+	local nautilusIncinerator = GetCurrentMission().Incinerator
+	if nautilusIncinerator then
+		return nautilusIncinerator == p
+	end
+	return false
+end
+
 function WorldBuilders_Shift:IsInvalidTargetSpace(p)
 	-- don't allow swapping custom tiles or buildings
 	-- Also just don't swap immovable pawns for simplicity
-	return self:IsUnshiftableCustomTile(p) or
+	return self:IsUnshiftableCustomTile(p) or self:IsSpecialExclusion(p) or 
 		(Board:IsPawnSpace(p) and Board:GetPawn(p):IsGuarding()) or
 		(not self.TargetDeathTiles and (Board:GetTerrain(p) == TERRAIN_WATER or Board:GetTerrain(p) == TERRAIN_HOLE))
 end
