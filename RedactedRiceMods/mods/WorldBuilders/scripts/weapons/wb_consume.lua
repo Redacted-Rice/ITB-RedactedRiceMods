@@ -325,6 +325,12 @@ function WorldBuilders_Consume:Consume_Terrain(skillEffect, projectileDamage, ta
 		elseif consumedTerrain == TERRAIN_MOUNTAIN then
 			projectileDamage.iDamage = 3
 			projImg = "effects/shot_mechrock"
+			-- This will cause consumed mountains to count for the "destroy 2 mountains" mission
+			skillEffect:AddScript([[
+					local mission = GetCurrentMission()
+					if mission and mission.Mountains then
+						mission.Mountains = mission.Mountains + 1
+					end]])
 
 		elseif consumedTerrain == TERRAIN_FOREST then
 			projectileDamage.iDamage = 2
