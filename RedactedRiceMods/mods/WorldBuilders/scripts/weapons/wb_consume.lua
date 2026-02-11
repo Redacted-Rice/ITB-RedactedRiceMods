@@ -197,7 +197,7 @@ function WorldBuilders_Consume:AddConsumeDamage(skillEffect, consumeSpace, damag
 	return item, itemDamage
 end
 
-function WorldBuilders_Consume:Consume_Building(skillEffect, p1, p2, consumeSpace, dir)
+function WorldBuilders_Consume:Consume_Building(skillEffect, p1, p2, consumeSpace, dir, consumeDir)
 	self:AddConsumeDamage(skillEffect, consumeSpace, DAMAGE_DEATH)
 
 	local chainDamage = 0
@@ -216,7 +216,7 @@ function WorldBuilders_Consume:Consume_Building(skillEffect, p1, p2, consumeSpac
 	local hash = function(point) return point.x + point.y*10 end
 
 	local explored = {[hash(p1)] = true}
-	skillEffect:AddAnimation(p1, "Lightning_Attack_" .. dir)
+	skillEffect:AddAnimation(p1, "Lightning_Attack_" .. consumeDir)
 	skillEffect:AddAnimation(p1, "Lightning_Hit")
 
 	while Board:IsValid(spaceInfront) and spaceInfront ~= p2 do
@@ -382,6 +382,7 @@ function WorldBuilders_Consume:GetFinalEffect(p1,p2,consumeSpace)
 
 	-- Note that this will be a valid space since we already checked in in get target area
 	local dir = GetDirection(p2 - p1) % 4
+	local consumeDir = GetDirection(p1 - consumeSpace) % 4
 
 	-- always at least push the space (except for building consume) - may be modified later
 	local projectileDamage = SpaceDamage(p2, 0, dir)
@@ -392,13 +393,13 @@ function WorldBuilders_Consume:GetFinalEffect(p1,p2,consumeSpace)
 	local pawnMaybe = Board:GetPawn(consumeSpace)
 	if Board:IsValid(consumeSpace) then
 		if pawnMaybe ~= nil and pawnMaybe:GetType() ~= "Wall" and pawnMaybe:GetType() ~= "RockThrown" then
-			ret:AddDamage(SpaceDamage(consumeSpace, 1, dir))
+			ret:AddDamage(SpaceDamage(consumeSpace, 1, consumeDir))
 		elseif Board:IsSpawning(consumeSpace) then
-			self:Consume_Spawn(ret, p1, consumeSpace, dir)
+			self:Consume_Spawn(ret, p1, consumeSpace, consumeDir)
 		elseif Board:GetTerrain(consumeSpace) == TERRAIN_BUILDING or Board:IsPod(consumeSpace) then
 			-- remove the push
 			projectileDamage.iPush = DIR_NONE
-			self:Consume_Building(ret, p1, p2, consumeSpace, dir)
+			self:Consume_Building(ret, p1, p2, consumeSpace, dir, consumeDir)
 			wasSpecialAnim = true
 		else -- terrain
 			img, extraDamage = self:Consume_Terrain(ret, projectileDamage, p2, consumeSpace, dir, pawnMaybe)
