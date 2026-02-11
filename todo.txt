@@ -21,9 +21,6 @@ Forest armor icon will sometimes appear when environment effects are occuring. I
 World Builders:
 1. Continue working on custom tile rules
 	nautilus incenerator (memedit changes for get custom anim needed or maybe just don't worry about it)
-	Unique building swapping not blocked currently... Not sure why but want to look into supporting this
-2. Vanilla unique building swapping?
-3. Investigate handling the destroy 2 mountains with consume
 
 Next release candidates:
 None
