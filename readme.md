@@ -13,10 +13,7 @@ Email: RedactedRice@gmail.com
 
 # Squads
 * Treeherders - v3.0.1 - Inspired by ents, this squad focuses on using forests tiles to increase their power. The flagship entborg mech gets stronger as the forests get destroyed
-* WorldBuilders - v1.1.1 - This squad focuses on terrain manipulation to block and avoid damage. It has some strong single target effects but you can easily get overwhelmed by numbers if not strategically manipulating the terrain
-
-# Other
-* Rebalance Core+ - v1.0.0 - Rebalances core Vanilla Pilot Level Up Skills/Abilities (Grid DEF, +1 Move, +2 Health) to be slighlty better and distinct from Skilled
+* WorldBuilders - v1.2.0 - This squad focuses on terrain manipulation to block and avoid damage. It has some strong single target effects but you can easily get overwhelmed by numbers if not strategically manipulating the terrain
 
 # Libs
 * BoardUtils - v1.1.0 - Library for board related functions and pathing
@@ -37,20 +34,18 @@ Email: RedactedRice@gmail.com
 To uninstall, delete the folder in mods
 
 # Releases
-Latest release: 1.3.X
+Latest release: 1.2.1
 
-## 1.3.X
-Rebalance Core+ 1.0.0 - Added buffed vanilla core Pilot Level Up Skills/Abilities (Grid DEF, +1 Move, +2 Health) 
-Trait 2.3.0 - included and updated Lemonymous' trait lib to support multiple traits
-Treeherders v3.0.1 - minor rewording fix
+## 1.2.1
+Worldbuilders 1.2.0
+Significantly better swapping compatibility and adding a more interesting consume upgrade
 
-Released: 01/21/2026
-Squads:
 Treeherders 3.0.1
-WorldBuilders 1.1.1
+Some minor updates
 
-Other:
-Rebalance Core+ 1.0.0
+Released: 02/13/2026
+Treeherders 3.0.1
+WorldBuilders 1.2.0
 
 Libs:
 BoardUtils 1.1.0

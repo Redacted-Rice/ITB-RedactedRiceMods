@@ -45,10 +45,10 @@ WorldBuilders_Consume_A = WorldBuilders_Consume:new
 	},
 }
 
-Weapon_Texts.WorldBuilders_Consume_Upgrade2 = "Adj consume"
+Weapon_Texts.WorldBuilders_Consume_Upgrade2 = "Consume Adj."
 WorldBuilders_Consume_B = WorldBuilders_Consume:new
 {
-	UpgradeDescription = "Can consume to left and right spaces instead of only behind space",
+	UpgradeDescription = "Can instead consume tile to the left or right",
 	TwoClick = true,
     TipImage = {
 		Unit = Point(2,3),
