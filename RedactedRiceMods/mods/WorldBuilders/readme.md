@@ -13,7 +13,7 @@ Please enjoy and contact us if you run into any issues.
 Latest release: 1.2.0
 
 ## 1.2.0
-Released: 02/13/2026
+Released: 02/14/2026
 compatible with:
 * ItB AE        1.2.93
 * ModLoader     2.9.4

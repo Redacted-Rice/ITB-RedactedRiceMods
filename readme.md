@@ -43,7 +43,7 @@ Significantly better swapping compatibility and adding a more interesting consum
 Treeherders 3.0.1
 Some minor updates
 
-Released: 02/13/2026
+Released: 02/14/2026
 Treeherders 3.0.1
 WorldBuilders 1.2.0
 
