@@ -10,7 +10,27 @@ Please enjoy and contact us if you run into any issues.
 * Email: RedactedRice@gmail.com
 
 # Releases
-Latest release: 1.1.1
+Latest release: 1.2.0
+
+## 1.2.0
+Released: 02/13/2026
+compatible with:
+* ItB AE        1.2.93
+* ModLoader     2.9.4
+* ModLoaderExt  1.21
+* Memedit       1.2.1* (custom version)
+
+### Notes
+Changes
+1. Added icons for all terrain and rock generations
+2. Significant custom terrain swapping upgrades
+	a. Custom buildings for standard missions including the HQ! Big buff
+	b. Swapping for custom tiles/buildings for mods when compatible. Most environment tiles are not swappable
+3. Changed second upgrade for consume to allow consuming adj tiles
+4. Added support for items/modded statuses that use items
+	a. If it has an effect, it applies it to the target (e.g. mines)
+	b. If not, it applies the items (e.g. modded gunk status) to each tile and triggers on step effect for it
+5. Fix consume mountains counting for mission that requires destroying 2 mountains
 
 ## 1.1.1
 Released: 01/17/2026

@@ -19,7 +19,7 @@ Forest armor icon will sometimes appear when environment effects are occuring. I
 ------------------------------------------------------------------------------
 
 World Builders:
-1. Test
+None
 
 Next release candidates:
 None
