@@ -142,9 +142,10 @@ function WorldBuilders_Shift:IsUnshiftableCustomTile(p)
 end
 
 function WorldBuilders_Shift:IsSpecialExclusion(p)
-	local nautilusIncinerator = GetCurrentMission().Incinerator
-	if nautilusIncinerator then
-		return nautilusIncinerator == p
+	local mission = GetCurrentMission()
+	-- Nautilus's incinerator
+	if mission and mission.Incinerator then
+		return mission.Incinerator == p
 	end
 	return false
 end
