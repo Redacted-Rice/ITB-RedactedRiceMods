@@ -13,7 +13,7 @@ Please enjoy and contact us if you run into any issues.
 Latest release: 3.0.1
 
 ## 3.0.1
-Released: XX/XX/2026 
+Released: 02/13/2026 
 compatible with:
 * ItB AE        1.2.93
 * ModLoader     2.9.4
@@ -22,6 +22,7 @@ compatible with:
 
 ### Notes
 * Fixed some weapon wording to use "Ancient Forest" instead of "Overgrowth"
+* Changed overgrowth base to be distinct and not just Archive
 
 ## 3.0.0
 Released: 01/21/2026 
