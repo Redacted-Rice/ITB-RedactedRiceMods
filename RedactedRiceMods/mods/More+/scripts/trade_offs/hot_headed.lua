@@ -5,6 +5,8 @@ local customSkill = more_plus.SkillActive:new{
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT
 }
 
+customSkill:addCustomTrait()
+
 function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onPawnKilled:subscribe(customSkill.killedPawn))
 	table.insert(customSkill.events, modApi.events.onNextTurn:subscribe(customSkill.boostOnTurn))
