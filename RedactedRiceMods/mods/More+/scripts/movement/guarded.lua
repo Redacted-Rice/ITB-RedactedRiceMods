@@ -11,11 +11,9 @@ function customSkill:applyTrait(pawnId, pawn, isActive)
 			pawn:SetPushable(false)
 			customSkill.modified[pawnId] = pawn
 		end
-	else
-		if customSkill.modified[pawnId] then
-			pawn:SetPushable(true)
-			customSkill.modified[pawnId] = nil
-		end
+	elseif customSkill.modified[pawnId] then
+		pawn:SetPushable(true)
+		customSkill.modified[pawnId] = nil
 	end
 end
 

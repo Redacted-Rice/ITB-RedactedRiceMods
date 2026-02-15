@@ -19,13 +19,15 @@ function SkillActive:clearEvents()
 	for _, event in pairs(self.events) do
 		event:unsubscribe()
 	end
+	self.events = {}
 end
 
-function SkillActive:base_load()
-	cplus_plus_ex:addSkillActiveHook(self.clearAndReSetUpEffect)
+function SkillActive:baseInit()
+	cplus_plus_ex.events.onSkillActive:subscribe(self.clearAndReSetUpEffect)
 end
 
 function SkillActive.clearAndReSetUpEffect(skillId, isActive, pawnId, pilot, skillStruct)
+	--LOG("CHECKING A SKILL "..skillId)
 	local skillClass = SkillActive.skills[skillId]
 	if skillClass then
 		-- Clear events
@@ -33,6 +35,7 @@ function SkillActive.clearAndReSetUpEffect(skillId, isActive, pawnId, pilot, ski
 
 		-- Then add them back if any are active
 		if cplus_plus_ex:isSkillActive(skillId) then
+			--LOG("Setting up "..skillId)
 			skillClass:setupEffect()
 		end
 	end
