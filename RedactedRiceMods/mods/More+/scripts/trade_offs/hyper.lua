@@ -6,7 +6,6 @@ local customSkill = more_plus.SkillActive:new{
 	description = "+3 movement, lose 1 movement at the end of each turn (min +0)",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 	bonuses = {move = BASE_MOVE},
-	modified = {}
 }
 
 function customSkill:setupEffect()
@@ -21,13 +20,7 @@ function customSkill.decreaseMove()
 			local key = pilot:getAddress()
 			for _, idx in ipairs(idxes) do
 				local skill = pilot:getLvlUpSkill(idx)
-				local skillKey = key .. "_" .. idx
-				if not customSkill.modified[skillKey] then
-					customSkill.modified[skillKey] = BASE_MOVE
-				end
-				if customSkill.modified[skillKey] > 0 then
-					skill:setMoveBonus(skill:getMoveBonus() - 1)
-				end
+				skill:setMoveBonus(math.max(0, BASE_MOVE - Game:GetTurnCount()))
 			end
 		end
 	end

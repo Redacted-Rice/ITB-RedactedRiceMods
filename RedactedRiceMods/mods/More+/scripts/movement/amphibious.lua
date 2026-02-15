@@ -10,22 +10,18 @@ function customSkill:setupEffect()
 	table.insert(customSkill.events, modApi.events.onPawnPositionChanged:subscribe(customSkill.addFlyingIfNeeded))
 end
 
-function customSkill.decreaseMove()
-	if  Game:GetTeamTurn() == TEAM_ENEMY then
-		for _, pilotAndSkills in pairs(cplus_plus_ex:getPilotsWithSkill(customSkill.id)) do
-			local pilot = pilotAndSkills.pilot
-			local idxes = pilotAndSkills.skillIndices
-			local key = pilot:getAddress()
-			for _, idx in ipairs(idxes) do
-				local skill = pilot:getLvlUpSkill(idx)
-				local skillKey = key .. "_" .. idx
-				if not customSkill.modified[skillKey] then
-					customSkill.modified[skillKey] = BASE_MOVE
-				end
-				if customSkill.modified[skillKey] > 0 then
-					skill:setMoveBonus(skill:getMoveBonus() - 1)
-				end
-			end
+function customSkill.addFlyingIfNeeded(mission, pawn)
+	if cplus_plus_ex:isSkillOnPawn(self.id, pawn) then
+		local key = pilot:getAddress()
+		local skillKey = key .. "_" .. idx
+		
+		local terrain = Board:GetTerrain(pawn:GetSpace())
+		if terrain == TERRAIN_WATER and terrain == TERRAIN_LAVA then
+			pawn:SetFlying(true)
+			customSkill.modified[key] = true
+		elseif customSkill.modified[key] then
+			pawn:SetFlying(false)
+			customSkill.modified[key] = false
 		end
 	end
 end
