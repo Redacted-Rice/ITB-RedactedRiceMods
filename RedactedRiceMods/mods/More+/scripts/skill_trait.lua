@@ -11,7 +11,23 @@ function SkillTrait:new(tbl)
 	return tbl
 end
 
--- no init needed
+SkillTrait.trait = mod_loader.mods[modApi.currentMod].libs.trait
+function SkillTrait:addCustomTrait()
+	local iconImg = "img/combat/icons/icon_mp_"..self.id..".png"
+	modApi:appendAsset(iconImg, mod_loader.mods[modApi.currentMod].resourcePath..iconImg)
+	self.trait:add{
+		func = function(trait, pawn)
+			if cplus_plus_ex:isSkillOnPawn(self.id, pawn) then
+				return true
+			end
+			return false
+		end,
+		icon = iconImg,
+		--icon_offset = Point(0,9),
+		desc_title = self.name,
+		desc_text = self.description,
+	}
+end
 
 function SkillTrait:applyTrait(pawn, isActive)
 	LOG("ERROR: SkillTrait applyTrait not implemented for skill %s", self.id)

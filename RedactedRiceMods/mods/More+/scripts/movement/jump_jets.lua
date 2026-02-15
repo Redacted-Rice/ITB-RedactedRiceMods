@@ -5,6 +5,8 @@ local customSkill = more_plus.SkillTrait:new{
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT
 }
 
+customSkill:addCustomTrait()
+
 function customSkill:applyTrait(pawnId, pawn, isActive)
 	if isActive then
 		if not pawn:IsJumper() then
