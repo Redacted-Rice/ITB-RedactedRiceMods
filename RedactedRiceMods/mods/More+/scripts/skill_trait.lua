@@ -17,11 +17,12 @@ function SkillTrait:applyTrait(pawn, isActive)
 	LOG("ERROR: SkillTrait applyTrait not implemented for skill %s", self.id)
 end
 
-function SkillTrait:base_load()
-	cplus_plus_ex:addSkillActiveHook(self.checkAndApplyTrait)
+function SkillTrait:baseInit()
+	cplus_plus_ex.events.onSkillActive:subscribe(self.checkAndApplyTrait)
 end
 
 function SkillTrait.checkAndApplyTrait(skillId, isActive, pawnId, pilot, skill)
+	--LOG("CHECKING T SKILL "..skillId)
 	local skillClass = SkillTrait.skills[skillId]
 	if skillClass then
 		local pawn = Game:GetPawn(pawnId)
