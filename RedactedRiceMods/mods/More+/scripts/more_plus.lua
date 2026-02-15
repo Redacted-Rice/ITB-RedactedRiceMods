@@ -45,6 +45,9 @@ function more_plus:scanAndReadSkillFiles()
 end
 
 function more_plus:init()
+	self.SkillTrait:baseInit()
+	self.SkillActive:baseInit()
+
 	if self.DEBUG then LOG("Finding all skills...") end
 	more_plus:scanAndReadSkillFiles(basePath)
 	
@@ -117,9 +120,6 @@ function more_plus:init()
 end
 
 function more_plus:load()
-	more_plus.SkillTrait:base_load()
-	more_plus.SkillActive:base_load()
-
 	if self.DEBUG then LOG("Loading all skills...") end
 	for category, skills in pairs(more_plus.skillsByCategory) do
 		if self.DEBUG then LOG("Loading skills for category " .. category) end
