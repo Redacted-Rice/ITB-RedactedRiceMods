@@ -23,6 +23,7 @@ Latest release: 1.0.0
 
 ## 1.0.0
 Released: XX/XX/2026 
+
 compatible with:
 * ItB AE 	1.2.93
 * ModLoader 2.9.4
