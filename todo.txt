@@ -11,9 +11,9 @@ Next release candidates:
 1. Treevac doesn't distinguish between damage in the attack that causes the push vs follow on attacks when checking for spaces to push to
 
 Known issues:
-Forest Firer bounce happens after push. Doesn't seem to be a way around this but its just visual anyways
-Forest Firer teleport and launch SFX just sometimes don't play. Not sure why this is
-Forest armor icon will sometimes appear when environment effects are occuring. I think this should be mostly fixed now but may show occasionally
+1. Forest Firer bounce happens after push. Doesn't seem to be a way around this but its just visual anyways
+2. Forest Firer teleport and launch SFX just sometimes don't play. Not sure why this is
+3. Forest armor icon will sometimes appear when environment effects are occuring. I think this should be mostly fixed now but may show occasionally
 
 
 ------------------------------------------------------------------------------
@@ -28,7 +28,6 @@ Known Issues:
 1. Move range hovering does not display right. This is not currently able to be changed
 2. When you move over a frozen tile, the ice will visually disappear but will still be there
 3. When you use mold with acid, damage on second effect will show base damage on the space but will show right damage on pawn itself. This seems to be just related to how ItB handles damage and acid and throws
-4. Add support for Farliner whirlpool swapping
 
 
 ------------------------------------------------------------------------------
