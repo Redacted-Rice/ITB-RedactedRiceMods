@@ -42,14 +42,16 @@ Treeherders 3.0.2
 Some minor fixes
 
 Released: xx/xx/2026
-Treeherders 3.0.2
-WorldBuilders 1.2.0
+
+Squads:
+*Treeherders 3.0.2
+*WorldBuilders 1.2.0
 
 Libs:
 BoardUtils 1.1.0
-PassiveEffect 1.2.0
-PredictableRandom 1.1.0
-Trait 2.3.0
+*PassiveEffect 1.2.0
+*PredictableRandom 1.1.0
+*Trait 2.3.0
 
 ## 1.2.1
 Worldbuilder enhancments. Significantly better swapping compatibility and adding a more interesting consume upgrade
