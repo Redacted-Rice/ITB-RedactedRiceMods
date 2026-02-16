@@ -49,7 +49,7 @@ Treeherders_ViolentGrowth_A = Treeherders_ViolentGrowth:new
 Weapon_Texts.Treeherders_ViolentGrowth_Upgrade2 = "+2 Expansion"
 Treeherders_ViolentGrowth_B = Treeherders_ViolentGrowth:new
 {
-	UpgradeDescription = "Expand the targeted forest two extra tiles near primary target",
+	UpgradeDescription = "Repeat effect on the two non-forest tiles nearest primary target",
 	ForestToExpand = 2,
 }
 
@@ -91,7 +91,7 @@ function Treeherders_ViolentGrowth:AddPrimarySkillEffect(skillFx, p2)
 
 	--if it can be floraformed, do so
 	elseif forestUtils.isSpaceFloraformable(p2) then
-		forestUtils:floraformSpace(skillFx, p2, self.Damage, pushDir, false, true)
+		forestUtils:floraformSpace(skillFx, p2, self.Damage, pushDir, true, true)
 
 	--otherwise just damage it
 	else
