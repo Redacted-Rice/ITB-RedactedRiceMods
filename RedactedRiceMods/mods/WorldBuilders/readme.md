@@ -1,10 +1,11 @@
 # ITB World Builders Squad Mod
 The World Builders squad mod for Into the Breach by Redacted Rice
+
 Created by Das Keifer
 
 Join the Redacted Rice discord for support, more mods, discussion and other projects: https://discord.gg/CNjTVrpN4v
 
-Please enjoy and contact us if you run into any issues.
+Please enjoy and contact us if you run into any issues!
 * RedactedRice Discord Server: https://discord.gg/CNjTVrpN4v
 * ItB Discord: Das Keifer
 * Email: RedactedRice@gmail.com
@@ -14,6 +15,7 @@ Latest release: 1.2.0
 
 ## 1.2.0
 Released: 02/14/2026
+
 compatible with:
 * ItB AE        1.2.93
 * ModLoader     2.9.4
@@ -21,7 +23,7 @@ compatible with:
 * Memedit       1.2.1* (custom version)
 
 ### Notes
-Changes
+Changes:
 1. Added icons for all terrain and rock generations
 2. Significant custom terrain swapping upgrades
 	a. Custom buildings for standard missions including the HQ! Big buff
@@ -34,6 +36,7 @@ Changes
 
 ## 1.1.1
 Released: 01/17/2026
+
 compatible with:
 * ItB AE        1.2.93
 * ModLoader     2.9.4
@@ -41,7 +44,7 @@ compatible with:
 * Memedit       1.2.1* (custom version)
 
 ### Notes
-Changes
+Changes:
 1. Reworked Mold targetting to be more intuitive
 	a. Can now target any adjacent space if the unit would die
 	b. Made it so it won't show first target areas that have no valid second target
@@ -50,6 +53,7 @@ Changes
 
 ## 1.1.0
 Released: 01/13/2026
+
 compatible with:
 * ItB AE        1.2.93
 * ModLoader     2.9.4
@@ -67,6 +71,7 @@ Maybe a few other small ones too
 
 ## 1.0.0
 Released: 01/10/2026
+
 compatible with:
 * ItB AE        1.2.93
 * ModLoader     2.9.4
@@ -75,7 +80,8 @@ compatible with:
 
 ### Notes
 Initial release of WorldBuilders!
-Still requires custom memedit version
+
+Requires custom memedit version
 
 ## 0.8.0
 Released: 12/19/2025 

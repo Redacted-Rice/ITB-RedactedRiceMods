@@ -1,15 +1,16 @@
 # Redacted Rice Complete Mods
 All of RedactedRice's Mods for Into the Breach
+
 Created by Das Keifer
 
 Join the Redacted Rice discord for support, more mods, discussion and other projects: https://discord.gg/CNjTVrpN4v
 
 See individual folders for more details on each mod
 
-Please enjoy and contact us if you run into any issues.
-RedactedRice Discord Server: https://discord.gg/CNjTVrpN4v
-ItB Discord: Das Keifer
-Email: RedactedRice@gmail.com
+Please enjoy and contact us if you run into any issues!
+* RedactedRice Discord Server: https://discord.gg/CNjTVrpN4v
+* ItB Discord: Das Keifer
+* Email: RedactedRice@gmail.com
 
 # Squads
 * Treeherders - v3.0.2 - Inspired by ents, this squad focuses on using forests tiles to increase their power. The flagship entborg mech gets stronger as the forests get destroyed
@@ -51,94 +52,104 @@ PredictableRandom 1.1.0
 Trait 2.3.0
 
 ## 1.2.1
-Worldbuilders 1.2.0
-Significantly better swapping compatibility and adding a more interesting consume upgrade
+Worldbuilder enhancments. Significantly better swapping compatibility and adding a more interesting consume upgrade
 
-Treeherders 3.0.1
-Some minor updates
+Some minor updates for Treeherders
 
 Released: 02/14/2026
-Treeherders 3.0.1
-WorldBuilders 1.2.0
+
+Squads:
+* Treeherders 3.0.1
+* WorldBuilders 1.2.0
 
 Libs:
-BoardUtils 1.1.0
-PassiveEffect 1.2.0
-PredictableRandom 1.1.0
-Trait 2.3.0
+* BoardUtils 1.1.0
+* PassiveEffect 1.2.0
+* PredictableRandom 1.1.0
+* Trait 2.3.0
 
 ## 1.2.0
-Treeherders 3.0!
-Entborg is now a cyborg by default and has an additional single use item to help level out the early mission difficulty curve
+Treeherders 3.0! Entborg is now a cyborg by default and has an additional single use item to help level out the early mission difficulty curve
 
 Released: 01/21/2026
-Treeherders 3.0.0
-WorldBuilders 1.1.1
+
+Squads:
+* Treeherders 3.0.0
+* WorldBuilders 1.1.1
 
 Libs:
-BoardUtils 1.1.0
-PassiveEffect 1.2.0
-PredictableRandom 1.1.0
+* BoardUtils 1.1.0
+* PassiveEffect 1.2.0
+* PredictableRandom 1.1.0
 
 ## 1.1.2
 Minor bug fixes/updates for Worldbuilders. Requires custom memedit
 
 Released: 01/17/2026
-Treeherders 2.0.0
-WorldBuilders 1.1.1
+
+Squads:
+* Treeherders 2.0.0
+* WorldBuilders 1.1.1
 
 Libs:
-BoardUtils 1.1.0
-PassiveEffect 1.2.0
-PredictableRandom 1.1.0
+* BoardUtils 1.1.0
+* PassiveEffect 1.2.0
+* PredictableRandom 1.1.0
 
 ## 1.1.1
 Bug fix for Worldbuilders and PassiveEffect lib. Requires custom memedit
 
 Released: 01/13/2026
-Treeherders 2.0.0
-WorldBuilders 1.1.0
+
+Squads:
+* Treeherders 2.0.0
+* WorldBuilders 1.1.0
 
 Libs:
-BoardUtils 1.1.0
-PassiveEffect 1.2.0
-PredictableRandom 1.1.0
+* BoardUtils 1.1.0
+* PassiveEffect 1.2.0
+* PredictableRandom 1.1.0
 
 ## 1.1.0
 Release of WorldBuilders! Still Requires custom memedit
+
 Also first release of BoardUtils lib
 
 Released: 01/10/2026
-Treeherders 2.0.0
-WorldBuilders 1.0.0
+
+Squads:
+* Treeherders 2.0.0
+* WorldBuilders 1.0.0
 
 Libs:
-BoardUtils 1.1.0
-PassiveEffect 1.1.0
-PredictableRandom 1.1.0
+* BoardUtils 1.1.0
+* PassiveEffect 1.1.0
+* PredictableRandom 1.1.0
 
 ## 1.0.1
 Pre-release of WorldBuilders. Requires custom memedit
 
 Released: 12/19/2025 
-Treeherders 2.0.0
-WorldBuilders 0.8.0
+
+Squads:
+* Treeherders 2.0.0
+* WorldBuilders 0.8.0
 
 Libs:
-BoardUtils 1.1.0
-PassiveEffect 1.1.0
-PredictableRandom 1.1.0
+* PassiveEffect 1.1.0
+* PredictableRandom 1.1.0
 
 ## 1.0.0
 Release of Treeherders 2.0
 
 Released: 12/19/2025 
-Treeherders 2.0.0
+
+Squads:
+* Treeherders 2.0.0
 
 Libs:
-BoardUtils 1.1.0
-PassiveEffect 1.1.0
-PredictableRandom 1.1.0
+* PassiveEffect 1.1.0
+* PredictableRandom 1.1.0
 
 # Release Process
 Copy license and this readme into RedactedRiceMods folder and zip it up
