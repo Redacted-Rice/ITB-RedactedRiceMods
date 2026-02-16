@@ -7,9 +7,6 @@ Treeherders_ViolentGrowth = Skill:new
 	Rarity = 1,
 
 	Explosion = "",
-	--TODO sounds
---	LaunchSound = "/weapons/titan_fist",
---	ImpactSound = "/impact/generic/tractor_beam",
 
 	Range = 1,
 	PathSize = 1,
