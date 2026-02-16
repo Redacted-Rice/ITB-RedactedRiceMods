@@ -10,7 +10,18 @@ Please enjoy and contact us if you run into any issues.
 * Email: RedactedRice@gmail.com
 
 # Releases
-Latest release: 3.0.1
+Latest release: 3.0.2
+
+## 3.0.2
+Released: xx/xx/2026 
+compatible with:
+* ItB AE        1.2.93
+* ModLoader     2.9.4
+* ModLoaderExt  1.21 
+* memedit       1.2.0
+
+### Notes
+* Floraform no longer grows on cracked tiles, they will break away as usual now
 
 ## 3.0.1
 Released: 02/14/2026 
