@@ -10,6 +10,11 @@ Please enjoy and contact us if you run into any issues!
 * ItB Discord: Das Keifer
 * Email: RedactedRice@gmail.com
 
+## Known Issues
+1. Move range hovering does not display right. This is not currently able to be changed
+2. When you move over a frozen tile, the ice will visually disappear but will still be there
+3. When you use mold with acid, damage on second effect will show base damage on the space but will show right damage on pawn itself. This seems to be just related to how ItB handles damage and acid and throws
+
 # Releases
 Latest release: 1.2.0
 
