@@ -6,14 +6,14 @@ local mod = {
 	modApiVersion = "2.9.4",
 	gameVersion = "1.2.93",
 	dependencies = {
-        redactedrice_cplus_plus = "0.7.0",
+        redactedrice_cplus_plus = "0.9.0",
     }
 }
 
 function mod:init(options)
 	gridDef = options["rr_vplus_grid"].value
 	local halfRounded = math.floor(gridDef / 2.0)
-	
+
 	-- use the set text approach so other can override these if they want to for some reason
 	-- such as localization
 	modApi:setText("RebalCorePlus_HealthPlus_ShortName", "Health+")
@@ -82,7 +82,7 @@ function mod:metadata()
 	local option_values = {
 		gridDef = {4, 5, 6, 7, 8, 9, 10, 11, 12},
 	}
-	
+
 	modApi:addGenerationOption(
 		"rr_vplus_grid", "Grid+ Increase Amount",
 		"Changes the Grid DEF % increas for the Grid+ skill and the Move+ skill. Grid DEF will use this value. Move+ will use this value / 2 (round down).\nREQUIRES RESTART TO TAKE EFFECT!",
