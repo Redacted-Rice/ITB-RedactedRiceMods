@@ -27,7 +27,7 @@ Released: XX/XX/2026
 compatible with:
 * ItB AE 	1.2.93
 * ModLoader 2.9.4
-* CPLUS+ Ex	0.7.0
+* CPLUS+ Ex	0.9.0
 
 ### Notes
 * Initial release! Replaces Grid DEF, Health, and Move with better versions
