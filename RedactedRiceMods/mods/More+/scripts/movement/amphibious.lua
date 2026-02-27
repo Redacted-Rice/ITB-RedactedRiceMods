@@ -1,10 +1,13 @@
 local customSkill = more_plus.SkillActive:new{
 	id = "RrAmphibious",
 	name = "Amphibious",
-	description = "Mech hovers on liquid tiles and gains +1 damage when attacking from liquid tiles",
+	description = "Mech hovers on liquid tiles",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 	modified = {}
 }
+
+-- TODO:
+--customSkill:addCustomTrait()
 
 function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onPawnPositionChanged:subscribe(customSkill.addFlyingIfNeeded))

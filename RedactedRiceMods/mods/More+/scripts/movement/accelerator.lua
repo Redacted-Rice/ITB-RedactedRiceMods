@@ -1,12 +1,10 @@
-local BASE_MOVE = 3
+local MAX_MOVE = 4
 
 local customSkill = more_plus.SkillActive:new{
-	id = "RrHyper",
-	name = "Hyper",
-	description = "+3 movement, lose 1 movement at the end of each turn (min +0)",
+	id = "RrAccelerator",
+	name = "Accelerator",
+	description = "+1 Move at the start of each turn (max +" .. MAX_MOVE .. ")",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
-	-- Not strictly needed but makes more sense
-	bonuses = {move = BASE_MOVE},
 }
 
 -- TODO:
@@ -24,8 +22,7 @@ function customSkill.setMoveBonus()
 		local idxes = pilotAndSkills.skillIndices
 		for _, idx in ipairs(idxes) do
 			local skill = pilot:getLvlUpSkill(idx)
-			-- First turn is 1 so add 1 so its BASE_MOVE on the first turn
-			skill:setMoveBonus(math.max(0, BASE_MOVE - Game:GetTurnCount() + 1))
+			skill:setMoveBonus(math.min(MAX_MOVE, Game:GetTurnCount() + 1))
 		end
 	end
 end
