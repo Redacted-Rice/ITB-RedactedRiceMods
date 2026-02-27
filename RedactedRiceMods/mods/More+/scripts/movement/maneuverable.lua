@@ -21,10 +21,9 @@ function customSkill:moveTargetArea(mission, pawn, weaponId, p1, targetArea)
 			while not targetArea:empty() do
 				targetArea:erase(0)
 			end
-			-- TODO: Need to make friendly pawn version of matcher
-			-- makeAllTerrainMatcher (.., false) == don't path through pawns
-			-- Pass same to pathable and stoppable
-			self.boardUtils.getReachableInRange(targetArea, pawn:GetMoveSpeed(), p1, self.boardUtils.makeAllTerrainMatcher(pawn, false), self.boardUtils.makeAllTerrainMatcher(pawn, false))
+			-- makeAllTerrainMatcher (.., "friendly") == pass through friendly pawns
+			-- makeAllTerrainMatcher (.., "any") == can't land on any pawns
+			self.boardUtils.getReachableInRange(targetArea, pawn:GetMoveSpeed(), p1, self.boardUtils.makeAllTerrainMatcher(pawn, "friendly"), self.boardUtils.makeAllTerrainMatcher(pawn, "any"))
 		end
 	end
 end
@@ -33,10 +32,9 @@ function customSkill:moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 	if weaponId == "Move" then
 		local pilot = pawn:GetPilot()
 		if pilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot) then
-		-- TODO: Need to make friendly pawn version of matcher
-		-- makeAllTerrainMatcher (.., false) == don't path through pawns
-		-- findBfsPath (.., true) == as point list
-			local path = self.boardUtils.findBfsPath(p1, p2, self.boardUtils.makeAllTerrainMatcher(pawn, true), true)
+			-- makeAllTerrainMatcher (.., "friendly") == pass through friendly pawns
+			-- findBfsPath (.., true) == as point list
+			local path = self.boardUtils.findBfsPath(p1, p2, self.boardUtils.makeAllTerrainMatcher(pawn, "friendly"), true)
 			self.boardUtils.addForcedMove(skillEffect, path)
 		end
 	end
