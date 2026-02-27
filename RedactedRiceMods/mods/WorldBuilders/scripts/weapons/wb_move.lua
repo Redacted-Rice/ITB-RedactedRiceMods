@@ -68,7 +68,7 @@ end
 function WorldBuilders_Passive_Move:GetPassiveSkillEffect_SkillBuildHook(mission, pawn, weaponId, p1, p2, skillEffect)
 	if weaponId == "Move" and pawn:IsMech() then
 		-- true == as point list
-		local path = self.boardUtils.findBfsPath(p1, p2, self.boardUtils.makeAllTerrainMatcher(pawn, true), true)
+		local path = self.boardUtils.findBfsPath(p1, p2, self.boardUtils.makeAllTerrainMatcher(pawn, false), true)
 		self.boardUtils.addForcedMove(skillEffect, path)
 	end
 end
