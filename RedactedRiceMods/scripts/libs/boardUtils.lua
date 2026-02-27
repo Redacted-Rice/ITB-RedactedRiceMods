@@ -1,11 +1,11 @@
 local boardUtils = {
 	Version="1.1.0",
 }
-	
+
 function boardUtils.addForcedMove(skillEffect, path)
 	-- Clear the existing move from the skilleffect
 	skillEffect.effect = SkillEffect().effect
-	
+
 	-- Add move for display purposes. This won't let us move onto unmovable spaces reliably
 	skillEffect:AddMove(path, FULL_DELAY)
 
@@ -24,10 +24,24 @@ function boardUtils.makeInSubsetMatcher(tiles)
 	 end
 end
 
-function boardUtils.makeAllTerrainMatcher(pawn, skipPawnCheck)
-	 return function(point, hash) 
-	 	 return (skipPawnCheck or not Board:IsPawnSpace(point)) and 
-			(pawn:IsFlying() or Board:GetTerrain(point) ~= TERRAIN_HOLE)
+--pawnCheckType "none", "friendly", "any"
+function boardUtils.makeAllTerrainMatcher(pawn, pawnCheckType)
+	 return function(point, hash)
+        if not pawn:IsFlying() and Board:GetTerrain(point) == TERRAIN_HOLE then
+            return false
+        end
+        local pawn = Board:GetPawn(point)
+        if pawn then
+            if pawnCheckType == "any" then
+                return false
+            end
+            local pawnTeam = pawn:GetTeam()
+            if pawnCheckType == "friendly" and pawnTeam == TEAM_BOTS or
+                    pawnTeam == TEAM_ENEMY or pawnTeam == TEAM_ENEMY_MAJOR then
+                return false
+            end
+        end
+        return true
 	 end
 end
 
