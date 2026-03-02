@@ -16,16 +16,16 @@ end
 
 function customSkill.killedPawn(mission, pawn)
 	LOG("PAWN KILLED! "..pawn:GetId())
-	if GAME.trackedActingId then
-		LOG("KILLER! "..GAME.trackedActingId)
+	if more_plus.lastActed then
+		LOG("KILLER! "..more_plus.lastActed:GetId())
 	end
-	if GAME.trackedActingId and pawn:IsEnemy() then
-		local pilot = Board:GetPawn(GAME.trackedActingId):GetPilot()
+	if more_plus.lastActed and pawn:IsEnemy() then
+		local pilot = more_plus.lastActed:GetPilot()
 		if pilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot) then
 			-- TODO: Add visual effect
 			-- Decrease the XP but only if you don't level down
 			local xp = pilot:getXp()
-			pilot:setXp(max(0, xp - XP_LOSS))
+			pilot:setXp(math.max(0, xp - XP_LOSS))
 		end
 	end
 end

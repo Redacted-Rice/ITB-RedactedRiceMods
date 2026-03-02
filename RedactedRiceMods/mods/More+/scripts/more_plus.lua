@@ -44,7 +44,29 @@ function more_plus:scanAndReadSkillFiles()
 	if self.DEBUG then LOG("More+: Found " .. numSkills .. " in " .. numCats .. " categories") end
 end
 
+function more_plus:setLastActed(pawn)
+	self.lastActed = pawn 
+	LOG("SET PAWN "..pawn:GetId())
+end
+
+function more_plus:unsetLastActed()
+	if self.lastActed then
+		LOG("UNSET PAWN "..self.lastActed:GetId())
+		self.lastActed = nil 
+	end
+end
+
+more_plus.lastActed = nil
+function more_plus:setupLastActedTracking()
+	modapiext.events.onSkillStart:subscribe(function(mission, pawn) self:setLastActed(pawn) end)
+	modapiext.events.onFinalEffectStart:subscribe(function(mission, pawn) self:setLastActed(pawn) end)
+	modapiext.events.onQueuedSkillStart:subscribe(function(mission, pawn) self:setLastActed(pawn) end)
+	modapiext.events.onQueuedFinalEffectStart:subscribe(function(mission, pawn) self:setLastActed(pawn) end)
+	modApi.events.onSaveGame:subscribe(function() self:unsetLastActed() end)
+end
+
 function more_plus:init()
+	self:setupLastActedTracking()
 	self.SkillTrait:baseInit()
 	self.SkillActive:baseInit()
 
