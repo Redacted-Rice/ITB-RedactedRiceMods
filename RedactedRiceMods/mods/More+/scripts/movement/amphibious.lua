@@ -6,8 +6,7 @@ local customSkill = more_plus.SkillActive:new{
 	modified = {}
 }
 
--- TODO:
---customSkill:addCustomTrait()
+customSkill:addCustomTrait()
 
 function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onPawnPositionChanged:subscribe(customSkill.addFlyingIfNeeded))
