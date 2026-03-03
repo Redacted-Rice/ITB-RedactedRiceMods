@@ -15,7 +15,7 @@ function customSkill:setupEffect()
 	table.insert(customSkill.events, modApi.events.onNextTurn:subscribe(customSkill.setMoveBonus))
 	table.insert(customSkill.events, modApi.events.onMissionEnd:subscribe(customSkill.setDefaultMoveBonus))
 	table.insert(customSkill.events, modApi.events.onMissionStart:subscribe(customSkill.setDefaultMoveBonus))
-	self.setDefaultMoveBonus()
+	self.setMoveBonus()
 end
 
 function customSkill:_internalSetMoveBonus(moveBonus)
@@ -36,7 +36,9 @@ function customSkill.setDefaultMoveBonus()
 end
 
 function customSkill.setMoveBonus()
-	customSkill:_internalSetMoveBonus(math.max(0, BASE_MOVE - Game:GetTurnCount()))
+	-- Ensure turn count is always at least 1 to avoid deployment oddities
+	local turnCount = math.max(Game:GetTurnCount(), 1)
+	customSkill:_internalSetMoveBonus(math.max(0, BASE_MOVE - turnCount + 1))
 end
 
 return customSkill
