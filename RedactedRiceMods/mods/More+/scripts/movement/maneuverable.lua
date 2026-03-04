@@ -9,7 +9,7 @@ customSkill:addCustomTrait()
 
 function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onTargetAreaBuild:subscribe(customSkill.moveTargetArea))
-	table.insert(customSkill.events, modapiext.events.onTargetAreaBuild:subscribe(customSkill.moveSkillBuild))
+	table.insert(customSkill.events, modapiext.events.onSkillBuild:subscribe(customSkill.moveSkillBuild))
 end
 
 function customSkill.moveTargetArea(mission, pawn, weaponId, p1, targetArea)
@@ -22,7 +22,9 @@ function customSkill.moveTargetArea(mission, pawn, weaponId, p1, targetArea)
 			end
 			-- makeAllTerrainMatcher (.., "friendly") == pass through friendly pawns
 			-- makeAllTerrainMatcher (.., "any") == can't land on any pawns
-			customSkill.boardUtils.getReachableInRange(targetArea, pawn:GetMoveSpeed(), p1, customSkill.boardUtils.makeAllTerrainMatcher(pawn, "friendly"), customSkill.boardUtils.makeAllTerrainMatcher(pawn, "any"))
+			more_plus.libs.boardUtils.getReachableInRange(targetArea, pawn:GetMoveSpeed(), p1,
+					more_plus.libs.boardUtils.makeAllTerrainMatcher(pawn, "friendly"),
+					more_plus.libs.boardUtils.makeAllTerrainMatcher(pawn, "any"))
 		end
 	end
 end
@@ -33,8 +35,9 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 		if pilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot) then
 			-- makeAllTerrainMatcher (.., "friendly") == pass through friendly pawns
 			-- findBfsPath (.., true) == as point list
-			local path = customSkill.boardUtils.findBfsPath(p1, p2, customSkill.boardUtils.makeAllTerrainMatcher(pawn, "friendly"), true)
-			customSkill.boardUtils.addForcedMove(skillEffect, path)
+			local path = more_plus.libs.boardUtils.findBfsPath(p1, p2,
+					more_plus.libs.boardUtils.makeAllTerrainMatcher(pawn, "friendly"), true)
+			more_plus.libs.boardUtils.addForcedMove(skillEffect, path)
 		end
 	end
 end
