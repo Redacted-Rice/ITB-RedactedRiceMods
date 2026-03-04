@@ -8,12 +8,19 @@ local customSkill = more_plus.SkillActive:new{
 
 customSkill:addCustomTrait()
 
--- TODO: This will not work as expected... We need to override move targer area as well to prevent showing
--- holes as traversable and enemies as passable
-
 function customSkill:setupEffect()
+	table.insert(customSkill.events, modapiext.events.onTargetAreaBuild:subscribe(customSkill.moveTargetArea))
 	table.insert(customSkill.events, modapiext.events.onPawnPositionChanged:subscribe(customSkill.addFlyingIfNeeded))
 	table.insert(customSkill.events, modapiext.events.onPawnSelected:subscribe(customSkill.addFlyingIfNeeded))
+end
+
+function customSkill.moveTargetArea(mission, pawn, weaponId, p1, targetArea)
+	if weaponId == "Move" then
+		local pilot = pawn:GetPilot()
+		if pilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot) and customSkill.modified[pawn:GetId()] then
+			return Board:GetReachable(point, Pawn:GetMoveSpeed(), bit32.band(Pawn:GetPathProf(), bit32.bnot(PATH_FLYER)))
+		end
+	end
 end
 
 function customSkill.applyOnMissionEnter()
