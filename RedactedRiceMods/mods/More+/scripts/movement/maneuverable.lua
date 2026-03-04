@@ -9,10 +9,10 @@ customSkill:addCustomTrait()
 
 function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onTargetAreaBuild:subscribe(customSkill.moveTargetArea))
-	table.insert(customSkill.events, modapiext.events.onTargetAreaBuild:subscribe(customSkill.onSkillBuild))
+	table.insert(customSkill.events, modapiext.events.onTargetAreaBuild:subscribe(customSkill.moveSkillBuild))
 end
 
-function customSkill:moveTargetArea(mission, pawn, weaponId, p1, targetArea)
+function customSkill.moveTargetArea(mission, pawn, weaponId, p1, targetArea)
 	if weaponId == "Move" then
 		local pilot = pawn:GetPilot()
 		if pilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot) then
@@ -22,19 +22,19 @@ function customSkill:moveTargetArea(mission, pawn, weaponId, p1, targetArea)
 			end
 			-- makeAllTerrainMatcher (.., "friendly") == pass through friendly pawns
 			-- makeAllTerrainMatcher (.., "any") == can't land on any pawns
-			self.boardUtils.getReachableInRange(targetArea, pawn:GetMoveSpeed(), p1, self.boardUtils.makeAllTerrainMatcher(pawn, "friendly"), self.boardUtils.makeAllTerrainMatcher(pawn, "any"))
+			customSkill.boardUtils.getReachableInRange(targetArea, pawn:GetMoveSpeed(), p1, customSkill.boardUtils.makeAllTerrainMatcher(pawn, "friendly"), customSkill.boardUtils.makeAllTerrainMatcher(pawn, "any"))
 		end
 	end
 end
 
-function customSkill:moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect)
+function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect)
 	if weaponId == "Move" then
 		local pilot = pawn:GetPilot()
 		if pilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot) then
 			-- makeAllTerrainMatcher (.., "friendly") == pass through friendly pawns
 			-- findBfsPath (.., true) == as point list
-			local path = self.boardUtils.findBfsPath(p1, p2, self.boardUtils.makeAllTerrainMatcher(pawn, "friendly"), true)
-			self.boardUtils.addForcedMove(skillEffect, path)
+			local path = customSkill.boardUtils.findBfsPath(p1, p2, customSkill.boardUtils.makeAllTerrainMatcher(pawn, "friendly"), true)
+			customSkill.boardUtils.addForcedMove(skillEffect, path)
 		end
 	end
 end
