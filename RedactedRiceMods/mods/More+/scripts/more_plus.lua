@@ -65,6 +65,19 @@ function more_plus:setupLastActedTracking()
 	modApi.events.onSaveGame:subscribe(function() self:unsetLastActed() end)
 end
 
+function more_plus:folderToDisplayName(str)
+    -- underscores to spaces
+    str = str:gsub("_", " ")
+
+    -- capitalize first letter of each word
+    str = str:gsub("(%a)(%w*)", function(first, rest)
+        return first:upper() .. rest:lower()
+    end)
+
+	-- prepend RR
+    return "More+ " .. str
+end
+
 function more_plus:init()
 	self:setupLastActedTracking()
 	self.SkillTrait:baseInit()
@@ -77,7 +90,7 @@ function more_plus:init()
 	-- Then go through and create the skills
 	for category, skills in pairs(self.skillsByCategory) do
 		if self.DEBUG then LOG("Creating skills for category " .. category) end
-		local cplusCategory = "Rr" .. category
+		local cplusCategory = self:folderToDisplayName(category)
 		for _, skill in pairs(skills) do
 			-- simulate continue with an added loop level
 		    repeat
