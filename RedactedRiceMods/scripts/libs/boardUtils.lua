@@ -1,3 +1,11 @@
+--[[
+BoardUtils - Utilities related to board, pathing, and movement
+
+Author: Das Keifer of Redacted Rice
+Version: 1.1.0
+Discord Server: https://discord.gg/CNjTVrpN4v
+]]
+
 local boardUtils = {
 	Version="1.1.0",
 }

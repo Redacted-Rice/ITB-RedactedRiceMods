@@ -8,17 +8,16 @@ local mod = {
 	dependencies = {
         redactedrice_memhack = "0.9.0",
         redactedrice_cplus_plus = "0.9.0",
-    },
-    libs = {}
+    }
 }
 
 function mod:init()
+	local more_plus = require(self.scriptPath .. "more_plus")
 	-- Common Redacted Rice Libs
 	for libId, lib in pairs(mod_loader.mods.redactedrice_libs.libs) do
-		self.libs[libId] = lib
+		more_plus.libs[libId] = lib
 	end
 
-	local more_plus = require(self.scriptPath .. "more_plus")
 	more_plus:init()
 end
 

@@ -1,6 +1,7 @@
 more_plus = more_plus or {}
 
-more_plus.skillsByCategory = {}
+more_plus.skillsByCategory = {},
+more_plus.libs = {},
 more_plus.DEBUG = true
 
 local path = GetParentPath(...)
@@ -10,23 +11,23 @@ more_plus.SkillActive = require(path.."skill_active")
 
 function more_plus:scanAndReadSkillFiles()
 	if self.DEBUG then LOG("More+: Scanning subdirs in dir " .. path) end
-	
+
 	local numCats = 0
 	local numSkills = 0
     local dir = Directory(path)
-    
+
     if dir:exists() then
         for _, subDir in ipairs(dir:directories()) do
 			local subDirPath = subDir:relative_path()
 			if self.DEBUG then LOG("More+: Checking sub dir " .. subDirPath) end
-			
+
 			local category = subDir:name()
 			local skillObjs = {}
 			for _, file in ipairs(subDir:files()) do
 				local filename = file:name():match("(.+)%.lua$") or file:name()
 				if self.DEBUG then LOG("More+: Found skill file " .. filename) end
-				
-				local requirePath = subDirPath .. filename				
+
+				local requirePath = subDirPath .. filename
 				local success, skillObj = pcall(require, requirePath)
 				if success and type(skillObj) == "table" then
 					skillObj.file = requirePath
@@ -45,14 +46,14 @@ function more_plus:scanAndReadSkillFiles()
 end
 
 function more_plus:setLastActed(pawn)
-	self.lastActed = pawn 
+	self.lastActed = pawn
 	LOG("SET PAWN "..pawn:GetId())
 end
 
 function more_plus:unsetLastActed()
 	if self.lastActed then
 		LOG("UNSET PAWN "..self.lastActed:GetId())
-		self.lastActed = nil 
+		self.lastActed = nil
 	end
 end
 
@@ -85,7 +86,7 @@ function more_plus:init()
 
 	if self.DEBUG then LOG("Finding all skills...") end
 	more_plus:scanAndReadSkillFiles(basePath)
-	
+
 	if self.DEBUG then LOG("Creating all skills...") end
 	-- Then go through and create the skills
 	for category, skills in pairs(self.skillsByCategory) do
@@ -104,7 +105,7 @@ function more_plus:init()
 					LOG("More+: Failed to description for skill at: " .. skill.path)
 					break
 				end
-				
+
 				-- If we just use name, set short and full name
 				-- Also create the text in modloader
 				if skill.name then
@@ -112,7 +113,7 @@ function more_plus:init()
 					skill._name = skill.name
 					skill._shortName = skill.name
 					skill._fullName = skill.name
-					
+
 					-- Create a dictionary entry to use instead
 					-- for the expected fields
 					skill.shortName = "MorePlus_" .. skill.id .. "_Name"
@@ -122,7 +123,7 @@ function more_plus:init()
 					-- store original values
 					skill._shortName = skill.shortName
 					skill._fullName = skill.fullName
-					
+
 					-- Create a dictionary entry to use instead
 					-- for the expected fields
 					skill.shortName = "MorePlus_" .. skill.id .. "_ShortName"
@@ -133,16 +134,16 @@ function more_plus:init()
 					LOG("More+: Failed to find name or short name and full name for skill at: " .. skill.path)
 					break
 				end
-				
+
 				-- Make description text in modloader. Not necessary but does allow for easier
 				-- text replacing
 				skill._description = skill.description
 				skill.description = "MorePlus_" .. skill.id .. "_Description"
 				modApi:setText(skill.description, skill._description)
-				
+
 				-- Actually register the skill now we have it all set up
 				cplus_plus_ex:registerSkill(cplusCategory, skill)
-				
+
 				-- Call init on the function if it exists
 				if self.DEBUG then LOG("Initializing skill " .. skill.id) end
 				if skill.init then
