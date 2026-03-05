@@ -16,6 +16,7 @@ local mod =  {
 
 local libs = {
 	"boardUtils",
+	"pawnTypeUtils",
 	"passiveEffect",
 	"predictableRandom",
 	"trait",
