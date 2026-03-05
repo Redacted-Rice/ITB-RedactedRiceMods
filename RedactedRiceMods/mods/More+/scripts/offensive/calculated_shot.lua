@@ -1,7 +1,6 @@
 local customSkill = more_plus.SkillActive:new{
 	id = "RrCalculatedShot",
-	shortName = "Calculated",
-	fullName = "Calculated Shot",
+	name = "Calculated Shot",
 	description = "Deals +1 damage to pawns with two or less move",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 }
@@ -14,7 +13,7 @@ function customSkill:setupEffect()
 				customSkill.modifySkillEffect(pawn, skillEffect.effect)
 				customSkill.modifySkillEffect(pawn, skillEffect.q_effect)
 			end))
-	table.insert(customSkill.events, modapiext.events.onSkillBuild:subscribe(
+	table.insert(customSkill.events, modapiext.events.onFinalEffectBuild:subscribe(
 			function(mission, pawn, weaponId, p1, p2, p3, skillEffect) 
 				customSkill.modifySkillEffect(pawn, skillEffect.effect)
 				customSkill.modifySkillEffect(pawn, skillEffect.q_effect)

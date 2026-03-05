@@ -1,7 +1,6 @@
 local customSkill = more_plus.SkillActive:new{
 	id = "RrKickoffBoosters",
-	shortName = "Kickoff",
-	fullName = "Kickoff Boosters",
+	name = "Kickoff Boosters",
 	description = "When moving, cracks tile moved from",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }

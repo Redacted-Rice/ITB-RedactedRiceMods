@@ -24,7 +24,7 @@ function SkillTrait:addCustomTrait()
 		end,
 		icon = iconImg,
 		--icon_offset = Point(0,9),
-		desc_title = self.name,
+		desc_title = self.fullName or self.name,
 		desc_text = self.description,
 	}
 end
