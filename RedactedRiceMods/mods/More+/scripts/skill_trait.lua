@@ -11,11 +11,10 @@ function SkillTrait:new(tbl)
 	return tbl
 end
 
-SkillTrait.trait = mod_loader.mods[modApi.currentMod].libs.trait
 function SkillTrait:addCustomTrait()
 	local iconImg = "img/combat/icons/icon_mp_"..self.id..".png"
 	modApi:appendAsset(iconImg, mod_loader.mods[modApi.currentMod].resourcePath..iconImg)
-	self.trait:add{
+	more_plus.libs.trait:add{
 		func = function(trait, pawn)
 			if cplus_plus_ex:isSkillOnPawn(self.id, pawn) then
 				return true

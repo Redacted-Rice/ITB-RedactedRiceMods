@@ -30,7 +30,6 @@ function customSkill.modifySkillEffect(pawn, effects)
 					spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and
 					spaceDamage.iDamage ~= DAMAGE_ZERO then
 				-- TODO: Add tile image
-				LOG("DOUBLING DAMAGE FOR SPACE "..spaceDamage.loc:GetString())
 				spaceDamage.iDamage = spaceDamage.iDamage * 2
 			end
 		end
