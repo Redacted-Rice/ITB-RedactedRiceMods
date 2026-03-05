@@ -6,20 +6,19 @@ local customSkill = more_plus.SkillActive:new{
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 }
 
--- TODO:
---customSkill:addCustomTrait()
+customSkill:addCustomTrait()
 
 function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onSkillBuild:subscribe(
 			function(mission, pawn, weaponId, p1, p2, skillEffect) 
 				customSkill.doubleBossDamage(pawn, skillEffect.effect)
 				customSkill.doubleBossDamage(pawn, skillEffect.q_effect)
-			end)
+			end))
 	table.insert(customSkill.events, modapiext.events.onSkillBuild:subscribe(
 			function(mission, pawn, weaponId, p1, p2, p3, skillEffect) 
 				customSkill.doubleBossDamage(pawn, skillEffect.effect)
 				customSkill.doubleBossDamage(pawn, skillEffect.q_effect)
-			end)
+			end))
 end
 
 function customSkill.doubleBossDamage(pawn, effects)
