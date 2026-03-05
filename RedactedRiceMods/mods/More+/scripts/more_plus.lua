@@ -1,7 +1,7 @@
 more_plus = more_plus or {}
 
-more_plus.skillsByCategory = {},
-more_plus.libs = {},
+more_plus.skillsByCategory = {}
+more_plus.libs = {}
 more_plus.DEBUG = true
 
 local path = GetParentPath(...)

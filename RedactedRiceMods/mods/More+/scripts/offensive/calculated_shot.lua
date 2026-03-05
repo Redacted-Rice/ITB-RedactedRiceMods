@@ -26,10 +26,10 @@ function customSkill.modifySkillEffect(pawn, effects)
 		-- Go through each space being attacked
 		for _, spaceDamage in pairs(extract_table(effects)) do
 			local spacePawn = Board:GetPawn(spaceDamage.loc)
-			if spacePawn and spacePawn:GetBaseMove() <= 2 and
-					spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and
-					spaceDamage.iDamage ~= DAMAGE_ZERO then
-				-- TODO: Add tile image
+			-- Unintuitively get base move is the current speed
+			if spacePawn and spacePawn:GetBaseMove() <= 2 and spaceDamage.iDamage > 0 and 
+					spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
+				-- TODO: Add an icon?
 				LOG("ADDING 1 DAMAGE FOR SPACE "..spaceDamage.loc:GetString())
 				spaceDamage.iDamage = spaceDamage.iDamage + 1
 			end
