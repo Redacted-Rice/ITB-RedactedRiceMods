@@ -2,7 +2,7 @@
 local mod =  {
 	id = "redactedrice_libs",
 	name = "Redacted Rice Mods",
-	version = "1.0.0",
+	version = "1.3.0",
 	icon = "scripts/icon.png",
 	description = "A Collection of mods made by Redacted Rice",
 	submodFolders = {"mods/"},

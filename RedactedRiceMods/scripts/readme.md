@@ -37,7 +37,15 @@ Made it support multiple instances correctly
 Released: ?
 
 Initial Release.
-	
+
+## PawnTypeUtils
+Current Release: 1.0.0
+
+### 1.0.0
+Released: XX/XX/2026
+
+Initial release
+
 ## PredictableRandom
 Current Release: 1.1.0
 
