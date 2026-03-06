@@ -79,7 +79,26 @@ function more_plus:folderToDisplayName(str)
     return "More+ " .. str
 end
 
+more_plus.commonIcons = {
+	hunter = {key = "rr_hunter", img =  "combat/icons/icon_mp_RrHunter.png", pos = Point(-27,2)}
+}
+
+function more_plus:addCommonCustomImages()
+	for _, iconData in pairs(self.commonIcons) do
+		ANIMS["rr_hunter"] = ANIMS.Animation:new{
+			Image = iconData.img,
+			NumFrames = 1,
+			Time = 1, 
+			Loop = true,
+			PosX = iconData.pos.x,
+			PosY = iconData.pos.y
+		}
+	end
+end
+	
 function more_plus:init()
+	modApi:appendAssets("img/combat/icons/", "img/combat/icons/")
+	self:addCommonCustomImages()
 	self:setupLastActedTracking()
 	self.SkillTrait:baseInit()
 	self.SkillActive:baseInit()

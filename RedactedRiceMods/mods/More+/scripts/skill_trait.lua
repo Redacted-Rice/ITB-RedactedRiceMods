@@ -13,7 +13,7 @@ end
 
 function SkillTrait:addCustomTrait()
 	local iconImg = "img/combat/icons/icon_mp_"..self.id..".png"
-	modApi:appendAsset(iconImg, mod_loader.mods[modApi.currentMod].resourcePath..iconImg)
+	LOG("Adding trait icon %s at %s", self.id, iconImg)
 	more_plus.libs.trait:add{
 		func = function(trait, pawn)
 			if cplus_plus_ex:isSkillOnPawn(self.id, pawn) then
