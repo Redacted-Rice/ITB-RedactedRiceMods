@@ -27,6 +27,7 @@ function customSkill.clearLoc()
 	if lastLoc then
 		LOG("CLEAR")
 		more_plus.libs.customAnim:rem(lastLoc, "rr_hunter")
+		more_plus.libs.customAnim:rem(lastLoc, "rr_hunter2")
 		lastLoc = nil
 	end
 end
@@ -42,6 +43,7 @@ function customSkill.modifySkillEffect(pawn, effects)
 					spaceDamage.iDamage ~= DAMAGE_ZERO then
 				LOG("ADD")
 				more_plus.libs.customAnim:add(spaceDamage.loc, "rr_hunter")
+				more_plus.libs.customAnim:add(spaceDamage.loc, "rr_hunter2")
 				lastLoc = spaceDamage.loc
 				spaceDamage.iDamage = spaceDamage.iDamage + 1
 			end

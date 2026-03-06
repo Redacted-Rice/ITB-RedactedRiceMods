@@ -32,10 +32,9 @@ function boardUtils.makeInSubsetMatcher(tiles)
 	 end
 end
 
---pawnCheckType "none", "friendly", "any"
-function boardUtils.makeAllTerrainMatcher(pawn, pawnCheckType)
+function boardUtils.makeTerrainBasedMatcher(pawn, pawnCheckType, exclTerrainCheckFn)
 	 return function(point, hash)
-        if not pawn:IsFlying() and Board:GetTerrain(point) == TERRAIN_HOLE then
+        if exclTerrainCheckFn(point) then
             return false
         end
         local pawn = Board:GetPawn(point)
@@ -53,6 +52,21 @@ function boardUtils.makeAllTerrainMatcher(pawn, pawnCheckType)
 	 end
 end
 
+--pawnCheckType "none", "friendly", "any"
+function boardUtils.makeAllTerrainMatcher(pawn, pawnCheckType)
+	 return boardUtils.makeTerrainBasedMatcher(pawn, pawnCheckType, function(point)
+				return not pawn:IsFlying() and Board:GetTerrain(point) == TERRAIN_HOLE
+			end)
+end
+
+--pawnCheckType "none", "friendly", "any"
+function boardUtils.makeGenericMatcher(pawn, flying, pawnCheckType)
+	 return boardUtils.makeTerrainBasedMatcher(pawn, pawnCheckType, function(point)
+				local terrain = Board:GetTerrain(point)
+				return (not flying and Board:GetTerrain(point) == TERRAIN_HOLE) or
+						terrain == TERRAIN_BUILDING or terrain == TERRAIN_MOUNTAIN
+			end)
+end
 
 function boardUtils.getReachableInRange(reachable, range, start, predicatePassable, predicateStoppable)
 	-- dont include start in reachable
