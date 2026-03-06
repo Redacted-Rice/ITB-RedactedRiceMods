@@ -5,7 +5,7 @@ local customSkill = more_plus.SkillActive:new{
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 }
 
---TODO: customSkill:addCustomTrait()
+customSkill:addCustomTrait()
 
 function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onSkillBuild:subscribe(
@@ -29,8 +29,6 @@ function customSkill.modifySkillEffect(pawn, effects)
 			-- Unintuitively get base move is the current speed
 			if spacePawn and spacePawn:GetBaseMove() <= 2 and spaceDamage.iDamage > 0 and 
 					spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
-				-- TODO: Add an icon?
-				LOG("ADDING 1 DAMAGE FOR SPACE "..spaceDamage.loc:GetString())
 				spaceDamage.iDamage = spaceDamage.iDamage + 1
 			end
 		end
