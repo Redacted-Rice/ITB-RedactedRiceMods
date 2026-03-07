@@ -18,16 +18,23 @@ function customSkill.moveTargetArea(mission, pawn, weaponId, p1, targetArea)
 		if pilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot) then
 			-- TODO: Make this additive instead of removing and recreate
 			-- This will play nicer with other movement changing things?
-			
-			-- Remove the other points
-			while not targetArea:empty() do
-				targetArea:erase(0)
-			end
+
 			-- makeAllTerrainMatcher (.., "friendly") == pass through friendly pawns
 			-- makeAllTerrainMatcher (.., "any") == can't land on any pawns
-			more_plus.libs.boardUtils.getReachableInRange(targetArea, pawn:GetBaseMove(), p1,
+			local newPoints = PointList()
+			more_plus.libs.boardUtils.getReachableInRange(newPoints, pawn:GetMoveSpeed(), p1,
 					more_plus.libs.boardUtils.makeAllTerrainMatcher(pawn, "friendly"),
 					more_plus.libs.boardUtils.makeAllTerrainMatcher(pawn, "any"))
+					
+			local hashedPoints = {}
+			for oldIdx = 1, targetArea:size() do
+				hashedPoints[more_plus.libs.boardUtils.getSpaceHash(targetArea:index(oldIdx))] = true
+			end
+			for newIdx = 1, newPoints:size() do
+				if not hashedPoints[more_plus.libs.boardUtils.getSpaceHash(newPoints:index(newIdx))] then
+					targetArea:push_back(newPoints:index(newIdx))
+				end
+			end
 		end
 	end
 end

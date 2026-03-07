@@ -10,6 +10,26 @@ local boardUtils = {
 	Version="1.1.0",
 }
 
+boardUtils.hijackedFlying = {}
+
+function boardUtils.setHijackedFlying(pawn, enabled)
+	if enabled then
+		boardUtils.hijackedFlying[pawn:GetId()] = true
+		pawn:SetFlying(true)
+	elseif boardUtils.hijackedFlying[pawn:GetId()] then
+		boardUtils.hijackedFlying[pawn:GetId()] = nil
+		pawn:SetFlying(false)
+	end
+end
+
+function boardUtils.isPawnHijackedFlying(pawn)
+	return boardUtils.hijackedFlying[pawn:GetId()]
+end
+
+function boardUtils.isPawnFlying(pawn)
+	return pawn:IsFlying() and not boardUtils.hijackedFlying[pawn:GetId()]
+end
+
 function boardUtils.addForcedMove(skillEffect, path)
 	-- Clear the existing move from the skilleffect
 	skillEffect.effect = SkillEffect().effect
@@ -52,10 +72,11 @@ function boardUtils.makeTerrainBasedMatcher(pawn, pawnCheckType, exclTerrainChec
 	 end
 end
 
+
 --pawnCheckType "none", "friendly", "any"
-function boardUtils.makeAllTerrainMatcher(pawn, pawnCheckType)
-	 return boardUtils.makeTerrainBasedMatcher(pawn, pawnCheckType, function(point)
-				return not pawn:IsFlying() and Board:GetTerrain(point) == TERRAIN_HOLE
+function boardUtils.makeAllTerrainMatcher(pawn, pawnCheckType, flying)
+	return boardUtils.makeTerrainBasedMatcher(pawn, pawnCheckType, function(point)
+				return not boardUtils.isPawnFlying(pawn) and Board:GetTerrain(point) == TERRAIN_HOLE
 			end)
 end
 
@@ -63,7 +84,7 @@ end
 function boardUtils.makeGenericMatcher(pawn, flying, pawnCheckType)
 	 return boardUtils.makeTerrainBasedMatcher(pawn, pawnCheckType, function(point)
 				local terrain = Board:GetTerrain(point)
-				return (not flying and Board:GetTerrain(point) == TERRAIN_HOLE) or
+				return (not boardUtils.isPawnFlying(pawn) and Board:GetTerrain(point) == TERRAIN_HOLE) or
 						terrain == TERRAIN_BUILDING or terrain == TERRAIN_MOUNTAIN
 			end)
 end

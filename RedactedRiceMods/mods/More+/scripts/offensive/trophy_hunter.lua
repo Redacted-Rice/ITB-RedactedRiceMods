@@ -10,19 +10,17 @@ customSkill:addCustomTrait()
 function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onSkillBuild:subscribe(
 			function(mission, pawn, weaponId, p1, p2, skillEffect)
-				customSkill.clearLoc()
 				customSkill.modifySkillEffect(pawn, skillEffect.effect)
 				customSkill.modifySkillEffect(pawn, skillEffect.q_effect)
 			end))
 	table.insert(customSkill.events, modapiext.events.onFinalEffectBuild:subscribe(
 			function(mission, pawn, weaponId, p1, p2, p3, skillEffect)
-				customSkill.clearLoc()
 				customSkill.modifySkillEffect(pawn, skillEffect.effect)
 				customSkill.modifySkillEffect(pawn, skillEffect.q_effect)
 			end))
 end
 
-local lastLoc = nil
+--[[local lastLoc = nil
 function customSkill.clearLoc()
 	if lastLoc then
 		LOG("CLEAR")
@@ -30,7 +28,7 @@ function customSkill.clearLoc()
 		more_plus.libs.customAnim:rem(lastLoc, "rr_hunter2")
 		lastLoc = nil
 	end
-end
+end--]]
 
 function customSkill.modifySkillEffect(pawn, effects)
 	local pilot = pawn:GetPilot()
@@ -42,8 +40,12 @@ function customSkill.modifySkillEffect(pawn, effects)
 					spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and
 					spaceDamage.iDamage ~= DAMAGE_ZERO then
 				LOG("ADD")
-				more_plus.libs.customAnim:add(spaceDamage.loc, "rr_hunter")
-				more_plus.libs.customAnim:add(spaceDamage.loc, "rr_hunter2")
+				--more_plus.libs.customAnim:add(spaceDamage.loc, "rr_hunter")
+				--more_plus.libs.customAnim:add(spaceDamage.loc, "rr_hunter2")
+				more_plus.libs.weaponPreview.ExecuteWithState(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
+						function() 
+							more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc, "rr_hunter2")
+						end)
 				lastLoc = spaceDamage.loc
 				spaceDamage.iDamage = spaceDamage.iDamage + 1
 			end
