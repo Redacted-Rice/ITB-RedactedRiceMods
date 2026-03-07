@@ -1,5 +1,5 @@
 
-local VERSION = "3.1.3"
+local VERSION = "3.2.0"
 ----------------------------------------------------------------------
 -- Weapon Preview - code library
 -- https://github.com/Lemonymous/ITB-LemonymousMods/wiki/weaponPreview
@@ -271,11 +271,13 @@ local function addAnimation(self, p, anim, delay)
 	else
 		delay = nil
 	end
+	
+	LOG("STATE " .. previewState .. " " .. p:GetString())
 
 	table.insert(previewMarks[previewState], {
 		fn = 'AddAnimation',
 		anim = anim,
-		data = {p, anim, ANIM_NO_DELAY},
+		data = {Point(p), anim, ANIM_NO_DELAY},
 		duration = duration,
 		delay = delay,
 		loop = base.Loop
@@ -291,7 +293,7 @@ local function addColor(self, p, gl_color, duration)
 
 	table.insert(previewMarks[previewState], {
 		fn = 'MarkSpaceColor',
-		data = {p, gl_color},
+		data = {Point(p), gl_color},
 		duration = duration
 	})
 end
@@ -332,7 +334,7 @@ local function addDesc(self, p, desc, flag, duration)
 
 	table.insert(previewMarks[previewState], {
 		fn = 'MarkSpaceDesc',
-		data = {p, desc, flag},
+		data = {Point(p), desc, flag},
 		duration = duration
 	})
 end
@@ -356,7 +358,7 @@ local function addEmitter(self, p, emitter, duration)
 
 	table.insert(previewMarks[previewState], {
 		fn = 'DamageSpace',
-		loc = p,
+		loc = Point(p),
 		emitter = emitter,
 		data = {},
 		duration = duration
@@ -374,7 +376,7 @@ local function addFlashing(self, p, flag, duration)
 
 	table.insert(previewMarks[previewState], {
 		fn = 'MarkFlashing',
-		data = {p, flag},
+		data = {Point(p), flag},
 		duration = duration
 	})
 end
@@ -389,7 +391,7 @@ local function addImage(self, p, path, gl_color, duration)
 
 	table.insert(previewMarks[previewState], {
 		fn = 'MarkSpaceImage',
-		data = {p, path, gl_color},
+		data = {Point(p), path, gl_color},
 		duration = duration
 	})
 end
@@ -403,7 +405,7 @@ local function addSimpleColor(self, p, gl_color, duration)
 
 	table.insert(previewMarks[previewState], {
 		fn = 'MarkSpaceSimpleColor',
-		data = {p, gl_color},
+		data = {Point(p), gl_color},
 		duration = duration
 	})
 end
@@ -475,6 +477,13 @@ end
 
 local function getQueuedMarker()
 	return queuedMarker:unpack()
+end
+
+local function executeWithState(newPreviewState, fn)
+	local prevState = previewState
+	previewState = newPreviewState
+	fn()
+	previewState = prevState
 end
 
 local function getTargetArea(self, p1, ...)
@@ -599,7 +608,6 @@ local function markSpaces(marks, time_curr)
 	for _, mark in ipairs(marks) do
 		if mark.fn then
 			local duration = mark.duration or INT_MAX
-
 			if mark.fn == "AddAnimation" then
 				mark.data[2] = getAnimFrame(mark, time_start, time_curr)
 
@@ -810,6 +818,11 @@ if isNewestVersion then
 		WeaponPreview.ResetSkillEffectTimer = resetEffectTimer
 		WeaponPreview.ResetTargetAreaTimer = resetTargetTimer
 		WeaponPreview.SetLooping = setLooping
+		WeaponPreview.ExecuteWithState = executeWithState
+		WeaponPreview.STATE_NONE = STATE_NONE
+		WeaponPreview.STATE_SKILL_EFFECT = STATE_SKILL_EFFECT
+		WeaponPreview.STATE_SKILL_EFFECT = STATE_SKILL_EFFECT
+		WeaponPreview.STATE_QUEUED_SKILL = STATE_QUEUED_SKILL
 
 		WeaponPreview.events = events
 

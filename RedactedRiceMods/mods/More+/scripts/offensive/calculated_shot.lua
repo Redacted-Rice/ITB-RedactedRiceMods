@@ -27,7 +27,7 @@ function customSkill.modifySkillEffect(pawn, effects)
 		for _, spaceDamage in pairs(extract_table(effects)) do
 			local spacePawn = Board:GetPawn(spaceDamage.loc)
 			-- Unintuitively get base move is the current speed
-			if spacePawn and spacePawn:GetBaseMove() <= 2 and spaceDamage.iDamage > 0 and 
+			if spacePawn and spacePawn:GetMoveSpeed() <= 2 and spaceDamage.iDamage > 0 and 
 					spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
 				spaceDamage.iDamage = spaceDamage.iDamage + 1
 			end
