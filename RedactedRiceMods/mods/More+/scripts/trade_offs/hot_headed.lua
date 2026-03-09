@@ -1,4 +1,5 @@
 local XP_LOSS = 2
+local XP_LOSS_PING_COLOR = GL_Color(200, 50, 50)
 
 local customSkill = more_plus.SkillActive:new{
 	id = "RrHotHeaded",
@@ -15,17 +16,19 @@ function customSkill:setupEffect()
 end
 
 function customSkill.killedPawn(mission, pawn)
-	LOG("PAWN KILLED! "..pawn:GetId())
+	--[[LOG("PAWN KILLED! "..pawn:GetId())
 	if more_plus.lastActed then
 		LOG("KILLER! "..more_plus.lastActed:GetId())
-	end
+	end]]--
 	if more_plus.lastActed and pawn:IsEnemy() then
 		local pilot = more_plus.lastActed:GetPilot()
 		if pilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot) then
-			-- TODO: Add visual effect
 			-- Decrease the XP but only if you don't level down
 			local xp = pilot:getXp()
-			pilot:setXp(math.max(0, xp - XP_LOSS))
+			if xp ~= 0 then
+				Board:Ping(more_plus.lastActed:GetSpace(), XP_LOSS_PING_COLOR)
+				pilot:setXp(math.max(0, xp - XP_LOSS))
+			end
 		end
 	end
 end
