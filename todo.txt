@@ -5,7 +5,7 @@ None
 ------------------------------------------------------------------------------
 
 Tree Herders:
-None
+1. Modify to use traits instead of board icon
 
 Next release candidates:
 1. Treevac doesn't distinguish between damage in the attack that causes the push vs follow on attacks when checking for spaces to push to
@@ -19,7 +19,7 @@ Known issues:
 ------------------------------------------------------------------------------
 
 World Builders:
-None
+1. Modify to be inline with manuever skill
 
 Next release candidates:
 None
