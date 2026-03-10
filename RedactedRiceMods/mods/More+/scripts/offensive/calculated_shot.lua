@@ -23,13 +23,21 @@ end
 function customSkill.modifySkillEffect(pawn, effects)
 	local pilot = pawn:GetPilot()
 	if pilot and not effects:empty() and cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot) then
-		-- Go through each space being attacked
-		for _, spaceDamage in pairs(extract_table(effects)) do
-			local spacePawn = Board:GetPawn(spaceDamage.loc)
-			-- Unintuitively get base move is the current speed
-			if spacePawn and spacePawn:GetMoveSpeed() <= 2 and spaceDamage.iDamage > 0 and 
-					spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
-				spaceDamage.iDamage = spaceDamage.iDamage + 1
+		local indexes = cplus_plus_ex:getPilotSkillIndices(customSkill.id, pilot)
+		for _, idx in ipairs(indexes) do
+			for _, spaceDamage in pairs(extract_table(effects)) do
+				local spacePawn = Board:GetPawn(spaceDamage.loc)
+				-- Unintuitively get base move is the current speed
+				if spacePawn and spacePawn:GetMoveSpeed() <= 2 and spaceDamage.iDamage > 0 and 
+						spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
+					
+					more_plus.libs.weaponPreview.ExecuteWithState(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
+						function()
+							more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc, "rr_hunter_"..idx)
+						end)
+					
+					spaceDamage.iDamage = spaceDamage.iDamage + 1
+				end
 			end
 		end
 	end
