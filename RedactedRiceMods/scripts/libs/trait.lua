@@ -103,15 +103,27 @@ end
 local function getCurrentIconFromTraits(traits)
 	if #traits == 0 then
 		return ""
+	elseif #traits == 1 then
+		return traits[1].id
+	end
+	
+	--Filter to only traits with board icons
+	local boardTraits = {}
+	for _, trait in ipairs(traits) do
+		if trait.hasBoardIcon then
+			table.insert(boardTraits, trait)
+		end
 	end
 
-	if #traits == 1 then
-		return traits[1].id
+	if #boardTraits == 0 then
+		boardTraits = traits
+	elseif #boardTraits == 1 then
+		return boardTraits[1].id
 	end
 
 	-- Calculate which icon to show based on the timer
-	local traitIndex = traitCycleIndex % #traits + 1
-	return traits[traitIndex].id
+	local traitIndex = traitCycleIndex % #boardTraits + 1
+	return boardTraits[traitIndex].id
 end
 
 local function getTraitIcon(loc)
@@ -260,6 +272,8 @@ local function add(self, trait)
 	Assert.Equals({'nil', 'userdata'}, type(trait.icon_offset), "Field 'icon_offset'")
 
 	trait.icon_offset = trait.icon_offset or Point(0,0)
+	
+	trait.hasBoardIcon = trait.icon_glow ~= nil
 
 	if type(trait.desc) == 'table' then
 		trait.desc_title = trait.desc.title or trait.desc[1]

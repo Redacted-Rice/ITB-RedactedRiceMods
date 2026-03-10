@@ -28,6 +28,7 @@ Treeherders_Passive_WakeTheForest = PassiveSkill:new
 }
 
 Treeherders_Passive_WakeTheForest.passiveEffect = mod_loader.mods[modApi.currentMod].libs.passiveEffect
+Treeherders_Passive_WakeTheForest.trait = mod_loader.mods[modApi.currentMod].libs.trait
 
 Weapon_Texts.Treeherders_Passive_WakeTheForest_Upgrade1 = "Tree-vacuate"
 Treeherders_Passive_WakeTheForest_A = Treeherders_Passive_WakeTheForest:new
@@ -56,9 +57,9 @@ Treeherders_Passive_WakeTheForest_B = Treeherders_Passive_WakeTheForest:new
 	SeekMech = true,
 }
 
-Treeherders_Passive_WakeTheForest_AB = Treeherders_Passive_WakeTheForest_B:new
+Treeherders_Passive_WakeTheForest_AB = Treeherders_Passive_WakeTheForest_A:new
 {
-	Evacuate = true,
+	SeekMech = true,
 }
 
 ------------------- UPGRADE PREVIEWS ---------------------------
@@ -66,7 +67,7 @@ Treeherders_Passive_WakeTheForest_AB = Treeherders_Passive_WakeTheForest_B:new
 --only a preview for passive skills
 function Treeherders_Passive_WakeTheForest:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
-
+	
 	Board:SetTerrainIcon(Point(2, 2), "forestArmor")
 
 	local spaceDamage = SpaceDamage(Point(2, 2), DAMAGE_ZERO)
@@ -79,16 +80,13 @@ end
 --only a preview for passive skills
 function Treeherders_Passive_WakeTheForest_A:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
-
-	Board:SetTerrainIcon(Point(2, 2), "forestArmor")
+	
+	Board:SetTerrainIcon(Point(2, 2), "forestArmor_treevac")
 
 	local spaceDamage = SpaceDamage(Point(2, 2), 2, 3)
 	spaceDamage.sAnimation = "SwipeClaw2"
 	spaceDamage.sSound = "/enemy/scorpion_soldier_2/attack"
-	--Still not quite right
-	spaceDamage.sScript = [[Board:SetTerrainIcon(Point(2, 2), "")]]
 	ret:AddMelee(Point(2, 1), spaceDamage)
-
 	return ret
 end
 
@@ -151,53 +149,67 @@ end
 
 ------------------- FOREST ARMOR AND TREEVAC ---------------------------
 
-function Treeherders_Passive_WakeTheForest:SetForestArmorIcon(id, point)
-	if forestUtils.isAnAncientForest(point) then
-		Board:SetTerrainIcon(point, "forestArmor_ancient")
-	elseif self.Evacuate then
-		Board:SetTerrainIcon(point, "forestArmor_treevac")
-	else
-		Board:SetTerrainIcon(point, "forestArmor")
+function Treeherders_Passive_WakeTheForest.getForestArmorType(pawn)
+	if not Treeherders_Passive_WakeTheForest.EligibleForForestArmor(pawn) then
+		return nil
 	end
+	
+	local loc = pawn:GetSpace()
+	if not Board:IsTerrain(loc, TERRAIN_FOREST) then
+		return nil
+	end
+	
+	-- Ancient forest takes priority
+	if forestUtils.isAnAncientForest(loc) then
+		return "ancient"
+	end
+	
+	-- Check if pawn has the evacuate upgrade
+	if Treeherders_Passive_WakeTheForest.passiveEffect:isPassiveActive(
+				"Treeherders_Passive_WakeTheForest_A") or
+			Treeherders_Passive_WakeTheForest.passiveEffect:isPassiveActive(
+				"Treeherders_Passive_WakeTheForest_AB") then
+		return "treevac"
+	end
+	
+	return "basic"
 end
+	
+-- Ancient Forest Armor
+Treeherders_Passive_WakeTheForest.trait:add{
+	func = function(trait, pawn)
+		return Treeherders_Passive_WakeTheForest.getForestArmorType(pawn) == "ancient"
+	end,
+	icon = "img/combat/icons/icon_forestArmor_ancient.png",
+	icon_glow = "img/combat/icons/icon_forestArmor_ancient_glow.png",
+	icon_offset = Point(-12, 25),
+	desc_title = "Ancient Armor",
+	desc_text = "Non-lethal weapon damage to this unit is reduced to 0. All other damage (Push, Blocking, Fire, etc.) is unaffected.",
+}
 
-function Treeherders_Passive_WakeTheForest:CleanNonMech()
-	local size = Board:GetSize()
-	for x = 1, size.x do
-		for y = 1, size.y do
-			local p = Point(x - 1, y - 1)
-			local pawn = Board:GetPawn(p)
-			if pawn and pawn:IsMech() and Board:IsTerrain(p, TERRAIN_FOREST) then
-				self:SetForestArmorIcon(id, p)
-			else
-				Board:SetTerrainIcon(p, "")
-			end
-		end
-	end
-end
+-- Tree-vacuate Forest Armor
+Treeherders_Passive_WakeTheForest.trait:add{
+	func = function(trait, pawn)
+		return Treeherders_Passive_WakeTheForest.getForestArmorType(pawn) == "treevac"
+	end,
+	icon = "img/combat/icons/icon_forestArmor_treevac.png",
+	icon_glow = "img/combat/icons/icon_forestArmor_treevac_glow.png",
+	icon_offset = Point(-12, 25),
+	desc_title = "Forest Armor +\nTree-vacuate",
+	desc_text = "Weapon damage to this unit is reduced by 1. If damaged this unit is pushed to an adjacent tile before catching fire (prefs rel. to atk: right, left, same, oppo.)",
+}
 
-function Treeherders_Passive_WakeTheForest:SetNonVek()
-	local size = Board:GetSize()
-	for x = 1, size.x do
-		for y = 1, size.y do
-			local p = Point(x - 1, y - 1)
-			local pawn = Board:GetPawn(p)
-			if (pawn and not pawn:IsMech()) or not Board:IsTerrain(p, TERRAIN_FOREST) then
-				Board:SetTerrainIcon(p, "")
-			else
-				self:SetForestArmorIcon(id, p)
-			end
-		end
-	end
-end
-
-function Treeherders_Passive_WakeTheForest:UpdateForestArmor()
-	if Game:GetTeamTurn() == TEAM_PLAYER then
-		self:SetNonVek()
-	else
-		self:CleanNonMech()
-	end
-end
+-- Basic Forest Armor
+Treeherders_Passive_WakeTheForest.trait:add{
+	func = function(trait, pawn)
+		return Treeherders_Passive_WakeTheForest.getForestArmorType(pawn) == "basic"
+	end,
+	icon = "img/combat/icons/icon_forestArmor.png",
+	icon_glow = "img/combat/icons/icon_forestArmor_glow.png",
+	icon_offset = Point(-12, 25),
+	desc_title = "Forest Armor",
+	desc_text = "Weapon damage to this unit is reduced by 1. All other damage (Push, Blocking, Fire, etc.) is unaffected.",
+}
 
 function Treeherders_Passive_WakeTheForest.EligibleForForestArmor(pawn)
 	if pawn:IsMech() and not pawn:IsDead() then
@@ -291,8 +303,7 @@ end
 function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_MissionStartHook(mission)
 	--Fire on mission start as well
 	self:FloraformSpaces()
-	self:CleanNonMech()
- end
+end
 
 -- function to handle the postEnvironment hook functionality
 -- When post environment is called, it appears the board isn't updated at that point
@@ -302,7 +313,6 @@ function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_MissionStartHoo
 function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_PreEnvironmentHook(mission)	
 	--floraform the spaces
 	self:FloraformSpaces()
-	self:CleanNonMech()
 end
 
 -- Skill build hooks
@@ -323,39 +333,5 @@ function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_FinalEffectBuil
 	return self:SkillBuildHook(pawn, weaponId, p1, p2, skillFx)
 end
 
-function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_NextTurnHook()
-	self:CleanNonMech()
-end
-
-function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_PawnPositionChangedHook()
-	self:CleanNonMech()
-end
-
-function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_PostLoadGameHook()
-	-- Load is fired before board is ready. Run later works to let the
-	-- board populate first
-	modApi:runLater(function()
-		self:CleanNonMech()
-	end)
-end
-
-function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_PawnSelectedHook(pawn)
-	-- For some reason the passed pawn is bad... However if I get it
-	-- using the same approach as the handler, it seems to work
-	local reGottenPawn = nil
-	if pawn then
-		reGottenPawn = Board:GetPawn(Board:GetSelectedPawnId())
-		if reGottenPawn and reGottenPawn:IsMech() then
-			self:SetNonVek()
-		end
-	end	
-end
-
-function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_PawnDeselectedHook()
-	self:CleanNonMech()
-end
-
 Treeherders_Passive_WakeTheForest.passiveEffect:addPassiveEffect("Treeherders_Passive_WakeTheForest",
-		{"skillBuildHook",  "finalEffectBuildHook",  
-		"pawnSelectedHook", "pawnDeselectedHook", "pawnPositionChangedHook", "postLoadGameHook", 
-		"preEnvironmentHook", "missionStartHook"})
+		{"skillBuildHook", "finalEffectBuildHook", "preEnvironmentHook", "missionStartHook"})
