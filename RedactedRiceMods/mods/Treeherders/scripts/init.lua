@@ -27,7 +27,7 @@ function mod:init()
 	require(self.scriptPath .. "achievements")
 
 	require(self.scriptPath.. "forestUtils")
- forestUtils:init()
+	forestUtils:init()
 
 	-- Pawns
 	require(self.scriptPath .. "mechs/th_entborg")

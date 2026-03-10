@@ -9,30 +9,6 @@ modApi:appendAsset("img/weapons/passives/passive_th_forestArmor.png",  Treeherde
 
 
 --Effect Icons
-local oldGetStatusTooltip = GetStatusTooltip
-
-local forestArmorDescription = "Weapon damage to this unit is reduced by 1."
-local forestArmorTreevacDescriptionP1 = "\n"..forestArmorDescription.." When attacked, this unit will be pushed in the "
-local forestArmorTreevacDescriptionP2 = " direction before catching fire (prefs rel. to atk: right, left, same, oppo.)"
-local forestArmorAncientDescription = "Non-lethal weapon damage to this unit is reduced to 0."
-local forestArmorDescriptionP2 = " All other damage (Push, Blocking, Fire, etc.) is unaffected."
-
-local forestArmorName = "Forest Armor"
-local forestArmorTreevacName = forestArmorName.." +\nTree-vacuate"
-local forestArmorAncientName = "Ancient Armor"
-
-function GetStatusTooltip(id)
-	if id == "forestArmor" then
-		return {forestArmorName, forestArmorDescription..forestArmorDescriptionP2};
-	elseif id == "forestArmor_ancient" then
-		return {forestArmorAncientName, forestArmorAncientDescription..forestArmorDescriptionP2};
-	elseif id == "forestArmor_treevac" then
-		return {forestArmorTreevacName, "\n"..forestArmorDescription.." If damaged this unit is pushed to an adjacent tile before catching fire (prefs rel. to atk: right, left, same, oppo.)" };
-	else
-		return oldGetStatusTooltip(id)
-	end
-end
-
 modApi:appendAsset("img/combat/icons/icon_forestArmor.png", Treeherders_ResourcePath.."img/combat/icons/icon_forestArmor.png")
 modApi:appendAsset("img/combat/icons/icon_forestArmor_glow.png", Treeherders_ResourcePath.."img/combat/icons/icon_forestArmor_glow.png")
 Location["combat/icons/icon_forestArmor.png"] = Point(-12, 25)

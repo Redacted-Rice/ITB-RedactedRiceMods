@@ -144,6 +144,18 @@ function passiveEffect:countAnyVersionOfPassiveActive(weaponBaseName)
 	return count
 end
 
+--Checks if the any weapon with the passed base name is active
+function passiveEffect:isPassiveActive(weaponName)
+	for pawn, activeWeapons in pairs(self.data.activePassives) do
+		for	_, activeWeapon in pairs(activeWeapons) do
+			if activeWeapon == weaponName then
+				return true
+			end
+		end
+	end
+	return false
+end
+
 --checks if the passed weapon data is in the list of potential passive weapons
 --and if it is construct the data needed and add it to the active passive
 --weapons list
