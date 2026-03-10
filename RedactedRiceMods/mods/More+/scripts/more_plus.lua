@@ -80,19 +80,27 @@ function more_plus:folderToDisplayName(str)
 end
 
 more_plus.commonIcons = {
-	hunter = {key = "rr_hunter", img =  "combat/icons/icon_mp_RrHunter.png", pos = Point(-27,2)},
-	hunter2 = {key = "rr_hunter2", img =  "combat/icons/icon_mp_RrHunter.png", pos = Point(27,2)}
+	--2, -8
+	hunter = {key = "rr_hunter", img =  "combat/icons/icon_mp_RrHunter.png", pos1 = Point(-27,9), pos2 = Point(-16,-4)},
 }
 
 function more_plus:addCommonCustomImages()
 	for _, iconData in pairs(self.commonIcons) do
-		ANIMS[iconData.key] = ANIMS.Animation:new{
+		ANIMS[iconData.key .. "_1"] = ANIMS.Animation:new{
 			Image = iconData.img,
 			NumFrames = 1,
 			Time = 1, 
 			Loop = true,
-			PosX = iconData.pos.x,
-			PosY = iconData.pos.y
+			PosX = iconData.pos1.x,
+			PosY = iconData.pos1.y
+		}
+		ANIMS[iconData.key .. "_2"] = ANIMS.Animation:new{
+			Image = iconData.img,
+			NumFrames = 1,
+			Time = 1, 
+			Loop = true,
+			PosX = iconData.pos2.x,
+			PosY = iconData.pos2.y
 		}
 	end
 end
