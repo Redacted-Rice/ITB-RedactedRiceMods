@@ -20,34 +20,28 @@ function customSkill:setupEffect()
 			end))
 end
 
---[[local lastLoc = nil
-function customSkill.clearLoc()
-	if lastLoc then
-		LOG("CLEAR")
-		more_plus.libs.customAnim:rem(lastLoc, "rr_hunter")
-		more_plus.libs.customAnim:rem(lastLoc, "rr_hunter2")
-		lastLoc = nil
-	end
-end--]]
 
 function customSkill.modifySkillEffect(pawn, effects)
 	local pilot = pawn:GetPilot()
 	if pilot and not effects:empty() and cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot) then
-		-- Go through each space being attacked
-		for _, spaceDamage in pairs(extract_table(effects)) do
-			local spacePawn = Board:GetPawn(spaceDamage.loc)
-			if spacePawn and more_plus.libs.pawnTypeUtils.isSpawnCategory(spacePawn, "Unique") and
-					spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and
-					spaceDamage.iDamage ~= DAMAGE_ZERO then
-				LOG("ADD")
-				--more_plus.libs.customAnim:add(spaceDamage.loc, "rr_hunter")
-				--more_plus.libs.customAnim:add(spaceDamage.loc, "rr_hunter2")
-				more_plus.libs.weaponPreview.ExecuteWithState(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
-						function() 
-							more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc, "rr_hunter2")
-						end)
-				lastLoc = spaceDamage.loc
-				spaceDamage.iDamage = spaceDamage.iDamage + 1
+		local indexes = cplus_plus_ex:getPilotEarnedSkillIndexes(pilot)
+		for _, idx in ipairs(indexes) do
+			if pilot:getLvlUpSkill(idx):getIdStr() == customSkill.id then
+				-- Go through each space being attacked
+				for _, spaceDamage in pairs(extract_table(effects)) do
+					local spacePawn = Board:GetPawn(spaceDamage.loc)
+					if spacePawn and more_plus.libs.pawnTypeUtils.isSpawnCategory(spacePawn, "Unique") and
+							spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and
+							spaceDamage.iDamage ~= DAMAGE_ZERO then
+						LOG("ADD")
+						more_plus.libs.weaponPreview.ExecuteWithState(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
+								function() 
+									more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc, "rr_hunter_"..idx)
+								end)
+						lastLoc = spaceDamage.loc
+						spaceDamage.iDamage = spaceDamage.iDamage + 1
+					end
+				end
 			end
 		end
 	end
