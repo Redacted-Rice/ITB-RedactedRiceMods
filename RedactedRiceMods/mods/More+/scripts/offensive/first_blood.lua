@@ -21,6 +21,9 @@ function customSkill:setupEffect()
 end
 
 function customSkill.modifySkillEffect(pawn, effects)
+	if not pawn then
+		return
+	end
 	local pilot = pawn:GetPilot()
 	if pilot and not effects:empty() and cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot) then
 		local indexes = cplus_plus_ex:getPilotSkillIndices(customSkill.id, pilot)
@@ -33,9 +36,10 @@ function customSkill.modifySkillEffect(pawn, effects)
 						spaceDamage.iDamage ~= DAMAGE_ZERO then
 
 					more_plus.libs.weaponPreview.ExecuteWithState(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
-						function()
-							more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc, "rr_hunter_"..idx)
-						end)
+							function()
+								more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc, 
+										more_plus.commonIcons.extraDamage.key.."_"..idx)
+							end)
 
 					spaceDamage.iDamage = spaceDamage.iDamage + 1
 					LOG("First Blood: Added +1 damage to undamaged vek at ".. spaceDamage.loc:GetString())

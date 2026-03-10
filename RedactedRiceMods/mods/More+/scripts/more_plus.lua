@@ -80,8 +80,8 @@ function more_plus:folderToDisplayName(str)
 end
 
 more_plus.commonIcons = {
-	--2, -8
-	hunter = {key = "rr_hunter", img =  "combat/icons/icon_mp_RrHunter.png", pos1 = Point(-27,9), pos2 = Point(-16,-4)},
+	extraDamage = {key = "rr_extra_damage", img =  "combat/icons/icon_mp_RrExtraDamage.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
+	crit = {key = "rr_crit", img =  "combat/icons/icon_mp_RrCrit.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
 }
 
 function more_plus:addCommonCustomImages()
