@@ -1,11 +1,13 @@
+local MOVE_REDUCTION = 1
+
 local customSkill = more_plus.SkillActive:new{
-	id = "RrFirstBlood",
-	name = "First Blood",
-	description = "+1 damage to undamaged vek with 4+ health",
+	id = "RrCripple",
+	name = "Cripple",
+	description = "Damaged targets lose "..MOVE_REDUCTION.." movement",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 }
 
-customSkill:addCustomTrait()
+--customSkill:addCustomTrait()
 
 function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onSkillBuild:subscribe(
@@ -29,20 +31,20 @@ function customSkill.modifySkillEffect(pawn, effects)
 		local indexes = cplus_plus_ex:getPilotSkillIndices(customSkill.id, pilot)
 		for _, idx in ipairs(indexes) do
 			for _, spaceDamage in pairs(extract_table(effects)) do
-				local spacePawn = Board:GetPawn(spaceDamage.loc)
-				if spacePawn and spacePawn:IsEnemy() and
-						spacePawn:GetHealth() == _G[spacePawn:GetType()].Health and
-						spacePawn:GetHealth() >= 4 and spaceDamage.iDamage > 0 and
-						spaceDamage.iDamage ~= DAMAGE_DEATH and paceDamage.iDamage ~= DAMAGE_ZERO then
+				local targetPawn = Board:GetPawn(spaceDamage.loc)
+				if targetPawn and targetPawn:IsEnemy() and
+						spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and
+						spaceDamage.iDamage ~= DAMAGE_ZERO then
 
+					-- Add visual indicator using crit icon as placeholder
 					more_plus.libs.weaponPreview.ExecuteWithState(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
 							function()
 								more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc,
-										more_plus.commonIcons.extraDamage.key.."_"..idx)
+										more_plus.commonIcons.crit.key.."_"..idx)
 							end)
 
-					spaceDamage.iDamage = spaceDamage.iDamage + 1
-					LOG("First Blood: Added +1 damage to undamaged vek with 4+ health at ".. spaceDamage.loc:GetString())
+					spaceDamage.sScript = "Board:GetPawn("..targetPawn:GetId().."):AddMoveBonus(-"..MOVE_REDUCTION..")"
+					LOG("Cripple: Will reduce movement of enemy at " .. spaceDamage.loc:GetString() .. " by " .. MOVE_REDUCTION)
 				end
 			end
 		end
