@@ -1,21 +1,56 @@
 -- massiveReplacementTrait
 -- Created by adapting pyramidIcon.lua and trait.lua patterns
 --
--- Overrides the massive trait to allow custom traits to be displayed
--- Cycles through vanilla massive icon and custom trait icons
+-- Overrides a target trait to allow custom traits to be displayed
+-- Cycles through vanilla trait icon and custom trait icons
 
-local VERSION = "0.5.1"
+local VERSION = "0.5.2"
 
 local mod_path = mod_loader.mods[modApi.currentMod]
 local path = mod_path.scriptPath
 
--- We have to use the full path to the image for the surface that we are using
--- so we make a blank placeholder for it
-local massivePlaceholderPath = path .."libs/icon_massive_placeholder.png"
-local massiveIcon = sdlext.getSurface({ path = massivePlaceholderPath })
-local massiveIconPath = "img/combat/icons/icon_massive.png"
-local massiveIconNewPath = "img/combat/icons/icon_massive_vanilla.png"
-local massiveOrigIcon = sdlext.getSurface({ path = massiveIconPath })
+local TARGET_TRAIT_CONFIG = {
+	-- The trait ID used in GetStatusTooltip (e.g., "massive", "flying", etc.)
+	id = "massive",
+	-- The pawn method to check if trait is active (e.g., "IsMassive", "IsFlying")
+	checkMethod = "IsMassive",
+	-- Icon filename (without path, e.g., "icon_massive.png")
+	iconFilename = "icon_massive.png",
+	-- Localization keys for vanilla trait
+	descTitle = "Status_massive_Title",
+	descText = "Status_massive_Text",
+}
+
+local iconPlaceholderFolder = path .. "libs/"
+local function makePlaceholder(new_name)
+	local origPlaceholder = iconPlaceholderFolder .. "icon_placeholder.png"
+    local newPlaceholder = iconPlaceholderFolder .. new_name
+	
+    -- read original file in binary mode
+    local f_in = assert(io.open(origPlaceholder, "rb"))
+
+    -- build destination path
+
+    -- read all bytes
+    local data = f_in:read("*a")
+    f_in:close()
+
+    -- write to new file
+    local f_out = assert(io.open(newPlaceholder, "wb"))
+    f_out:write(data)
+    f_out:close()
+end
+
+-- Derived paths and surfaces based on config
+local placeholderName = "icon_" .. TARGET_TRAIT_CONFIG.id .. "_placeholder.png"
+local placeholderPath = iconPlaceholderFolder .. placeholderName
+makePlaceholder(placeholderName)
+
+local targetIcon = sdlext.getSurface({ path = placeholderPath })
+local targetIconPath = "img/combat/icons/" .. TARGET_TRAIT_CONFIG.iconFilename
+local targetIconNewPath = "img/combat/icons/icon_" .. TARGET_TRAIT_CONFIG.id .. "_vanilla.png"
+local targetOrigIcon = sdlext.getSurface({ path = targetIconPath })
+
 
 -- Time in seconds between icon changes when cycling traits
 local TRAIT_CYCLE_INTERVAL = 1.25
@@ -34,10 +69,11 @@ local missionLargeWidgetIcon
 local cycleTimer = 0
 local cycleIndex = 0
 
-local vanillaMassiveTrait = {
-	id = "massive_vanilla",
-	desc_title = "Status_massive_Title",
-	desc_text = "Status_massive_Text",
+-- Vanilla trait definition based on config
+local vanillaTraitDef = {
+	id = TARGET_TRAIT_CONFIG.id .. "_vanilla",
+	desc_title = TARGET_TRAIT_CONFIG.descTitle,
+	desc_text = TARGET_TRAIT_CONFIG.descText,
 }
 
 -- Inline clip functionality
@@ -77,14 +113,14 @@ local function clip(base, widget, screen)
 	modApi.msDeltaTime = tmp
 end
 
--- Get all active traits for a pawn - massive and custom traits
+-- Get all active traits for a pawn - target trait and custom traits
 local function getActiveTraits(pawn, massiveReplacementTraitObj)
 	if not pawn then return {} end
 
 	local activeTraits = {}
 
-	-- Always include vanilla massive trait first
-	table.insert(activeTraits, vanillaMassiveTrait)
+	-- Always include vanilla trait first
+	table.insert(activeTraits, vanillaTraitDef)
 
 	-- Check func traits
 	for _, trait in ipairs(massiveReplacementTraitObj.funcs) do
@@ -120,7 +156,7 @@ local function getCurrentIcon(pawn, massiveReplacementTraitObj)
 	if #activeTraits == 0 then
 		return nil  -- No icon to display
 	elseif #activeTraits == 1 then
-		-- Just massive
+		-- Just the vanilla trait
 		return activeTraits[1].id
 	else
 		-- Multiple traits - cycle through them
@@ -147,7 +183,8 @@ end
 -- Check if we should be showing the icon
 local function shouldShowIcon(pawn)
 	if not pawn then return false end
-	return pawn:IsMassive()
+	-- Call the configured pawn method
+	return pawn[TARGET_TRAIT_CONFIG.checkMethod](pawn)
 end
 
 -- Get the current icon surface for the pawn
@@ -243,9 +280,8 @@ end
 
 -- Create UI widgets overlay
 local function createUIWidgets(uiRoot, massiveReplacementTraitObj)
-	-- Use vanilla massive icon as initial surface that will be replaced later
-	-- Maybe not needed?
-	local initialSurface = massiveReplacementTraitObj.surfaces.massive_vanilla or massiveIcon
+	-- Use vanilla trait icon as initial surface that will be replaced later
+	local initialSurface = massiveReplacementTraitObj.surfaces[TARGET_TRAIT_CONFIG.id .. "_vanilla"] or targetIcon
 
 	-- Large widget for status tooltip display
 	missionLargeWidget = Ui()
@@ -270,7 +306,7 @@ local function createUIWidgets(uiRoot, massiveReplacementTraitObj)
 
 	missionSmallWidget.draw = function(self, screen)
 		self.visible = false
-		if massiveIcon:wasDrawn() and GetCurrentMission() then
+		if targetIcon:wasDrawn() and GetCurrentMission() then
 			local pawn = getUIEnabledPawn()
 
 			if shouldShowIcon(pawn) then
@@ -279,9 +315,12 @@ local function createUIWidgets(uiRoot, massiveReplacementTraitObj)
 				local surface = getIconSurface(iconId, massiveReplacementTraitObj)
 
 				if surface then
-					local tooltipVisible = sdlext:isStatusTooltipWindowVisible()n
+					local tooltipVisible = sdlext:isStatusTooltipWindowVisible()
+					
+					-- Only update position when tooltip is closed
+					-- When tooltip opens, widget stays at its current position
 					if not tooltipVisible then
-						updateWidgetPosition(self, massiveIcon.x, massiveIcon.y, SMALL_ICON_W, SMALL_ICON_H)
+						updateWidgetPosition(self, targetIcon.x, targetIcon.y, SMALL_ICON_W, SMALL_ICON_H)
 					end
 
 					-- Recreate icon widget when icon changes
@@ -306,7 +345,7 @@ local function createUIWidgets(uiRoot, massiveReplacementTraitObj)
 
 	missionLargeWidget.draw = function(self, screen)
 		self.visible = false
-		if massiveIcon:wasDrawn() and GetCurrentMission() then
+		if targetIcon:wasDrawn() and GetCurrentMission() then
 			local pawn = getUIEnabledPawn()
 			if shouldShowIcon(pawn) then
 				-- Recalculate icon every frame to support cycling
@@ -319,14 +358,14 @@ local function createUIWidgets(uiRoot, massiveReplacementTraitObj)
 				local hoveringSmallIcon = missionSmallWidget.visible and missionSmallWidget.containsMouse
 
 				if surface and (tooltipVisible or hoveringSmallIcon) and not escapeVisible then
-					-- Don't show large icon if massiveIcon is still at the small icon position
+					-- Don't show large icon if targetIcon is still at the small icon position
 					-- This happens on first frame when tooltip opens - vanilla icon hasn't moved yet
 					-- Just compare against small widget's current position directly
-					local atSmallIconPosition = (missionSmallWidget.x == massiveIcon.x and
-					                             missionSmallWidget.y == massiveIcon.y)
+					local atSmallIconPosition = (missionSmallWidget.x == targetIcon.x and
+					                             missionSmallWidget.y == targetIcon.y)
 
 					if not atSmallIconPosition then
-						-- massiveIcon has moved to its tooltip position, safe to show large icon
+						-- targetIcon has moved to its tooltip position, safe to show large icon
 
 						-- Recreate icon widget when icon changes
 						if iconId ~= lastLargeIconId then
@@ -334,8 +373,8 @@ local function createUIWidgets(uiRoot, massiveReplacementTraitObj)
 							lastLargeIconId = iconId
 						end
 
-						-- Use massiveIcons current position
-						updateWidgetPosition(self, massiveIcon.x, massiveIcon.y, LARGE_ICON_W, LARGE_ICON_H)
+						-- Use targetIcon's current position (it's at tooltip position now)
+						updateWidgetPosition(self, targetIcon.x, targetIcon.y, LARGE_ICON_W, LARGE_ICON_H)
 						updateChildPosition(missionLargeWidgetIcon, self, LARGE_ICON_W, LARGE_ICON_H)
 						self.visible = true
 					end
@@ -351,18 +390,18 @@ local function overrideGetStatusTooltip(massiveReplacementTraitObj)
 	local oldGetStatusTooltip = GetStatusTooltip
 
 	function GetStatusTooltip(id)
-		if id == "massive" then
+		if id == TARGET_TRAIT_CONFIG.id then
 			local pawn = getUIEnabledPawn()
 
 			if pawn then
-				-- Get all active traits (vanilla massive + custom)
+				-- Get all active traits (vanilla trait + custom)
 				local activeTraits = getActiveTraits(pawn, massiveReplacementTraitObj)
 
 				if #activeTraits == 0 then
 					-- No traits, no tooltip
 					return {"", ""}
 				elseif #activeTraits == 1 then
-					-- Just massive
+					-- Just the single vanilla trait
 					return {
 						GetText(activeTraits[1].desc_title),
 						GetText(activeTraits[1].desc_text)
@@ -425,12 +464,12 @@ local function addTraitInternal(massiveReplacementTraitObj, trait)
 
 	-- Must have one of func, pilotSkill, or pawnType
 	if not func and not pilotSkill and not pawnType then
-		error("ERROR: Attempted to add an unlinked massive replacement trait!")
+		error("ERROR: Attempted to add an unlinked trait replacement! Trait must have func, pilotSkill, or pawnType.")
 	end
 
 	-- Generate unique ID based on total count
 	local totalCount = #massiveReplacementTraitObj.allTraits + 1
-	local id = "massive_custom_" .. totalCount
+	local id = TARGET_TRAIT_CONFIG.id .. "_custom_" .. totalCount
 	trait.id = id
 
 	-- Load the icon surface
@@ -477,7 +516,7 @@ local function addTraitInternal(massiveReplacementTraitObj, trait)
 	end
 
 	if not surface or surface:w() == 0 or surface:h() == 0 then
-		LOG("Warning: Could not load valid icon for massive replacement trait: " .. iconPath)
+		LOG("Warning: Could not load valid icon for trait replacement (" .. TARGET_TRAIT_CONFIG.id .. "): " .. iconPath)
 		return
 	end
 
@@ -489,11 +528,11 @@ local function addTraitInternal(massiveReplacementTraitObj, trait)
 		table.insert(massiveReplacementTraitObj.funcs, trait)
 	elseif pilotSkill then
 		Assert.Equals('string', type(pilotSkill))
-		Assert.Equals('nil', type(massiveReplacementTraitObj.pilotSkills[pilotSkill]), "Duplicate massive replacement trait for pilotSkill")
+		Assert.Equals('nil', type(massiveReplacementTraitObj.pilotSkills[pilotSkill]), "Duplicate trait replacement for pilotSkill")
 		massiveReplacementTraitObj.pilotSkills[pilotSkill] = trait
 	elseif pawnType then
 		Assert.Equals('string', type(pawnType))
-		Assert.Equals('nil', type(massiveReplacementTraitObj.pawnTypes[pawnType]), "Duplicate massive replacement trait for pawnType")
+		Assert.Equals('nil', type(massiveReplacementTraitObj.pawnTypes[pawnType]), "Duplicate trait replacement for pawnType")
 		massiveReplacementTraitObj.pawnTypes[pawnType] = trait
 	end
 
@@ -537,13 +576,13 @@ if isNewestVersion then
 	end
 
 	massiveReplacementTrait.finalizeInit = function(self)
-		-- Copy the vanilla massive icon to a new location and override
-		-- the massive trait image with placeholder image
-		modApi:copyAsset(massiveIconPath, massiveIconNewPath)
-		modApi:appendAsset(massiveIconPath, massivePlaceholderPath)
+		-- Copy the vanilla target trait icon to a new location and override
+		-- the target trait image with placeholder image
+		modApi:copyAsset(targetIconPath, targetIconNewPath)
+		modApi:appendAsset(targetIconPath, placeholderPath)
 
-		-- Load vanilla massive icon surface from the backup
-		self.surfaces.massive_vanilla = massiveOrigIcon
+		-- Load vanilla target trait icon surface from the backup
+		self.surfaces[TARGET_TRAIT_CONFIG.id .. "_vanilla"] = targetOrigIcon
 
 		-- Process queued traits
 		for _, trait in ipairs(self.queuedTraits) do
