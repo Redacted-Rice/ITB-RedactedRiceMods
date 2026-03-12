@@ -1,7 +1,8 @@
 Treeherders_Passive_WakeTheForest = PassiveSkill:new
 {
 	Name = "Wake the Forest",
-	Description = "Mechs on forest tiles take one less damage and on Ancient Forests take no (non-lethal) damage. Randomly expands forests two tiles at mission start and each turn",
+	Description = "Mechs on forest tiles take one less damage and on Ancient Forests take no (non-lethal) damage from. Randomly expands forests two tiles at mission start and each turn",
+	Description = "Mechs on forest take one less damage from non-self, non-lethal damage. Ancient Forest reduce to 0. Creates two forest at mission start and each turn",
 	Icon = "weapons/passives/passive_th_forestArmor.png",
 	Rarity = 2,
 
@@ -67,7 +68,7 @@ Treeherders_Passive_WakeTheForest_AB = Treeherders_Passive_WakeTheForest_A:new
 --only a preview for passive skills
 function Treeherders_Passive_WakeTheForest:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
-	
+
 	Board:SetTerrainIcon(Point(2, 2), "forestArmor")
 
 	local spaceDamage = SpaceDamage(Point(2, 2), DAMAGE_ZERO)
@@ -80,7 +81,7 @@ end
 --only a preview for passive skills
 function Treeherders_Passive_WakeTheForest_A:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
-	
+
 	Board:SetTerrainIcon(Point(2, 2), "forestArmor_treevac")
 
 	local spaceDamage = SpaceDamage(Point(2, 2), 2, 3)
@@ -151,25 +152,25 @@ end
 
 function Treeherders_Passive_WakeTheForest.getForestArmorType(pawn)
 	-- Make sure the passive is active
-	if not Treeherders_Passive_WakeTheForest.passiveEffect:countAnyVersionOfPassiveActive(
+	if Treeherders_Passive_WakeTheForest.passiveEffect:countAnyVersionOfPassiveActive(
 			"Treeherders_Passive_WakeTheForest") < 1 then
 		return nil
 	end
-	
+
 	if not Treeherders_Passive_WakeTheForest.EligibleForForestArmor(pawn) then
 		return nil
 	end
-	
+
 	local loc = pawn:GetSpace()
 	if not Board:IsTerrain(loc, TERRAIN_FOREST) then
 		return nil
 	end
-	
+
 	-- Ancient forest takes priority
 	if forestUtils.isAnAncientForest(loc) then
 		return "ancient"
 	end
-	
+
 	-- Check if pawn has the evacuate upgrade
 	if Treeherders_Passive_WakeTheForest.passiveEffect:isPassiveActive(
 				"Treeherders_Passive_WakeTheForest_A") or
@@ -177,10 +178,10 @@ function Treeherders_Passive_WakeTheForest.getForestArmorType(pawn)
 				"Treeherders_Passive_WakeTheForest_AB") then
 		return "treevac"
 	end
-	
+
 	return "basic"
 end
-	
+
 -- Ancient Forest Armor
 Treeherders_Passive_WakeTheForest.trait:add{
 	func = function(trait, pawn)
@@ -292,7 +293,10 @@ function Treeherders_Passive_WakeTheForest:ApplyForestArmorAndEvacuate(effect, a
 						spaceDamage.iDamage > 0 and self.EligibleForForestArmor(damagedPawn) then
 				--LOG("damaging "..spaceDamage.loc:GetString())
 
-				self:ApplyForestArmorToSpaceDamage(spaceDamage)
+				-- Only apply forest armor if this is not self-damage
+				if spaceDamage.loc ~= attackOrigin then
+					self:ApplyForestArmorToSpaceDamage(spaceDamage)
+				end
 
 				local p = self:ApplyEvacuateToSpaceDamage(spaceDamage, damagedPawn,
 								attackOrigin, evacuatedToOrAttackedSpaces)
@@ -316,7 +320,7 @@ end
 -- It doesn't recognize that tiles became water in the flood event. next turn hook can
 -- be used but it happens after vek attack so it defeats the point of the seek mech
 -- ability
-function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_PreEnvironmentHook(mission)	
+function Treeherders_Passive_WakeTheForest:GetPassiveSkillEffect_PreEnvironmentHook(mission)
 	--floraform the spaces
 	self:FloraformSpaces()
 end

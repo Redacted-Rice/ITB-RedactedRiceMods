@@ -4,13 +4,13 @@ WorldBuilders_Shift = Skill:new{
 	Class = "Science",
 	Icon = "weapons/science_wb_shift.png",
 	Rarity = 1,
-	
+
 	Damage = 1,
 	PowerCost = 1,
 	LaunchSound = "/weapons/swap",
 	Explosion = "",
 	Upgrades = 2,
-	UpgradeCost = { 1, 2 },
+	UpgradeCost = { 1, 3 },
 
 	Range = 2,
 	-- Start with project
@@ -70,10 +70,10 @@ end
 
 function WorldBuilders_Shift:CanSpaceBeOccupied(point, maybePawn)
 	-- if all terrain is active, we can "occupy" any
-	if maybePawn and maybePawn:IsMech() and 
+	if maybePawn and maybePawn:IsMech() and
 			WorldBuilders_Shift.passiveEffect:countAnyVersionOfPassiveActive("WorldBuilders_Passive_Move") > 0 then
 		return true
-	else 
+	else
 		return Board:GetTerrain(point) ~= TERRAIN_BUILDING and Board:GetTerrain(point) ~= TERRAIN_MOUNTAIN
 	end
 end
@@ -97,8 +97,8 @@ end
 function WorldBuilders_Shift:IsCriticalObjectiveBuilding(unique)
 	local mission = GetCurrentMission()
 	if mission and mission.Criticals then
-		return unique == mission.Image 
-	end 
+		return unique == mission.Image
+	end
 	return false
 end
 
@@ -153,7 +153,7 @@ end
 function WorldBuilders_Shift:IsInvalidTargetSpace(p)
 	-- don't allow swapping custom tiles or buildings
 	-- Also just don't swap immovable pawns for simplicity
-	return self:IsUnshiftableCustomTile(p) or self:IsSpecialExclusion(p) or 
+	return self:IsUnshiftableCustomTile(p) or self:IsSpecialExclusion(p) or
 		(Board:IsPawnSpace(p) and Board:GetPawn(p):IsGuarding()) or
 		(not self.TargetDeathTiles and (Board:GetTerrain(p) == TERRAIN_WATER or Board:GetTerrain(p) == TERRAIN_HOLE))
 end
@@ -349,7 +349,7 @@ function WorldBuilders_Shift:handleCustomBuildingSet(spaceDamage, spaceData)
 	-- set the building
 	spaceDamage.sScript = spaceDamage.sScript .. [[
 			Board:SetUniqueBuilding(]] .. spaceDamage.loc:GetString() .. [[, "]] .. spaceData.unique .. [[")]]
-	
+
 	if self:isStandardObjectiveBuilding(spaceData.unique) then
 		spaceDamage.sScript = spaceDamage.sScript .. [[
 				GetCurrentMission().AssetLoc = ]] .. spaceDamage.loc:GetString()
@@ -409,10 +409,10 @@ function WorldBuilders_Shift:ApplyTerrain(spaceDamage, spaceDamagePreform, space
 
 	-- Unset frozen first
 	if not spaceData.frozen and oldSpaceData.frozen then
-		-- Board:SetFrozen(..., false) does not work right for this. Instead use the memedit 
+		-- Board:SetFrozen(..., false) does not work right for this. Instead use the memedit
 		-- call directly
 		spaceDamage.sScript = spaceDamage.sScript .. [[
-				memedit:get().board.setFrozen(]] .. spaceDamage.loc:GetString() .. [[,false)]]				
+				memedit:get().board.setFrozen(]] .. spaceDamage.loc:GetString() .. [[,false)]]
 	end
 
 	-- Set the terrain to the new terrain
@@ -446,7 +446,7 @@ function WorldBuilders_Shift:ApplyTerrain(spaceDamage, spaceDamagePreform, space
 
 		-- if it was a unique building, set it
 		if spaceData.unique ~= nil then
-			self:handleCustomBuildingSet(spaceDamage, spaceData)	
+			self:handleCustomBuildingSet(spaceDamage, spaceData)
 		end
 
 	end
