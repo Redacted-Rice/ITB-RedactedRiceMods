@@ -14,7 +14,7 @@ end
 function SkillTrait:addCustomTrait()
 	local iconImg = "img/combat/icons/icon_mp_"..self.id..".png"
 	LOG("Adding trait icon %s at %s", self.id, iconImg)
-	more_plus.libs.trait:add{
+	more_plus.libs.massiveReplacementTrait:add{
 		func = function(trait, pawn)
 			if cplus_plus_ex:isSkillOnPawn(self.id, pawn) then
 				return true
