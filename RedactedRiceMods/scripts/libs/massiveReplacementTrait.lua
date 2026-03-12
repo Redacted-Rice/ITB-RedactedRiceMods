@@ -4,7 +4,7 @@
 -- Overrides the massive trait to allow custom traits to be displayed
 -- Cycles through vanilla massive icon and custom trait icons
 
-local VERSION = "0.5.0"
+local VERSION = "0.5.1"
 
 local mod_path = mod_loader.mods[modApi.currentMod]
 local path = mod_path.scriptPath
@@ -19,6 +19,10 @@ local massiveOrigIcon = sdlext.getSurface({ path = massiveIconPath })
 
 -- Time in seconds between icon changes when cycling traits
 local TRAIT_CYCLE_INTERVAL = 1.25
+
+-- Widget size constants
+local SMALL_ICON_W, SMALL_ICON_H = 25, 21
+local LARGE_ICON_W, LARGE_ICON_H = 50, 42
 
 -- UI widget references
 local missionSmallWidget
@@ -78,7 +82,7 @@ local function getActiveTraits(pawn, massiveReplacementTraitObj)
 	if not pawn then return {} end
 
 	local activeTraits = {}
-	
+
 	-- Always include vanilla massive trait first
 	table.insert(activeTraits, vanillaMassiveTrait)
 
@@ -112,7 +116,7 @@ local function getCurrentIcon(pawn, massiveReplacementTraitObj)
 
 	-- Get all active traits
 	local activeTraits = getActiveTraits(pawn, massiveReplacementTraitObj)
-	
+
 	if #activeTraits == 0 then
 		return nil  -- No icon to display
 	elseif #activeTraits == 1 then
@@ -149,7 +153,7 @@ end
 -- Get the current icon surface for the pawn
 local function getIconSurface(iconId, massiveReplacementTraitObj)
 	if not iconId then return nil end
-	
+
 	-- Return the appropriate surface based on the icon ID
 	local surface = massiveReplacementTraitObj.surfaces[iconId]
 	if not surface then
@@ -163,6 +167,35 @@ local function getIconSurface(iconId, massiveReplacementTraitObj)
 	return surface
 end
 
+-- Helper to update widget position and dimensions
+local function updateWidgetPosition(widget, x, y, w, h)
+	widget.x = x
+	widget.y = y
+	widget.screenx = x
+	widget.screeny = y
+	widget.rect.x = x
+	widget.rect.y = y
+	widget.rect.w = w
+	widget.rect.h = h
+end
+
+-- Helper to update child icon widget to match parent position
+local function updateChildPosition(child, parent, w, h)
+	if child and child.root then
+		child.x = 0
+		child.y = 0
+		child.w = w
+		child.h = h
+		child.screenx = parent.screenx
+		child.screeny = parent.screeny
+		child.rect.x = parent.screenx
+		child.rect.y = parent.screeny
+		child.rect.w = w
+		child.rect.h = h
+		child.visible = true
+	end
+end
+
 -- Helper to recreate small icon widget with new surface
 -- Creating a new surface is the only way I found that works
 -- to change the icons
@@ -170,30 +203,29 @@ local function recreateSmallIcon(surface)
 	if missionSmallWidgetIcon then
 		missionSmallWidgetIcon:detach()
 	end
-	
+
 	missionSmallWidgetIcon = Ui()
-		:widthpx(25):heightpx(21)
+		:widthpx(SMALL_ICON_W):heightpx(SMALL_ICON_H)
 		:decorate({ DecoSurfaceOutlined(surface, 1, deco.colors.buttonborder, deco.colors.focus, 1) })
 		:addTo(missionSmallWidget)
-	
 	missionSmallWidgetIcon.translucent = true
-	
+
 	-- Override decoration draw to show highlighted surface when tooltip is open
 	local decoration = missionSmallWidgetIcon.decorations[1]
 	if decoration then
 		decoration.draw = function(self, screen, widget)
+			-- Check if tooltip is visible
 			local tooltipVisible = sdlext:isStatusTooltipWindowVisible()
-			
+
 			-- Use highlighted surface when tooltip is visible, normal otherwise
 			local surfaceToUse = tooltipVisible and self.surfacehl or self.surfacenormal
-			
 			if surfaceToUse then
 				screen:blit(surfaceToUse, nil, widget.rect.x, widget.rect.y)
 			end
 		end
 	end
 end
-	
+
 -- Helper to recreate large icon widget with new surface
 -- Creating a new surface is the only way I found that works
 -- to change the icons
@@ -201,9 +233,9 @@ local function recreateLargeIcon(surface)
 	if missionLargeWidgetIcon then
 		missionLargeWidgetIcon:detach()
 	end
-	
+
 	missionLargeWidgetIcon = Ui()
-		:widthpx(50):heightpx(42)
+		:widthpx(LARGE_ICON_W):heightpx(LARGE_ICON_H)
 		:decorate({ DecoSurfaceOutlined(surface, 1, deco.colors.buttonborder, deco.colors.buttonborder, 2) })
 		:addTo(missionLargeWidget)
 	missionLargeWidgetIcon.translucent = true
@@ -214,30 +246,28 @@ local function createUIWidgets(uiRoot, massiveReplacementTraitObj)
 	-- Use vanilla massive icon as initial surface that will be replaced later
 	-- Maybe not needed?
 	local initialSurface = massiveReplacementTraitObj.surfaces.massive_vanilla or massiveIcon
-	
+
 	-- Large widget for status tooltip display
 	missionLargeWidget = Ui()
-		:widthpx(50):heightpx(42)
+		:widthpx(LARGE_ICON_W):heightpx(LARGE_ICON_H)
 		:addTo(uiRoot)
 	missionLargeWidget.translucent = true
 	missionLargeWidget.visible = false
-	
+
+	-- Small widget for ui display
 	missionSmallWidget = Ui()
-		:widthpx(25):heightpx(21)
+		:widthpx(SMALL_ICON_W):heightpx(SMALL_ICON_H)
 		:addTo(uiRoot)
 	missionSmallWidget.translucent = true
 	missionSmallWidget.visible = false
-	
+
 	-- Create initial icons
 	recreateSmallIcon(initialSurface)
 	recreateLargeIcon(initialSurface)
 
 	-- Small widget draw function
 	local lastSmallIconId = nil
-	local cachedSmallX = nil
-	local cachedSmallY = nil
-	local wasTooltipVisible = false
-	
+
 	missionSmallWidget.draw = function(self, screen)
 		self.visible = false
 		if massiveIcon:wasDrawn() and GetCurrentMission() then
@@ -249,56 +279,19 @@ local function createUIWidgets(uiRoot, massiveReplacementTraitObj)
 				local surface = getIconSurface(iconId, massiveReplacementTraitObj)
 
 				if surface then
-					-- Check if tooltip is visible
-					local tooltipVisible = sdlext:isStatusTooltipWindowVisible()
-					
-					-- Cache position when tooltip first opens, or update from massiveIcon when closed
+					local tooltipVisible = sdlext:isStatusTooltipWindowVisible()n
 					if not tooltipVisible then
-						-- Tooltip closed: follow massiveIcon
-						self.x = massiveIcon.x
-						self.y = massiveIcon.y
-						self.screenx = massiveIcon.x
-						self.screeny = massiveIcon.y
-						self.rect.x = massiveIcon.x
-						self.rect.y = massiveIcon.y
-						
-						-- Cache this position for when tooltip opens
-						cachedSmallX = massiveIcon.x
-						cachedSmallY = massiveIcon.y
-						wasTooltipVisible = false
-					elseif not wasTooltipVisible and cachedSmallX then
-						-- Tooltip just opened: use cached position
-						self.x = cachedSmallX
-						self.y = cachedSmallY
-						self.screenx = cachedSmallX
-						self.screeny = cachedSmallY
-						self.rect.x = cachedSmallX
-						self.rect.y = cachedSmallY
-						wasTooltipVisible = true
+						updateWidgetPosition(self, massiveIcon.x, massiveIcon.y, SMALL_ICON_W, SMALL_ICON_H)
 					end
-					
+
 					-- Recreate icon widget when icon changes
 					if iconId ~= lastSmallIconId then
 						recreateSmallIcon(surface)
 						lastSmallIconId = iconId
 					end
-					
+
 					-- Update child position and rect manually since we're bypassing normal layout
-					if missionSmallWidgetIcon and missionSmallWidgetIcon.root then
-						missionSmallWidgetIcon.x = 0
-						missionSmallWidgetIcon.y = 0
-						missionSmallWidgetIcon.w = 25
-						missionSmallWidgetIcon.h = 21
-						missionSmallWidgetIcon.screenx = self.screenx
-						missionSmallWidgetIcon.screeny = self.screeny
-						missionSmallWidgetIcon.rect.x = self.screenx
-						missionSmallWidgetIcon.rect.y = self.screeny
-						missionSmallWidgetIcon.rect.w = 25
-						missionSmallWidgetIcon.rect.h = 21
-						
-						-- Force child to be visible at all times
-						missionSmallWidgetIcon.visible = true
-					end
+					updateChildPosition(missionSmallWidgetIcon, self, SMALL_ICON_W, SMALL_ICON_H)
 					self.visible = true
 				end
 			end
@@ -310,10 +303,7 @@ local function createUIWidgets(uiRoot, massiveReplacementTraitObj)
 
 	-- Large widget draw function
 	local lastLargeIconId = nil
-	local cachedLargeX = nil
-	local cachedLargeY = nil
-	local wasLargeTooltipVisible = false
-	
+
 	missionLargeWidget.draw = function(self, screen)
 		self.visible = false
 		if massiveIcon:wasDrawn() and GetCurrentMission() then
@@ -322,67 +312,32 @@ local function createUIWidgets(uiRoot, massiveReplacementTraitObj)
 				-- Recalculate icon every frame to support cycling
 				local iconId = getCurrentIcon(pawn, massiveReplacementTraitObj)
 				local surface = getIconSurface(iconId, massiveReplacementTraitObj)
-				
+
 				-- Show large icon when tooltip window is visible OR when hovering over the small icon area
 				local tooltipVisible = sdlext:isStatusTooltipWindowVisible()
 				local escapeVisible = sdlext:isEscapeMenuWindowVisible()
 				local hoveringSmallIcon = missionSmallWidget.visible and missionSmallWidget.containsMouse
-				
+
 				if surface and (tooltipVisible or hoveringSmallIcon) and not escapeVisible then
 					-- Don't show large icon if massiveIcon is still at the small icon position
-					-- (tooltip just opened but vanilla icon hasn't moved yet - wait for it to move to tooltip position)
-					local atSmallIconPosition = (cachedSmallX and cachedSmallY and 
-					                             massiveIcon.x == cachedSmallX and massiveIcon.y == cachedSmallY)
-					
+					-- This happens on first frame when tooltip opens - vanilla icon hasn't moved yet
+					-- Just compare against small widget's current position directly
+					local atSmallIconPosition = (missionSmallWidget.x == massiveIcon.x and
+					                             missionSmallWidget.y == massiveIcon.y)
+
 					if not atSmallIconPosition then
 						-- massiveIcon has moved to its tooltip position, safe to show large icon
-						
+
 						-- Recreate icon widget when icon changes
 						if iconId ~= lastLargeIconId then
 							recreateLargeIcon(surface)
 							lastLargeIconId = iconId
 						end
-						
-						-- Cache position on first valid frame, then keep it stable
-						if not wasLargeTooltipVisible then
-							cachedLargeX = massiveIcon.x
-							cachedLargeY = massiveIcon.y
-							wasLargeTooltipVisible = true
-						end
-						
-						-- Use cached position to prevent jumping as tooltip animates
-						local targetX = cachedLargeX
-						local targetY = cachedLargeY
-						
-						self.x = targetX
-						self.y = targetY
-						self.screenx = targetX
-						self.screeny = targetY
-						self.rect.x = targetX
-						self.rect.y = targetY
-						self.rect.w = 50
-						self.rect.h = 42
-					
-					-- Update child position and rect manually
-					if missionLargeWidgetIcon and missionLargeWidgetIcon.root then
-						missionLargeWidgetIcon.x = 0
-						missionLargeWidgetIcon.y = 0
-						missionLargeWidgetIcon.w = 50
-						missionLargeWidgetIcon.h = 42
-						missionLargeWidgetIcon.screenx = self.screenx
-						missionLargeWidgetIcon.screeny = self.screeny
-						missionLargeWidgetIcon.rect.x = self.screenx
-						missionLargeWidgetIcon.rect.y = self.screeny
-						missionLargeWidgetIcon.rect.w = 50
-						missionLargeWidgetIcon.rect.h = 42
-					end
-					
+
+						-- Use massiveIcons current position
+						updateWidgetPosition(self, massiveIcon.x, massiveIcon.y, LARGE_ICON_W, LARGE_ICON_H)
+						updateChildPosition(missionLargeWidgetIcon, self, LARGE_ICON_W, LARGE_ICON_H)
 						self.visible = true
-					end
-				else
-					-- Tooltip closed: reset cache for next open
-					if wasLargeTooltipVisible then
-						wasLargeTooltipVisible = false
 					end
 				end
 			end
@@ -402,7 +357,7 @@ local function overrideGetStatusTooltip(massiveReplacementTraitObj)
 			if pawn then
 				-- Get all active traits (vanilla massive + custom)
 				local activeTraits = getActiveTraits(pawn, massiveReplacementTraitObj)
-				
+
 				if #activeTraits == 0 then
 					-- No traits, no tooltip
 					return {"", ""}
@@ -435,10 +390,10 @@ end
 
 -- Cycle traits periodically
 local function maybeCycleTraits(mission)
-	if not Board then 
-		return 
+	if not Board then
+		return
 	end
-	
+
 	local now = os.clock()
 	cycleTimer = now
 
@@ -495,7 +450,7 @@ local function addTraitInternal(massiveReplacementTraitObj, trait)
 				end
 			end
 		end
-		
+
 		-- Fallback: try as vanilla asset
 		if not surface or surface:w() == 0 then
 			if modApi:assetExists(iconPath) then
@@ -512,7 +467,7 @@ local function addTraitInternal(massiveReplacementTraitObj, trait)
 			fullPath = path .. iconPath
 		end
 		LOG(string.format("  Loading mod asset: %s", fullPath))
-		
+
 		if modApi:fileExists(fullPath) then
 			surface = sdlext.getSurface({ path = fullPath })
 			if surface then
