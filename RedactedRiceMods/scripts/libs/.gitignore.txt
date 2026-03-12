@@ -1,0 +1,5 @@
+# Ignore any icon_*_placeholder.png files
+icon_*_placeholder.png
+
+# But explicitly allow the base placeholder
+!icon_placeholder.png
