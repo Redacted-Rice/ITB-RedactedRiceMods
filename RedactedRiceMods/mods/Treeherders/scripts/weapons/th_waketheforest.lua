@@ -150,6 +150,12 @@ end
 ------------------- FOREST ARMOR AND TREEVAC ---------------------------
 
 function Treeherders_Passive_WakeTheForest.getForestArmorType(pawn)
+	-- Make sure the passive is active
+	if not Treeherders_Passive_WakeTheForest.passiveEffect:countAnyVersionOfPassiveActive(
+			"Treeherders_Passive_WakeTheForest") < 1 then
+		return nil
+	end
+	
 	if not Treeherders_Passive_WakeTheForest.EligibleForForestArmor(pawn) then
 		return nil
 	end
