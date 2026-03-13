@@ -1,13 +1,13 @@
 local MOVE_REDUCTION = 1
 
 local customSkill = more_plus.SkillActive:new{
-	id = "RrCripple",
-	name = "Cripple",
+	id = "RrCoverFire",
+	name = "Covering Fire",
 	description = "Damaged targets lose "..MOVE_REDUCTION.." movement",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 }
 
---customSkill:addCustomTrait()
+customSkill:addCustomTrait()
 
 function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onSkillBuild:subscribe(
@@ -44,7 +44,7 @@ function customSkill.modifySkillEffect(pawn, effects)
 							end)
 
 					spaceDamage.sScript = "Board:GetPawn("..targetPawn:GetId().."):AddMoveBonus(-"..MOVE_REDUCTION..")"
-					LOG("Cripple: Will reduce movement of enemy at " .. spaceDamage.loc:GetString() .. " by " .. MOVE_REDUCTION)
+					LOG("Covering Fire: Will reduce movement of enemy at " .. spaceDamage.loc:GetString() .. " by " .. MOVE_REDUCTION)
 				end
 			end
 		end
