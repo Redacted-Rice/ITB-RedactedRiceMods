@@ -5,7 +5,7 @@ local customSkill = more_plus.SkillActive:new{
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }
 
--- TODO: customSkill:addCustomTrait()
+customSkill:addCustomTrait()
 
 function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onPawnDamaged:subscribe(
