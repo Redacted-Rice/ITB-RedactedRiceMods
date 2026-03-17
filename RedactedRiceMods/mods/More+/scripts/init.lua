@@ -18,7 +18,6 @@ function mod:init()
 		more_plus.libs[libId] = lib
 	end
 	more_plus.libs["weaponPreview"] = require(self.resourcePath.."libs/weaponPreview")
-	more_plus.libs["customAnim"] = require(self.resourcePath.."libs/customAnim")
 
 	more_plus:init()
 end

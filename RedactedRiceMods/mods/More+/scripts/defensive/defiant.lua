@@ -1,6 +1,6 @@
 local GRID_DEF_PER_ENEMY = 3
 
-local customSkill = more_plus.SkillTrait:new{
+local customSkill = more_plus.SkillActive:new{
 	id = "RrDefiant",
 	name = "Defiant",
 	description = "+"..GRID_DEF_PER_ENEMY.." grid defense per enemy on the board",
@@ -26,6 +26,8 @@ function customSkill:setupEffect()
 		function()
 			customSkill.resetGridDefense()
 		end))
+	-- update on load
+	self.updateGridDefense()
 end
 
 function customSkill.updateGridDefense()

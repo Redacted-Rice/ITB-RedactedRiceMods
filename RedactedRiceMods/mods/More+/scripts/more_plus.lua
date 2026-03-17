@@ -82,6 +82,7 @@ end
 more_plus.commonIcons = {
 	extraDamage = {key = "rr_extra_damage", img =  "combat/icons/icon_mp_RrExtraDamage.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
 	crit = {key = "rr_crit", img =  "combat/icons/icon_mp_RrCrit.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
+	shackle = {key = "rr_shackle", img =  "combat/icons/icon_mp_RrShackle.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
 }
 
 function more_plus:addCommonCustomImages()
