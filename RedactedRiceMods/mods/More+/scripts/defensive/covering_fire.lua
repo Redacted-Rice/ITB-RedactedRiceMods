@@ -1,10 +1,8 @@
-local MOVE_REDUCTION = 1
-
 local customSkill = more_plus.SkillActive:new{
 	id = "RrCoveringFire",
 	name = "Covering Fire",
-	description = "Damaged targets lose "..MOVE_REDUCTION.." movement",
-	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
+	description = "Damaged targets have movement reduced to half base movement",
+	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }
 
 customSkill:addCustomTrait()
@@ -42,9 +40,12 @@ function customSkill.modifySkillEffect(pawn, effects)
 										more_plus.commonIcons.shackle.key.."_"..idx)
 							end)
 
-					-- TODO: Doesn't work with multiple
-					spaceDamage.sScript = "Board:GetPawn("..targetPawn:GetId().."):AddMoveBonus(-"..MOVE_REDUCTION..")"
-					LOG("Covering Fire: Will reduce movement of enemy at " .. spaceDamage.loc:GetString() .. " by " .. MOVE_REDUCTION)
+					local baseMoveSpeed = _G[targetPawn:GetType()].MoveSpeed
+					local targetMoveSpeed = math.floor(baseMoveSpeed / 2)
+					local moveReduction = targetPawn:GetMoveSpeed() - targetMoveSpeed
+					
+					spaceDamage.sScript = "Board:GetPawn("..targetPawn:GetId().."):AddMoveBonus(-"..moveReduction..")"
+					LOG("Covering Fire: Will reduce movement of enemy at " .. spaceDamage.loc:GetString() .. " to " .. targetMoveSpeed .. " (base: " .. baseMoveSpeed .. ", reduction: " .. moveReduction .. ")")
 				end
 			end
 		end
