@@ -1,7 +1,7 @@
 local MOVE_REDUCTION = 1
 
 local customSkill = more_plus.SkillActive:new{
-	id = "RrCoverFire",
+	id = "RrCoveringFire",
 	name = "Covering Fire",
 	description = "Damaged targets lose "..MOVE_REDUCTION.." movement",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
@@ -36,13 +36,13 @@ function customSkill.modifySkillEffect(pawn, effects)
 						spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and
 						spaceDamage.iDamage ~= DAMAGE_ZERO then
 
-					-- Add visual indicator using crit icon as placeholder
 					more_plus.libs.weaponPreview.ExecuteWithState(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
 							function()
 								more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc,
-										more_plus.commonIcons.crit.key.."_"..idx)
+										more_plus.commonIcons.shackle.key.."_"..idx)
 							end)
 
+					-- TODO: Doesn't work with multiple
 					spaceDamage.sScript = "Board:GetPawn("..targetPawn:GetId().."):AddMoveBonus(-"..MOVE_REDUCTION..")"
 					LOG("Covering Fire: Will reduce movement of enemy at " .. spaceDamage.loc:GetString() .. " by " .. MOVE_REDUCTION)
 				end

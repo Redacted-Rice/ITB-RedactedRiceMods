@@ -1,6 +1,6 @@
 local GRID_DEF_BONUS = 12
 
-local customSkill = more_plus.SkillTrait:new{
+local customSkill = more_plus.SkillActive:new{
 	id = "RrFoolhardy",
 	name = "Foolhardy",
 	description = "+"..GRID_DEF_BONUS.." grid defense until a building is damaged",
@@ -10,6 +10,8 @@ local customSkill = more_plus.SkillTrait:new{
 customSkill:addCustomTrait()
 
 function customSkill:setupEffect()
+	-- TODO: ADD on load as well
+	
 	-- Set grid defense on mission start
 	table.insert(customSkill.events, modApi.events.onMissionStart:subscribe(
 		function()
@@ -27,7 +29,9 @@ function customSkill:setupEffect()
 				LOG("Foolhardy: Reset grid defense to 0")
 			end
 			LOG("Foolhardy: Deactivated due to building damage")
-		end))
+		end))	
+		
+	-- TODO: Implement on load behavior - search for destroyed buildings?
 end
 
 return customSkill

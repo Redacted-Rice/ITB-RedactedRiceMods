@@ -20,8 +20,8 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 			if not Board:IsCracked(p1) then
 				local damageC = SpaceDamage(p1, 0)
 				damageC.iCrack = EFFECT_CREATE
-				boostDamage.sScript = [[
-					more_plus.SkillActive.skills.RrKickoffBoosters.moveStartPositions[]]..pawnId..[[] = ]] .. p1:GetString()
+				damageC.sScript = [[
+					more_plus.SkillActive.skills.RrKickoffBoosters.moveStartPositions[]]..pawn:GetId()..[[] = ]] .. p1:GetString()
 				skillEffect:AddDamage(damageC)
 				LOGF("Kickoff Boosters: Will crack %s when pawn %d moves", p1:GetString(), pawn:GetId())
 			end
