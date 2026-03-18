@@ -19,9 +19,32 @@ function customSkill.checkMove(mission, pawn, weaponId, p1, p2, skillEffect)
 	if weaponId == "Move" then
 		local pilot = pawn:GetPilot()
 		if pilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot) then
-			local distance = math.abs(p2.x - p1.x) + math.abs(p2.y - p1.y)
-			LOGF("Momentum: Pawn %d moving %d tiles (from %s to %s)", pawn:GetId(), distance, p1:GetString(), p2:GetString())
-
+			local distance = 0
+			local pathSource = "unknown"
+			
+			-- For jumpers and teleporters always use manhattan distance
+			if pawn:IsJumper() or pawn:IsTeleporter() then
+				distance = math.abs(p2.x - p1.x) + math.abs(p2.y - p1.y)
+				pathSource = "manhattan"
+			else
+				local path = nil
+				
+				-- Check if there's a hijacked path and use it if so
+				path = more_plus.libs.boardUtils.getHijackedPath()
+				if path then
+					pathSource = "hijacked"
+				else
+					-- Otherwise use vanilla pathfinding
+					path = Board:GetPath(p1, p2, pawn:GetPathProf())
+					pathSource = "calculated"
+				end
+				
+				if path and path:size() > 0 then
+					distance = path:size() - 1
+				end
+			end
+			
+			LOGF("Momentum: Pawn %d moving %d tiles from %s to %s with source: %s", pawn:GetId(), distance, p1:GetString(), p2:GetString(), pathSource)
 			if distance >= MIN_DISTANCE then
 				if not pawn:IsBoosted() then
 					local pawnId = pawn:GetId()
@@ -31,7 +54,7 @@ function customSkill.checkMove(mission, pawn, weaponId, p1, p2, skillEffect)
 						more_plus.SkillActive.skills.RrMomentum.notPreBoosted[]]..pawnId..[[] = true
 					]]
 					skillEffect:AddDamage(boostDamage)
-					LOGF("Momentum: Will apply boosted to pawn %d (moving %d tiles)", pawnId, distance)
+					LOGF("Momentum: Will apply boosted to pawn %d moving %d tiles", pawnId, distance)
 				end
 			end
 		end

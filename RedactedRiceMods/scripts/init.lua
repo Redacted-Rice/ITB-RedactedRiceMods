@@ -28,6 +28,9 @@ function mod:init(options)
 	self.libs = {}
 	for _, libId in ipairs(libs) do
 		self.libs[libId] = require(path.."libs/"..libId)
+		if self.libs[libId].init then
+			self.libs[libId]:init()
+		end
 	end
 
     -- add modApiExt as well
@@ -35,9 +38,11 @@ function mod:init(options)
 end
 
 function mod:load(options, version)
-	-- Should only be called once per instance
-	self.libs.passiveEffect:load()
-	self.libs.predictableRandom:load()
+	for _, libId in ipairs(libs) do
+		if self.libs[libId].load then
+			self.libs[libId]:load()
+		end
+	end
 end
 
 return mod
