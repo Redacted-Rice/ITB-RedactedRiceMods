@@ -1,6 +1,6 @@
 local customSkill = more_plus.SkillActive:new{
-	id = "RrKickoffBlast",
-	name = "Kickoff Blast",
+	id = "RrShatterstep",
+	name = "Shatterstep",
 	description = "When moving, cracks tile moved from",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 	moveStartPositions = {},
@@ -21,9 +21,9 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 				local damageC = SpaceDamage(p1, 0)
 				damageC.iCrack = EFFECT_CREATE
 				damageC.sScript = [[
-					more_plus.SkillActive.skills.RrKickoffBlast.moveStartPositions[]]..pawn:GetId()..[[] = ]] .. p1:GetString()
+					more_plus.SkillActive.skills.RrShatterstep.moveStartPositions[]]..pawn:GetId()..[[] = ]] .. p1:GetString()
 				skillEffect:AddDamage(damageC)
-				LOGF("Kickoff Blast: Will crack %s when pawn %d moves", p1:GetString(), pawn:GetId())
+				LOGF("Shatterstep: Will crack %s when pawn %d moves", p1:GetString(), pawn:GetId())
 			end
 		end
 	end
@@ -34,7 +34,7 @@ function customSkill.undoCracked(mission, pawn, undonePosition)
 	if startPos then
 		Board:SetCracked(startPos, false)
 		customSkill.moveStartPositions[pawn:GetId()] = nil
-		LOGF("Kickoff Blast: Uncracked %s for pawn %d (move undone)", startPos:GetString(), pawn:GetId())
+		LOGF("Shatterstep: Uncracked %s for pawn %d (move undone)", startPos:GetString(), pawn:GetId())
 	end
 end
 
