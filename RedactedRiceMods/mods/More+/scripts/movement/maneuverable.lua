@@ -40,6 +40,9 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 	if weaponId == "Move" then
 		local pilot = pawn:GetPilot()
 		if pilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot) then
+			-- Only apply custom pathing for ground-based units
+			-- Jumpers and teleporters use point-to-point movement
+			-- Burrowers follow a path but already have special pathing
 			if not (pawn:IsJumper() or pawn:IsTeleporter() or pawn:IsBurrower()) then
 				-- makeAllTerrainMatcher (.., "friendly") == pass through friendly pawns
 				-- findBfsPath (.., true) == as point list

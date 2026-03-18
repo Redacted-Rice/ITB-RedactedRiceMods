@@ -11,6 +11,7 @@ local boardUtils = {
 }
 
 boardUtils.hijackedFlying = {}
+boardUtils.hijackedPath = nil
 
 function boardUtils.setHijackedFlying(pawn, enabled)
 	if enabled then
@@ -30,12 +31,38 @@ function boardUtils.isPawnFlying(pawn)
 	return pawn:IsFlying() and not boardUtils.hijackedFlying[pawn:GetId()]
 end
 
+function boardUtils.setHijackedPath(path)
+	boardUtils.hijackedPath = path
+end
+
+function boardUtils.getHijackedPath()
+	return boardUtils.hijackedPath
+end
+
+function boardUtils.clearHijackedPath()
+	boardUtils.hijackedPath = nil
+end
+
 function boardUtils.addForcedMove(skillEffect, path)
+	-- Preserve any existing damage effects. This ended up not being the issue
+	-- with boosted not working with momentum and maneuverable but it seems a
+	-- useful and good change so I'm leaving it though its largely untested
+	local preservedDamages = {}
+	-- skip the first one
+	for i = 2, skillEffect.effect:size() do
+		local spaceDamage = skillEffect.effect:index(i)
+		LOG(spaceDamage)
+		table.insert(preservedDamages, spaceDamage)
+	end
+
 	-- Clear the existing move from the skilleffect
 	skillEffect.effect = SkillEffect().effect
 
 	-- Add move for display purposes. This won't let us move onto unmovable spaces reliably
 	skillEffect:AddMove(path, FULL_DELAY)
+
+	-- Store the hijacked path so other systems can use it
+	boardUtils.setHijackedPath(path)
 
 	--maybe needs to be p1?
 	local pawnId = Board:GetPawn(path:index(1)):GetId()
@@ -44,6 +71,11 @@ function boardUtils.addForcedMove(skillEffect, path)
 	local moveDamage = SpaceDamage(secondToLastSpace, 0)
 	moveDamage.sScript = [[Board:GetPawn(]] .. pawnId .. [[):SetSpace(]] .. lastSpace:GetString() .. [[)]]
 	skillEffect:AddDamage(moveDamage)
+	
+	-- Re-add any preserved damage effects
+	for _, damage in ipairs(preservedDamages) do
+		skillEffect:AddDamage(damage)
+	end
 end
 
 function boardUtils.makeInSubsetMatcher(tiles)
@@ -181,6 +213,13 @@ end
 
 function boardUtils.unhashSpace(hash)
 	return hash % 10, math.floor(hash / 10)
+end
+
+function boardUtils:init()
+	-- Initialize event subscriptions
+	modapiext.events.onPawnUndoMove:subscribe(function(mission, pawn, undonePosition)
+		boardUtils.clearHijackedPath()
+	end)
 end
 
 return boardUtils
