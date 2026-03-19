@@ -5,6 +5,9 @@
 -- Cycles through vanilla trait icon and custom trait icons
 -- Supports multiple traits simultaneously (e.g., massive and flying)
 --
+-- This is multi-instance/version safe by using a singleton that will
+-- only load the most recent version of the library
+--
 -- USAGE:
 -- 1. (Optional)Register a target trait (massive is registered by default):
 --    traitReplace:registerTrait({
@@ -23,17 +26,42 @@
 --        func = function(pawn) return pawn:GetMechName() == "MyMech" end
 --    })
 
-local VERSION = "0.6.0"
+local VERSION = "0.7.0"
 
 local mod_path = mod_loader.mods[modApi.currentMod]
 local path = mod_path.scriptPath
 
--- Registry for all our replaces traits
-local traitRegistry = {}
 
--- global timers for cycling traits
-local globalCycleTimer = 0
-local globalCycleIndex = 0
+local function parseVersion(versionStr)
+	if not versionStr then return 0, 0, 0 end
+	local major, minor, patch = versionStr:match("(%d+)%.(%d+)%.(%d+)")
+	return tonumber(major) or 0, tonumber(minor) or 0, tonumber(patch) or 0
+end
+
+local function isNewerVersion(v1, v2)
+	local v1maj, v1min, v1patch = parseVersion(v1)
+	local v2maj, v2min, v2patch = parseVersion(v2)
+
+	if v1maj ~= v2maj then return v1maj > v2maj end
+	if v1min ~= v2min then return v1min > v2min end
+	return v1patch > v2patch
+end
+
+-- Create the global singleton
+if not TraitReplace then
+	TraitReplace = {
+		version = nil,
+		initialized = false,
+		queuedRegistrations = {},
+		queuedTraits = {},
+		traitRegistry = {},
+		globalCycleTimer = 0,
+		globalCycleIndex = 0,
+	}
+end
+
+-- Local alias for the global version
+local traitRegistry = TraitReplace.traitRegistry
 
 -- Helper function to create placeholder icon files
 local iconPlaceholderFolder = path .. "libs/"
@@ -234,7 +262,7 @@ local function getCurrentIcon(pawn, replaceTraitId)
 		return activeTraits[1].id
 	else
 		-- Multiple traits - cycle through them using global timer
-		local traitIndex = globalCycleIndex % #activeTraits + 1
+		local traitIndex = TraitReplace.globalCycleIndex % #activeTraits + 1
 		return activeTraits[traitIndex].id
 	end
 end
@@ -533,16 +561,16 @@ local function maybeCycleTraits(mission)
 	end
 
 	local now = os.clock()
-	globalCycleTimer = now
+	TraitReplace.globalCycleTimer = now
 
 	-- Calculate current cycle index. This will be the same for all traits but
 	-- each trait may cycle differently based on the number of replacement traits
 	-- it has
-	local currentCycleIndex = math.ceil(globalCycleTimer / TRAIT_CYCLE_INTERVAL)
+	local currentCycleIndex = math.ceil(TraitReplace.globalCycleTimer / TRAIT_CYCLE_INTERVAL)
 
 	-- Only update when weve crossed to a new cycle
-	if currentCycleIndex ~= globalCycleIndex then
-		globalCycleIndex = currentCycleIndex
+	if currentCycleIndex ~= TraitReplace.globalCycleIndex then
+		TraitReplace.globalCycleIndex = currentCycleIndex
 	end
 end
 
@@ -654,47 +682,60 @@ local function addTraitInternal(trait)
 
 end
 
+-- Shared initialization callback
+-- This is subscribed to onModsInitialized by the first version that loads.
+-- It calls TraitReplace:finalizeInit() which will use whatever version is stored
+-- on the global object as it gets overwritten by newer versions below.
 local function onModsInitialized()
-	if VERSION < traitReplace.version then
+	if TraitReplace.initialized then
 		return
 	end
 
-	if traitReplace.initialized then
-		return
-	end
-
-	traitReplace:finalizeInit()
-	traitReplace.initialized = true
+	TraitReplace:finalizeInit()
+	TraitReplace.initialized = true
 end
 
-local isNewestVersion = false
-	or traitReplace == nil
-	or traitReplace.version == nil
-	or VERSION > traitReplace.version
+-- Only update methods if this is the newest version
+-- State is already shared via global object initialized at top
+local isHighestVersion = isNewerVersion(VERSION, TraitReplace.version)
 
-if isNewestVersion then
-	traitReplace = traitReplace or {}
-	traitReplace.version = VERSION
-	traitReplace.initialized = false
-	traitReplace.queuedRegistrations = {}
-	traitReplace.queuedTraits = {}
-	traitReplace.traitRegistry = traitRegistry
-	traitReplace.globalCycleTimer = globalCycleTimer
-	traitReplace.globalCycleIndex = globalCycleIndex
+-- If this is a higher version than the previous, we overwrite the functions
+-- with this versions
+if isHighestVersion then
+	LOG("TraitReplace: Loading version " .. VERSION .. " (previous: " .. tostring(TraitReplace.version or "none") .. ")")
+	TraitReplace.version = VERSION
 
 	-- Public function to register a target trait to replace
-	function traitReplace:registerTrait(config)
+	function TraitReplace:registerTrait(config)
+		-- Reinitialize queue if it was cleared after finalization
+		self.queuedRegistrations = self.queuedRegistrations or {}
 		table.insert(self.queuedRegistrations, config)
 	end
 
 	-- Public add function queues traits before initialization
-	function traitReplace:add(trait)
+	function TraitReplace:add(trait)
+		-- Reinitialize queue if it was cleared after finalization
+		self.queuedTraits = self.queuedTraits or {}
 		table.insert(self.queuedTraits, trait)
 	end
 
-	traitReplace.finalizeInit = function(self)
+	TraitReplace.finalizeInit = function(self)
+		LOG(string.format("*** TraitReplace.finalizeInit executing (version %s) ***", VERSION))
+
+		-- Register "massive" trait by default for backwards compatibility
+		-- This ensures existing code that calls TraitReplace:add() without registering works
+		if not traitRegistry["massive"] then
+			table.insert(self.queuedRegistrations, {
+				id = "massive",
+				checkMethod = "IsMassive",
+				iconFilename = "icon_massive.png",
+				descTitle = "Status_massive_Title",
+				descText = "Status_massive_Text",
+			})
+		end
+
 		-- Register all queued target traits
-		for _, config in ipairs(self.queuedRegistrations) do
+		for _, config in ipairs(self.queuedRegistrations or {}) do
 			if registerTargetTrait(config) then
 				local traitData = traitRegistry[config.id]
 
@@ -709,15 +750,16 @@ if isNewestVersion then
 				LOG("Registered target trait '" .. config.id .. "' with " .. #traitData.allTraits .. " custom traits")
 			end
 		end
-		self.queuedRegistrations = nil
+		self.queuedRegistrations = {}
 
-		-- Process queued traits
-		for _, trait in ipairs(self.queuedTraits) do
+		-- Process queued traits (safe check for nil)
+		for _, trait in ipairs(self.queuedTraits or {}) do
 			addTraitInternal(trait)
 		end
-		self.queuedTraits = nil
+		self.queuedTraits = {}
 
 		-- Update add method to use internal function directly
+		-- No longer queue after initialization
 		self.add = function(trait)
 			addTraitInternal(trait)
 		end
@@ -749,22 +791,18 @@ if isNewestVersion then
 		-- Reset global cycle timer on mission change
 		modApi.events.onMissionChanged:subscribe(function(mission, oldMission)
 			if mission then
-				globalCycleTimer = os.clock()
-				globalCycleIndex = 0
+				TraitReplace.globalCycleTimer = os.clock()
+				TraitReplace.globalCycleIndex = 0
 			end
 		end)
 	end
 
-	modApi.events.onModsInitialized:subscribe(onModsInitialized)
-
-	-- Register massive trait by default
-	traitReplace:registerTrait({
-		id = "massive",
-		checkMethod = "IsMassive",
-		iconFilename = "icon_massive.png",
-		descTitle = "Status_massive_Title",
-		descText = "Status_massive_Text",
-	})
+	-- Only subscribe to initialization the first time. Newer versions can still
+	-- use this same registration
+	if not TraitReplace.onModsInitializedSubscribed then
+		modApi.events.onModsInitialized:subscribe(onModsInitialized)
+		TraitReplace.onModsInitializedSubscribed = true
+	end
 end
 
-return traitReplace
+return TraitReplace
