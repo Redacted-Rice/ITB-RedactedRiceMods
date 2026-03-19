@@ -20,7 +20,7 @@ local libs = {
 	"passiveEffect",
 	"predictableRandom",
 	"trait",
-	"massiveReplacementTrait",
+	"traitReplace",
 }
 
 function mod:init(options)
