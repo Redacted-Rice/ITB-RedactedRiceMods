@@ -43,6 +43,34 @@ function boardUtils.clearHijackedPath()
 	boardUtils.hijackedPath = nil
 end
 
+local SPACE_DAMAGE_KEYS = {
+    "bEvacuate",
+    "iInjure",
+    "iCrack",
+    "bSimpleMark",
+    "iPush",
+    "sPawn",
+    "iDamage",
+    "bKO_Effect",
+    "sItem",
+    "iPawnTeam",
+    "iFrozen",
+    "sScript",
+    "bHideIcon",
+    "sSound",
+    "iFire",
+    "sImageMark",
+    "iShield",
+    "iSmoke",
+    "iAcid",
+    "sAnimation",
+    "iTerrain",
+    --"loc",
+    "bHide",
+    "fDelay",
+    "bHidePath",
+}
+
 function boardUtils.addForcedMove(skillEffect, path)
 	-- Preserve any existing damage effects. This ended up not being the issue
 	-- with boosted not working with momentum and maneuverable but it seems a
@@ -50,9 +78,16 @@ function boardUtils.addForcedMove(skillEffect, path)
 	local preservedDamages = {}
 	-- skip the first one
 	for i = 2, skillEffect.effect:size() do
+		-- This seems to get a reference that can be changed so
+		-- instead copy the data to a table
 		local spaceDamage = skillEffect.effect:index(i)
-		LOG(spaceDamage)
-		table.insert(preservedDamages, spaceDamage)
+		local copy = {}
+		for _, key in ipairs(SPACE_DAMAGE_KEYS) do
+			copy[key] = spaceDamage[key]
+		end
+		-- Point is userdata and needs to be copied too
+		copy.loc = Point(spaceDamage.loc)
+		table.insert(preservedDamages, copy)
 	end
 
 	-- Clear the existing move from the skilleffect
@@ -74,7 +109,13 @@ function boardUtils.addForcedMove(skillEffect, path)
 	
 	-- Re-add any preserved damage effects
 	for _, damage in ipairs(preservedDamages) do
-		skillEffect:AddDamage(damage)
+		local recreated = SpaceDamage()
+		for _, key in ipairs(SPACE_DAMAGE_KEYS) do
+			recreated[key] = damage[key]
+		end
+		-- Already copied the point so don't need to again
+		recreated.loc = damage.loc
+		skillEffect:AddDamage(recreated)
 	end
 end
 
