@@ -4,8 +4,8 @@ None
 
 ------------------------------------------------------------------------------
 
-Tree Herders:
-1. Modify to use traits instead of board icon
+Treeherders:
+None
 
 Next release candidates:
 1. Treevac doesn't distinguish between damage in the attack that causes the push vs follow on attacks when checking for spaces to push to
@@ -19,7 +19,7 @@ Known issues:
 ------------------------------------------------------------------------------
 
 World Builders:
-1. Modify to be inline with manuever skill
+None
 
 Next release candidates:
 None
@@ -33,13 +33,24 @@ Known Issues:
 ------------------------------------------------------------------------------
 
 Vanilla+
-1. Test
+None
 
 
 ------------------------------------------------------------------------------
 
 MoreLvlUpSkills:
-Working in separate branch
+1. Figure out and add handling for skills like first blood and weapons like consume that
+call the final effect
+
+Next Release candidates:
+1. More Skills - stay tuned ;)
+2. Special pilots
+
+
+------------------------------------------------------------------------------
+
+LegendaryLvlUpSkills:
+Planned out. Waiting for more CPLUS+ Updates first
 
 
 ------------------------------------------------------------------------------
@@ -71,4 +82,11 @@ Squad 4: Full on Expansion - Its also still a secret ;)
 ------------------------------------------------------------------------------
 
 Libs:
-Make libs global so things like getting active passives in passive weapon will working correctly
+1. TraitReplaceLib
+	a. Make flying icon not cover massive icon
+2. Make the other libs use the trait replace lib pattern
+3. Make WeaponPreview support two clicks
+
+Future releases:
+1. TraitReplaceLib 
+	a. Flying icon on other UIs (see pyramid icon)
