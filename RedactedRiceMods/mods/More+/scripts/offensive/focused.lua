@@ -1,8 +1,10 @@
+local MIN_DISTANCE = 4
+
 local customSkill = more_plus.SkillActive:new{
-	id = "RrFirstBlood",
-	name = "First Blood",
-	description = "+1 damage to undamaged vek with 4+ health",
-	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
+	id = "RrFocused",
+	name = "Focused",
+	description = "Deal +1 Damage if you have not moved yet",
+	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE
 }
 
 customSkill:addCustomTrait()
@@ -26,14 +28,15 @@ function customSkill.modifySkillEffect(pawn, effects)
 	end
 	local pilot = pawn:GetPilot()
 	if pilot and not effects:empty() and cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot) then
+		if pawn:IsMovementSpent() then
+			LOG("Pawn ".. pawn:GetId().." already moved")
+			return
+		end
 		local indexes = cplus_plus_ex:getPilotSkillIndices(customSkill.id, pilot)
 		for _, idx in ipairs(indexes) do
 			for _, spaceDamage in pairs(extract_table(effects)) do
-				local spacePawn = Board:GetPawn(spaceDamage.loc)
-				if spacePawn and spacePawn:IsEnemy() and
-						spacePawn:GetHealth() == _G[spacePawn:GetType()].Health and
-						spacePawn:GetHealth() >= 4 and spaceDamage.iDamage > 0 and
-						spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
+				if spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and 
+						spaceDamage.iDamage ~= DAMAGE_ZERO then
 
 					more_plus.libs.weaponPreview.ExecuteWithState(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
 							function()
@@ -42,7 +45,7 @@ function customSkill.modifySkillEffect(pawn, effects)
 							end)
 
 					spaceDamage.iDamage = spaceDamage.iDamage + 1
-					LOG("First Blood: Added +1 damage to undamaged vek with 4+ health at ".. spaceDamage.loc:GetString())
+					LOG("Focused: Added +1 damage enemy at ".. spaceDamage.loc:GetString())
 				end
 			end
 		end
@@ -50,3 +53,4 @@ function customSkill.modifySkillEffect(pawn, effects)
 end
 
 return customSkill
+
