@@ -79,6 +79,7 @@ function more_plus:folderToDisplayName(str)
     return "More+ " .. str
 end
 
+-- TODO: Consider a double icon instead of drawing it twice
 more_plus.commonIcons = {
 	extraDamage = {key = "rr_extra_damage", img =  "combat/icons/icon_mp_RrExtraDamage.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
 	crit = {key = "rr_crit", img =  "combat/icons/icon_mp_RrCrit.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
@@ -90,7 +91,7 @@ function more_plus:addCommonCustomImages()
 		ANIMS[iconData.key .. "_1"] = ANIMS.Animation:new{
 			Image = iconData.img,
 			NumFrames = 1,
-			Time = 1, 
+			Time = 1,
 			Loop = true,
 			PosX = iconData.pos1.x,
 			PosY = iconData.pos1.y
@@ -98,14 +99,14 @@ function more_plus:addCommonCustomImages()
 		ANIMS[iconData.key .. "_2"] = ANIMS.Animation:new{
 			Image = iconData.img,
 			NumFrames = 1,
-			Time = 1, 
+			Time = 1,
 			Loop = true,
 			PosX = iconData.pos2.x,
 			PosY = iconData.pos2.y
 		}
 	end
 end
-	
+
 function more_plus:init()
 	modApi:appendAssets("img/combat/icons/", "img/combat/icons/")
 	self:addCommonCustomImages()

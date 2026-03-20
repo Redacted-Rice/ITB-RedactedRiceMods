@@ -1,12 +1,12 @@
 local customSkill = more_plus.SkillActive:new{
-	id = "RrFirstBlood",
-	name = "First Blood",
-	description = "+1 damage to undamaged vek with 4+ health",
-	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
+	id = "RrStreetwise",
+	name = "Streetwise",
+	description = "Prevents non-fatal damage to buildings from weapon attacks",
+	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 	processedDamages = {}
 }
 
-customSkill:addCustomTrait()
+--customSkill:addCustomTrait()
 
 function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onSkillBuild:subscribe(
@@ -22,7 +22,7 @@ function customSkill:setupEffect()
 end
 
 function customSkill.hashSpaceDamage(pawnId, spaceDmg, p2)
-	return "p_"..pawnId.."_"..more_plus.libs.boardUtils.getSpaceHash(spaceDamage.loc)..
+	return "p_"..pawnId.."_"..more_plus.libs.boardUtils.getSpaceHash(spaceDmg.loc)..
 			"_"..more_plus.libs.boardUtils.getSpaceHash(p2)
 end
 
@@ -38,15 +38,13 @@ function customSkill.modifySkillEffect(pawn, effects, p2)
 			local spaceDamageKey = customSkill.hashSpaceDamage(pawn:GetId(), spaceDamage, p2)
 			if not customSkill.processedDamages[spaceDamageKey] then
 				customSkill.processedDamages[spaceDamageKey] = true
-				local spacePawn = Board:GetPawn(spaceDamage.loc)
-
-				if spacePawn and spacePawn:IsEnemy() and
-						spacePawn:GetHealth() == _G[spacePawn:GetType()].Health and
-						spacePawn:GetHealth() >= 4 and spaceDamage.iDamage > 0 and
-						spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
-					
+				
+				if Board:IsBuilding(spaceDamage.loc) and
+				   spaceDamage.iDamage > 0 and
+				   spaceDamage.iDamage ~= DAMAGE_DEATH then
+				   
 					modApi:runLater(function()
-						more_plus.SkillActive.skills.RrFirstBlood.processedDamages = {}
+						more_plus.SkillActive.skills.RrStreetwise.processedDamages = {}
 					end)
 					
 					for _, idx in ipairs(indexes) do
@@ -56,12 +54,12 @@ function customSkill.modifySkillEffect(pawn, effects, p2)
 											more_plus.commonIcons.extraDamage.key.."_"..idx)
 								end)
 
-						spaceDamage.iDamage = spaceDamage.iDamage + 1
-						--LOG("First Blood: Added +1 damage to undamaged vek with 4+ health at ".. spaceDamage.loc:GetString())
+						spaceDamage.iDamage = DAMAGE_ZERO
+						--LOG("Streetwise: Prevented damage to building at ".. spaceDamage.loc:GetString())
 					end
 				end
 			--[[else
-				LOG("First Blood: Already processed damage at ".. spaceDamage.loc:GetString())]]
+				LOG("Streetwise: Already processed damage at ".. spaceDamage.loc:GetString())]]
 			end
 		end
 	end
