@@ -1,7 +1,7 @@
 local customSkill = more_plus.SkillActive:new{
 	id = "RrCoveringFire",
 	name = "Covering Fire",
-	description = "Damaged targets have movement reduced to half base movement",
+	description = "Damaged targets have movement reduced to half base movement (rounded down)",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }
 
