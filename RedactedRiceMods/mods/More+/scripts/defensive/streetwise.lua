@@ -6,7 +6,7 @@ local customSkill = more_plus.SkillActive:new{
 	processedDamages = {}
 }
 
---customSkill:addCustomTrait()
+customSkill:addCustomTrait()
 
 function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onSkillBuild:subscribe(
@@ -51,7 +51,7 @@ function customSkill.modifySkillEffect(pawn, effects, p2)
 						more_plus.libs.weaponPreview.ExecuteWithState(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
 								function()
 									more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc,
-											more_plus.commonIcons.extraDamage.key.."_"..idx)
+											more_plus.commonIcons.noDamage.key.."_"..idx)
 								end)
 
 						spaceDamage.iDamage = DAMAGE_ZERO
