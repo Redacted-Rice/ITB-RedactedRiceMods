@@ -8,6 +8,7 @@ local path = GetParentPath(...)
 
 more_plus.SkillTrait = require(path.."skill_trait")
 more_plus.SkillActive = require(path.."skill_active")
+more_plus.SkillEffectModifier = require(path.."skill_effect_modifier")
 
 function more_plus:scanAndReadSkillFiles()
 	if self.DEBUG then LOG("More+: Scanning subdirs in dir " .. path) end
