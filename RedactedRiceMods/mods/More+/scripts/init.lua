@@ -17,7 +17,6 @@ function mod:init()
 	for libId, lib in pairs(mod_loader.mods.redactedrice_libs.libs) do
 		more_plus.libs[libId] = lib
 	end
-	more_plus.libs["weaponPreview"] = require(self.resourcePath.."libs/weaponPreview")
 
 	more_plus:init()
 end

@@ -21,6 +21,7 @@ local libs = {
 	"predictableRandom",
 	"trait",
 	"traitReplace",
+	"weaponPreview",
 }
 
 function mod:init(options)
