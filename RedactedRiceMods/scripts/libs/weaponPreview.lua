@@ -1,5 +1,5 @@
 
-local VERSION = "3.2.0"
+local VERSION = "4.0.0"
 ----------------------------------------------------------------------
 -- Weapon Preview - code library
 -- https://github.com/Lemonymous/ITB-LemonymousMods/wiki/weaponPreview
@@ -58,8 +58,12 @@ local VERSION = "3.2.0"
 --
 --      :events.onTargetAreaShown()
 --      :events.onTargetAreaHidden()
+--      :events.onSecondTargetAreaShown()
+--      :events.onSecondTargetAreaHidden()
 --      :events.onSkillEffectShown()
 --      :events.onSkillEffectHidden()
+--      :events.onFinalEffectShown()
+--      :events.onFinalEffectHidden()
 --      :events.onQueuedSkillEffectShown()
 --      :events.onQueuedSkillEffectHidden()
 --
@@ -93,6 +97,8 @@ local STATE_NONE = 0
 local STATE_SKILL_EFFECT = 1
 local STATE_TARGET_AREA = 2
 local STATE_QUEUED_SKILL = 3
+local STATE_SECOND_TARGET_AREA = 4
+local STATE_FINAL_EFFECT = 5
 
 local NULL_PAWNID = -1
 local NULL_WEAPON = ""
@@ -173,18 +179,25 @@ end
 
 local actingMarker
 local targetMarker
+local secondTargetMarker
 local effectMarker
+local finalEffectMarker
 local queuedMarker
 local time_prev = 0
 
 local getTargetAreaCallers = {}
+local getSecondTargetAreaCallers = {}
 local getSkillEffectCallers = {}
+local getFinalEffectCallers = {}
 local oldGetTargetAreas = {}
+local oldGetSecondTargetAreas = {}
 local oldGetSkillEffects = {}
+local oldGetFinalEffects = {}
 local armedTargetAreaTimer = 0
 local armedSkillEffectTimer = 0
 local queuedSkillEffectTimer = 0
 local previewTargetArea = PointList()
+local previewSecondTargetArea = PointList()
 local previewState = STATE_NONE
 local previewMarks = {}
 local queuedPreviewMarks = {}
@@ -241,6 +254,7 @@ local function sum(t)
 end
 
 local function pointListContains(pointList, obj)
+	if not pointList then return false end
 	for i = 1, pointList:size() do
 		if obj == pointList:index(i) then
 			return true
@@ -427,9 +441,9 @@ local function clearMarks(state)
 	if state then
 		previewMarks[state] = {}
 	else
-		clearMarks(STATE_TARGET_AREA)
-		clearMarks(STATE_SKILL_EFFECT)
-		clearMarks(STATE_QUEUED_SKILL)
+		for _, s in ipairs({STATE_TARGET_AREA, STATE_SECOND_TARGET_AREA, STATE_SKILL_EFFECT, STATE_FINAL_EFFECT, STATE_QUEUED_SKILL}) do
+			previewMarks[s] = {}
+		end
 	end
 end
 
@@ -447,8 +461,16 @@ local function resetTargetTimer()
 	targetMarker.ticker = 0
 end
 
+local function resetSecondTargetTimer()
+	secondTargetMarker.ticker = 0
+end
+
 local function resetEffectTimer()
 	effectMarker.ticker = 0
+end
+
+local function resetFinalEffectTimer()
+	finalEffectMarker.ticker = 0
 end
 
 local function resetQueuedTimer()
@@ -459,8 +481,16 @@ local function isTargetMarker()
 	return targetMarker:isActive()
 end
 
+local function isSecondTargetMarker()
+	return secondTargetMarker:isActive()
+end
+
 local function isEffectMarker()
 	return effectMarker:isActive()
+end
+
+local function isFinalEffectMarker()
+	return finalEffectMarker:isActive()
 end
 
 local function isQueuedMarker()
@@ -471,8 +501,16 @@ local function getTargetMarker()
 	return targetMarker:unpack()
 end
 
+local function getSecondTargetMarker()
+	return secondTargetMarker:unpack()
+end
+
 local function getEffectMarker()
 	return effectMarker:unpack()
+end
+
+local function getFinalEffectMarker()
+	return finalEffectMarker:unpack()
 end
 
 local function getQueuedMarker()
@@ -516,6 +554,36 @@ local function getTargetArea(self, p1, ...)
 	return result or oldGetTargetAreas[skillId](self, p1, ...)
 end
 
+local function getSecondTargetArea(self, p1, p2, ...)
+	local skillId = getSecondTargetAreaCallers[#getSecondTargetAreaCallers]
+	local pawn = p1 and Board:GetPawn(p1) or Pawn
+	local result = nil
+
+	if pawn and previewState == STATE_NONE and not Board:IsTipImage() then
+
+		actingMarker:setArmed(pawn)
+
+		if skillId == actingMarker.weapon and actingMarker ~= secondTargetMarker then
+			if secondTargetMarker:isActive() then
+				events.onSecondTargetAreaHidden:dispatch(secondTargetMarker:unpack())
+				secondTargetMarker:clear()
+			end
+
+			previewState = STATE_SECOND_TARGET_AREA
+			previewMarks[previewState] = {}
+
+			secondTargetMarker:copy(actingMarker)
+			events.onSecondTargetAreaShown:dispatch(secondTargetMarker:unpack())
+
+			result = oldGetSecondTargetAreas[skillId](self, p1, p2, ...)
+			previewSecondTargetArea = result
+			previewState = STATE_NONE
+		end
+	end
+
+	return result or oldGetSecondTargetAreas[skillId](self, p1, p2, ...)
+end
+
 local function getSkillEffect(self, p1, p2, ...)
 	local skillId = getSkillEffectCallers[#getSkillEffectCallers]
 	local pawn = p1 and Board:GetPawn(p1) or Pawn
@@ -540,6 +608,8 @@ local function getSkillEffect(self, p1, p2, ...)
 			end
 
 			result = oldGetSkillEffects[skillId](self, p1, p2, ...)
+			secondTargetMarker:clear()
+			events.onSecondTargetAreaHidden:dispatch(secondTargetMarker:unpack())
 			previewState = STATE_NONE
 
 		elseif pawn and skillId == pawn:GetQueuedWeapon() then
@@ -547,12 +617,57 @@ local function getSkillEffect(self, p1, p2, ...)
 			previewMarks[previewState] = {}
 
 			result = oldGetSkillEffects[skillId](self, p1, p2, ...)
+			secondTargetMarker:clear()
+			events.onSecondTargetAreaHidden:dispatch(secondTargetMarker:unpack())
 			queuedPreviewMarks[pawn:GetId()] = previewMarks[previewState]
 			previewState = STATE_NONE
 		end
 	end
 
 	return result or oldGetSkillEffects[skillId](self, p1, p2, ...)
+end
+
+local function getFinalEffect(self, p1, p2, p3, ...)
+	local skillId = getFinalEffectCallers[#getFinalEffectCallers]
+	local pawn = p1 and Board:GetPawn(p1) or Pawn
+	local result = nil
+
+	if pawn and previewState == STATE_NONE and not Board:IsTipImage() then
+
+		actingMarker:setArmed(pawn)
+
+		if skillId == actingMarker.weapon then
+			if finalEffectMarker ~= actingMarker and finalEffectMarker:isActive() then
+				events.onFinalEffectHidden:dispatch(finalEffectMarker:unpack())
+				finalEffectMarker:clear()
+			end
+
+			previewState = STATE_FINAL_EFFECT
+			previewMarks[previewState] = {}
+
+			if finalEffectMarker:isInActive() then
+				finalEffectMarker:copy(actingMarker)
+				events.onFinalEffectShown:dispatch(finalEffectMarker:unpack())
+			end
+
+			result = oldGetFinalEffects[skillId](self, p1, p2, p3, ...)
+			targetMarker:clear()
+			events.onTargetAreaHidden:dispatch(targetMarker:unpack())
+			previewState = STATE_NONE
+
+		elseif pawn and skillId == pawn:GetQueuedWeapon() then
+			previewState = STATE_QUEUED_SKILL
+			previewMarks[previewState] = {}
+
+			result = oldGetFinalEffects[skillId](self, p1, p2, p3, ...)
+			targetMarker:clear()
+			events.onTargetAreaHidden:dispatch(targetMarker:unpack())
+			queuedPreviewMarks[pawn:GetId()] = previewMarks[previewState]
+			previewState = STATE_NONE
+		end
+	end
+
+	return result or oldGetFinalEffects[skillId](self, p1, p2, p3, ...)
 end
 
 local function getPreviewLength(marks)
@@ -656,15 +771,30 @@ local function onMissionUpdate()
 		events.onTargetAreaHidden:dispatch(targetMarker:unpack())
 		targetMarker:clear()
 	end
+	
+	if secondTargetMarker:isActive() and actingMarker:isInActive() then
+		events.onSecondTargetAreaHidden:dispatch(secondTargetMarker:unpack())
+		secondTargetMarker:clear()
+	end
 
 	if effectMarker:isActive() and actingMarker:isInActive() then
 		events.onSkillEffectHidden:dispatch(effectMarker:unpack())
 		effectMarker:clear()
 	end
 
+	if finalEffectMarker:isActive() and actingMarker:isInActive() then
+		events.onFinalEffectHidden:dispatch(finalEffectMarker:unpack())
+		finalEffectMarker:clear()
+	end
+
 	if targetMarker:isActive() then
 		markSpaces(previewMarks[STATE_TARGET_AREA], targetMarker.ticker)
 		targetMarker.ticker = targetMarker.ticker + time_delta
+	end
+
+	if secondTargetMarker:isActive() then
+		markSpaces(previewMarks[STATE_SECOND_TARGET_AREA], secondTargetMarker.ticker)
+		secondTargetMarker.ticker = secondTargetMarker.ticker + time_delta
 	end
 
 	if effectMarker:isActive() then
@@ -674,6 +804,16 @@ local function onMissionUpdate()
 		else
 			events.onSkillEffectHidden:dispatch(effectMarker:unpack())
 			effectMarker:clear()
+		end
+	end
+
+	if finalEffectMarker:isActive() then
+		if not boardIsBusy and pointListContains(previewSecondTargetArea, highlighted) then
+			markSpaces(previewMarks[STATE_FINAL_EFFECT], finalEffectMarker.ticker)
+			finalEffectMarker.ticker = finalEffectMarker.ticker + time_delta
+		else
+			events.onFinalEffectHidden:dispatch(finalEffectMarker:unpack())
+			finalEffectMarker:clear()
 		end
 	end
 
@@ -718,8 +858,16 @@ local function overrideAllSkillMethods()
 			oldGetTargetAreas[skillId] = skill.GetTargetArea
 			skill.__Id = skillId
 		end
+		if type(skill.GetSecondTargetArea) == 'function' then
+			oldGetSecondTargetAreas[skillId] = skill.GetSecondTargetArea
+			skill.__Id = skillId
+		end
 		if type(skill.GetSkillEffect) == 'function' then
 			oldGetSkillEffects[skillId] = skill.GetSkillEffect
+			skill.__Id = skillId
+		end
+		if type(skill.GetFinalEffect) == 'function' then
+			oldGetFinalEffects[skillId] = skill.GetFinalEffect
 			skill.__Id = skillId
 		end
 	end
@@ -738,6 +886,20 @@ local function overrideAllSkillMethods()
 		end
 	end
 
+	for skillId, _ in pairs(oldGetSecondTargetAreas) do
+		local skill = _G[skillId]
+
+		function skill.GetSecondTargetArea(...)
+			getSecondTargetAreaCallers[#getSecondTargetAreaCallers + 1] = skillId
+
+			local result = getSecondTargetArea(...)
+
+			getSecondTargetAreaCallers[#getSecondTargetAreaCallers] = nil
+
+			return result
+		end
+	end
+
 	for skillId, _ in pairs(oldGetSkillEffects) do
 		local skill = _G[skillId]
 
@@ -751,6 +913,20 @@ local function overrideAllSkillMethods()
 			return result
 		end
 	end
+
+	for skillId, _ in pairs(oldGetFinalEffects) do
+		local skill = _G[skillId]
+
+		function skill.GetFinalEffect(...)
+			getFinalEffectCallers[#getFinalEffectCallers + 1] = skillId
+
+			local result = getFinalEffect(...)
+
+			getFinalEffectCallers[#getFinalEffectCallers] = nil
+
+			return result
+		end
+	end
 end
 
 local function initGlobals()
@@ -758,13 +934,19 @@ local function initGlobals()
 
 	actingMarker = Marker()
 	targetMarker = Marker()
+	secondTargetMarker = Marker()
 	effectMarker = Marker()
+	finalEffectMarker = Marker()
 	queuedMarker = Marker()
 
 	events.onTargetAreaShown = Event()
 	events.onTargetAreaHidden = Event()
+	events.onSecondTargetAreaShown = Event()
+	events.onSecondTargetAreaHidden = Event()
 	events.onSkillEffectShown = Event()
 	events.onSkillEffectHidden = Event()
+	events.onFinalEffectShown = Event()
+	events.onFinalEffectHidden = Event()
 	events.onQueuedSkillEffectShown = Event()
 	events.onQueuedSkillEffectHidden = Event()
 end
@@ -810,19 +992,27 @@ if isNewestVersion then
 		WeaponPreview.ClearMarks = clearMarks
 		WeaponPreview.GetQueuedSkillEffectMarker = getQueuedMarker
 		WeaponPreview.GetSkillEffectMarker = getEffectMarker
+		WeaponPreview.GetFinalEffectMarker = getFinalEffectMarker
 		WeaponPreview.GetTargetAreaMarker = getTargetMarker
+		WeaponPreview.GetSecondTargetAreaMarker = getSecondTargetMarker
 		WeaponPreview.IsQueuedSkillEffectMarker = isQueuedMarker
 		WeaponPreview.IsSkillEffectMarker = isEffectMarker
+		WeaponPreview.IsFinalEffectMarker = isFinalEffectMarker
 		WeaponPreview.IsTargetAreaMarker = isTargetMarker
+		WeaponPreview.IsSecondTargetAreaMarker = isSecondTargetMarker
 		WeaponPreview.ResetQueuedSkillEffectTimer = resetQueuedTimer
 		WeaponPreview.ResetSkillEffectTimer = resetEffectTimer
+		WeaponPreview.ResetFinalEffectTimer = resetFinalEffectTimer
 		WeaponPreview.ResetTargetAreaTimer = resetTargetTimer
+		WeaponPreview.ResetSecondTargetAreaTimer = resetSecondTargetTimer
 		WeaponPreview.SetLooping = setLooping
 		WeaponPreview.ExecuteWithState = executeWithState
 		WeaponPreview.STATE_NONE = STATE_NONE
 		WeaponPreview.STATE_SKILL_EFFECT = STATE_SKILL_EFFECT
-		WeaponPreview.STATE_SKILL_EFFECT = STATE_SKILL_EFFECT
+		WeaponPreview.STATE_TARGET_AREA = STATE_TARGET_AREA
 		WeaponPreview.STATE_QUEUED_SKILL = STATE_QUEUED_SKILL
+		WeaponPreview.STATE_SECOND_TARGET_AREA = STATE_SECOND_TARGET_AREA
+		WeaponPreview.STATE_FINAL_EFFECT = STATE_FINAL_EFFECT
 
 		WeaponPreview.events = events
 
