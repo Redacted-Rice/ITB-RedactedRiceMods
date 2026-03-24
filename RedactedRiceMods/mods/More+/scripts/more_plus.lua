@@ -86,6 +86,7 @@ more_plus.commonIcons = {
 	crit = {key = "rr_crit", img =  "combat/icons/icon_mp_RrCrit.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
 	shackle = {key = "rr_shackle", img =  "combat/icons/icon_mp_RrShackle.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
 	noDamage = {key = "rr_no_damage", img =  "combat/icons/icon_mp_RrNoDamage.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
+	boost = {key = "rr_boosted", img = "advanced/combat/icons/icon_boosted.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
 }
 
 function more_plus:addCommonCustomImages()
