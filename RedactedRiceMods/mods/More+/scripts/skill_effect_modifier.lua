@@ -15,13 +15,13 @@ end
 function SkillEffectModifier:setupEffect()
 	table.insert(self.events, modapiext.events.onSkillBuild:subscribe(
 		function(mission, pawn, weaponId, p1, p2, skillEffect)
-			self:processEffects(pawn, skillEffect.effect, p2)
-			self:processEffects(pawn, skillEffect.q_effect, p2)
+			self:processEffects(pawn, false, skillEffect.effect, p2)
+			self:processEffects(pawn, false, skillEffect.q_effect, p2)
 		end))
 	table.insert(self.events, modapiext.events.onFinalEffectBuild:subscribe(
 		function(mission, pawn, weaponId, p1, p2, p3, skillEffect)
-			self:processEffects(pawn, skillEffect.effect, p2)
-			self:processEffects(pawn, skillEffect.q_effect, p2)
+			self:processEffects(pawn, true, skillEffect.effect, p2)
+			self:processEffects(pawn, true, skillEffect.q_effect, p2)
 		end))
 end
 
@@ -36,7 +36,7 @@ end
 
 -- Handles keying based on space and only calls the modify function
 -- if it hasn't been seen yet
-function SkillEffectModifier:processEffects(pawn, effects, p2)
+function SkillEffectModifier:processEffects(pawn, isFinalEffect, effects, p2)
 	if not pawn then
 		return
 	end
@@ -53,13 +53,13 @@ function SkillEffectModifier:processEffects(pawn, effects, p2)
 					more_plus.SkillActive.skills[self.id].processedDamages = {}
 				end)
 
-				self:modifySpaceDamage(pawn, spaceDamage, indexes)
+				self:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes)
 			end
 		end
 	end
 end
 
-function SkillEffectModifier:modifySpaceDamage(pawn, spaceDamage, indexes)
+function SkillEffectModifier:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes)
 	LOG("ERROR: SkillEffectModifier modifySpaceDamage not implemented for skill %s", self.id)
 end
 
