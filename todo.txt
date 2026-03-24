@@ -39,8 +39,7 @@ None
 ------------------------------------------------------------------------------
 
 MoreLvlUpSkills:
-1. Figure out and add handling for skills like first blood and weapons like consume that
-call the final effect
+None
 
 Next Release candidates:
 1. More Skills - stay tuned ;)
