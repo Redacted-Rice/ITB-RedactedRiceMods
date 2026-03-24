@@ -7,7 +7,7 @@ local customSkill = more_plus.SkillEffectModifier:new{
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(pawn, spaceDamage, indexes)
+function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes)
 	local numInstances = #indexes
 	local spacePawn = Board:GetPawn(spaceDamage.loc)
 	
@@ -20,8 +20,10 @@ function customSkill:modifySpaceDamage(pawn, spaceDamage, indexes)
 		local wouldKillWithExtra = (currentHealth - (spaceDamage.iDamage + totalBonusDamage)) <= 0
 
 		if wouldKillWithExtra then
+			local previewState = isFinalEffect and more_plus.libs.weaponPreview.STATE_FINAL_EFFECT or
+					more_plus.libs.weaponPreview.STATE_SKILL_EFFECT
 			for _, idx in ipairs(indexes) do
-				more_plus.libs.weaponPreview.ExecuteWithState(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
+				more_plus.libs.weaponPreview.ExecuteWithState(previewState,
 						function()
 							more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc,
 									more_plus.commonIcons.extraDamage.key.."_"..idx)

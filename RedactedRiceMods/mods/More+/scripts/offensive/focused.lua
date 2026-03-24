@@ -7,40 +7,20 @@ local customSkill = more_plus.SkillEffectModifier:new{
 
 customSkill:addCustomTrait()
 
-function customSkill:processEffects(pawn, effects, p2)
-	if not pawn then
+function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes)
+	-- If the pawn has used its movement, then return
+	if pawn:IsMovementSpent() then
+		LOG("Pawn ".. pawn:GetId().." already moved")
 		return
 	end
-	local pilot = pawn:GetPilot()
-	if pilot and not effects:empty() and cplus_plus_ex:isSkillOnPilot(self.id, pilot) then
-		if pawn:IsMovementSpent() then
-			LOG("Pawn ".. pawn:GetId().." already moved")
-			return
-		end
-		
-		local indexes = cplus_plus_ex:getPilotSkillIndices(self.id, pilot)
-
-		for _, spaceDamage in pairs(extract_table(effects)) do
-			local spaceDamageKey = self:hashSpaceDamage(pawn:GetId(), spaceDamage, p2)
-			if not self.processedDamages[spaceDamageKey] then
-				self.processedDamages[spaceDamageKey] = true
-
-				modApi:runLater(function()
-					more_plus.SkillActive.skills[self.id].processedDamages = {}
-				end)
-
-				self:modifySpaceDamage(pawn, spaceDamage, indexes)
-			end
-		end
-	end
-end
-
-function customSkill:modifySpaceDamage(pawn, spaceDamage, indexes)
+	
 	if spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and 
 			spaceDamage.iDamage ~= DAMAGE_ZERO then
 
+		local previewState = isFinalEffect and more_plus.libs.weaponPreview.STATE_FINAL_EFFECT or
+				more_plus.libs.weaponPreview.STATE_SKILL_EFFECT
 		for _, idx in ipairs(indexes) do
-			more_plus.libs.weaponPreview.ExecuteWithState(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
+			more_plus.libs.weaponPreview.ExecuteWithState(previewState,
 					function()
 						more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc,
 								more_plus.commonIcons.extraDamage.key.."_"..idx)
