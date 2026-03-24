@@ -25,9 +25,6 @@ function mod:init()
 	-- Achievements
 	require(self.scriptPath .. "achievements")
 
-	-- Libs
-	mod.libs.weaponPreview = require(self.scriptPath.."libs/weaponPreview")
-
 	-- Pawns
 	require(self.scriptPath .. "mechs/wb_maker")
 	require(self.scriptPath .. "mechs/wb_eater")
