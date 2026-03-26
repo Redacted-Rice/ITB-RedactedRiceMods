@@ -13,21 +13,22 @@ Please enjoy and contact us if you run into any issues!
 * Email: RedactedRice@gmail.com
 
 # Squads
-* Treeherders - v3.0.2 - Inspired by ents, this squad focuses on using forests tiles to increase their power. The flagship entborg mech gets stronger as the forests get destroyed
-* WorldBuilders - v1.2.0 - This squad focuses on terrain manipulation to block and avoid damage. It has some strong single target effects but you can easily get overwhelmed by numbers if not strategically manipulating the terrain
+* Treeherders - v3.1.0 - Inspired by ents, this squad focuses on using forests tiles to increase their power. The flagship entborg mech gets stronger as the forests get destroyed
+* WorldBuilders - v1.3.0 - This squad focuses on terrain manipulation to block and avoid damage. It has some strong single target effects but you can easily get overwhelmed by numbers if not strategically manipulating the terrain
+
+# Other
+* RebalanceCore+ - v1.0.0 - Reblances the core vanilla level up skills (other than reactor) so they are not strictly worse than the AE ones
 
 # Libs
-* BoardUtils - v1.1.0 - Library for board related functions and pathing
-* PassiveEffect - v1.2.0 - Library to help with adding passive weapons to the game. This will handle automatically detecting if the weapon is powered and only call hooks when it is
-* PredictableRandom - v1.1.0 - Library to get random numbers in a way that is repeatable for when undoing moves or resetting turns
-* Trait - v2.3.0 - Library originally created by Lemonymous and updated to v2.3.0 to support multiple traits via appending text and cycling images
+* BoardUtils - v1.2.0 - Board related functions and pathing
+* PassiveEffect - v1.3.0 - Helps with adding passive weapons to the game. This will handle automatically detecting if the weapon is powered and only call hooks when it is
+* PawnTypeUtils - v1.0.0 - Functions to allow determining more detailed pawn types (using EasyEdit)
+* PredictableRandom - v1.1.0 - Get random numbers in a way that is repeatable for when undoing moves or resetting turns
+* Trait - v3.0.0 - Add traits to pawns & the board. Originally created by Lemonymous and updated to v3.x.x to support multiple traits via appending text and cycling images as well as showing icons for move previews
+* TraitReplace - v0.8.0 - Allows adding custom UI traits that cycle with vanilla traits
+* WeaponPreview - v4.0.0 - Add icons to weapon previews. Originally created by Lemonymous and updated to v4.x.x to support use in skill build hooks and two click weapons
 
 # Install
-- If playing with World Builders:
-	- Download the custom 1.2.1 version of memedit and unzip it (https://github.com/Redacted-Rice/memedit/releases/tag/v1.2.1)
-	- Copy the current memedit folder or zip it (renaming won't work) at "Into the Breach\scripts\mod_loader\extensions\modLoaderExtensions\mods"
-	- Replace the memedit folder in the unzippped version
-		- Make sure there is not an extra layer of folder
 - Unzip the release folder
 - Place the unzipped RedactedRiceMods folder in "Into the Breach\mods" folder
   - Make sure there is not an extra layer of folder - when you enter the RedactedRiceMods folder you should see the "scripts" folder. Remove any extra folder layers
@@ -35,23 +36,39 @@ Please enjoy and contact us if you run into any issues!
 To uninstall, delete the folder in mods
 
 # Releases
-Latest release: 1.x.x
+Latest release: 1.3.0
 
-## 1.x.x
-Treeherders 3.0.2
-Some minor fixes
+## 1.3.0
+Initial release of Rebalance Core Pilot Level Up Skills mod and several libraries/enhancments to support in progress
+custom level up skills for next release.
 
-Released: xx/xx/2026
+Some other minor to squads to use libs and be more compatibile for custom skills
+
+Released: 03/28/2026
 
 Squads:
-*Treeherders 3.0.2
-*WorldBuilders 1.2.0
+*Treeherders    3.1.0
+*WorldBuilders  1.3.0
+
+Other Mods:
+*RebalanceCore+ 1.0.0
 
 Libs:
-BoardUtils 1.1.0
-*PassiveEffect 1.2.0
+*BoardUtils        1.2.0
+*PassiveEffect     1.3.0
+*PawnTypeUtils     1.0.0
 *PredictableRandom 1.1.0
-*Trait 2.3.0
+*Trait             3.0.0
+*TraitReplace      0.8.0
+*WeaponPreview     4.0.0
+
+Dependencies:
+* ItB AE        1.2.93
+* ModLoader     2.9.5
+* ModLoaderExt  1.24
+* Memedit       1.2.1
+* Memhack       1.0.0
+* CPLUS+        1.0.0
 
 ## 1.2.1
 Worldbuilder enhancments. Significantly better swapping compatibility and adding a more interesting consume upgrade

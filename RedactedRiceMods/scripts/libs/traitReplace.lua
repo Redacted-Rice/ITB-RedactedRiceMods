@@ -1,34 +1,20 @@
--- traitReplace
--- Created by adapting pyramidIcon.lua and trait.lua patterns
---
--- Overrides target traits to allow custom traits to be displayed
--- Cycles through vanilla trait icon and custom trait icons
--- Supports multiple traits simultaneously (e.g., massive and flying)
--- Currently supports replacing up to 10 icons. Each icon unfortunately
--- needs a unique placeholder for positioning to work right
---
--- This is multi-instance/version safe by using a singleton that will
--- only load the most recent version of the library
---
--- USAGE:
--- 1. (Optional)Register a target trait (massive is registered by default):
---    traitReplace:registerTrait({
---        id = "flying",
---        checkMethod = "IsFlying",
---        iconFilename = "icon_flying.png",
---        descTitle = "Status_Flying_Title",
---        descText = "Status_Flying_Text",
---    })
---
--- 2. Add custom traits to a target:
---    traitReplace:add({
---        targetTrait = "massive",  -- optional, defaults to "massive"
---        icon = "img/combat/icons/my_custom_icon.png",
---        desc = { "My Title", "My description" },
---        func = function(pawn) return pawn:GetMechName() == "MyMech" end
---    })
+--[[
+TraitReplace - Allows adding custom UI traits that cycle with vanilla traits
 
-local VERSION = "0.7.0"
+Author: Das Keifer of Redacted Rice
+Version: 0.8.0
+Discord Server: https://discord.gg/CNjTVrpN4v
+
+Overrides target traits to allow custom traits to be displayed
+Cycles through vanilla trait icon and custom trait icons
+Supports multiple traits simultaneously (e.g., massive and flying)
+
+Special thanks to Generic and Lemonymous who paved the way with drawing
+icons on top of flying and Lemonymous for the trait library which was
+the inspiration/starting point for this
+]]
+
+local VERSION = "0.8.0"
 
 local mod_path = mod_loader.mods[modApi.currentMod]
 local path = mod_path.scriptPath
