@@ -128,7 +128,7 @@ local function registerTargetTrait(config)
 	local targetIconNewPath = "img/combat/icons/icon_" .. config.id .. "_vanilla.png"
 
 	-- Load surfaces
-	local targetIcon = sdlext.getSurface({ path = targetIconPath })
+	local targetIcon = sdlext.getSurface({ path = placeholderPath })
 	local targetOrigIcon = sdlext.getSurface({ path = targetIconPath })
 
 	-- Create trait data structure
