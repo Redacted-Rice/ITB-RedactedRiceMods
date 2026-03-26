@@ -23,7 +23,7 @@ WorldBuilders_Passive_Move = PassiveSkill:new{
 }
 WorldBuilders_Passive_Move.boardUtils = mod_loader.mods[modApi.currentMod].libs.boardUtils
 WorldBuilders_Passive_Move.passiveEffect = mod_loader.mods[modApi.currentMod].libs.passiveEffect
-WorldBuilders_Passive_Move.trait = mod_loader.mods[modApi.currentMod].libs.trait
+WorldBuilders_Passive_Move.traitReplace = mod_loader.mods[modApi.currentMod].libs.traitReplace
 
 Weapon_Texts.WorldBuilders_Passive_Move_Upgrade1 = "Hover"
 WorldBuilders_Passive_Move_A = WorldBuilders_Passive_Move:new
@@ -46,7 +46,8 @@ local function IsAllTerrainActive(trait, pawn)
 	return false
 end
 
-WorldBuilders_Passive_Move.trait:add{
+WorldBuilders_Passive_Move.traitReplace:add{
+	targetTrait = "massive",
 	func = IsAllTerrainActive,
 	icon = "img/combat/icons/icon_wb_all_terrain.png",
 	icon_offset = Point(0,9),
