@@ -8,7 +8,7 @@ WorldBuilders_Passive_Move = PassiveSkill:new{
 	Damage = 0,
 
 	Upgrades = 1,
-	UpgradeCost = {1},
+	UpgradeCost = {2},
 
 	-- custom options
 	Flying = false,
@@ -46,11 +46,19 @@ local function IsAllTerrainActive(trait, pawn)
 	return false
 end
 
+WorldBuilders_Passive_Move.traitReplace:registerTrait({
+        id = "flying",
+        checkMethod = "IsFlying",
+        iconFilename = "icon_flying.png",
+        descTitle = "Status_flying_Title",
+        descText = "Status_flying_Text",
+    })
+
 WorldBuilders_Passive_Move.traitReplace:add{
-	targetTrait = "massive",
+	targetTrait = "flying",
 	func = IsAllTerrainActive,
 	icon = "img/combat/icons/icon_wb_all_terrain.png",
-	icon_offset = Point(0,9),
+	--icon_offset = Point(0,9),
 	desc_title = "All Terrain",
 	desc_text = "This unit can move past units and over/on buildings and mountains",
 }
