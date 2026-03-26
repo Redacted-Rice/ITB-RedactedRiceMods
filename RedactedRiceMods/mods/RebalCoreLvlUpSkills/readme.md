@@ -22,12 +22,12 @@ Please enjoy and contact us if you run into any issues.
 Latest release: 1.0.0
 
 ## 1.0.0
-Released: XX/XX/2026 
+Released: 03/28/2026 
 
 compatible with:
 * ItB AE 	1.2.93
-* ModLoader 2.9.4
-* CPLUS+ Ex	0.9.0
+* ModLoader 2.9.5
+* CPLUS+ Ex	1.0.0
 
 ### Notes
 * Initial release! Replaces Grid DEF, Health, and Move with better versions

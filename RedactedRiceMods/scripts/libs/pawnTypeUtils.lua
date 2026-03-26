@@ -1,5 +1,5 @@
 --[[
-pawnTypeUtils - functions to allow determining more detailed pawn types
+PawnTypeUtils - functions to allow determining more detailed pawn types
 
 Author: Das Keifer of Redacted Rice
 Version: 1.0.0

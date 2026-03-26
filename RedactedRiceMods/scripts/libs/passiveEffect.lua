@@ -1,9 +1,8 @@
 --[[
-Passive Effect Library
-This library allows for easily creating passive effect for weapons tying into exiting game hooks
+PassiveEffect - Allows for easily creating passive effect for weapons
 
 Author: Das Keifer of Redacted Rice
-Version: 1.2.0
+Version: 1.3.0
 Discord Server: https://discord.gg/CNjTVrpN4v
 
 See the Treeherder's "Wake the Forest" passive ability for an example of usage
@@ -40,7 +39,7 @@ Special thanks to KartoFlane for helping strucutre this as a reusable library
  ]]--
 
 local passiveEffect = {
-	Version="1.2.0",
+	Version="1.3.0",
 	DebugLog = false,
 }
 
