@@ -1,7 +1,5 @@
 --[[
-Predictable Random Library
-This library allows for choosing random values in a predictable way so that the values will
-be repeatable in case of resets or undoing
+PredictableRandom - Allows for choosing random values in a predictable with resets and undoing
 
 Author: Das Keifer of Redacted Rice
 Version: 1.1.0

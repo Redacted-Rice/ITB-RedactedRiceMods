@@ -16,10 +16,10 @@ Please enjoy and contact us if you run into any issues!
 3. Forest armor icon will sometimes appear when environment effects are occuring. I think this should be mostly fixed now but may show occasionally
 
 # Releases
-Latest release: 3.0.2
+Latest release: 3.1.0
 
-## 3.0.2
-Released: xx/xx/2026 
+## 3.1.0
+Released: 03/28/2026 
 
 compatible with:
 * ItB AE        1.2.93
@@ -29,6 +29,8 @@ compatible with:
 
 ### Notes
 * Floraform no longer grows on cracked tiles, they will break away as usual now
+* Updated Forest Armor to use Trait lib. Should have better compatability and less visual glitches
+* Floraformer will never damage teamates
 
 ## 3.0.1
 Released: 02/14/2026 

@@ -5,6 +5,8 @@ local VERSION = "4.0.0"
 -- https://github.com/Lemonymous/ITB-LemonymousMods/wiki/weaponPreview
 --
 -- by Lemonymous
+-- Enhanced by Das Keifer to allow usage in skill build events and
+-- for two click weapon support
 ----------------------------------------------------------------------
 --  A library for
 --   - enhancing preview of weapons/move/repair skills with

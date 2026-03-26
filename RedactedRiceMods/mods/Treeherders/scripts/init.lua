@@ -2,13 +2,12 @@ local mod = {
 	id = "redactedrice_treeherders",
 	name = "Treeherders",
 	icon = "img/mod_icon.png",
-	version = "3.0.2",
+	version = "3.1.0",
 	modApiVersion = "2.9.4",
 	gameVersion = "1.2.93",
 	dependencies = {
         modApiExt = "1.21",
         memedit = "1.2.0",
-        easyEdit = "2.0.8",
     },
 	libs = {},
 }
@@ -68,8 +67,6 @@ function mod:load(options, version)
 	TreeherdersAchievements:addHooks()
 	forestUtils:addHooks()
 	-- Libs initialized once in the lib init script
-	--self.libs.passiveEffect:load()
-	--self.libs.predictableRandom:load()
 end
 
 function mod:metadata()
