@@ -4,6 +4,8 @@
 -- Overrides target traits to allow custom traits to be displayed
 -- Cycles through vanilla trait icon and custom trait icons
 -- Supports multiple traits simultaneously (e.g., massive and flying)
+-- Currently supports replacing up to 10 icons. Each icon unfortunately
+-- needs a unique placeholder for positioning to work right
 --
 -- This is multi-instance/version safe by using a singleton that will
 -- only load the most recent version of the library
@@ -57,46 +59,27 @@ if not TraitReplace then
 		traitRegistry = {},
 		globalCycleTimer = 0,
 		globalCycleIndex = 0,
+		nextPlaceholderIndex = 0,
+		MAX_PLACEHOLDERS = 10,
 	}
 end
 
 -- Local alias for the global version
 local traitRegistry = TraitReplace.traitRegistry
+local iconPlaceholderFolder = path .. "libs/traitReplacePlaceholders/"
 
--- Helper function to create placeholder icon files
-local iconPlaceholderFolder = path .. "libs/"
-local function makePlaceholder(new_name)
-	local origPlaceholder = iconPlaceholderFolder .. "icon_placeholder.png"
-	local newPlaceholder = iconPlaceholderFolder .. new_name
-
-	-- Check if placeholder already exists
-	if modApi:fileExists(newPlaceholder) then
-		return true
+-- Get next available placeholder filename
+local function getNextPlaceholder()
+	if TraitReplace.nextPlaceholderIndex >= TraitReplace.MAX_PLACEHOLDERS then
+		LOG("ERROR: Maximum replacement traits exceeded (10)")
+		LOG("  Consider increasing MAX_PLACEHOLDERS or removing unused traits")
+		return nil
 	end
-
-	-- Read original file in binary mode
-	local f_in = io.open(origPlaceholder, "rb")
-	if not f_in then
-		LOG("ERROR: Failed to open base placeholder: " .. origPlaceholder)
-		return false
-	end
-
-	-- Read all bytes
-	local data = f_in:read("*a")
-	f_in:close()
-
-	-- Write to new file
-	local f_out = io.open(newPlaceholder, "wb")
-	if not f_out then
-		LOG("ERROR: Failed to create placeholder: " .. newPlaceholder)
-		return false
-	end
-
-	f_out:write(data)
-	f_out:close()
-
-	LOG("Created placeholder icon: " .. new_name)
-	return true
+	
+	local index = TraitReplace.nextPlaceholderIndex
+	TraitReplace.nextPlaceholderIndex = index + 1
+	
+	return string.format("icon_trait_replace_placeholder_%d.png", index)
 end
 
 -- Register a new target trait for replacement
@@ -115,21 +98,17 @@ local function registerTargetTrait(config)
 
 	LOG("Registering target trait: " .. config.id)
 
-	-- Create placeholder icon for this trait
-	local placeholderName = "icon_" .. config.id .. "_placeholder.png"
-	if not makePlaceholder(placeholderName) then
-		LOG("ERROR: Failed to create placeholder for trait '" .. config.id .. "'")
-		return false
-	end
+	-- Get next sequential placeholder
+	local placeholderName = getNextPlaceholder()
 
 	-- Derived paths and surfaces
 	local placeholderPath = iconPlaceholderFolder .. placeholderName
 	local targetIconPath = "img/combat/icons/" .. config.iconFilename
-	local targetIconNewPath = "img/combat/icons/icon_" .. config.id .. "_vanilla.png"
 
 	-- Load surfaces
-	local targetIcon = sdlext.getSurface({ path = placeholderPath })
-	local targetOrigIcon = sdlext.getSurface({ path = targetIconPath })
+	local targetOrigIcon = sdlext.surface(targetIconPath)
+	modApi:appendAsset(targetIconPath, placeholderPath)
+	local targetIcon = sdlext.surface(placeholderPath)
 
 	-- Create trait data structure
 	traitRegistry[config.id] = {
@@ -137,7 +116,6 @@ local function registerTargetTrait(config)
 		targetIcon = targetIcon,
 		targetOrigIcon = targetOrigIcon,
 		targetIconPath = targetIconPath,
-		targetIconNewPath = targetIconNewPath,
 		placeholderPath = placeholderPath,
 
 		-- Trait storage
@@ -295,15 +273,26 @@ end
 
 -- Get the current icon surface for the pawn
 local function getIconSurface(iconId, replaceTraitId)
-	if not iconId or not replaceTraitId then return nil end
+	if not iconId or not replaceTraitId then 
+		LOG("getIconSurface: nil params - iconId="..iconId..", replaceTraitId="..replaceTraitId)
+		return nil 
+	end
 
 	local traitData = traitRegistry[replaceTraitId]
-	if not traitData then return nil end
+	if not traitData then 
+		LOG("getIconSurface: traitData not found for replaceTraitId="..replaceTraitId)
+		return nil 
+	end
 
 	-- Return the appropriate surface based on the icon ID
 	local surface = traitData.surfaces[iconId]
 	if not surface then
-		LOGF("traitReplacement: Surface not found for replaceTraitId=%s, iconId=%s", replaceTraitId, iconId)
+		local availableKeys = {}
+		for k, v in pairs(traitData.surfaces) do
+			table.insert(availableKeys, k)
+		end
+		LOG("getIconSurface: Surface not found for replaceTraitId="..replaceTraitId..", iconId="..iconId)
+		LOG("  Available surfaces: "..table.concat(availableKeys, ", "))
 	end
 	return surface
 end
@@ -425,12 +414,6 @@ local function createUIWidgetsForTrait(uiRoot, replaceTraitId)
 				-- Recalculate icon every frame to support cycling
 				local iconId = getCurrentIcon(pawn, replaceTraitId)
 				local surface = getIconSurface(iconId, replaceTraitId)
-
-				--[[ Debug logging (only log when icon changes)
-				if iconId ~= lastSmallIconId then
-					local activeTraits = getActiveTraits(pawn, replaceTraitId)
-					LOG("[" .. replaceTraitId .. "] Showing icon: " .. tostring(iconId) .. " (#traits=" .. #activeTraits .. ", surface=" .. tostring(surface ~= nil) .. ")")
-				end]]
 
 				if surface then
 					local tooltipVisible = sdlext:isStatusTooltipWindowVisible()
@@ -635,9 +618,6 @@ local function addTraitInternal(trait)
 		if not surface or surface:w() == 0 then
 			if modApi:assetExists(iconPath) then
 				surface = sdlext.getSurface({ path = iconPath })
-				if surface and surface:w() > 0 then
-					LOG(string.format("  Loaded as vanilla: w=%d, h=%d", surface:w(), surface:h()))
-				end
 			end
 		end
 	else
@@ -646,13 +626,9 @@ local function addTraitInternal(trait)
 		if not iconPath:find("^/") and not iconPath:find("^%a:") then
 			fullPath = path .. iconPath
 		end
-		LOG(string.format("  Loading mod asset: %s", fullPath))
 
 		if modApi:fileExists(fullPath) then
 			surface = sdlext.getSurface({ path = fullPath })
-			if surface then
-				LOG(string.format("  Loaded surface: w=%d, h=%d", surface:w(), surface:h()))
-			end
 		end
 	end
 
@@ -739,13 +715,9 @@ if isHighestVersion then
 			if registerTargetTrait(config) then
 				local traitData = traitRegistry[config.id]
 
-				-- Copy the vanilla trait icon to a new location and override with placeholder
-				modApi:copyAsset(traitData.targetIconPath, traitData.targetIconNewPath)
-				modApi:appendAsset(traitData.targetIconPath, traitData.placeholderPath)
-
 				-- Load vanilla target trait icon surface from the backup
 				traitData.surfaces[config.id .. "_vanilla"] = traitData.targetOrigIcon
-
+				
 				-- Log registration summary
 				LOG("Registered target trait '" .. config.id .. "' with " .. #traitData.allTraits .. " custom traits")
 			end
@@ -768,8 +740,6 @@ if isHighestVersion then
 		self.registerTrait = function(config)
 			if registerTargetTrait(config) then
 				local traitData = traitRegistry[config.id]
-				modApi:copyAsset(traitData.targetIconPath, traitData.targetIconNewPath)
-				modApi:appendAsset(traitData.targetIconPath, traitData.placeholderPath)
 				traitData.surfaces[config.id .. "_vanilla"] = traitData.targetOrigIcon
 			end
 		end
@@ -784,7 +754,6 @@ if isHighestVersion then
 
 		-- Register hooks via onModsLoaded event
 		modApi.events.onModsLoaded:subscribe(function()
-			LOG("traitReplace: onModsLoaded - Adding mission update hook")
 			modApi:addMissionUpdateHook(maybeCycleTraits)
 		end)
 
