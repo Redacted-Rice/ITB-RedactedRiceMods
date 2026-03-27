@@ -13,6 +13,7 @@ end
 
 function SkillActive:addCustomTrait()
 	local iconImg = "img/combat/icons/icon_mp_"..self.id..".png"
+	self.icon = iconImg
 	LOG("Adding active icon %s at %s", self.id, iconImg)
 	more_plus.libs.traitReplace:add{
 		targetTrait = "massive",
