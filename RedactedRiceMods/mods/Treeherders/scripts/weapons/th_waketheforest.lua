@@ -150,7 +150,7 @@ end
 
 ------------------- FOREST ARMOR AND TREEVAC ---------------------------
 
-function Treeherders_Passive_WakeTheForest.getForestArmorType(pawn)
+function Treeherders_Passive_WakeTheForest.getForestArmorType(pawn, loc)
 	-- Make sure the passive is active
 	if Treeherders_Passive_WakeTheForest.passiveEffect:countAnyVersionOfPassiveActive(
 			"Treeherders_Passive_WakeTheForest") < 1 then
@@ -161,7 +161,10 @@ function Treeherders_Passive_WakeTheForest.getForestArmorType(pawn)
 		return nil
 	end
 
-	local loc = pawn:GetSpace()
+	-- Use provided location or fallback to pawn's current location
+	-- so that the icons shows on move preview
+	loc = loc or pawn:GetSpace()
+	
 	if not Board:IsTerrain(loc, TERRAIN_FOREST) then
 		return nil
 	end
@@ -184,8 +187,8 @@ end
 
 -- Ancient Forest Armor
 Treeherders_Passive_WakeTheForest.trait:add{
-	func = function(trait, pawn)
-		return Treeherders_Passive_WakeTheForest.getForestArmorType(pawn) == "ancient"
+	func = function(trait, pawn, loc)
+		return Treeherders_Passive_WakeTheForest.getForestArmorType(pawn, loc) == "ancient"
 	end,
 	icon = "img/combat/icons/icon_forestArmor_ancient.png",
 	icon_glow = "img/combat/icons/icon_forestArmor_ancient_glow.png",
@@ -196,8 +199,8 @@ Treeherders_Passive_WakeTheForest.trait:add{
 
 -- Tree-vacuate Forest Armor
 Treeherders_Passive_WakeTheForest.trait:add{
-	func = function(trait, pawn)
-		return Treeherders_Passive_WakeTheForest.getForestArmorType(pawn) == "treevac"
+	func = function(trait, pawn, loc)
+		return Treeherders_Passive_WakeTheForest.getForestArmorType(pawn, loc) == "treevac"
 	end,
 	icon = "img/combat/icons/icon_forestArmor_treevac.png",
 	icon_glow = "img/combat/icons/icon_forestArmor_treevac_glow.png",
@@ -208,8 +211,8 @@ Treeherders_Passive_WakeTheForest.trait:add{
 
 -- Basic Forest Armor
 Treeherders_Passive_WakeTheForest.trait:add{
-	func = function(trait, pawn)
-		return Treeherders_Passive_WakeTheForest.getForestArmorType(pawn) == "basic"
+	func = function(trait, pawn, loc)
+		return Treeherders_Passive_WakeTheForest.getForestArmorType(pawn, loc) == "basic"
 	end,
 	icon = "img/combat/icons/icon_forestArmor.png",
 	icon_glow = "img/combat/icons/icon_forestArmor_glow.png",
