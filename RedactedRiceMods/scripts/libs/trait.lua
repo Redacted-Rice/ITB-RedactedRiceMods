@@ -1,10 +1,10 @@
 
-local VERSION = "2.3.0"
+local VERSION = "3.0.0"
 ---------------------------------------------------------------------
--- Trait v2.3.0 - code library
+-- Trait v3.0.0 - code library
 --
 -- by Lemonymous
--- Enhanced by Das Keifer to support multiple trait cycling
+-- Enhanced by Das Keifer to support multiple trait cycling and icons in move preview
 ---------------------------------------------------------------------
 -- Provides functionality to add traits to pawns.
 -- Traits are purely visual - displaying an icon and a description.
@@ -22,6 +22,11 @@ local VERSION = "2.3.0"
 --    trait.pilotSkill - trait applies to pawns with this pilotSkill
 --    trait.pawnType - trait applies to pawns with this pawnType
 --    trait.func - trait applies to pawns which this function returns true for
+--                 Signature: function(trait, pawn, loc)
+--                   - trait: the trait object
+--                   - pawn: the pawn being checked
+--                   - loc: optional Point - location to check (defaults to pawn:GetSpace())
+--                 For move preview support, use: loc = loc or pawn:GetSpace()
 --    trait.icon - path to icon used in the pilot tooltip; either relative to mod, or path to asset in resource.dat
 --    trait.icon_glow - path to icon used on the Board; either relative to mod, or path to asset in resource.dat
 --    trait.icon_offset
@@ -72,24 +77,32 @@ end
 local traitCycleTimer = 0
 local traitCycleIndex = 0
 
-local function getAllActiveTraits(pawn)
+-- Preview mode tracking
+local previewMode = false
+local selectedPawn = nil
+local previewLocations = {}  -- Tiles showing preview icons
+
+-- Get active traits for a pawn at a specific location (or current location if not specified)
+local function getAllActiveTraits(pawn, loc)
 	local activeTraits = {}
+	-- Use pawn space if not specified
+	if not loc then loc = pawn:GetSpace() end
 
 	-- Check func traits (highest priority)
 	for _, customTrait in ipairs(Traits.funcs) do
-		if customTrait:func(pawn) then
+		if customTrait:func(pawn, loc) then
 			table.insert(activeTraits, customTrait)
 		end
 	end
 
-	-- Check pilotSkill traits
+	-- Check pilotSkill traits (location-independent)
 	for pilotSkill, pilotTrait in pairs(Traits.pilotSkills) do
 		if pawn:IsAbility(pilotSkill) then
 			table.insert(activeTraits, pilotTrait)
 		end
 	end
 
-	-- Check pawnType traits
+	-- Check pawnType traits (location-independent)
 	local pawnType = pawn:GetType()
 	local pawnTrait = Traits.pawnTypes[pawnType]
 	if pawnTrait then
@@ -157,7 +170,47 @@ local function updateLoc(loc)
 	end
 end
 
-local function updateAll()
+-- Show preview icons on tiles where selected pawn would have traits
+local function showPreviewIcons(pawn)
+	if not pawn then 
+		return 
+	end
+	if not Board then 
+		return 
+	end
+	
+	local size = Board:GetSize()
+	if not size then 
+		return 
+	end
+	
+	previewLocations = {}
+	
+	-- Scan all tiles to see where pawn would have traits
+	for x = 0, size.x - 1 do
+		for y = 0, size.y - 1 do
+			local loc = Point(x, y)
+			local existingPawn = Board:GetPawn(loc)
+			
+			-- Only show preview on tiles without pawns (selected pawn will already be
+			-- handled by normal checks
+			if not existingPawn then
+				-- Check if pawn would have any traits at this location
+				local traitsAtLoc = getAllActiveTraits(pawn, loc)
+				if #traitsAtLoc > 0 then
+					-- Use the same cycling logic as normal display
+					local icon = getCurrentIconFromTraits(traitsAtLoc)
+					if icon and icon ~= "" then
+						Board:SetTerrainIcon(loc, icon)
+						table.insert(previewLocations, loc)
+					end
+				end
+			end
+		end
+	end
+end
+
+local function updateAll()	
 	if not Board then return end
 	local pawns = Board:GetPawns(TEAM_ANY)
 	for i = 1, pawns:size() do
@@ -166,14 +219,29 @@ local function updateAll()
 		local loc = pawn:GetSpace()
 		updateLoc(loc)
 	end
+	
+	-- if its preview mode, also update all spaces
+	if previewMode and selectedPawn then
+		showPreviewIcons(selectedPawn)
+	end
 end
 
 local function updatePawn(mission, pawn)
+	if previewMode and selectedPawn then
+		showPreviewIcons(selectedPawn)
+		return
+	end
+	
 	local loc = pawn:GetSpace()
 	updateLoc(loc)
 end
 
 local function pawnMoved(mission, pawn, loc_old)
+	if previewMode and selectedPawn then
+		showPreviewIcons(selectedPawn)
+		return
+	end
+	
 	local loc = pawn:GetSpace()
 	updateLoc(loc_old)
 	updateLoc(loc)
@@ -193,11 +261,65 @@ local function maybeCycleTraits()
 	end
 end
 
+-- Clear preview icons from tiles
+local function clearPreviewIcons()
+	for _, loc in ipairs(previewLocations) do
+		-- Only clear if no pawn is actually there
+		local pawn = Board:GetPawn(loc)
+		if not pawn then
+			Board:SetTerrainIcon(loc, "")
+		else
+			-- Let normal update handle this location
+			updateLoc(loc)
+		end
+	end
+	previewLocations = {}
+end
+
+-- Handle pawn selection for preview
+local function onPawnSelected(mission, pawn)
+	-- Validate inputs first
+	if not pawn then
+		return
+	end
+	
+	selectedPawn = pawn
+	previewMode = true
+	
+	showPreviewIcons(pawn)
+end
+
+-- Handle pawn deselection to clear preview
+local function onPawnDeselected(mission, pawn)
+	clearPreviewIcons()
+	selectedPawn = nil
+	previewMode = false
+end
+
+-- Handle pawn deselection to clear preview
+local function onPawnUndoMove(mission, pawn)
+	-- Validate inputs first
+	if not pawn then
+		return
+	end
+	
+	if pawn:IsSelected() then
+		onPawnSelected(mission, pawn)
+	else 
+		onPawnDeselected(mission, pawn)
+	end
+end
+
 local function onModsLoaded()
 	modApiExt:addPawnTrackedHook(updatePawn)
 	modApiExt:addPawnUntrackedHook(updatePawn)
 	modApiExt:addPawnPositionChangedHook(pawnMoved)
 	modApi:addMissionUpdateHook(maybeCycleTraits)
+	
+	-- Add preview support via selection hooks
+	modApiExt:addPawnSelectedHook(onPawnSelected)
+	modApiExt:addPawnDeselectedHook(onPawnDeselected)
+	modApiExt:addPawnUndoMoveHook(onPawnUndoMove)
 end
 
 local function tryGetTraitsFromSelectedPawn(targetId)
