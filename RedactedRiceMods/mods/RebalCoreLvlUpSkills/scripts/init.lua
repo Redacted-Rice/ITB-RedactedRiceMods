@@ -11,6 +11,18 @@ local mod = {
 }
 
 function mod:init(options)
+	-- Core skill icons since they don't have any
+	local morePlusIcons = {
+		"img/combat/icons/icon_Pilot_Health_Plus.png",
+		"img/combat/icons/icon_Pilot_Move_Plus.png",
+		"img/combat/icons/icon_Pilot_Grid_Plus.png",
+	}
+	local resourcePath = mod_loader.mods[modApi.currentMod].resourcePath
+	LOG(resourcePath)
+	for _, iconPath in ipairs(morePlusIcons) do
+		modApi:appendAsset(iconPath, resourcePath..iconPath)
+	end
+
 	gridDef = options["rr_vplus_grid"].value
 	local halfRounded = math.floor(gridDef / 2.0)
 
@@ -32,6 +44,7 @@ function mod:init(options)
 
 	local healthPlus = {
 		id = "HealthPlus",
+		icon = "img/combat/icons/icon_Pilot_Health_Plus.png",
 		shortName = "RebalCorePlus_HealthPlus_ShortName",
 		fullName = "RebalCorePlus_HealthPlus_FullName",
 		description = "RebalCorePlus_HealthPlus_Description",
@@ -42,6 +55,7 @@ function mod:init(options)
 
 	local movePlus = {
 		id = "MovePlus",
+		icon = "img/combat/icons/icon_Pilot_Move_Plus.png",
 		shortName = "RebalCorePlus_MovePlus_ShortName",
 		fullName = "RebalCorePlus_MovePlus_FullName",
 		description = "RebalCorePlus_MovePlus_Description",
@@ -52,6 +66,7 @@ function mod:init(options)
 
 	local gridPlus = {
 		id = "GridPlus",
+		icon = "img/combat/icons/icon_Pilot_Grid_Plus.png",
 		shortName = "RebalCorePlus_GridPlus_ShortName",
 		fullName = "RebalCorePlus_GridPlus_FullName",
 		description = "RebalCorePlus_GridPlus_Description",
