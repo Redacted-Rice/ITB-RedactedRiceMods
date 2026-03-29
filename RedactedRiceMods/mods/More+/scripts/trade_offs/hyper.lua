@@ -21,7 +21,7 @@ end
 
 function customSkill:_internalSetMoveBonus(moveBonus, doPing)
 	for _, skillInfo in pairs(cplus_plus_ex:getMechsWithSkill(customSkill.id)) do
-		LOG("setMoveBonus found "..skillInfo.pilot:getIdStr())
+		--LOG("setMoveBonus found "..skillInfo.pilot:getIdStr())
 		local pilot = skillInfo.pilot
 		local idxes = skillInfo.skillIndices
 		for _, idx in ipairs(idxes) do
@@ -49,7 +49,8 @@ end
 
 function customSkill.setMoveBonus()
 	--LOG("TURN "..Game:GetTeamTurn())
-	if Game:GetTeamTurn() == TEAM_PLAYER and Game:GetTurnCount() > 1 then
+	local turnCount = Game:GetTurnCount()
+	if Game:GetTeamTurn() == TEAM_PLAYER and turnCount > 1 then
 		customSkill:_internalSetMoveBonus(math.max(0, BASE_MOVE - turnCount + 1), true)
 	end
 end
