@@ -1,11 +1,10 @@
-local MAX_MOVE = 4
 local BASE_MOVE = 0
 local MOVE_BOOST_COLOR = GL_Color(50, 255, 50)
 
 local customSkill = more_plus.SkillActive:new{
 	id = "RrAccelerator",
 	name = "Accelerator",
-	description = "+1 Move at the start of each turn (max +" .. MAX_MOVE .. ")",
+	description = "+1 Move at the start of end turn.",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 	-- Not strictly needed but makes more sense
 	bonuses = {move = BASE_MOVE},
@@ -22,7 +21,7 @@ end
 
 function customSkill:_internalSetMoveBonus(moveBonus, doPing)
 	for _, skillInfo in pairs(cplus_plus_ex:getMechsWithSkill(customSkill.id)) do
-		LOG("setMoveBonus found "..skillInfo.pilot:getIdStr())
+		--LOG("setMoveBonus found "..skillInfo.pilot:getIdStr())
 		local pilot = skillInfo.pilot
 		local idxes = skillInfo.skillIndices
 		for _, idx in ipairs(idxes) do
@@ -39,17 +38,19 @@ function customSkill:_internalSetMoveBonus(moveBonus, doPing)
 end
 
 function customSkill.setDefaultMoveBonus()
+	--LOG("SET BASE MOVE")
 	customSkill:_internalSetMoveBonus(BASE_MOVE, false)
 end
 
 function customSkill.setCurrentMoveBonus()
 	-- when we load, turn count is one higher so we need to account for that
 	local turnCount = Game:GetTurnCount()
-	LOG("TURN COUNT "..Game:GetTurnCount())
+	--LOG("TURN COUNT setCurrentMoveBonus "..Game:GetTurnCount())
 	customSkill:_internalSetMoveBonus(turnCount - 1, false)
 end
 
 function customSkill.setMoveBonus()
+	--LOG("TURN COUNT setMoveBonus "..Game:GetTurnCount())
 	if Game:GetTurnCount() > 0 then
 		customSkill:_internalSetMoveBonus(Game:GetTurnCount(), true)
 	end
