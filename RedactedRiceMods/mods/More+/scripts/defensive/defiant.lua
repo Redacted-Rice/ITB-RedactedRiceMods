@@ -51,14 +51,14 @@ function customSkill.updateGridDefense()
 	local gridDefBonus = enemyCount * GRID_DEF_PER_ENEMY
 	for _, skill in ipairs(cplus_plus_ex:getSkillObjsActive(customSkill.id)) do
 		skill:setGridBonus(gridDefBonus)
-		LOG("Defiant: Set grid defense to " .. gridDefBonus .. " (enemies: " .. enemyCount .. ")")
+		--LOG("Defiant: Set grid defense to " .. gridDefBonus .. " (enemies: " .. enemyCount .. ")")
 	end
 end
 
 function customSkill.resetGridDefense()
 	for _, skill in ipairs(cplus_plus_ex:getSkillObjsActive(customSkill.id)) do
 		skill:setGridBonus(0)
-		LOG("Defiant: Reset grid defense to 0")
+		--LOG("Defiant: Reset grid defense to 0")
 	end
 end
 

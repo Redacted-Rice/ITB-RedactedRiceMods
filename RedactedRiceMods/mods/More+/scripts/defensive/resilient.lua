@@ -14,12 +14,8 @@ function customSkill:setupEffect()
 				local pilot = pawn:GetPilot()
 				if pilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot) then
 					-- Add shield to the pawn
-					local effect = SkillEffect()
-					local damage = SpaceDamage(pawn:GetSpace())
-					damage.iShield = EFFECT_CREATE
-					effect:AddDamage(damage)
-					Board:AddEffect(effect)
-					LOG("Resilient: Added shield to mech at ".. pawn:GetSpace():GetString())
+					pawn:SetShield(true)
+					--LOG("Resilient: Added shield to mech at ".. pawn:GetSpace():GetString())
 				end
 			end
 		end))

@@ -29,7 +29,7 @@ function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes
 		local moveReduction = targetPawn:GetMoveSpeed() - targetMoveSpeed
 		
 		spaceDamage.sScript = "Board:GetPawn("..targetPawn:GetId().."):AddMoveBonus(-"..moveReduction..")"
-		LOG("Covering Fire: Will reduce movement of enemy at " .. spaceDamage.loc:GetString() .. " to " .. targetMoveSpeed .. " (base: " .. baseMoveSpeed .. ", reduction: " .. moveReduction .. ")")
+		--LOG("Covering Fire: Will reduce movement of enemy at " .. spaceDamage.loc:GetString() .. " to " .. targetMoveSpeed .. " (base: " .. baseMoveSpeed .. ", reduction: " .. moveReduction .. ")")
 	end
 end
 
