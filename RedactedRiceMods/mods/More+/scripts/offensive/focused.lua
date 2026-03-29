@@ -10,7 +10,7 @@ customSkill:addCustomTrait()
 function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes)
 	-- If the pawn has used its movement, then return
 	if pawn:IsMovementSpent() then
-		LOG("Pawn ".. pawn:GetId().." already moved")
+		--LOG("Pawn ".. pawn:GetId().." already moved")
 		return
 	end
 	
@@ -27,7 +27,7 @@ function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes
 					end)
 
 			spaceDamage.iDamage = spaceDamage.iDamage + 1
-			LOG("Focused: Added +1 damage enemy at ".. spaceDamage.loc:GetString())
+			--LOG("Focused: Added +1 damage enemy at ".. spaceDamage.loc:GetString())
 		end
 	end
 end

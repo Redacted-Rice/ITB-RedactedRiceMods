@@ -14,17 +14,26 @@ function customSkill:setupEffect()
 		function()
 			customSkill.checkAndSetGridDefense()
 		end))
-
-	table.insert(customSkill.events, BoardEvents.onTileHealthChanged:subscribe(
-		function(point, oldHealth, newHealth)
-			if Board:IsBuilding(point) then
-				LOG("Foolhardy: Building health changed, rechecking grid defense")
-				customSkill.checkAndSetGridDefense()
-			end
+		
+	table.insert(customSkill.events, modApi.events.onMissionStart:subscribe(
+		function()
+			customSkill.checkAndSetGridDefense()
+		end))
+		
+	table.insert(customSkill.events, BoardEvents.onBuildingDamaged:subscribe(
+		function()
+			customSkill.buildingDamaged()
 		end))
 
  	-- fire now on load/on earn
 	customSkill.checkAndSetGridDefense()
+end
+
+function customSkill.buildingDamaged()
+	for _, skill in ipairs(cplus_plus_ex:getSkillObjsActive(customSkill.id)) do
+		skill:setGridBonus(0)
+		--LOG("Foolhardy: Grid defense set to 0 (damaged buildings detected)")
+	end
 end
 
 function customSkill.checkAndSetGridDefense()
@@ -39,14 +48,11 @@ function customSkill.checkAndSetGridDefense()
 	end
 
 	if anyBuildingDamaged then
-		for _, skill in ipairs(cplus_plus_ex:getSkillObjsActive(customSkill.id)) do
-			skill:setGridBonus(0)
-			LOG("Foolhardy: Grid defense set to 0 (damaged buildings detected)")
-		end
+		customSkill.buildingDamaged()
 	else
 		for _, skill in ipairs(cplus_plus_ex:getSkillObjsActive(customSkill.id)) do
 			skill:setGridBonus(GRID_DEF_BONUS)
-			LOG("Foolhardy: Set grid defense to " .. GRID_DEF_BONUS)
+			--LOG("Foolhardy: Set grid defense to " .. GRID_DEF_BONUS)
 		end
 	end
 end

@@ -43,7 +43,7 @@ function customSkill:momentumTriggered(pawnId, p1, p2, effect)
 		end
 	end
 
-	LOGF("Momentum: Pawn %d moving %d tiles from %s to %s with source: %s", pawn:GetId(), distance, p1:GetString(), p2:GetString(), pathSource)
+	--LOGF("Momentum: Pawn %d moving %d tiles from %s to %s with source: %s", pawn:GetId(), distance, p1:GetString(), p2:GetString(), pathSource)
 
 	if distance >= MIN_DISTANCE and not pawn:IsBoosted() then
 		more_plus.libs.weaponPreview.ExecuteWithState(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
@@ -53,7 +53,7 @@ function customSkill:momentumTriggered(pawnId, p1, p2, effect)
 			end)
 		effect:AddScript([[more_plus.SkillActive.skills.RrMomentum.notPreBoosted[]]..pawnId..[[] = true
 						Board:GetPawn(]]..pawnId..[[):SetBoosted(true)]])
-		LOGF("Momentum: Will apply boosted to pawn %d moving %d tiles", pawnId, distance)
+		--LOGF("Momentum: Will apply boosted to pawn %d moving %d tiles", pawnId, distance)
 	end
 end
 
@@ -62,15 +62,15 @@ function customSkill.checkMove(mission, pawn, weaponId, p1, p2, skillEffect)
 		local pilot = pawn:GetPilot()
 		if pilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot) then
 			if not customSkill.reentrant then
-				LOG("FIRST PASS")
+				--LOG("FIRST PASS")
 				customSkill.reentrant = true
 				-- Ensure the skill is calculated. We actually don't care about the
 				-- return value as we use global type variables to check
 				Move:GetSkillEffect(p1, p2)
 				customSkill:momentumTriggered(pawn:GetId(), p1, p2, skillEffect)
 				customSkill.reentrant = false
-			else
-				LOG("SECOND PASS")
+			--else
+				--LOG("SECOND PASS")
 			end
 		end
 	end

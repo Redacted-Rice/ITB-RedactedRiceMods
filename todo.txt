@@ -39,9 +39,7 @@ None
 ------------------------------------------------------------------------------
 
 MoreLvlUpSkills:
-3. Streetwise not triggering on player turn
-5. Resilient not trigger on player, add icon
-6. Foolhardy not triggering on player turn
+1. Add icon for resilient?
 
 Next Release candidates:
 1. More Skills - stay tuned ;)
