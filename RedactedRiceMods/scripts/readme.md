@@ -18,7 +18,7 @@ Current Release: 1.3.0
 ### 1.3.0
 Released: 03/30/2026
 
-Updated to handle multiple instances/versions
+Updated to handle multiple instances/versions actually correctly
 
 ### 1.2.0
 Released: 03/28/2026
@@ -38,7 +38,7 @@ Current Release: 1.4.0
 ### 1.4.0
 Released: 03/30/2026
 
-Updated to handle multiple instances/versions
+Updated to handle multiple instances/versions actually correctly
 
 ### 1.3.0
 Released: 03/28/2026
@@ -69,7 +69,12 @@ Released: 03/28/2026
 Initial release
 
 ## PredictableRandom
-Current Release: 1.1.0
+Current Release: 1.2.0
+
+### 1.2.0
+Released: 03/30/2026
+
+Updated to handle multiple instances/versions actually correctly
 
 ### 1.1.0
 Released: 12/19/2025
