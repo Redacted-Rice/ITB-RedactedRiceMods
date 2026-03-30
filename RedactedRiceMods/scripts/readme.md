@@ -33,7 +33,12 @@ Released: 01/10/2026
 Initial release to keep in sync with other libs
 
 ## PassiveEffect
-Current Release: 1.3.0
+Current Release: 1.4.0
+
+### 1.4.0
+Released: 03/30/2026
+
+Updated to handle multiple instances/versions
 
 ### 1.3.0
 Released: 03/28/2026
