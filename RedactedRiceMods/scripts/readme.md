@@ -61,7 +61,11 @@ Released: ?
 Initial Release.
 
 ## PawnTypeUtils
-Current Release: 1.0.0
+Current Release: 1.1.0
+
+### 1.1.0
+Released: 03/30/2026
+Made it support multiple instances correctly
 
 ### 1.0.0
 Released: 03/28/2026
