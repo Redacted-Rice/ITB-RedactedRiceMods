@@ -8,52 +8,50 @@ Discord Server: https://discord.gg/CNjTVrpN4v
 
 local VERSION = "1.3.0"
 
--- Initialize global singleton if not already present
-BoardUtils = BoardUtils or {}
-
--- Initialize data tables (only on first initialization)
-if not BoardUtils.hijackedFlying then
-	BoardUtils.hijackedFlying = {}
-	BoardUtils.hijackedPath = nil
-end
-
--- Local defs of constants
-local SPACE_DAMAGE_KEYS = {
-	"bEvacuate",
-	"iInjure",
-	"iCrack",
-	"bSimpleMark",
-	"iPush",
-	"sPawn",
-	"iDamage",
-	"bKO_Effect",
-	"sItem",
-	"iPawnTeam",
-	"iFrozen",
-	"sScript",
-	"bHideIcon",
-	"sSound",
-	"iFire",
-	"sImageMark",
-	"iShield",
-	"iSmoke",
-	"iAcid",
-	"sAnimation",
-	"iTerrain",
-	--"loc",
-	"bHide",
-	"fDelay",
-	"bHidePath",
-}
-
 -- Version check
 local isNewestVersion = false
-	or BoardUtils.version == nil
-	or modApi:isVersion(VERSION, BoardUtils.version) == false
+	or BoardUtils == nil
+	or modApi:isVersionAbove(VERSION, BoardUtils.version)
 
 if isNewestVersion then
-	LOG("BoardUtils: Loading version " .. VERSION .. " (previous: " .. tostring(BoardUtils.version or "none") .. ")")
+	LOG("BoardUtils: Loading version " .. VERSION .. " (previous: " .. tostring(BoardUtils and BoardUtils.version or "none") .. ")")
+
+	-- Initialize global singleton
+	BoardUtils = BoardUtils or {}
 	BoardUtils.version = VERSION
+
+	-- Initialize data tables
+	BoardUtils.hijackedFlying = BoardUtils.hijackedFlying or {}
+	BoardUtils.hijackedPath = BoardUtils.hijackedPath
+
+	-- Constants
+	BoardUtils.SPACE_DAMAGE_KEYS = {
+		"bEvacuate",
+		"iInjure",
+		"iCrack",
+		"bSimpleMark",
+		"iPush",
+		"sPawn",
+		"iDamage",
+		"bKO_Effect",
+		"sItem",
+		"iPawnTeam",
+		"iFrozen",
+		"sScript",
+		"bHideIcon",
+		"sSound",
+		"iFire",
+		"sImageMark",
+		"iShield",
+		"iSmoke",
+		"iAcid",
+		"sAnimation",
+		"iTerrain",
+		--"loc",
+		"bHide",
+		"fDelay",
+		"bHidePath",
+	}
 
 	function BoardUtils.setHijackedFlying(pawn, enabled)
 		if enabled then
@@ -96,7 +94,7 @@ if isNewestVersion then
 			-- instead copy the data to a table
 			local spaceDamage = skillEffect.effect:index(i)
 			local copy = {}
-			for _, key in ipairs(SPACE_DAMAGE_KEYS) do
+			for _, key in ipairs(BoardUtils.SPACE_DAMAGE_KEYS) do
 				copy[key] = spaceDamage[key]
 			end
 			-- Point is userdata and needs to be copied too
@@ -124,7 +122,7 @@ if isNewestVersion then
 		-- Re-add any preserved damage effects
 		for _, damage in ipairs(preservedDamages) do
 			local recreated = SpaceDamage()
-			for _, key in ipairs(SPACE_DAMAGE_KEYS) do
+			for _, key in ipairs(BoardUtils.SPACE_DAMAGE_KEYS) do
 				recreated[key] = damage[key]
 			end
 			-- Already copied the point so don't need to again
