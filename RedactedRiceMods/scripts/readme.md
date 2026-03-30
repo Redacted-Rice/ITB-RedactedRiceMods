@@ -13,7 +13,12 @@ Please enjoy and contact us if you run into any issues!
 # Releases:
 
 ## BoardUtils
-Current Release: 1.2.0
+Current Release: 1.3.0
+
+### 1.3.0
+Released: 03/30/2026
+
+Updated to handle multiple instances/versions
 
 ### 1.2.0
 Released: 03/28/2026
