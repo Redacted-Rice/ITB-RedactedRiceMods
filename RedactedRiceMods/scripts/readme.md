@@ -86,7 +86,12 @@ Released: 03/28/2026
 Initial release. Works for massive but has some issue with exta UIs some icons like flying are use in
 
 ## WeaponPreview
-Current Release: 4.0.0
+Current Release: 4.0.1
+
+### 4.0.1
+Released: 03/30/2026
+
+Fixed issue with animations not playing in preview
 
 ### 4.0.0
 Released: 03/28/2026

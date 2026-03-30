@@ -26,7 +26,7 @@ Please enjoy and contact us if you run into any issues!
 * PredictableRandom - v1.1.0 - Get random numbers in a way that is repeatable for when undoing moves or resetting turns
 * Trait - v3.0.0 - Add traits to pawns & the board. Originally created by Lemonymous and updated to v3.x.x to support multiple traits via appending text and cycling images as well as showing icons for move previews
 * TraitReplace - v0.8.0 - Allows adding custom UI traits that cycle with vanilla traits
-* WeaponPreview - v4.0.0 - Add icons to weapon previews. Originally created by Lemonymous and updated to v4.x.x to support use in skill build hooks and two click weapons
+* WeaponPreview - v4.0.1 - Add icons to weapon previews. Originally created by Lemonymous and updated to v4.x.x to support use in skill build hooks and two click weapons
 
 # Install
 - Unzip the release folder
@@ -148,7 +148,7 @@ Libs:
 ## 1.0.1
 Pre-release of WorldBuilders. Requires custom memedit
 
-Released: 12/19/2025 
+Released: 12/19/2025
 
 Squads:
 * Treeherders 2.0.0
@@ -161,7 +161,7 @@ Libs:
 ## 1.0.0
 Release of Treeherders 2.0
 
-Released: 12/19/2025 
+Released: 12/19/2025
 
 Squads:
 * Treeherders 2.0.0
