@@ -393,7 +393,7 @@ local function createUIWidgetsForTrait(uiRoot, replaceTraitId)
 
 	traitData.smallWidget.draw = function(self, screen)
 		self.visible = false
-		if traitData.targetIcon:wasDrawn() and GetCurrentMission() then
+		if traitData.targetIcon:wasDrawn() then
 			local pawn = getUIEnabledPawn()
 
 			if shouldShowIcon(pawn, replaceTraitId) then
@@ -431,7 +431,7 @@ local function createUIWidgetsForTrait(uiRoot, replaceTraitId)
 
 	traitData.largeWidget.draw = function(self, screen)
 		self.visible = false
-		if traitData.targetIcon:wasDrawn() and GetCurrentMission() then
+		if traitData.targetIcon:wasDrawn() then
 			local pawn = getUIEnabledPawn()
 			if shouldShowIcon(pawn, replaceTraitId) then
 				-- Recalculate icon every frame to support cycling
