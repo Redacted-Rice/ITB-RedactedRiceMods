@@ -1,5 +1,5 @@
 
-local VERSION = "4.0.0"
+local VERSION = "4.0.1"
 ----------------------------------------------------------------------
 -- Weapon Preview - code library
 -- https://github.com/Lemonymous/ITB-LemonymousMods/wiki/weaponPreview
@@ -105,6 +105,7 @@ local STATE_FINAL_EFFECT = 5
 local NULL_PAWNID = -1
 local NULL_WEAPON = ""
 local NULL_WEAPID = -1
+local INT_MAX = 2147483647
 
 local Marker = Class.new()
 local selfMetatable = setmetatable({}, Marker)
@@ -287,8 +288,6 @@ local function addAnimation(self, p, anim, delay)
 	else
 		delay = nil
 	end
-	
-	LOG("STATE " .. previewState .. " " .. p:GetString())
 
 	table.insert(previewMarks[previewState], {
 		fn = 'AddAnimation',
@@ -696,7 +695,7 @@ local function getAnimFrame(mark, time_start, time_curr)
 	local duration = mark.duration
 
 	if mark.loop then
-		time_start = time_curr + (time_start - time_curr) % duration
+		time_curr = time_start + (time_curr - time_start) % duration
 	end
 
 	local frame = time_start
@@ -773,7 +772,7 @@ local function onMissionUpdate()
 		events.onTargetAreaHidden:dispatch(targetMarker:unpack())
 		targetMarker:clear()
 	end
-	
+
 	if secondTargetMarker:isActive() and actingMarker:isInActive() then
 		events.onSecondTargetAreaHidden:dispatch(secondTargetMarker:unpack())
 		secondTargetMarker:clear()
