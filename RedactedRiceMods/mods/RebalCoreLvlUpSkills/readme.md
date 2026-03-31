@@ -19,7 +19,18 @@ Please enjoy and contact us if you run into any issues.
 * Skilled is just Health + Move so these feel like they need a boost to not just be objectively worse
 
 # Releases
-Latest release: 1.0.0
+Latest release: 1.0.1
+
+## 1.0.1
+Released: XX/XX/2026 
+
+compatible with:
+* ItB AE 	1.2.93
+* ModLoader 2.9.5
+* CPLUS+ Ex	1.0.0
+
+### Notes
+* Added exclusions with replaced vanilla skills in case someone wants to re-enable them
 
 ## 1.0.0
 Released: 03/28/2026 
