@@ -20,6 +20,7 @@ Known issues:
 
 World Builders:
 1. If swapping tiles with a shielded mech, will remove the shield
+	a. Is mech shield and tile shield stored differently? what happens when moving onto a sheidled building? Will the pawn steal the shield?
 
 Next release candidates:
 None
@@ -82,11 +83,11 @@ Squad 4: Full on Expansion - Its also still a secret ;)
 ------------------------------------------------------------------------------
 
 Libs:
-1. TraitReplaceLib
-	a. Make flying icon not cover massive icon
-2. Make the other libs use the trait replace lib pattern
-3. Make WeaponPreview support two clicks
+None
 
 Future releases:
-1. TraitReplaceLib 
+1. TraitReplaceLib
 	a. Flying icon on other UIs (see pyramid icon)
+		This is tricky to do generically as the hanger positioning relies on offsets. A more generical
+		way would be to modify the SDL DLL to allow returning multiple positions of the same image so
+		we can instead just always show for that image instead of relying on offsets

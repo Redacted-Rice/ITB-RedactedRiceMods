@@ -3,6 +3,11 @@ SkillActive.skills = {}
 
 SkillActive.__index = SkillActive
 
+-- Initialize logger
+SkillActive.DEBUG = false
+local logger = memhack.logger
+local SUBMODULE = logger.register("More+", "SkillActive", SkillActive.DEBUG)
+
 function SkillActive:new(tbl)
 	tbl = tbl or {}
 	tbl.events = {}
@@ -14,7 +19,7 @@ end
 function SkillActive:addCustomTrait()
 	local iconImg = "img/combat/icons/icon_mp_"..self.id..".png"
 	self.icon = iconImg
-	LOG("Adding active icon %s at %s", self.id, iconImg)
+	logger.logDebug(SUBMODULE, "Adding active icon %s at %s", self.id, iconImg)
 	more_plus.libs.traitReplace:add{
 		targetTrait = "massive",
 		func = function(trait, pawn)
@@ -31,10 +36,11 @@ function SkillActive:addCustomTrait()
 end
 
 function SkillActive:setupEffect()
-	LOG("ERROR: SkillActive setupEffect not implemented for skill %s", self.id)
+	logger.logError(SUBMODULE, string.format("SkillActive setupEffect not implemented for skill %s", self.id))
 end
 
 function SkillActive:clearEvents()
+	logger.logDebug(SUBMODULE, "Clearing events for %s", self.id)
 	for _, event in pairs(self.events) do
 		event:unsubscribe()
 	end
@@ -46,7 +52,7 @@ function SkillActive:baseInit()
 end
 
 function SkillActive.clearAndReSetUpEffect(skillId, isActive, pawnId, pilot, skillStruct)
-	--LOG("CHECKING A SKILL "..skillId)
+	logger.logDebug(SUBMODULE, "Checking skill %s", skillId)
 	local skillClass = SkillActive.skills[skillId]
 	if skillClass then
 		-- Clear events
@@ -54,7 +60,7 @@ function SkillActive.clearAndReSetUpEffect(skillId, isActive, pawnId, pilot, ski
 
 		-- Then add them back if any are active
 		if cplus_plus_ex:isSkillActive(skillId) then
-			--LOG("Setting up "..skillId)
+			logger.logDebug(SUBMODULE, "Setting up skill %s for pawn id %d", skillId, pawnId)
 			skillClass:setupEffect()
 		end
 	end
