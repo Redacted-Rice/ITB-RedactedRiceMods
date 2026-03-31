@@ -2,16 +2,20 @@ more_plus = more_plus or {}
 
 more_plus.skillsByCategory = {}
 more_plus.libs = {}
-more_plus.DEBUG = true
 
 local path = GetParentPath(...)
+
+-- Initialize logger
+more_plus.DEBUG = false
+local logger = memhack.logger
+local SUBMODULE = logger.register("More+", "Core", more_plus.DEBUG)
 
 more_plus.SkillTrait = require(path.."skill_trait")
 more_plus.SkillActive = require(path.."skill_active")
 more_plus.SkillEffectModifier = require(path.."skill_effect_modifier")
 
 function more_plus:scanAndReadSkillFiles()
-	if self.DEBUG then LOG("More+: Scanning subdirs in dir " .. path) end
+	logger.logDebug(SUBMODULE, "Scanning subdirs in dir %s", path)
 
 	local numCats = 0
 	local numSkills = 0
@@ -20,13 +24,13 @@ function more_plus:scanAndReadSkillFiles()
     if dir:exists() then
         for _, subDir in ipairs(dir:directories()) do
 			local subDirPath = subDir:relative_path()
-			if self.DEBUG then LOG("More+: Checking sub dir " .. subDirPath) end
+			logger.logDebug(SUBMODULE, "Checking sub dir %s", subDirPath)
 
 			local category = subDir:name()
 			local skillObjs = {}
 			for _, file in ipairs(subDir:files()) do
 				local filename = file:name():match("(.+)%.lua$") or file:name()
-				if self.DEBUG then LOG("More+: Found skill file " .. filename) end
+				logger.logDebug(SUBMODULE, "Found skill file %s", filename)
 
 				local requirePath = subDirPath .. filename
 				local success, skillObj = pcall(require, requirePath)
@@ -36,24 +40,24 @@ function more_plus:scanAndReadSkillFiles()
 					table.insert(skillObjs, skillObj)
 					numSkills = numSkills + 1
 				else
-					LOG("More+: Failed to load " .. requirePath .. ": " .. tostring(skillObj))
+					logger.logError(SUBMODULE, string.format("Failed to load %s: %s", requirePath, tostring(skillObj)))
 				end
 			end
 			self.skillsByCategory[category] = skillObjs
 			numCats = numCats + 1
         end
     end
-	if self.DEBUG then LOG("More+: Found " .. numSkills .. " in " .. numCats .. " categories") end
+	logger.logDebug(SUBMODULE, "Found %d skills in %d categories", numSkills, numCats)
 end
 
 function more_plus:setLastActed(pawn)
 	self.lastActed = pawn
-	LOG("SET PAWN "..pawn:GetId())
+	logger.logDebug(SUBMODULE, "SET PAWN %d", pawn:GetId())
 end
 
 function more_plus:unsetLastActed()
 	if self.lastActed then
-		LOG("UNSET PAWN "..self.lastActed:GetId())
+		logger.logDebug(SUBMODULE, "UNSET PAWN %d", self.lastActed:GetId())
 		self.lastActed = nil
 	end
 end
@@ -116,25 +120,25 @@ function more_plus:init()
 	self.SkillTrait:baseInit()
 	self.SkillActive:baseInit()
 
-	if self.DEBUG then LOG("Finding all skills...") end
+	logger.logDebug(SUBMODULE, "Finding all skills...")
 	more_plus:scanAndReadSkillFiles(basePath)
 
-	if self.DEBUG then LOG("Creating all skills...") end
+	logger.logDebug(SUBMODULE, "Creating all skills...")
 	-- Then go through and create the skills
 	for category, skills in pairs(self.skillsByCategory) do
-		if self.DEBUG then LOG("Creating skills for category " .. category) end
+		logger.logDebug(SUBMODULE, "Creating skills for category %s", category)
 		local cplusCategory = self:folderToDisplayName(category)
 		for _, skill in pairs(skills) do
 			-- simulate continue with an added loop level
 		    repeat
-				if self.DEBUG then LOG("Creating skill " .. skill.id) end
+				logger.logDebug(SUBMODULE, "Creating skill %s", skill.id)
 				-- make sure we have the required fields
 				if not skill.id then
-					LOG("More+: Failed to find id for skill at: " .. skill.path)
+					logger.logError(SUBMODULE, "Failed to find id for skill at: " .. skill.path)
 					break
 				end
 				if not skill.description then
-					LOG("More+: Failed to description for skill at: " .. skill.path)
+					logger.logError(SUBMODULE, "Failed to find description for skill at: " .. skill.path)
 					break
 				end
 
@@ -163,7 +167,7 @@ function more_plus:init()
 					modApi:setText(skill.shortName, skill._shortName)
 					modApi:setText(skill.fullName, skill._fullName)
 				else
-					LOG("More+: Failed to find name or short name and full name for skill at: " .. skill.path)
+					logger.logError(SUBMODULE, "Failed to find name or short name and full name for skill at: " .. skill.path)
 					break
 				end
 
@@ -177,7 +181,7 @@ function more_plus:init()
 				cplus_plus_ex:registerSkill(cplusCategory, skill)
 
 				-- Call init on the function if it exists
-				if self.DEBUG then LOG("Initializing skill " .. skill.id) end
+				logger.logDebug(SUBMODULE, "Initializing skill %s", skill.id)
 				if skill.init then
 					skill:init()
 				end
@@ -188,11 +192,11 @@ function more_plus:init()
 end
 
 function more_plus:load()
-	if self.DEBUG then LOG("Loading all skills...") end
+	logger.logDebug(SUBMODULE, "Loading all skills...")
 	for category, skills in pairs(more_plus.skillsByCategory) do
-		if self.DEBUG then LOG("Loading skills for category " .. category) end
+		logger.logDebug(SUBMODULE, "Loading skills for category %s", category)
 		for _, skill in pairs(skills) do
-			if self.DEBUG then LOG("Loading skill " .. skill.id) end
+			logger.logDebug(SUBMODULE, "Loading skill %s", skill.id)
 			-- Call load on the function if it exists
 			if skill.load then
 				skill:load()

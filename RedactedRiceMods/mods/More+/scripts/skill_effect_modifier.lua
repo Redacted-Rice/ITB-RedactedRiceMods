@@ -4,6 +4,11 @@ local SkillEffectModifier = {}
 setmetatable(SkillEffectModifier, { __index = more_plus.SkillActive })
 SkillEffectModifier.__index = SkillEffectModifier
 
+-- Initialize logger
+SkillEffectModifier.DEBUG = false
+local logger = memhack.logger
+local SUBMODULE = logger.register("More+", "SkillEffectModifier", SkillEffectModifier.DEBUG)
+
 function SkillEffectModifier:new(tbl)
 	tbl = tbl or {}
 	tbl.processedDamages = {}
@@ -13,6 +18,7 @@ function SkillEffectModifier:new(tbl)
 end
 
 function SkillEffectModifier:setupEffect()
+	logger.logDebug(SUBMODULE, "Setting up effect modifier for %s", self.id)
 	table.insert(self.events, modapiext.events.onSkillBuild:subscribe(
 		function(mission, pawn, weaponId, p1, p2, skillEffect)
 			self:processEffects(pawn, false, skillEffect.effect, p2)
@@ -23,6 +29,10 @@ function SkillEffectModifier:setupEffect()
 			self:processEffects(pawn, true, skillEffect.effect, p2)
 			self:processEffects(pawn, true, skillEffect.q_effect, p2)
 		end))
+end
+
+function SkillEffectModifier:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes)
+	logger.logError(SUBMODULE, string.format("SkillEffectModifier modifySpaceDamage not implemented for skill %s", self.id))
 end
 
 function SkillEffectModifier:hashSpaceDamage(pawnId, spaceDmg, p2)
@@ -38,6 +48,7 @@ end
 -- if it hasn't been seen yet
 function SkillEffectModifier:processEffects(pawn, isFinalEffect, effects, p2)
 	if not pawn then
+		logger.logDebug(SUBMODULE, "No pawn found for %s", self.id)
 		return
 	end
 	local pilot = pawn:GetPilot()
@@ -53,14 +64,14 @@ function SkillEffectModifier:processEffects(pawn, isFinalEffect, effects, p2)
 					more_plus.SkillActive.skills[self.id].processedDamages = {}
 				end)
 
+				logger.logDebug(SUBMODULE, "Modifying space damage at point %s for %s",
+						spaceDamage.loc:GetString(), self.id)
 				self:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes)
+			else
+				logger.logDebug(SUBMODULE, "Already processed damage for %s at %s", self.id, spaceDamage.loc:GetString())
 			end
 		end
 	end
-end
-
-function SkillEffectModifier:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes)
-	LOG("ERROR: SkillEffectModifier modifySpaceDamage not implemented for skill %s", self.id)
 end
 
 return SkillEffectModifier

@@ -5,6 +5,11 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }
 
+-- Initialize logger
+customSkill.DEBUG = false
+local logger = memhack.logger
+local SUBMODULE = logger.register("More+", "Streetwise", customSkill.DEBUG)
+
 customSkill:addCustomTrait()
 
 function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes)
@@ -15,6 +20,7 @@ function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes
 		local previewState = isFinalEffect and more_plus.libs.weaponPreview.STATE_FINAL_EFFECT or
 				more_plus.libs.weaponPreview.STATE_SKILL_EFFECT
 		for _, idx in ipairs(indexes) do
+			logger.logDebug(SUBMODULE, "Adding icon for building at %s with idx %d", spaceDamage.loc:GetString(), idx)
 			more_plus.libs.weaponPreview.ExecuteWithState(previewState,
 					function()
 						more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc,
@@ -23,6 +29,7 @@ function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes
 
 			spaceDamage.iDamage = DAMAGE_ZERO
 		end
+		logger.logDebug(SUBMODULE, "Prevented damage to building at %s", spaceDamage.loc:GetString())
 	end
 end
 

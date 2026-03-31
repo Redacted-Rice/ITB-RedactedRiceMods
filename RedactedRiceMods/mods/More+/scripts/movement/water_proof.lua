@@ -6,6 +6,11 @@ local customSkill = more_plus.SkillActive:new{
 	modified = {}
 }
 
+-- Initialize logger
+customSkill.DEBUG = false
+local logger = memhack.logger
+local SUBMODULE = logger.register("More+", "Amphibious", customSkill.DEBUG)
+
 customSkill:addCustomTrait()
 
 -- Exclude prospero as he has flying
@@ -26,6 +31,7 @@ function customSkill.moveTargetArea(mission, pawn, weaponId, p1, targetArea)
 			-- To work right on the second pass or else it could see the pawn as flying
 			-- when in shouldn't be
 			if pawn:IsFlying() then
+				logger.logDebug(SUBMODULE, "Recalculating move target area for amphibious pawn %d at %s", pawn:GetId(), p1:GetString())
 				pawn:SetFlying(false)
 				while not targetArea:empty() do
 					targetArea:erase(0)
@@ -45,6 +51,7 @@ function customSkill.applyOnMissionEnter()
 		local pawn = Board:GetPawn(mechInfo.pawnId)
 		local terrain = Board:GetTerrain(pawn:GetSpace())
 		if terrain == TERRAIN_WATER or terrain == TERRAIN_LAVA then
+			logger.logDebug(SUBMODULE, "Setting flying for pawn %d on liquid terrain", mechInfo.pawnId)
 			more_plus.libs.boardUtils.setHijackedFlying(pawn, true)
 		end
 	end
@@ -54,8 +61,10 @@ function customSkill.addFlyingIfNeeded(mission, pawn)
 	if cplus_plus_ex:isSkillOnPawn(customSkill.id, pawn) then
 		local terrain = Board:GetTerrain(pawn:GetSpace())
 		if terrain == TERRAIN_WATER or terrain == TERRAIN_LAVA then
+			logger.logDebug(SUBMODULE, "Setting flying for pawn %d on liquid terrain", pawn:GetId())
 			more_plus.libs.boardUtils.setHijackedFlying(pawn, true)
 		else
+			logger.logDebug(SUBMODULE, "Removing flying for pawn %d on solid terrain", pawn:GetId())
 			more_plus.libs.boardUtils.setHijackedFlying(pawn, false)
 		end
 	end

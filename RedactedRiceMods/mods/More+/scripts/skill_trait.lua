@@ -3,6 +3,11 @@ SkillTrait.skills = {}
 
 SkillTrait.__index = SkillTrait
 
+-- Initialize logger
+SkillTrait.DEBUG = false
+local logger = memhack.logger
+local SUBMODULE = logger.register("More+", "SkillTrait", SkillTrait.DEBUG)
+
 function SkillTrait:new(tbl)
 	tbl = tbl or {}
 	tbl.modified = {}
@@ -14,7 +19,7 @@ end
 function SkillTrait:addCustomTrait()
 	local iconImg = "img/combat/icons/icon_mp_"..self.id..".png"
 	self.icon = iconImg
-	LOG("Adding trait icon %s at %s", self.id, iconImg)
+	logger.logDebug(SUBMODULE, "Adding trait icon %s at %s", self.id, iconImg)
 	more_plus.libs.traitReplace:add{
 		targetTrait = "massive",
 		func = function(trait, pawn)
@@ -31,7 +36,7 @@ function SkillTrait:addCustomTrait()
 end
 
 function SkillTrait:applyTrait(pawn, isActive)
-	LOG("ERROR: SkillTrait applyTrait not implemented for skill %s", self.id)
+	logger.logError(SUBMODULE, string.format("SkillTrait applyTrait not implemented for skill %s", self.id))
 end
 
 function SkillTrait:baseInit()
@@ -39,10 +44,11 @@ function SkillTrait:baseInit()
 end
 
 function SkillTrait.checkAndApplyTrait(skillId, isActive, pawnId, pilot, skill)
-	--LOG("CHECKING T SKILL "..skillId)
+	logger.logDebug(SUBMODULE, "Checking trait skill %s", skillId)
 	local skillClass = SkillTrait.skills[skillId]
 	if skillClass then
 		local pawn = Game:GetPawn(pawnId)
+		logger.logDebug(SUBMODULE, "Applying trait %s for pawn id %d (isActive: %s)", skillId, pawnId, tostring(isActive))
 		skillClass:applyTrait(pawnId, pawn, isActive)
 	end
 end

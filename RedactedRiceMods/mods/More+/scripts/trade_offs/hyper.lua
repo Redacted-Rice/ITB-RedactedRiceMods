@@ -10,23 +10,30 @@ local customSkill = more_plus.SkillActive:new{
 	bonuses = {move = BASE_MOVE},
 }
 
+-- Initialize logger
+customSkill.DEBUG = false
+local logger = memhack.logger
+local SUBMODULE = logger.register("More+", "Hyper", customSkill.DEBUG)
+
 customSkill:addCustomTrait()
 
 function customSkill:setupEffect()
 	table.insert(customSkill.events, modApi.events.onNextTurn:subscribe(customSkill.setMoveBonus))
 	table.insert(customSkill.events, modApi.events.onMissionEnd:subscribe(customSkill.setDefaultMoveBonus))
 	table.insert(customSkill.events, modApi.events.onMissionStart:subscribe(customSkill.setDefaultMoveBonus))
+
+	-- Fire now on load/earn/reset
 	self.setCurrentMoveBonus()
 end
 
 function customSkill:_internalSetMoveBonus(moveBonus, doPing)
 	for _, skillInfo in pairs(cplus_plus_ex:getMechsWithSkill(customSkill.id)) do
-		--LOG("setMoveBonus found "..skillInfo.pilot:getIdStr())
+		logger.logDebug(SUBMODULE, "setMoveBonus found %s", skillInfo.pilot:getIdStr())
 		local pilot = skillInfo.pilot
 		local idxes = skillInfo.skillIndices
 		for _, idx in ipairs(idxes) do
 			local skill = pilot:getLvlUpSkill(idx)
-			--LOG("setMoveBonus for "..skillInfo.pilot:getIdStr().." at idx "..idx.. " to "..moveBonus)
+			logger.logDebug(SUBMODULE, "setMoveBonus for %s at idx %d to %d", skillInfo.pilot:getIdStr(), idx, moveBonus)
 			skill:setMoveBonus(moveBonus)
 			if Board and doPing then
 				local pawn = Board:GetPawn(skillInfo.pawnId)
@@ -48,7 +55,7 @@ function customSkill.setCurrentMoveBonus()
 end
 
 function customSkill.setMoveBonus()
-	--LOG("TURN "..Game:GetTeamTurn())
+	logger.logDebug(SUBMODULE, "TURN %d", Game:GetTeamTurn())
 	local turnCount = Game:GetTurnCount()
 	if Game:GetTeamTurn() == TEAM_PLAYER and turnCount > 1 then
 		customSkill:_internalSetMoveBonus(math.max(0, BASE_MOVE - turnCount + 1), true)
