@@ -19,7 +19,7 @@ Known issues:
 ------------------------------------------------------------------------------
 
 World Builders:
-None
+1. If swapping tiles with a shielded mech, will remove the shield
 
 Next release candidates:
 None
@@ -33,13 +33,14 @@ Known Issues:
 ------------------------------------------------------------------------------
 
 Vanilla+
-None
+1. CPLUS 1.1 - Add skills to categorical exclusions
 
 
 ------------------------------------------------------------------------------
 
 MoreLvlUpSkills:
 1. Add icon for resilient?
+2. Change hyper to start at 2 and then lose 1 at end of 2nd & 3rd turn
 
 Next Release candidates:
 1. More Skills - stay tuned ;)
