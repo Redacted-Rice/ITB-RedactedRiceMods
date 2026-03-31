@@ -27,18 +27,20 @@ These are skills that have a stronger than typical positive effect but also incl
 * Hyper - Gain +3 move but lose 1 move each turn for the first 3 turns
 
 # Releases
-Latest release: X.X.X
+Latest release: 0.9.0
 
 ## 1.0.0
 Released: XX/XX/2026 
 
 compatible with:
 * ItB AE 	1.2.93
-* ModLoader 2.9.4
-* memhack	0.9.0
-* CPLUS+ Ex	0.9.0
+* ModLoader 2.9.5
+* memhack	1.0.0
+* CPLUS+ Ex	1.0.0
 
 ### Notes
 Includes:
 * Movement - Amphibious, Guarded, Jump Jets
 * Trade Offs - Hot Headed, Hyper
+
+... and all the others that I will add later

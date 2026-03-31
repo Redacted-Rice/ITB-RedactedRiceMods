@@ -17,13 +17,13 @@ Please enjoy and contact us if you run into any issues!
 * WorldBuilders - v1.3.0 - This squad focuses on terrain manipulation to block and avoid damage. It has some strong single target effects but you can easily get overwhelmed by numbers if not strategically manipulating the terrain
 
 # Other
-* RebalanceCore+ - v1.0.0 - Reblances the core vanilla level up skills (other than reactor) so they are not strictly worse than the AE ones
+* RebalanceCore+ - v1.0.1 - Reblances the core vanilla level up skills (other than reactor) so they are not strictly worse than the AE ones
 
 # Libs
-* BoardUtils - v1.2.0 - Board related functions and pathing
-* PassiveEffect - v1.3.0 - Helps with adding passive weapons to the game. This will handle automatically detecting if the weapon is powered and only call hooks when it is
-* PawnTypeUtils - v1.0.0 - Functions to allow determining more detailed pawn types (using EasyEdit)
-* PredictableRandom - v1.1.0 - Get random numbers in a way that is repeatable for when undoing moves or resetting turns
+* BoardUtils - v1.3.0 - Board related functions and pathing
+* PassiveEffect - v1.4.0 - Helps with adding passive weapons to the game. This will handle automatically detecting if the weapon is powered and only call hooks when it is
+* PawnTypeUtils - v1.1.0 - Functions to allow determining more detailed pawn types (using EasyEdit)
+* PredictableRandom - v1.2.0 - Get random numbers in a way that is repeatable for when undoing moves or resetting turns
 * Trait - v3.0.0 - Add traits to pawns & the board. Originally created by Lemonymous and updated to v3.x.x to support multiple traits via appending text and cycling images as well as showing icons for move previews
 * TraitReplace - v0.8.0 - Allows adding custom UI traits that cycle with vanilla traits
 * WeaponPreview - v4.0.1 - Add icons to weapon previews. Originally created by Lemonymous and updated to v4.x.x to support use in skill build hooks and two click weapons
