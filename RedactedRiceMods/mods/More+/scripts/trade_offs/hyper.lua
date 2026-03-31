@@ -4,7 +4,7 @@ local MOVE_REDUCE_COLOR = GL_Color(255, 255, 50)
 local customSkill = more_plus.SkillActive:new{
 	id = "RrHyper",
 	name = "Hyper",
-	description = "+3 movement, lose 1 movement at the end of each turn (min +0)",
+	description = "+3 movement but lose 1 movement at the end of each turn (min +0)",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 	-- Not strictly needed but makes more sense
 	bonuses = {move = BASE_MOVE},

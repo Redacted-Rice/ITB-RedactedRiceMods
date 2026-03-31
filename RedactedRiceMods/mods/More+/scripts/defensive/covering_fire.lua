@@ -1,7 +1,7 @@
 local customSkill = more_plus.SkillEffectModifier:new{
 	id = "RrCoveringFire",
 	name = "Covering Fire",
-	description = "Damaged targets have movement reduced to half base movement (rounded down)",
+	description = "Enemies attacked lose half their movement for a turn (rounded down).",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }
 
@@ -10,10 +10,7 @@ customSkill:addCustomTrait()
 function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes)
 	local targetPawn = Board:GetPawn(spaceDamage.loc)
 	
-	if targetPawn and targetPawn:IsEnemy() and
-			spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and
-			spaceDamage.iDamage ~= DAMAGE_ZERO then
-
+	if targetPawn and targetPawn:IsEnemy() then
 		local previewState = isFinalEffect and more_plus.libs.weaponPreview.STATE_FINAL_EFFECT or
 				more_plus.libs.weaponPreview.STATE_SKILL_EFFECT
 		for _, idx in ipairs(indexes) do

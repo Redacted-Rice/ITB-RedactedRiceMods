@@ -2,7 +2,7 @@ local customSkill = more_plus.SkillTrait:new{
 	id = "RrGuarded",
 	icon = "img/combat/icons/icon_guard.png",
 	name = "Guarded",
-	description = "Piloted Mech is Stable and cannot be moved by weapon effects",
+	description = "Piloted Mech is stable and cannot be moved by weapon effects.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT
 }
 

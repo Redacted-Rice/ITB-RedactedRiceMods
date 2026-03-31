@@ -4,7 +4,7 @@ local MOVE_BOOST_COLOR = GL_Color(50, 255, 50)
 local customSkill = more_plus.SkillActive:new{
 	id = "RrAccelerator",
 	name = "Accelerator",
-	description = "+1 Move at the start of end turn.",
+	description = "+1 Move at the end of each turn.",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 	-- Not strictly needed but makes more sense
 	bonuses = {move = BASE_MOVE},
