@@ -5,6 +5,10 @@ local customSkill = more_plus.SkillTrait:new{
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT
 }
 
+-- Exclude prospero as he has flying and Henry as he already moves through enemies
+cplus_plus_ex:registerPilotSkillExclusions("Pilot_Recycler", customSkill.id)
+cplus_plus_ex:registerPilotSkillExclusions("Pilot_Hotshot", customSkill.id)
+ 
 customSkill:addCustomTrait()
 
 function customSkill:applyTrait(pawnId, pawn, isActive)

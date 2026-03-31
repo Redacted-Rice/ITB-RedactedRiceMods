@@ -9,6 +9,10 @@ local customSkill = more_plus.SkillActive:new{
 	reentrant = false,
 }
 
+-- Exclude Kai and Morgan as they give boosted already
+cplus_plus_ex:registerPilotSkillExclusions("Pilot_Arrogant", customSkill.id)
+cplus_plus_ex:registerPilotSkillExclusions("Pilot_Chemical", customSkill.id)
+
 customSkill:addCustomTrait()
 
 function customSkill:setupEffect()

@@ -7,6 +7,10 @@ local customSkill = more_plus.SkillEffectModifier:new{
 
 customSkill:addCustomTrait()
 
+-- Exclude Kai and Morgan as they give boosted already
+cplus_plus_ex:registerPilotSkillExclusions("Pilot_Arrogant", customSkill.id)
+cplus_plus_ex:registerPilotSkillExclusions("Pilot_Chemical", customSkill.id)
+
 function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes)
 	-- If the pawn has used its movement, then return
 	if pawn:IsMovementSpent() then
