@@ -148,8 +148,8 @@ if isNewestVersion then
 					return false
 				end
 				local pawnTeam = pawn:GetTeam()
-				if pawnCheckType == "friendly" and pawnTeam == TEAM_BOTS or
-						pawnTeam == TEAM_ENEMY or pawnTeam == TEAM_ENEMY_MAJOR then
+				if pawnCheckType == "friendly" and (pawnTeam == TEAM_BOTS or
+						pawnTeam == TEAM_ENEMY or pawnTeam == TEAM_ENEMY_MAJOR) then
 					return false
 				end
 			end

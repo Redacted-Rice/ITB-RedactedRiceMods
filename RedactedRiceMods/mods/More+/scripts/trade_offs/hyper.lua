@@ -1,10 +1,10 @@
-local BASE_MOVE = 3
+local BASE_MOVE = 2
 local MOVE_REDUCE_COLOR = GL_Color(255, 255, 50)
 
 local customSkill = more_plus.SkillActive:new{
 	id = "RrHyper",
 	name = "Hyper",
-	description = "+3 movement but lose 1 movement at the end of each turn (min +0)",
+	description = "+2 movement for the first 2 turns, +1 movement for the 3rd turn, then +0",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 	-- Not strictly needed but makes more sense
 	bonuses = {move = BASE_MOVE},
@@ -45,20 +45,34 @@ function customSkill:_internalSetMoveBonus(moveBonus, doPing)
 end
 
 function customSkill.setDefaultMoveBonus()
+	logger.logDebug(SUBMODULE, "Setting default move bonus to %d", BASE_MOVE)
 	customSkill:_internalSetMoveBonus(BASE_MOVE, false)
 end
 
+function customSkill:calculateMoveBonus(turnCount)
+	if turnCount <= 2 then
+		return BASE_MOVE
+	elseif turnCount == 3 then
+		return 1
+	else
+		return 0
+	end
+end
+
 function customSkill.setCurrentMoveBonus()
-	-- Ensure turn count is always at least 1 to avoid deployment oddities
 	local turnCount = math.max(Game:GetTurnCount(), 1)
-	customSkill:_internalSetMoveBonus(math.max(0, BASE_MOVE - turnCount + 1), false)
+	local moveBonus = customSkill:calculateMoveBonus(turnCount)
+	logger.logDebug(SUBMODULE, "Setting current move bonus to %d (turn: %d)", moveBonus, turnCount)
+	customSkill:_internalSetMoveBonus(moveBonus, false)
 end
 
 function customSkill.setMoveBonus()
-	logger.logDebug(SUBMODULE, "TURN %d", Game:GetTeamTurn())
 	local turnCount = Game:GetTurnCount()
+	logger.logDebug(SUBMODULE, "Turn %d (team: %d)", turnCount, Game:GetTeamTurn())
 	if Game:GetTeamTurn() == TEAM_PLAYER and turnCount > 1 then
-		customSkill:_internalSetMoveBonus(math.max(0, BASE_MOVE - turnCount + 1), true)
+		local moveBonus = customSkill:calculateMoveBonus(turnCount + 1)
+		logger.logDebug(SUBMODULE, "Setting move bonus to %d for next turn (current turn: %d)", moveBonus, turnCount)
+		customSkill:_internalSetMoveBonus(moveBonus, true)
 	end
 end
 
