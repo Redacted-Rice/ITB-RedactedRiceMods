@@ -1,7 +1,7 @@
 local customSkill = more_plus.SkillEffectModifier:new{
 	id = "RrKillShot",
 	name = "Kill Shot",
-	description = "+1 damage if the vek would be killed",
+	description = "+1 damage if the enemy would be killed",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 }
 

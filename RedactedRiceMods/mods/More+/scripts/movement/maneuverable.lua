@@ -1,7 +1,7 @@
 local customSkill = more_plus.SkillActive:new{
 	id = "RrManeuverable",
 	name = "Maneuverable",
-	description = "Mech can move through and over buildings and mountains",
+	description = "Piloted mech can move through and over buildings and mountains.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }
 

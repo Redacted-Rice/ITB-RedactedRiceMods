@@ -1,7 +1,7 @@
 local customSkill = more_plus.SkillEffectModifier:new{
 	id = "RrTrophyHunter",
 	name = "Trophy Hunter",
-	description = "+1 damage to unique vek",
+	description = "+1 damage to \"unique\" (non-common) enemies.",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 }
 
@@ -10,7 +10,7 @@ customSkill:addCustomTrait()
 function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes)
 	local spacePawn = Board:GetPawn(spaceDamage.loc)
 	
-	if spacePawn and more_plus.libs.pawnTypeUtils.isSpawnCategory(spacePawn, "Unique") and
+	if spacePawn and spacePawn:IsEnemy() and more_plus.libs.pawnTypeUtils.isSpawnCategory(spacePawn, "Unique") and
 			spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and
 			spaceDamage.iDamage ~= DAMAGE_ZERO then
 

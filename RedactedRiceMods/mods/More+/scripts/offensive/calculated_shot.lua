@@ -1,7 +1,7 @@
 local customSkill = more_plus.SkillEffectModifier:new{
 	id = "RrCalculatedShot",
 	name = "Calculated Shot",
-	description = "Deals +1 damage to pawns with two or less move",
+	description = "+1 damage to enemies with two or less move.",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 }
 
@@ -10,7 +10,7 @@ customSkill:addCustomTrait()
 function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes)
 	local spacePawn = Board:GetPawn(spaceDamage.loc)
 	
-	if spacePawn and spacePawn:GetMoveSpeed() <= 2 and spaceDamage.iDamage > 0 and 
+	if spacePawn and spacePawn:IsEnemy() and spacePawn:GetMoveSpeed() <= 2 and spaceDamage.iDamage > 0 and 
 			spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
 
 		local previewState = isFinalEffect and more_plus.libs.weaponPreview.STATE_FINAL_EFFECT or

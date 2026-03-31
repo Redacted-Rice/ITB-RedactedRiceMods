@@ -1,7 +1,7 @@
 local customSkill = more_plus.SkillEffectModifier:new{
 	id = "RrFocused",
 	name = "Focused",
-	description = "Deal +1 Damage if you have not moved yet",
+	description = "+1 Damage to enemies if the mech has not used its movement yet.",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 }
 
@@ -17,8 +17,9 @@ function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes
 		--LOG("Pawn ".. pawn:GetId().." already moved")
 		return
 	end
-	
-	if spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and 
+	local spacePawn = Board:GetPawn(spaceDamage.loc)
+	if spacePawn and spacePawn:IsEnemy() and
+			spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and 
 			spaceDamage.iDamage ~= DAMAGE_ZERO then
 
 		local previewState = isFinalEffect and more_plus.libs.weaponPreview.STATE_FINAL_EFFECT or

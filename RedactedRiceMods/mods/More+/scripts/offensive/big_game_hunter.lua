@@ -1,7 +1,7 @@
 local customSkill = more_plus.SkillEffectModifier:new{
 	id = "RrBigGameHunter",
 	name = "Big Game Hunter",
-	description = "Doubles damage to boss vek",
+	description = "Doubles damage to boss vek.",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 }
 

@@ -1,7 +1,7 @@
 local customSkill = more_plus.SkillTrait:new{
 	id = "RrJumpJets",
 	name = "Jump Jets",
-	description = "Pilot Mech leaps instead of typical movement",
+	description = "Piloted Mech leaps instead of typical movement.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT
 }
 

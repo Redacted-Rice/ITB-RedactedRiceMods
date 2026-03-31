@@ -1,7 +1,7 @@
 local customSkill = more_plus.SkillActive:new{
 	id = "RrShatterstep",
 	name = "Shatterstep",
-	description = "When moving, cracks tile moved from",
+	description = "When moving, cracks the tile moved from.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 	moveStartPositions = {},
 }

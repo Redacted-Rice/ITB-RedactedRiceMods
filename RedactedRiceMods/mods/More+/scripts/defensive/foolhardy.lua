@@ -3,7 +3,7 @@ local GRID_DEF_BONUS = 12
 local customSkill = more_plus.SkillActive:new{
 	id = "RrFoolhardy",
 	name = "Foolhardy",
-	description = "+"..GRID_DEF_BONUS.." grid defense as long as no buildings are damaged",
+	description = "+"..GRID_DEF_BONUS.." grid defense if no buildings are damaged.",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 }
 

@@ -1,7 +1,7 @@
 local customSkill = more_plus.SkillEffectModifier:new{
 	id = "RrFirstBlood",
 	name = "First Blood",
-	description = "+1 damage to undamaged vek with 4+ health",
+	description = "+1 damage to undamaged enemies with 4+ health.",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 }
 
