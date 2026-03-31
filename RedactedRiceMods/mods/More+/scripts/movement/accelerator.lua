@@ -21,6 +21,7 @@ function customSkill:setupEffect()
 	table.insert(customSkill.events, modApi.events.onPreEnvironment:subscribe(customSkill.setMoveBonus))
 	table.insert(customSkill.events, modApi.events.onMissionEnd:subscribe(customSkill.setDefaultMoveBonus))
 	table.insert(customSkill.events, modApi.events.onMissionStart:subscribe(customSkill.setDefaultMoveBonus))
+	-- Fire now on load/earn/reset
 	self.setCurrentMoveBonus()
 end
 

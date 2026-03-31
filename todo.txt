@@ -41,7 +41,6 @@ Vanilla+
 
 MoreLvlUpSkills:
 1. Add icon for resilient?
-2. Change hyper to start at 2 and then lose 1 at end of 2nd & 3rd turn
 
 Next Release candidates:
 1. More Skills - stay tuned ;)
