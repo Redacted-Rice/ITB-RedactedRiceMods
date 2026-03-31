@@ -2,7 +2,7 @@ local mod = {
 	id = "redactedrice_RebalCorePlus",
 	name = "Rebalanced Core Lvl Up Skills",
 	icon = "mod_icon.png",
-	version = "1.0.0",
+	version = "1.0.1",
 	modApiVersion = "2.9.5",
 	gameVersion = "1.2.93",
 	dependencies = {
@@ -79,10 +79,18 @@ function mod:init(options)
 	cplus_plus_ex:registerSkill(cplusCategory, healthPlus)
 	cplus_plus_ex:registerSkill(cplusCategory, movePlus)
 	cplus_plus_ex:registerSkill(cplusCategory, gridPlus)
+	
+	-- Exclude vanilla version with them
+	cplus_plus_ex:registerSkillExclusion(healthPlus.id, "Health")
+	cplus_plus_ex:registerSkillExclusion(movePlus.id, "Move")
+	cplus_plus_ex:registerSkillExclusion(gridPlus.id, "Grid")
 
 	-- Respect the vanilla health exclusions
 	cplus_plus_ex:registerPilotSkillExclusions("Pilot_Rock", healthPlus.id)
 	cplus_plus_ex:registerPilotSkillExclusions("Pilot_Zoltan", healthPlus.id)
+	
+	-- TODO: Mirror any health exclusions? Probably just wait for pool
+	
 end
 
 function mod:load(options, version)

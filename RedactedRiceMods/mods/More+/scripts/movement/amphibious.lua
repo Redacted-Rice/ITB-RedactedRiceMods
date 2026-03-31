@@ -8,6 +8,9 @@ local customSkill = more_plus.SkillActive:new{
 
 customSkill:addCustomTrait()
 
+-- Exclude prospero as he has flying
+cplus_plus_ex:registerPilotSkillExclusions("Pilot_Recycler", customSkill.id)
+
 function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onTargetAreaBuild:subscribe(customSkill.moveTargetArea))
 	table.insert(customSkill.events, modapiext.events.onPawnPositionChanged:subscribe(customSkill.addFlyingIfNeeded))

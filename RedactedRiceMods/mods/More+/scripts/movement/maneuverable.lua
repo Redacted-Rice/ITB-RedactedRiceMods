@@ -7,6 +7,9 @@ local customSkill = more_plus.SkillActive:new{
 
 customSkill:addCustomTrait()
 
+-- Doesn't work as expected with Henry ATM
+cplus_plus_ex:registerPilotSkillExclusions("Pilot_Hotshot", customSkill.id)
+
 function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onTargetAreaBuild:subscribe(customSkill.moveTargetArea))
 	table.insert(customSkill.events, modapiext.events.onSkillBuild:subscribe(customSkill.moveSkillBuild))

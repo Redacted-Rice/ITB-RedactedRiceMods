@@ -5,6 +5,8 @@ local customSkill = more_plus.SkillActive:new{
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }
 
+cplus_plus_ex:registerPilotSkillExclusions("Pilot_Zoltan", customSkill.id)
+
 customSkill:addCustomTrait()
 
 function customSkill:setupEffect()
