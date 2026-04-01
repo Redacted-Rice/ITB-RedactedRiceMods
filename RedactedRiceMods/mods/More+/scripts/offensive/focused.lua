@@ -17,17 +17,15 @@ cplus_plus_ex:registerPilotSkillExclusions("Pilot_Arrogant", customSkill.id)
 cplus_plus_ex:registerPilotSkillExclusions("Pilot_Chemical", customSkill.id)
 
 function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes)
-	local handled = false
 	-- If the pawn has used its movement, then return
 	if pawn:IsMovementSpent() then
 		logger.logDebug(SUBMODULE, "Pawn %d already moved, no bonus damage", pawn:GetId())
-		return handled
+		return
 	end
 	local spacePawn = Board:GetPawn(spaceDamage.loc)
 	if spacePawn and spacePawn:IsEnemy() and
-			spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and 
+			spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and
 			spaceDamage.iDamage ~= DAMAGE_ZERO then
-		handled = true
 		local previewState = isFinalEffect and more_plus.libs.weaponPreview.STATE_FINAL_EFFECT or
 				more_plus.libs.weaponPreview.STATE_SKILL_EFFECT
 		for _, idx in ipairs(indexes) do
@@ -43,7 +41,6 @@ function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes
 					spaceDamage.loc:GetString(), idx)
 		end
 	end
-	return handled
 end
 
 return customSkill

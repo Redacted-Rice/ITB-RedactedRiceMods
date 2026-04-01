@@ -6,7 +6,7 @@ local customSkill = more_plus.SkillActive:new{
 }
 
 -- Initialize logger
-customSkill.DEBUG = true
+customSkill.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Maneuverable", customSkill.DEBUG)
 

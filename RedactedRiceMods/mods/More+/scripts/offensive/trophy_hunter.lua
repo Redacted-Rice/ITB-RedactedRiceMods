@@ -13,13 +13,11 @@ local SUBMODULE = logger.register("More+", "TrophyHunter", customSkill.DEBUG)
 customSkill:addCustomTrait()
 
 function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes)
-	local handled = false
 	local spacePawn = Board:GetPawn(spaceDamage.loc)
-	
+
 	if spacePawn and spacePawn:IsEnemy() and more_plus.libs.pawnTypeUtils.isSpawnCategory(spacePawn, "Unique") and
 			spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and
 			spaceDamage.iDamage ~= DAMAGE_ZERO then
-		handled = true
 		local previewState = isFinalEffect and more_plus.libs.weaponPreview.STATE_FINAL_EFFECT or
 				more_plus.libs.weaponPreview.STATE_SKILL_EFFECT
 		for _, idx in ipairs(indexes) do
@@ -35,7 +33,6 @@ function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes
 					spaceDamage.loc:GetString(), idx)
 		end
 	end
-	return handled
 end
 
 return customSkill
