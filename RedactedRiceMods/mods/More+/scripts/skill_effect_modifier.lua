@@ -58,15 +58,15 @@ function SkillEffectModifier:processEffects(pawn, isFinalEffect, effects, p2)
 		for _, spaceDamage in pairs(extract_table(effects)) do
 			local spaceDamageKey = self:hashSpaceDamage(pawn:GetId(), spaceDamage, p2)
 			if not self.processedDamages[spaceDamageKey] then
-				self.processedDamages[spaceDamageKey] = true
-
 				modApi:runLater(function()
 					more_plus.SkillActive.skills[self.id].processedDamages = {}
 				end)
 
 				logger.logDebug(SUBMODULE, "Modifying space damage at point %s for %s",
 						spaceDamage.loc:GetString(), self.id)
-				self:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes)
+				self.processedDamages[spaceDamageKey] = self:modifySpaceDamage(
+						pawn, isFinalEffect, spaceDamage, indexes)
+						
 			else
 				logger.logDebug(SUBMODULE, "Already processed damage for %s at %s", self.id, spaceDamage.loc:GetString())
 			end

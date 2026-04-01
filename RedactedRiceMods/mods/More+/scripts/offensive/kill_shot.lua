@@ -13,13 +13,14 @@ local SUBMODULE = logger.register("More+", "KillShot", customSkill.DEBUG)
 customSkill:addCustomTrait()
 
 function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes)
+	local handled = false
 	local numInstances = #indexes
 	local spacePawn = Board:GetPawn(spaceDamage.loc)
 	
 	if spacePawn and spacePawn:IsEnemy() and
 			spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and
 			spaceDamage.iDamage ~= DAMAGE_ZERO then
-
+		handled = true
 		local currentHealth = spacePawn:GetHealth()
 		local totalBonusDamage = numInstances
 		local wouldKillWithExtra = (currentHealth - (spaceDamage.iDamage + totalBonusDamage)) <= 0
@@ -44,6 +45,7 @@ function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes
 				spaceDamage.loc:GetString(), currentHealth, spaceDamage.iDamage)
 		end
 	end
+	return handled
 end
 
 return customSkill
