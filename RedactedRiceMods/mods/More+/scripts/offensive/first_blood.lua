@@ -13,14 +13,12 @@ local SUBMODULE = logger.register("More+", "FirstBlood", customSkill.DEBUG)
 customSkill:addCustomTrait()
 
 function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes)
-	local handled = false
 	local spacePawn = Board:GetPawn(spaceDamage.loc)
 
 	local maxHealth = _G[spacePawn:GetType()].Health
 	if spacePawn and spacePawn:IsEnemy() and spacePawn:GetHealth() == maxHealth and
 			maxHealth >= 4 and spaceDamage.iDamage > 0 and
 			spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
-		local handled = true
 		local previewState = isFinalEffect and more_plus.libs.weaponPreview.STATE_FINAL_EFFECT or
 				more_plus.libs.weaponPreview.STATE_SKILL_EFFECT
 		for _, idx in ipairs(indexes) do
@@ -36,7 +34,6 @@ function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes
 				spaceDamage.loc:GetString(), spacePawn:GetHealth(), maxHealth, idx)
 		end
 	end
-	return handled
 end
 
 return customSkill

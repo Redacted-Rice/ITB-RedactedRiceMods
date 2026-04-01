@@ -13,12 +13,10 @@ local SUBMODULE = logger.register("More+", "CalculatedShot", customSkill.DEBUG)
 customSkill:addCustomTrait()
 
 function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes)
-	local handled = false
 	local spacePawn = Board:GetPawn(spaceDamage.loc)
-	
-	if spacePawn and spacePawn:IsEnemy() and spacePawn:GetMoveSpeed() <= 2 and spaceDamage.iDamage > 0 and 
+
+	if spacePawn and spacePawn:IsEnemy() and spacePawn:GetMoveSpeed() <= 2 and spaceDamage.iDamage > 0 and
 			spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
-		handled = true
 		local moveSpeed = spacePawn:GetMoveSpeed()
 		local previewState = isFinalEffect and more_plus.libs.weaponPreview.STATE_FINAL_EFFECT or
 				more_plus.libs.weaponPreview.STATE_SKILL_EFFECT
@@ -35,7 +33,6 @@ function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes
 				spaceDamage.loc:GetString(), moveSpeed, idx)
 		end
 	end
-	return handled
 end
 
 return customSkill
