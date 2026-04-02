@@ -1,7 +1,7 @@
 local customSkill = more_plus.SkillEffectModifier:new{
 	id = "RrCalculatedShot",
 	name = "Calculated Shot",
-	description = "+1 damage to enemies with two or less move.",
+	description = "+1 damage to enemies with movement at or below half the mech's movement.",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 }
 
@@ -14,8 +14,10 @@ customSkill:addCustomTrait()
 
 function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes)
 	local spacePawn = Board:GetPawn(spaceDamage.loc)
+	local mechMoveSpeed = pawn:GetMoveSpeed()
+	local moveThreshold = math.ceil(mechMoveSpeed / 2)
 
-	if spacePawn and spacePawn:IsEnemy() and spacePawn:GetMoveSpeed() <= 2 and spaceDamage.iDamage > 0 and
+	if spacePawn and spacePawn:IsEnemy() and spacePawn:GetMoveSpeed() <= moveThreshold and spaceDamage.iDamage > 0 and
 			spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
 		local moveSpeed = spacePawn:GetMoveSpeed()
 		local previewState = isFinalEffect and more_plus.libs.weaponPreview.STATE_FINAL_EFFECT or
@@ -29,8 +31,8 @@ function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes
 					end)
 
 			spaceDamage.iDamage = spaceDamage.iDamage + 1
-			logger.logDebug(SUBMODULE, "Added +1 damage to slow target at %s (move speed: %d) for idx %d",
-				spaceDamage.loc:GetString(), moveSpeed, idx)
+			logger.logDebug(SUBMODULE, "Added +1 damage to slow target at %s (enemy move: %d, mech move: %d, threshold: %d) for idx %d",
+				spaceDamage.loc:GetString(), moveSpeed, mechMoveSpeed, moveThreshold, idx)
 		end
 	end
 end

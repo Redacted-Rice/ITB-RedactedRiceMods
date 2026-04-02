@@ -1,6 +1,6 @@
 local customSkill = more_plus.SkillActive:new{
-	id = "RrManeuverable",
-	name = "Maneuverable",
+	id = "RrNimble",
+	name = "Nimble",
 	description = "Piloted mech can move through and over buildings and mountains.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }
@@ -8,7 +8,7 @@ local customSkill = more_plus.SkillActive:new{
 -- Initialize logger
 customSkill.DEBUG = false
 local logger = memhack.logger
-local SUBMODULE = logger.register("More+", "Maneuverable", customSkill.DEBUG)
+local SUBMODULE = logger.register("More+", "Nimble", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
@@ -34,7 +34,7 @@ function customSkill.moveTargetArea(mission, pawn, weaponId, p1, targetArea)
 		local pilot = pawn:GetPilot()
 		if pilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot) then
 			local passThroughMode = customSkill.getPassThroughMode(pilot)
-			logger.logDebug(SUBMODULE, "Calculating maneuverable target area for pawn %d from %s with mode %s", 
+			logger.logDebug(SUBMODULE, "Calculating nimble target area for pawn %d from %s with mode %s", 
 					pawn:GetId(), p1:GetString(), passThroughMode)
 
 			local newPoints = PointList()
