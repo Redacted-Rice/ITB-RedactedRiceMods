@@ -12,8 +12,7 @@ local SUBMODULE = logger.register("More+", "CalculatedShot", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes)
-	local spacePawn = Board:GetPawn(spaceDamage.loc)
+function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes, spacePawn)
 	local mechMoveSpeed = pawn:GetMoveSpeed()
 	local moveThreshold = math.ceil(mechMoveSpeed / 2)
 

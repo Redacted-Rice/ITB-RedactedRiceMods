@@ -12,8 +12,7 @@ local SUBMODULE = logger.register("More+", "BigGameHunter", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes)
-	local spacePawn = Board:GetPawn(spaceDamage.loc)
+function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes, spacePawn)
 
 	if spacePawn and more_plus.libs.pawnTypeUtils.isSpawnCategory(spacePawn, "Boss") and
 			spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and

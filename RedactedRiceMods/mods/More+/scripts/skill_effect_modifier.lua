@@ -30,8 +30,17 @@ function SkillEffectModifier:setupEffect()
 		end))
 end
 
-function SkillEffectModifier:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes)
-	logger.logError(SUBMODULE, "SkillEffectModifier modifySpaceDamage not implemented for skill %s", self.id)
+function SkillEffectModifier:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes, spacePawn)
+	logger.logError(SUBMODULE, string.format("SkillEffectModifier modifySpaceDamage not implemented for skill %s", self.id))
+end
+
+-- Helper to get pawn at a location, checking temp positions first then board
+function SkillEffectModifier:getPawnAt(loc, pawnPositions)
+	local hash = more_plus.libs.boardUtils.getSpaceHash(loc)
+	if pawnPositions[hash] ~= nil then
+		return pawnPositions[hash]
+	end
+	return Board:GetPawn(loc)
 end
 
 -- Handles re-entrant skills that call the single click version and stuff like that
@@ -52,8 +61,56 @@ function SkillEffectModifier:processEffects(pawn, isFinalEffect, effects, p2)
 		local indexes = cplus_plus_ex:getPilotSkillIndices(self.id, pilot)
 		logger.logDebug(SUBMODULE, "Processing space damages for %s", self.id)
 
-		for _, spaceDamage in pairs(extract_table(effects)) do
-			self:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes)
+		local pawnPositions = {}
+		local pendingMoves = {}
+		local effectsTable = extract_table(effects)
+
+		for i, spaceDamage in ipairs(effectsTable) do
+			-- If this is a movement, we need to track and update the temporary pawn posistions
+			if spaceDamage:IsMovement() then
+				local moveStart = spaceDamage:MoveStart()
+				local moveEnd = spaceDamage:MoveEnd()
+				local movingPawn = self:getPawnAt(moveStart, pawnPositions)
+
+				if movingPawn then
+					table.insert(pendingMoves, {
+						pawn = movingPawn,
+						pawnId = movingPawn:GetId(),
+						from = moveStart,
+						to = moveEnd
+					})
+					logger.logDebug(SUBMODULE, "Tracked move for pawn %d from %s to %s",
+						movingPawn:GetId(), moveStart:GetString(), moveEnd:GetString())
+				end
+
+				-- If there is a delay or its the last one, we add the pending to
+				-- the updated positions. Otherwise it stays in pending as it will not
+				-- be considered executed yet. This allows for swapping two pawns for
+				-- example
+				if spaceDamage.fDelay ~= 0 or i == #effectsTable then
+					for _, moveData in ipairs(pendingMoves) do
+						local fromHash = more_plus.libs.boardUtils.getSpaceHash(moveData.from)
+						local toHash = more_plus.libs.boardUtils.getSpaceHash(moveData.to)
+						pawnPositions[fromHash] = false
+						pawnPositions[toHash] = moveData.pawn
+					end
+					pendingMoves = {}
+				end
+			-- if its not a movement, apply any pending moves and then call into our modify fn
+			else
+				if #pendingMoves > 0 then
+					for _, moveData in ipairs(pendingMoves) do
+						local fromHash = more_plus.libs.boardUtils.getSpaceHash(moveData.from)
+						local toHash = more_plus.libs.boardUtils.getSpaceHash(moveData.to)
+						pawnPositions[fromHash] = false
+						pawnPositions[toHash] = moveData.pawn
+					end
+					pendingMoves = {}
+				end
+
+				local spacePawn = self:getPawnAt(spaceDamage.loc, pawnPositions)
+				self:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes, spacePawn)
+			end
 		end
 	end
 end
