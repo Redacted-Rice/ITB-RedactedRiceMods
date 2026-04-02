@@ -1,14 +1,14 @@
 local customSkill = more_plus.SkillEffectModifier:new{
 	id = "RrFocused",
-	name = "Focused",
-	description = "+1 Damage to enemies if the mech has not used its movement yet.",
+	name = "Focused Strike",
+	description = "Doubles damage to enemies if the mech has not used its movement yet.",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 }
 
 -- Initialize logger
 customSkill.DEBUG = false
 local logger = memhack.logger
-local SUBMODULE = logger.register("More+", "Focused", customSkill.DEBUG)
+local SUBMODULE = logger.register("More+", "FocusedStrike", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
@@ -33,12 +33,13 @@ function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes
 			more_plus.libs.weaponPreview.ExecuteWithState(previewState,
 					function()
 						more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc,
-								more_plus.commonIcons.extraDamage.key.."_"..idx)
+								more_plus.commonIcons.crit.key.."_"..idx)
 					end)
 
-			spaceDamage.iDamage = spaceDamage.iDamage + 1
-			logger.logDebug(SUBMODULE, "Added +1 damage to enemy at %s (not moved yet) for idx %d",
-					spaceDamage.loc:GetString(), idx)
+			local originalDamage = spaceDamage.iDamage
+			spaceDamage.iDamage = spaceDamage.iDamage * 2
+			logger.logDebug(SUBMODULE, "Doubled damage to enemy at %s from %d to %d (not moved yet) for idx %d",
+					spaceDamage.loc:GetString(), originalDamage, spaceDamage.iDamage, idx)
 		end
 	end
 end
