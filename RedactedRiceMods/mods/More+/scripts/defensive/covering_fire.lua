@@ -12,9 +12,7 @@ local SUBMODULE = logger.register("More+", "CoveringFire", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes)
-	local targetPawn = Board:GetPawn(spaceDamage.loc)
-	
+function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes, targetPawn)
 	if targetPawn and targetPawn:IsEnemy() then
 		local previewState = isFinalEffect and more_plus.libs.weaponPreview.STATE_FINAL_EFFECT or
 				more_plus.libs.weaponPreview.STATE_SKILL_EFFECT
