@@ -1,7 +1,7 @@
 local customSkill = more_plus.SkillActive:new{
-	id = "RrWaterProof",
-	name = "Water Proof",
-	description = "Mech can attack from liquid tiles.",
+	id = "RrPontoons",
+	name = "Pontoons",
+	description = "Mech floats on top of liquid tiles without being affected by them.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 	modified = {}
 }
