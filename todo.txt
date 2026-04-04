@@ -41,9 +41,6 @@ Vanilla+
 
 MoreLvlUpSkills:
 1. Add icon for resilient?
-2. Update icon for focused strike
-3. New water proof icon?
-4. New/updated nible icon?
 
 Next Release candidates:
 1. More Skills - stay tuned ;)
