@@ -1,7 +1,7 @@
 local customSkill = more_plus.SkillEffectModifier:new{
 	id = "RrCoveringFire",
 	name = "Covering Fire",
-	description = "Enemies attacked lose half their movement for a turn (rounded down).",
+	description = "Targetted enemies lose half their movement for a turn (rounded down).",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }
 

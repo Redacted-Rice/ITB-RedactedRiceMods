@@ -1,7 +1,7 @@
 local customSkill = more_plus.SkillEffectModifier:new{
 	id = "RrCalculatedShot",
 	name = "Calculated Shot",
-	description = "+1 damage to enemies with movement at or below half the mech's movement.",
+	description = "+1 damage to enemies with movement <= to half (rounded up) the piloted mech's movement.",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 }
 

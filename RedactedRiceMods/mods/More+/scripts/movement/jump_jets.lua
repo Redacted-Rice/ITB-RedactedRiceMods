@@ -1,7 +1,7 @@
 local customSkill = more_plus.SkillActive:new{
 	id = "RrJumpJets",
 	name = "Jump Jets",
-	description = "Piloted Mech can jump with -1 move in addition to its normal movement.",
+	description = "Piloted Mech can jump with -1 move as its movement.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 	skipJump = false
 }
@@ -17,33 +17,9 @@ cplus_plus_ex:registerPilotSkillExclusions("Pilot_Hotshot", customSkill.id)
 
 customSkill:addCustomTrait()
 
--- Manual bitwise or implementation for Lua 5.1 because for some reason
--- they didn't support this as part of the language until 5.2+...
--- Maybe consider moving to a lib
-local function bitwiseOr(a, b)
-	local result = 0
-	local bitval = 1
-	while a > 0 or b > 0 do
-		local a_bit = a % 2
-		local b_bit = b % 2
-		if a_bit == 1 or b_bit == 1 then
-			result = result + bitval
-		end
-		bitval = bitval * 2
-		a = math.floor(a / 2)
-		b = math.floor(b / 2)
-	end
-	return result
-end
-
 function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onTargetAreaBuild:subscribe(customSkill.moveTargetArea))
 	table.insert(customSkill.events, modapiext.events.onSkillBuild:subscribe(customSkill.moveSkillBuild))
-end
-
-function customSkill.getJumperPathProf(pawn)
-	local pathProf = pawn:GetPathProf()
-	return bitwiseOr(pathProf, PATH_PHASING)
 end
 
 function customSkill.moveTargetArea(mission, pawn, weaponId, p1, targetArea)
@@ -56,9 +32,6 @@ function customSkill.moveTargetArea(mission, pawn, weaponId, p1, targetArea)
 				return
 			end
 
-			logger.logDebug(SUBMODULE, "Calculating jump jets target area for pawn %d from %s",
-					pawn:GetId(), p1:GetString())
-
 			local hashedNormalPoints = {}
 			for idx = 1, targetArea:size() do
 				local point = targetArea:index(idx)
@@ -67,8 +40,13 @@ function customSkill.moveTargetArea(mission, pawn, weaponId, p1, targetArea)
 
 			-- Get our jump params and determine the reachable points
 			local jumpMoveSpeed = math.max(0, pawn:GetMoveSpeed() - 1)
-			local jumperPathProf = customSkill.getJumperPathProf(pawn)
-			local jumpPoints = Board:GetReachable(p1, jumpMoveSpeed, jumperPathProf)
+			local jumpPoints = PointList()
+			more_plus.libs.boardUtils.getReachableInRange(jumpPoints, jumpMoveSpeed, p1,
+					more_plus.libs.boardUtils.makeAllTerrainMatcher(pawn, "any"),
+					more_plus.libs.boardUtils.makeGenericMatcher(pawn, "any"))
+
+			logger.logDebug(SUBMODULE, "Jump jets target area from %s with speed %d found %d reachable spaces",
+					p1:GetString(), jumpMoveSpeed, jumpPoints:size())
 
 			-- Go through and add any that are not already there
 			local addedCount = 0

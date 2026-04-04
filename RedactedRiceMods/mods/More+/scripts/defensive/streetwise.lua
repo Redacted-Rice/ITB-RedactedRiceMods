@@ -1,7 +1,7 @@
 local customSkill = more_plus.SkillEffectModifier:new{
 	id = "RrStreetwise",
 	name = "Streetwise",
-	description = "Prevents (not-instakill) damage to buildings from mech attacks.",
+	description = "Prevents (not-instakill) damage to buildings from piloted mech's attacks.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }
 
