@@ -1,7 +1,7 @@
 local customSkill = more_plus.SkillActive:new{
 	id = "RrResilient",
 	name = "Resilient",
-	description = "Gain a shield after taking damage.",
+	description = "Gain a shield each time the piloted mech is damaged after the attack completes",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }
 

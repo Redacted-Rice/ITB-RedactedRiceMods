@@ -158,14 +158,14 @@ if isNewestVersion then
 	end
 
 	--pawnCheckType "none", "friendly", "any"
-	function BoardUtils.makeAllTerrainMatcher(pawn, pawnCheckType, flying)
+	function BoardUtils.makeAllTerrainMatcher(pawn, pawnCheckType)
 		return BoardUtils.makeTerrainBasedMatcher(pawn, pawnCheckType, function(point)
 			return not BoardUtils.isPawnFlying(pawn) and Board:GetTerrain(point) == TERRAIN_HOLE
 		end)
 	end
 
 	--pawnCheckType "none", "friendly", "any"
-	function BoardUtils.makeGenericMatcher(pawn, flying, pawnCheckType)
+	function BoardUtils.makeGenericMatcher(pawn, pawnCheckType)
 		return BoardUtils.makeTerrainBasedMatcher(pawn, pawnCheckType, function(point)
 			local terrain = Board:GetTerrain(point)
 			return (not BoardUtils.isPawnFlying(pawn) and Board:GetTerrain(point) == TERRAIN_HOLE) or

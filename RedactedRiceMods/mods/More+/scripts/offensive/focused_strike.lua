@@ -1,7 +1,7 @@
 local customSkill = more_plus.SkillEffectModifier:new{
 	id = "RrFocused",
 	name = "Focused Strike",
-	description = "Doubles damage to enemies if the mech has not used its movement yet.",
+	description = "Doubles damage to enemies if the piloted mech has not used its movement.",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 }
 
