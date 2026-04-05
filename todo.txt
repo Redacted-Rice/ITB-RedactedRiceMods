@@ -19,8 +19,7 @@ Known issues:
 ------------------------------------------------------------------------------
 
 World Builders:
-1. If swapping tiles with a shielded mech, will remove the shield
-	a. Is mech shield and tile shield stored differently? what happens when moving onto a sheidled building? Will the pawn steal the shield?
+None
 
 Next release candidates:
 None
@@ -29,7 +28,7 @@ Known Issues:
 1. Move range hovering does not display right. This is not currently able to be changed
 2. When you move over a frozen tile, the ice will visually disappear but will still be there
 3. When you use mold with acid, damage on second effect will show base damage on the space but will show right damage on pawn itself. This seems to be just related to how ItB handles damage and acid and throws
-
+4. If you reset or reload with a shielded pawn on a shielded building, the building will lose its shield. This is a vanilla limitation that would be very complex to handle
 
 ------------------------------------------------------------------------------
 
