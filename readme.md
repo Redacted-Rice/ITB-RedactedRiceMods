@@ -14,7 +14,7 @@ Please enjoy and contact us if you run into any issues!
 
 # Squads
 * Treeherders - v3.1.0 - Inspired by ents, this squad focuses on using forests tiles to increase their power. The flagship entborg mech gets stronger as the forests get destroyed
-* WorldBuilders - v1.3.0 - This squad focuses on terrain manipulation to block and avoid damage. It has some strong single target effects but you can easily get overwhelmed by numbers if not strategically manipulating the terrain
+* WorldBuilders - v1.3.1 - This squad focuses on terrain manipulation to block and avoid damage. It has some strong single target effects but you can easily get overwhelmed by numbers if not strategically manipulating the terrain
 
 # Other
 * RebalanceCore+ - v1.0.1 - Reblances the core vanilla level up skills (other than reactor) so they are not strictly worse than the AE ones
@@ -36,7 +36,38 @@ Please enjoy and contact us if you run into any issues!
 To uninstall, delete the folder in mods
 
 # Releases
-Latest release: 1.3.0
+Latest release: 1.4.0
+
+## 1.4.0
+Initial release of More Pilot Level Up Skills (More+)
+
+Fixes and versioning updates to libs and some a minor fix to worldbuilders related to shield handling
+
+Released: XX/XX/2026
+
+Squads:
+* Treeherders    3.1.0
+* WorldBuilders  1.3.1
+
+Other Mods:
+* RebalanceCore+ 1.0.1
+
+Libs:
+* BoardUtils        1.3.0
+* PassiveEffect     1.4.0
+* PawnTypeUtils     1.1.0
+* PredictableRandom 1.2.0
+* Trait             3.0.0
+* TraitReplace      0.8.0
+* WeaponPreview     4.0.1
+
+Dependencies:
+* ItB AE        1.2.93
+* ModLoader     2.9.5
+* ModLoaderExt  1.24
+* Memedit       1.2.1
+* Memhack       1.0.0
+* CPLUS+        1.0.0
 
 ## 1.3.0
 Initial release of Rebalance Core Pilot Level Up Skills mod and several libraries/enhancments to support in progress
@@ -47,20 +78,20 @@ Some other minor to squads to use libs and be more compatibile for custom skills
 Released: 03/28/2026
 
 Squads:
-*Treeherders    3.1.0
-*WorldBuilders  1.3.0
+* Treeherders    3.1.0
+* WorldBuilders  1.3.0
 
 Other Mods:
-*RebalanceCore+ 1.0.0
+* RebalanceCore+ 1.0.0
 
 Libs:
-*BoardUtils        1.2.0
-*PassiveEffect     1.3.0
-*PawnTypeUtils     1.0.0
-*PredictableRandom 1.1.0
-*Trait             3.0.0
-*TraitReplace      0.8.0
-*WeaponPreview     4.0.0
+* BoardUtils        1.2.0
+* PassiveEffect     1.3.0
+* PawnTypeUtils     1.0.0
+* PredictableRandom 1.1.0
+* Trait             3.0.0
+* TraitReplace      0.8.0
+* WeaponPreview     4.0.0
 
 Dependencies:
 * ItB AE        1.2.93
