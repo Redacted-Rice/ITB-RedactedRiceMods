@@ -310,6 +310,7 @@ function WorldBuilders_Shift:GetTerrainAndEffectData(space)
 		item = Board:GetItem(space),
 		populated = Board:IsPowered(space),
 		shielded = Board:IsShield(space),
+		shieldedPawn = Board:GetPawn(space) and Board:GetPawn(space):IsShield(),
 		cracked = Board:IsCracked(space),
 		currHealth = Board:GetHealth(space),
 		maxHealth = Board:GetMaxHealth(space),
@@ -452,13 +453,18 @@ function WorldBuilders_Shift:ApplyTerrain(spaceDamage, spaceDamagePreform, space
 	end
 
 	-- If it should be shielded but isn't already
-	if spaceData.shielded and not Board:IsShield(spaceDamage.loc) and not (Board:GetPawn(spaceDamage.loc) and Board:GetPawn(spaceDamage.loc):IsShield()) then
+	if spaceData.shielded and not Board:IsShield(spaceDamage.loc) then
 		spaceDamage.sScript = spaceDamage.sScript .. [[
 				Board:SetShield(]] .. spaceDamage.loc:GetString() .. [[, true)]]
 	-- if it should not be shielded and it is
-	elseif not spaceData.shielded and (Board:IsShield(spaceDamage.loc) or (Board:GetPawn(spaceDamage.loc) and Board:GetPawn(spaceDamage.loc):IsShield())) then
+	elseif not spaceData.shielded and Board:IsShield(spaceDamage.loc) then
 		spaceDamage.sScript = spaceDamage.sScript .. [[
 				Board:SetShield(]] .. spaceDamage.loc:GetString() .. [[, false)]]
+		-- If the pawn is also shielded, it will remove it too so we need to reapply it
+		if oldSpaceData.shieldedPawn then
+			spaceDamage.sScript = spaceDamage.sScript .. [[
+					Board:GetPawn(]] .. spaceDamage.loc:GetString() .. [[):SetShield(true)]]
+		end
 	end
 
 	if spaceData.cracked then
