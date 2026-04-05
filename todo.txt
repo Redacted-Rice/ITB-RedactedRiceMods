@@ -39,6 +39,7 @@ MoreLvlUpSkills:
 Known Issues:
 * Vigor on Harold will not show icon when using repair. Not sure why its not displaying. Seems to be something unique with how his repair skill works
 
+
 ------------------------------------------------------------------------------
 
 LegendaryLvlUpSkills:
