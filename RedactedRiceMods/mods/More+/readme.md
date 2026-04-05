@@ -1,7 +1,7 @@
 # More Pilot Level Up Skills
 Have you ever wished there was even more variety for Pilot Level Up Skills than in AE? 
-Well this is the mod for you! This mod adds over TBD more Pilot Level Up Skills to
-the game in (currently) 4 different categorical groups. Enable and disable groups or individual
+Well this is the mod for you! This mod currenlty adds 19 more Pilot Level Up Skills to
+the game in 4 different categorical groups. Enable and disable groups or individual
 skills in the CPLUS+ Modify Pilot Abilities Menu.
 
 Customize and enhance your game like never before!
@@ -17,18 +17,39 @@ Please enjoy and contact us if you run into any issues.
 
 ## Custom Skills Added
 
-TODO: Update these...
+### Defensive
+Skills related to grid and mech defense and hampering enemy power
+
+* Covering Fire - Targetted enemies lose half their movement for a turn (rounded down).
+* Defiant - +3 grid defense per enemy on the board.
+* Foolhardy - +12 grid defense if no buildings are damaged.
+* Resilient - Gain a shield each time the piloted mech is damaged after the attack completes.
+* Streetwise - Prevents (not-instakill) damage to buildings from piloted mech's attacks.
 
 ### Movement
 Skills related to mechs moving around the board in any way
-* Amphibious - Mech becomes Flying on liquid tiles (water, acid, lava)
-* Guarded - Mech becomes Guarded meaning it can't be moved by skill effects
-* Jump Jets - Mech leaps instead of typical movement allowing pathing over enemies and terrain
+
+* Accelerator - +1 Move at the end of each turn.
+* Guarded - Piloted Mech is stable and cannot be moved by weapon effects.
+* Jump Jets - Piloted Mech can jump with -1 move as its movement.
+* Nimble - Piloted mech can move onto and through buildings and mountains.
+* Pontoons - Piloted mech floats on top of liquid tiles without being affected by them.
+
+### Offensive
+
+* Big Game Hunter - Doubles damage to boss vek.
+* Calculated Shot - +1 damage to enemies with movement <= to half (rounded up) the piloted mech's movement.
+* First Blood - +1 damage to undamaged enemies with 4+ health.
+* Focused Strike - Doubles damage to enemies if the piloted mech has not used its movement.
+* Kill Shot - +1 damage to enemies that would be killed by the extra damage.
+* Momentum - Gain boosted after moving at least 4 tiles.
+* Trophy Hunter - +1 damage to "unique" (non-common) enemies.
 
 ### Trade Offs
 These are skills that have a stronger than typical positive effect but also include a negative effect
-* Hot Headed - Gain boosted every other turn but lose 2 XP each kill. Can only appear in the first skill slot
-* Hyper - Gain +3 move but lose 1 move each turn for the first 3 turns
+
+* Hyper - +2 movement for the first 2 turns, +1 movement for the 3rd turn, then +0 movement.
+* Shatterstep - When moving, cracks the tile moved from.
 
 # Releases
 Latest release: 1.0.0
@@ -39,12 +60,12 @@ Released: XX/XX/2026
 compatible with:
 * ItB AE 	1.2.93
 * ModLoader 2.9.5
-* memhack	1.0.0
+* memhack	1.0.1
 * CPLUS+ Ex	1.0.0
 
 ### Notes
 Includes:
-* Movement - Amphibious, Guarded, Jump Jets
-* Trade Offs - Hot Headed, Hyper
-
-TODO: ... and all the others that I will add later
+* Defensive (5) - Covering Fire, Defiant, Foolhardy, Resilient, Streetwise
+* Movement (5) - Accelerator, Guarded, Jump Jets, Nimble, Pontoons
+* Offensive (7) - Big Game Hunter, Calculated Shot, First Blood, Focused Strike, Kill Shot, Momentum, Trophy Hunter
+* Trade Offs (2) - Hyper, Shatterstep
