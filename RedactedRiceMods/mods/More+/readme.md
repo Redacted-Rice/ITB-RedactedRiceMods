@@ -1,10 +1,12 @@
 # More Pilot Level Up Skills
 Have you ever wished there was even more variety for Pilot Level Up Skills than in AE? 
 Well this is the mod for you! This mod adds over TBD more Pilot Level Up Skills to
-the game in 5 different categorical groups. Enable and disable groups or individual
+the game in (currently) 4 different categorical groups. Enable and disable groups or individual
 skills in the CPLUS+ Modify Pilot Abilities Menu.
 
 Customize and enhance your game like never before!
+
+A bunch more skills are comming for a 2.0 release soon
 
 Join the Redacted Rice discord for support, more mods, discussion and other projects: https://discord.gg/CNjTVrpN4v
 
@@ -14,6 +16,8 @@ Please enjoy and contact us if you run into any issues.
 * Email: RedactedRice@gmail.com
 
 ## Custom Skills Added
+
+TODO: Update these...
 
 ### Movement
 Skills related to mechs moving around the board in any way
@@ -27,7 +31,7 @@ These are skills that have a stronger than typical positive effect but also incl
 * Hyper - Gain +3 move but lose 1 move each turn for the first 3 turns
 
 # Releases
-Latest release: 0.9.0
+Latest release: 1.0.0
 
 ## 1.0.0
 Released: XX/XX/2026 
@@ -43,4 +47,4 @@ Includes:
 * Movement - Amphibious, Guarded, Jump Jets
 * Trade Offs - Hot Headed, Hyper
 
-... and all the others that I will add later
+TODO: ... and all the others that I will add later

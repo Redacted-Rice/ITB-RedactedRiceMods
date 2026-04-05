@@ -36,7 +36,38 @@ Please enjoy and contact us if you run into any issues!
 To uninstall, delete the folder in mods
 
 # Releases
-Latest release: 1.3.0
+Latest release: 1.4.0
+
+## 1.4.0
+Initial release of More Pilot Level Up Skills (More+)
+
+Fixes and versioning updates to libs and some a minor fix to worldbuilders related to shield handling
+
+Released: XX/XX/2026
+
+Squads:
+* Treeherders    3.1.0
+* WorldBuilders  1.3.1
+
+Other Mods:
+* RebalanceCore+ 1.0.1
+
+Libs:
+* BoardUtils        1.3.0
+* PassiveEffect     1.4.0
+* PawnTypeUtils     1.1.0
+* PredictableRandom 1.2.0
+* Trait             3.0.0
+* TraitReplace      0.8.0
+* WeaponPreview     4.0.1
+
+Dependencies:
+* ItB AE        1.2.93
+* ModLoader     2.9.5
+* ModLoaderExt  1.24
+* Memedit       1.2.1
+* Memhack       1.0.0
+* CPLUS+        1.0.0
 
 ## 1.3.0
 Initial release of Rebalance Core Pilot Level Up Skills mod and several libraries/enhancments to support in progress
