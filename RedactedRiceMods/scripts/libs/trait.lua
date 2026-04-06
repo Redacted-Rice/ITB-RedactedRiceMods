@@ -1,5 +1,5 @@
 
-local VERSION = "3.0.0"
+local VERSION = "3.0.1"
 ---------------------------------------------------------------------
 -- Trait v3.0.0 - code library
 --
@@ -77,10 +77,27 @@ end
 local traitCycleTimer = 0
 local traitCycleIndex = 0
 
--- Preview mode tracking
-local previewMode = false
-local selectedPawn = nil
-local previewLocations = {}  -- Tiles showing preview icons
+-- Track trait counts per location for immediate updates when traits change
+local locationTraitCounts = {}
+
+-- Track move preview location
+local movePreviewLocation = nil
+
+-- Check if location is the current move preview location
+local function isPreviewLocation(loc)
+	return movePreviewLocation and
+		movePreviewLocation.x == loc.x and
+		movePreviewLocation.y == loc.y
+end
+
+-- Clear the current move preview and update its location
+local function clearMovePreview()
+	if movePreviewLocation then
+		local prevLoc = movePreviewLocation
+		movePreviewLocation = nil
+		updateLoc(prevLoc)
+	end
+end
 
 -- Get active traits for a pawn at a specific location (or current location if not specified)
 local function getAllActiveTraits(pawn, loc)
@@ -119,7 +136,7 @@ local function getCurrentIconFromTraits(traits)
 	elseif #traits == 1 then
 		return traits[1].id
 	end
-	
+
 	--Filter to only traits with board icons
 	local boardTraits = {}
 	for _, trait in ipairs(traits) do
@@ -140,8 +157,8 @@ local function getCurrentIconFromTraits(traits)
 end
 
 local function getTraitIcon(loc)
-	local pawn = Board:GetPawn(loc)	
-	-- We use this to update the old loc as well so make sure to 
+	local pawn = Board:GetPawn(loc)
+	-- We use this to update the old loc as well so make sure to
 	-- handle nil pawn case
 	if pawn == nil then
 		return ""
@@ -157,60 +174,72 @@ local function updateLoc(loc)
 		return
 	end
 
-	local traitIcon_new = getTraitIcon(loc)
+	-- Don't touch preview locations - managed by skill build hook
+	if isPreviewLocation(loc) then
+		return
+	end
+
+	-- Get active traits once for both trait count and icon
+	local pawn = Board:GetPawn(loc)
+	local activeTraits = pawn and getAllActiveTraits(pawn) or {}
+	local currentTraitCount = #activeTraits
+
+	-- Check if trait count changed at this location
+	local locKey = loc.x .. "_" .. loc.y
+	local lastTraitCount = locationTraitCounts[locKey] or 0
+	local traitCountChanged = currentTraitCount ~= lastTraitCount
+	locationTraitCounts[locKey] = currentTraitCount
+
+	-- Calculate new icon from traits
+	local traitIcon_new = getCurrentIconFromTraits(activeTraits)
 	local traitIcon_old = Board:GetTerrainIcon(loc)
 
-	local updateIcon = true
+	-- Force update if trait count changed or if icon actually changed
+	local updateIcon = traitCountChanged or (
+		true
 		and traitIcon_old ~= traitIcon_new
 		and isManagedTrait(traitIcon_old)
 		or isManagedTrait(traitIcon_new)
+	)
 
 	if updateIcon then
 		Board:SetTerrainIcon(loc, traitIcon_new)
 	end
 end
 
--- Show preview icons on tiles where selected pawn would have traits
-local function showPreviewIcons(pawn)
-	if not pawn then 
-		return 
+-- Update location as if the pawn is at the target location (for move preview)
+local function updateLocForPawnAt(pawn, loc)
+	if not isMemeditAvailable then
+		return
 	end
-	if not Board then 
-		return 
+
+	if not pawn or not loc then
+		return
 	end
-	
-	local size = Board:GetSize()
-	if not size then 
-		return 
+
+	-- Don't overwrite existing terrain icons
+	local existingIcon = Board:GetTerrainIcon(loc)
+	if existingIcon ~= "" and not isManagedTrait(existingIcon) then
+		return  -- Don't overwrite non-trait icons
 	end
-	
-	previewLocations = {}
-	
-	-- Scan all tiles to see where pawn would have traits
-	for x = 0, size.x - 1 do
-		for y = 0, size.y - 1 do
-			local loc = Point(x, y)
-			local existingPawn = Board:GetPawn(loc)
-			
-			-- Only show preview on tiles without pawns (selected pawn will already be
-			-- handled by normal checks
-			if not existingPawn then
-				-- Check if pawn would have any traits at this location
-				local traitsAtLoc = getAllActiveTraits(pawn, loc)
-				if #traitsAtLoc > 0 then
-					-- Use the same cycling logic as normal display
-					local icon = getCurrentIconFromTraits(traitsAtLoc)
-					if icon and icon ~= "" then
-						Board:SetTerrainIcon(loc, icon)
-						table.insert(previewLocations, loc)
-					end
-				end
-			end
-		end
+
+	-- Get traits as if pawn is at this locatio
+	local activeTraits = getAllActiveTraits(pawn, loc)
+	if not activeTraits then
+		return
+	end
+
+	local icon = getCurrentIconFromTraits(activeTraits)
+
+	if icon and icon ~= "" then
+		Board:SetTerrainIcon(loc, icon)
+	elseif isManagedTrait(existingIcon) then
+		-- Clear trait icon if pawn wouldn't have traits here
+		Board:SetTerrainIcon(loc, "")
 	end
 end
 
-local function updateAll()	
+local function updateAll()
 	if not Board then return end
 	local pawns = Board:GetPawns(TEAM_ANY)
 	for i = 1, pawns:size() do
@@ -219,29 +248,39 @@ local function updateAll()
 		local loc = pawn:GetSpace()
 		updateLoc(loc)
 	end
-	
-	-- if its preview mode, also update all spaces
-	if previewMode and selectedPawn then
-		showPreviewIcons(selectedPawn)
+end
+
+-- Handle move preview via skill build hook
+local function onMoveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect)
+	if weaponId ~= "Move" or not pawn or not p2 then
+		return
 	end
+
+	-- Don't show preview if pawn is already at target
+	if p1 == p2 then
+		return
+	end
+
+	-- Clear previous preview if location changed
+	if movePreviewLocation and (movePreviewLocation ~= p2) then
+		clearMovePreview()
+	end
+
+	-- Show trait at new preview location and store it
+	updateLocForPawnAt(pawn, p2)
+	movePreviewLocation = Point(p2.x, p2.y)
 end
 
 local function updatePawn(mission, pawn)
-	if previewMode and selectedPawn then
-		showPreviewIcons(selectedPawn)
-		return
-	end
-	
 	local loc = pawn:GetSpace()
 	updateLoc(loc)
 end
 
 local function pawnMoved(mission, pawn, loc_old)
-	if previewMode and selectedPawn then
-		showPreviewIcons(selectedPawn)
-		return
-	end
-	
+	-- Clear move preview
+	clearMovePreview()
+
+	-- Update old and new pawn locations
 	local loc = pawn:GetSpace()
 	updateLoc(loc_old)
 	updateLoc(loc)
@@ -261,53 +300,9 @@ local function maybeCycleTraits()
 	end
 end
 
--- Clear preview icons from tiles
-local function clearPreviewIcons()
-	for _, loc in ipairs(previewLocations) do
-		-- Only clear if no pawn is actually there
-		local pawn = Board:GetPawn(loc)
-		if not pawn then
-			Board:SetTerrainIcon(loc, "")
-		else
-			-- Let normal update handle this location
-			updateLoc(loc)
-		end
-	end
-	previewLocations = {}
-end
-
--- Handle pawn selection for preview
-local function onPawnSelected(mission, pawn)
-	-- Validate inputs first
-	if not pawn then
-		return
-	end
-	
-	selectedPawn = pawn
-	previewMode = true
-	
-	showPreviewIcons(pawn)
-end
-
--- Handle pawn deselection to clear preview
+-- Handle pawn deselection to clear move preview
 local function onPawnDeselected(mission, pawn)
-	clearPreviewIcons()
-	selectedPawn = nil
-	previewMode = false
-end
-
--- Handle pawn deselection to clear preview
-local function onPawnUndoMove(mission, pawn)
-	-- Validate inputs first
-	if not pawn then
-		return
-	end
-	
-	if pawn:IsSelected() then
-		onPawnSelected(mission, pawn)
-	else 
-		onPawnDeselected(mission, pawn)
-	end
+	clearMovePreview()
 end
 
 local function onModsLoaded()
@@ -315,11 +310,12 @@ local function onModsLoaded()
 	modApiExt:addPawnUntrackedHook(updatePawn)
 	modApiExt:addPawnPositionChangedHook(pawnMoved)
 	modApi:addMissionUpdateHook(maybeCycleTraits)
-	
-	-- Add preview support via selection hooks
-	modApiExt:addPawnSelectedHook(onPawnSelected)
+
+	-- Add move preview support via skill build hook
+	modApiExt:addSkillBuildHook(onMoveSkillBuild)
+
+	-- Clear move preview when pawn is deselected
 	modApiExt:addPawnDeselectedHook(onPawnDeselected)
-	modApiExt:addPawnUndoMoveHook(onPawnUndoMove)
 end
 
 local function tryGetTraitsFromSelectedPawn(targetId)
@@ -394,7 +390,7 @@ local function add(self, trait)
 	Assert.Equals({'nil', 'userdata'}, type(trait.icon_offset), "Field 'icon_offset'")
 
 	trait.icon_offset = trait.icon_offset or Point(0,0)
-	
+
 	trait.hasBoardIcon = trait.icon_glow ~= nil
 
 	if type(trait.desc) == 'table' then
@@ -515,6 +511,8 @@ if isNewestVersion then
 				-- Reset timer and state on mission start
 				traitCycleTimer = os.clock()
 				traitCycleIndex = 0
+				locationTraitCounts = {}
+				movePreviewLocation = nil
 				updateAll()
 			end
 		end)
