@@ -61,10 +61,10 @@ local function getNextPlaceholder()
 		LOG("  Consider increasing MAX_PLACEHOLDERS or removing unused traits")
 		return nil
 	end
-	
+
 	local index = TraitReplace.nextPlaceholderIndex
 	TraitReplace.nextPlaceholderIndex = index + 1
-	
+
 	return string.format("icon_trait_replace_placeholder_%d.png", index)
 end
 
@@ -259,15 +259,15 @@ end
 
 -- Get the current icon surface for the pawn
 local function getIconSurface(iconId, replaceTraitId)
-	if not iconId or not replaceTraitId then 
+	if not iconId or not replaceTraitId then
 		LOG("getIconSurface: nil params - iconId="..iconId..", replaceTraitId="..replaceTraitId)
-		return nil 
+		return nil
 	end
 
 	local traitData = traitRegistry[replaceTraitId]
-	if not traitData then 
+	if not traitData then
 		LOG("getIconSurface: traitData not found for replaceTraitId="..replaceTraitId)
-		return nil 
+		return nil
 	end
 
 	-- Return the appropriate surface based on the icon ID
@@ -389,17 +389,38 @@ local function createUIWidgetsForTrait(uiRoot, replaceTraitId)
 	recreateLargeIcon(initialSurface, replaceTraitId)
 
 	-- Small widget draw function
-	local lastSmallIconId = nil
+	-- Initialize to vanilla icon being replaces
+	local lastSmallIconId = replaceTraitId .. "_vanilla"
+	local lastTraitCount = 1  -- Start with 1 - the vanilla icon
 
 	traitData.smallWidget.draw = function(self, screen)
 		self.visible = false
 		if traitData.targetIcon:wasDrawn() then
 			local pawn = getUIEnabledPawn()
+			local showIcon = shouldShowIcon(pawn, replaceTraitId)
 
-			if shouldShowIcon(pawn, replaceTraitId) then
+			-- Always show at least vanilla icon if target icon is drawn
+			-- This prevents showing placeholder before deployment
+			if showIcon or traitData.targetIcon.x and traitData.targetIcon.y then
+				-- Check if number of active traits changed
+				local activeTraits = getActiveTraits(pawn, replaceTraitId)
+				local currentTraitCount = #activeTraits
+
+				-- If trait count changed immediately update icon
+				if currentTraitCount ~= lastTraitCount then
+					-- Trait was added or removed - force icon update
+					lastSmallIconId = nil  -- Force recreation on next frame
+					lastTraitCount = currentTraitCount
+				end
+
 				-- Recalculate icon every frame to support cycling
 				local iconId = getCurrentIcon(pawn, replaceTraitId)
 				local surface = getIconSurface(iconId, replaceTraitId)
+
+				-- Fallback to vanilla if no icon found - i.e. before deployement
+					iconId = replaceTraitId .. "_vanilla"
+					surface = getIconSurface(iconId, replaceTraitId)
+				end
 
 				if surface then
 					local tooltipVisible = sdlext:isStatusTooltipWindowVisible()
@@ -427,16 +448,39 @@ local function createUIWidgetsForTrait(uiRoot, replaceTraitId)
 	end
 
 	-- Large widget draw function
-	local lastLargeIconId = nil
+	-- Initialize to vanilla icon being replaces
+	local lastLargeIconId = replaceTraitId .. "_vanilla"
+	local lastLargeTraitCount = 1  -- Start with 1 - the vanilla icon
 
 	traitData.largeWidget.draw = function(self, screen)
 		self.visible = false
 		if traitData.targetIcon:wasDrawn() then
 			local pawn = getUIEnabledPawn()
-			if shouldShowIcon(pawn, replaceTraitId) then
+			local showIcon = shouldShowIcon(pawn, replaceTraitId)
+
+			-- Always show at least vanilla icon if target icon is drawn
+			-- This prevents showing placeholder before deployment
+			if showIcon or traitData.targetIcon.x and traitData.targetIcon.y then
+				-- Check if number of active traits changed
+				local activeTraits = getActiveTraits(pawn, replaceTraitId)
+				local currentTraitCount = #activeTraits
+
+				-- If trait count changed immediately update icon
+				if currentTraitCount ~= lastLargeTraitCount then
+					-- Trait was added or removed - force icon update
+					lastLargeIconId = nil  -- Force recreation on next frame
+					lastLargeTraitCount = currentTraitCount
+				end
+
 				-- Recalculate icon every frame to support cycling
 				local iconId = getCurrentIcon(pawn, replaceTraitId)
 				local surface = getIconSurface(iconId, replaceTraitId)
+
+				-- Fallback to vanilla if no icon found - i.e. before deployement
+				if not surface and not showIcon then
+					iconId = replaceTraitId .. "_vanilla"
+					surface = getIconSurface(iconId, replaceTraitId)
+				end
 
 				-- Show large icon when tooltip window is visible OR when hovering over the small icon area
 				local tooltipVisible = sdlext:isStatusTooltipWindowVisible()
@@ -703,7 +747,7 @@ if isHighestVersion then
 
 				-- Load vanilla target trait icon surface from the backup
 				traitData.surfaces[config.id .. "_vanilla"] = traitData.targetOrigIcon
-				
+
 				-- Log registration summary
 				LOG("Registered target trait '" .. config.id .. "' with " .. #traitData.allTraits .. " custom traits")
 			end
