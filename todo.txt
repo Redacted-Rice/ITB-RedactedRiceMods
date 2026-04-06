@@ -41,12 +41,14 @@ Vanilla+
 MoreLvlUpSkills:
 
 Next Release candidates:
+* Movement
+	* Supporter
 * Tradeoffs
 	* Hot Headed, Malevolent, Vindictive
 * Offensive
 	* Reflect, Vigor, Vampire
 * Positioning
-	* Ambusher, Urban, Extrovert, Sabotage
+	* Ambusher, Urban, Rally, Militia, Escort, Alert
 * Defensive
 	* Iron Plating, Impervious
 
