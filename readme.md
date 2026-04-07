@@ -24,8 +24,8 @@ Please enjoy and contact us if you run into any issues!
 * PassiveEffect - v1.4.0 - Helps with adding passive weapons to the game. This will handle automatically detecting if the weapon is powered and only call hooks when it is
 * PawnTypeUtils - v1.1.0 - Functions to allow determining more detailed pawn types (using EasyEdit)
 * PredictableRandom - v1.2.0 - Get random numbers in a way that is repeatable for when undoing moves or resetting turns
-* Trait - v3.0.0 - Add traits to pawns & the board. Originally created by Lemonymous and updated to v3.x.x to support multiple traits via appending text and cycling images as well as showing icons for move previews
-* TraitReplace - v0.8.0 - Allows adding custom UI traits that cycle with vanilla traits
+* Trait - v3.0.1 - Add traits to pawns & the board. Originally created by Lemonymous and updated to v3.x.x to support multiple traits via appending text and cycling images as well as showing icons for move previews
+* TraitReplace - v0.8.1 - Allows adding custom UI traits that cycle with vanilla traits
 * WeaponPreview - v4.0.1 - Add icons to weapon previews. Originally created by Lemonymous and updated to v4.x.x to support use in skill build hooks and two click weapons
 
 # Install
@@ -43,7 +43,7 @@ Initial release of More Pilot Level Up Skills (More+)
 
 Fixes and versioning updates to libs and some a minor fix to worldbuilders related to shield handling
 
-Released: XX/XX/2026
+Released: 04/10/2026
 
 Squads:
 * Treeherders    3.1.0
@@ -57,8 +57,8 @@ Libs:
 * PassiveEffect     1.4.0
 * PawnTypeUtils     1.1.0
 * PredictableRandom 1.2.0
-* Trait             3.0.0
-* TraitReplace      0.8.0
+* Trait             3.0.1
+* TraitReplace      0.8.1
 * WeaponPreview     4.0.1
 
 Dependencies:
@@ -66,7 +66,7 @@ Dependencies:
 * ModLoader     2.9.5
 * ModLoaderExt  1.24
 * Memedit       1.2.1
-* Memhack       1.0.0
+* Memhack       1.0.1
 * CPLUS+        1.0.0
 
 ## 1.3.0

@@ -22,12 +22,12 @@ Please enjoy and contact us if you run into any issues.
 Latest release: 1.0.1
 
 ## 1.0.1
-Released: XX/XX/2026 
+Released: 04/10/2026 
 
 compatible with:
 * ItB AE 	1.2.93
 * ModLoader 2.9.5
-* CPLUS+ Ex	1.0.0
+* CPLUS+ Ex	1.0.1
 
 ### Notes
 * Added exclusions with replaced vanilla skills in case someone wants to re-enable them
