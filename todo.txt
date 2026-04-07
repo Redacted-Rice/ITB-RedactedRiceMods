@@ -21,7 +21,7 @@ None
 
 Known Issues:
 1. Move range hovering does not display right. This is not currently able to be changed
-2. When you move over a frozen tile, the ice will visually disappear but will still be there
+2. When you move over a frozen tile or shielded tile, the ice/shield will visually disappear but will still be there
 3. When you use mold with acid, damage on second effect will show base damage on the space but will show right damage on pawn itself. This seems to be just related to how ItB handles damage and acid and throws
 4. If you reset or reload with a shielded pawn on a shielded building, the building will lose its shield. This is a vanilla limitation that would be very complex to handle
 
