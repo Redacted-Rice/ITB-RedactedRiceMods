@@ -2,7 +2,7 @@
 TraitReplace - Allows adding custom UI traits that cycle with vanilla traits
 
 Author: Das Keifer of Redacted Rice
-Version: 0.8.0
+Version: 0.8.1
 Discord Server: https://discord.gg/CNjTVrpN4v
 
 Overrides target traits to allow custom traits to be displayed
@@ -14,7 +14,7 @@ icons on top of flying and Lemonymous for the trait library which was
 the inspiration/starting point for this
 ]]
 
-local VERSION = "0.8.0"
+local VERSION = "0.8.1"
 
 local mod_path = mod_loader.mods[modApi.currentMod]
 local path = mod_path.scriptPath
@@ -258,9 +258,12 @@ local function shouldShowIcon(pawn, replaceTraitId)
 end
 
 -- Get the current icon surface for the pawn
-local function getIconSurface(iconId, replaceTraitId)
+local function getIconSurface(iconId, replaceTraitId, supressNil)
 	if not iconId or not replaceTraitId then
-		LOG("getIconSurface: nil params - iconId="..iconId..", replaceTraitId="..replaceTraitId)
+		if not supressNil then
+			LOG("getIconSurface: nil params - iconId="..tostring(iconId)..
+					", replaceTraitId="..tostring(replaceTraitId))
+		end
 		return nil
 	end
 
@@ -415,9 +418,10 @@ local function createUIWidgetsForTrait(uiRoot, replaceTraitId)
 
 				-- Recalculate icon every frame to support cycling
 				local iconId = getCurrentIcon(pawn, replaceTraitId)
-				local surface = getIconSurface(iconId, replaceTraitId)
+				local surface = getIconSurface(iconId, replaceTraitId, true)
 
 				-- Fallback to vanilla if no icon found - i.e. before deployement
+				if not surface and not showIcon then
 					iconId = replaceTraitId .. "_vanilla"
 					surface = getIconSurface(iconId, replaceTraitId)
 				end
@@ -474,7 +478,7 @@ local function createUIWidgetsForTrait(uiRoot, replaceTraitId)
 
 				-- Recalculate icon every frame to support cycling
 				local iconId = getCurrentIcon(pawn, replaceTraitId)
-				local surface = getIconSurface(iconId, replaceTraitId)
+				local surface = getIconSurface(iconId, replaceTraitId, true)
 
 				-- Fallback to vanilla if no icon found - i.e. before deployement
 				if not surface and not showIcon then

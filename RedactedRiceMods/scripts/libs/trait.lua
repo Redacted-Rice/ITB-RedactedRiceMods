@@ -1,7 +1,7 @@
 
 local VERSION = "3.0.1"
 ---------------------------------------------------------------------
--- Trait v3.0.0 - code library
+-- Trait v3.0.1 - code library
 --
 -- by Lemonymous
 -- Enhanced by Das Keifer to support multiple trait cycling and icons in move preview
@@ -88,15 +88,6 @@ local function isPreviewLocation(loc)
 	return movePreviewLocation and
 		movePreviewLocation.x == loc.x and
 		movePreviewLocation.y == loc.y
-end
-
--- Clear the current move preview and update its location
-local function clearMovePreview()
-	if movePreviewLocation then
-		local prevLoc = movePreviewLocation
-		movePreviewLocation = nil
-		updateLoc(prevLoc)
-	end
 end
 
 -- Get active traits for a pawn at a specific location (or current location if not specified)
@@ -247,6 +238,15 @@ local function updateAll()
 		local pawn = Board:GetPawn(pawnId)
 		local loc = pawn:GetSpace()
 		updateLoc(loc)
+	end
+end
+
+-- Clear the current move preview and update its location
+local function clearMovePreview()
+	if movePreviewLocation then
+		local prevLoc = movePreviewLocation
+		movePreviewLocation = nil
+		updateLoc(prevLoc)
 	end
 end
 

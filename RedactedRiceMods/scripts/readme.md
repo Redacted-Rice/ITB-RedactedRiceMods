@@ -89,7 +89,12 @@ Released: ?
 Initial Release.
 
 ## Trait
-Current Release: 3.0.0
+Current Release: 3.0.1
+
+### 3.0.1
+Released: 04/10/2026
+
+Fixed issue with animations not playing in preview
 
 ### 3.0.0
 Released: 02/14/2026
@@ -97,7 +102,12 @@ Released: 02/14/2026
 Copied from Lemonymous and updated to handle multiple traits by appending text together and cycling through images
 
 ## TraitReplace
-Current Release: 0.8.0
+Current Release: 0.8.1
+
+### 0.8.1
+Released: 04/10/2026
+
+Fixing some issues with timing when adding icons and displaying vanilla icons in deployment phase
 
 ### 0.8.0
 Released: 03/28/2026
