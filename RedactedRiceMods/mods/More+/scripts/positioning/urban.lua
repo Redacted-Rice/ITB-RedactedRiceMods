@@ -22,16 +22,9 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 		local pilot = pawn:GetPilot()
 		if pilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot) then
 			-- Check if p2 (destination) is adjacent to any building
-			local isAdjacentToBuilding = false
-			for dir = DIR_START, DIR_END do
-				local adjacentLoc = p2 + DIR_VECTORS[dir]
-				if Board:IsValid(adjacentLoc) and Board:IsBuilding(adjacentLoc) then
-					isAdjacentToBuilding = true
-					logger.logDebug(SUBMODULE, "Found building adjacent to %s at %s",
-							p2:GetString(), adjacentLoc:GetString())
-					break
-				end
-			end
+			local isAdjacentToBuilding = more_plus.libs.boardUtils.isAdjacent(p2, function(adjacentLoc)
+					return Board:IsBuilding(adjacentLoc)
+			end)
 
 			if isAdjacentToBuilding and not pawn:IsShield() then
 				logger.logDebug(SUBMODULE, "Pawn %d moving to %s adjacent to building, will add shield",

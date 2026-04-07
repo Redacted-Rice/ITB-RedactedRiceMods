@@ -31,16 +31,10 @@ end
 
 -- Check if a location is adjacent to any vek
 function customSkill.isAdjacentToVek(loc)
-	for dir = DIR_START, DIR_END do
-		local adjacentLoc = loc + DIR_VECTORS[dir]
-		if Board:IsValid(adjacentLoc) then
+	return more_plus.libs.boardUtils.isAdjacent(loc, function(adjacentLoc)
 			local adjacentPawn = Board:GetPawn(adjacentLoc)
-			if adjacentPawn and adjacentPawn:IsEnemy() then
-				return true
-			end
-		end
-	end
-	return false
+			return adjacentPawn and adjacentPawn:IsEnemy()
+	end)
 end
 
 -- Apply or remove armor based on adjacency to vek

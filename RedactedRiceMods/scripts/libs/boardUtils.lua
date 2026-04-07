@@ -267,6 +267,32 @@ if isNewestVersion then
 		return hash % 10, math.floor(hash / 10)
 	end
 
+	-- Check if any adjacent point matches the given matcher function
+	-- matcher(point) should return true if the point matches the desired condition
+	function BoardUtils.isAdjacent(loc, matcher)
+		for dir = DIR_START, DIR_END do
+			local adjacentLoc = loc + DIR_VECTORS[dir]
+			if Board:IsValid(adjacentLoc) and matcher(adjacentLoc) then
+				return true
+			end
+		end
+		return false
+	end
+
+	-- Get all adjacent points that match the given matcher function
+	-- matcher(point) should return true if the point matches the desired condition
+	-- Returns a table of Points
+	function BoardUtils.getAdjacent(loc, matcher)
+		local adjacent = {}
+		for dir = DIR_START, DIR_END do
+			local adjacentLoc = loc + DIR_VECTORS[dir]
+			if Board:IsValid(adjacentLoc) and matcher(adjacentLoc) then
+				table.insert(adjacent, adjacentLoc)
+			end
+		end
+		return adjacent
+	end
+
 	function BoardUtils:init()
 		-- Initialize event subscriptions
 		modapiext.events.onPawnUndoMove:subscribe(function(mission, pawn, undonePosition)

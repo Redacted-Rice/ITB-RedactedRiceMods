@@ -23,49 +23,46 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 		local movingPilot = pawn:GetPilot()
 		if movingPilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, movingPilot) then
 			-- Moving pawn with Escort - check for adjacent allies at destination
-			for dir = DIR_START, DIR_END do
-				local adjacentLoc = p2 + DIR_VECTORS[dir]
-				if Board:IsValid(adjacentLoc) then
+			local adjacentMechs = more_plus.libs.boardUtils.getAdjacent(p2, function(adjacentLoc)
 					local adjacentPawn = Board:GetPawn(adjacentLoc)
-					if adjacentPawn and adjacentPawn:IsMech() and not adjacentPawn:IsShield() then
-						logger.logDebug(SUBMODULE, "Escort pawn %d moving to %s, shielding adjacent ally %d at %s",
-								pawn:GetId(), p2:GetString(), adjacentPawn:GetId(), adjacentLoc:GetString())
+					return adjacentPawn and adjacentPawn:IsMech() and not adjacentPawn:IsShield()
+			end)
 
-						local shieldDamage = SpaceDamage(adjacentLoc, 0)
-						shieldDamage.iShield = EFFECT_CREATE
-						shieldDamage.sScript = string.format([[
-								more_plus.SkillActive.skills.RrEscort.shieldedPawns[%d] = true]],
-								adjacentPawn:GetId())
-						skillEffect:AddDamage(shieldDamage)
-					end
-				end
+			for _, adjacentLoc in ipairs(adjacentMechs) do
+				local adjacentPawn = Board:GetPawn(adjacentLoc)
+				logger.logDebug(SUBMODULE, "Escort pawn %d moving to %s, shielding adjacent ally %d at %s",
+						pawn:GetId(), p2:GetString(), adjacentPawn:GetId(), adjacentLoc:GetString())
+
+				local shieldDamage = SpaceDamage(adjacentLoc, 0)
+				shieldDamage.iShield = EFFECT_CREATE
+				shieldDamage.sScript = string.format([[
+						more_plus.SkillActive.skills.RrEscort.shieldedPawns[%d] = true]],
+						adjacentPawn:GetId())
+				skillEffect:AddDamage(shieldDamage)
 			end
 		end
 
 		-- Check if moving pawn is moving adjacent to a pawn with Escort
-		for dir = DIR_START, DIR_END do
-			local adjacentLoc = p2 + DIR_VECTORS[dir]
-			if Board:IsValid(adjacentLoc) then
-				local adjacentPawn = Board:GetPawn(adjacentLoc)
-				if adjacentPawn and adjacentPawn:IsMech() then
-					local adjacentPilot = adjacentPawn:GetPilot()
-					if adjacentPilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, adjacentPilot) then
-						-- Found Escort pilot, shield the moving pawn if not already shielded
-						if not pawn:IsShield() then
-							logger.logDebug(SUBMODULE, "Pawn %d moving adjacent to Escort pawn %d, shielding",
-									pawn:GetId(), adjacentPawn:GetId())
-
-							local shieldDamage = SpaceDamage(p2, 0)
-							shieldDamage.iShield = EFFECT_CREATE
-							shieldDamage.sScript = string.format([[
-									more_plus.SkillActive.skills.RrEscort.shieldedPawns[%d] = true]],
-									pawn:GetId())
-							skillEffect:AddDamage(shieldDamage)
-							break
-						end
-					end
-				end
+		local hasAdjacentEscort = more_plus.libs.boardUtils.isAdjacent(p2, function(adjacentLoc)
+			local adjacentPawn = Board:GetPawn(adjacentLoc)
+			if adjacentPawn and adjacentPawn:IsMech() then
+				local adjacentPilot = adjacentPawn:GetPilot()
+				return adjacentPilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, adjacentPilot)
 			end
+			return false
+		end)
+		
+		-- Shield the moving pawn if not already shielded and found an Escort pilot
+		if hasAdjacentEscort and not pawn:IsShield() then
+			logger.logDebug(SUBMODULE, "Pawn %d moving adjacent to Escort pawn, shielding",
+					pawn:GetId())
+
+			local shieldDamage = SpaceDamage(p2, 0)
+			shieldDamage.iShield = EFFECT_CREATE
+			shieldDamage.sScript = string.format([[
+					more_plus.SkillActive.skills.RrEscort.shieldedPawns[%d] = true]],
+					pawn:GetId())
+			skillEffect:AddDamage(shieldDamage)
 		end
 	end
 end
