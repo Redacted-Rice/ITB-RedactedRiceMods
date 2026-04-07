@@ -34,8 +34,8 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 						local shieldDamage = SpaceDamage(adjacentLoc, 0)
 						shieldDamage.iShield = EFFECT_CREATE
 						shieldDamage.sScript = string.format([[
-								more_plus.SkillActive.skills.RrEscort.shieldedPawns[%d] = true
-								]], adjacentPawn:GetId())
+								more_plus.SkillActive.skills.RrEscort.shieldedPawns[%d] = true]],
+								adjacentPawn:GetId())
 						skillEffect:AddDamage(shieldDamage)
 					end
 				end
@@ -58,8 +58,8 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 							local shieldDamage = SpaceDamage(p2, 0)
 							shieldDamage.iShield = EFFECT_CREATE
 							shieldDamage.sScript = string.format([[
-									more_plus.SkillActive.skills.RrEscort.shieldedPawns[%d] = true
-									]], pawn:GetId())
+									more_plus.SkillActive.skills.RrEscort.shieldedPawns[%d] = true]],
+									pawn:GetId())
 							skillEffect:AddDamage(shieldDamage)
 							break
 						end

@@ -44,8 +44,8 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 						local boostDamage = SpaceDamage(adjacentLoc, 0)
 						boostDamage.sScript = string.format([[
 								more_plus.SkillActive.skills.RrRally.boostedPawns[%d] = true
-								Board:GetPawn(%d):SetBoosted(true)
-								]], adjacentPawn:GetId(), adjacentPawn:GetId())
+								Board:GetPawn(%d):SetBoosted(true)]],
+								adjacentPawn:GetId(), adjacentPawn:GetId())
 						skillEffect:AddDamage(boostDamage)
 					end
 				end
@@ -74,8 +74,8 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 							local boostDamage = SpaceDamage(p2, 0)
 							boostDamage.sScript = string.format([[
 									more_plus.SkillActive.skills.RrRally.boostedPawns[%d] = true
-									Board:GetPawn(%d):SetBoosted(true)
-									]], pawn:GetId(), pawn:GetId())
+									Board:GetPawn(%d):SetBoosted(true)]],
+									pawn:GetId(), pawn:GetId())
 							skillEffect:AddDamage(boostDamage)
 							break
 						end
