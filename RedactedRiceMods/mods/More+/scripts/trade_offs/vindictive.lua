@@ -11,22 +11,44 @@ local SUBMODULE = logger.register("More+", "Vindictive", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
+-- Adverse status effects that should increase damage
+local adverseStatuses = {
+	"Blind", "Chill", "Confusion", "Doomed", "Dry", "Hemorrhage",
+	"Infested", "LeechSeed", "Necrosis", "Powder", "Rooted",
+	"Shatterburst", "Shocked", "Sleep", "Toxin", "Weaken", "Wet", "Insanity"
+}
+
 function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes, spacePawn)
 	-- Check if this is actual damage being dealt
 	if spacePawn and spacePawn:IsEnemy() and spaceDamage.iDamage > 0 and
 			spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
-		local damage = 0
-		local hasFire = pawn:IsFire()
-		local hasAcid = pawn:IsAcid()
-		if hasFire then
-			damage = damage + 1
+
+		local pawnId = pawn:GetId()
+		local statusCount = 0
+		local activeStatuses = {}
+
+		-- Count vanilla fire and acid status
+		if pawn:IsFire() then
+			statusCount = statusCount + 1
+			table.insert(activeStatuses, "Fire")
 		end
-		if hasAcid then
-			damage = damage + 1
+		if pawn:IsAcid() then
+			statusCount = statusCount + 1
+			table.insert(activeStatuses, "Acid")
 		end
 
-		-- Check if the attacking pawn has any status effect
-		if damage > 0 then
+		-- Count Status library adverse effects if available
+		if Status and Status.GetStatus then
+			for _, statusName in ipairs(adverseStatuses) do
+				if Status.GetStatus(pawnId, statusName) then
+					statusCount = statusCount + 1
+					table.insert(activeStatuses, statusName)
+				end
+			end
+		end
+
+		-- Add damage for each adverse status
+		if statusCount > 0 then
 			local previewState = isFinalEffect and more_plus.libs.weaponPreview.STATE_FINAL_EFFECT or
 					more_plus.libs.weaponPreview.STATE_SKILL_EFFECT
 
@@ -40,9 +62,9 @@ function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes
 						end)
 			end
 
-			spaceDamage.iDamage = spaceDamage.iDamage + damage
-			logger.logDebug(SUBMODULE, "Added +%d vindictive damage (pawn %d is statused: fire=%s, acid=%s)",
-					damage, pawn:GetId(), tostring(hasFire), tostring(hasAcid))
+			spaceDamage.iDamage = spaceDamage.iDamage + statusCount
+			logger.logDebug(SUBMODULE, "Added +%d vindictive damage (pawn %d has %d statuses: %s)",
+					statusCount, pawn:GetId(), statusCount, table.concat(activeStatuses, ", "))
 		end
 	end
 

@@ -23,10 +23,17 @@ function more_plus:scanAndReadSkillFiles()
 
     if dir:exists() then
         for _, subDir in ipairs(dir:directories()) do
+			local category = subDir:name()
+
+			-- Skip libs folder - it contains libraries, not skills
+			if category == "libs" then
+				logger.logDebug(SUBMODULE, "Skipping libs folder")
+				goto continue
+			end
+
 			local subDirPath = subDir:relative_path()
 			logger.logDebug(SUBMODULE, "Checking sub dir %s", subDirPath)
 
-			local category = subDir:name()
 			local skillObjs = {}
 			for _, file in ipairs(subDir:files()) do
 				local filename = file:name():match("(.+)%.lua$") or file:name()
@@ -45,6 +52,8 @@ function more_plus:scanAndReadSkillFiles()
 			end
 			self.skillsByCategory[category] = skillObjs
 			numCats = numCats + 1
+
+			::continue::
         end
     end
 	logger.logDebug(SUBMODULE, "Found %d skills in %d categories", numSkills, numCats)
@@ -120,6 +129,9 @@ function more_plus:init()
 	self:setupLastActedTracking()
 	self.SkillTrait:baseInit()
 	self.SkillActive:baseInit()
+
+	logger.logDebug(SUBMODULE, "Loading libraries...")
+	require(self.scriptPath .. "libs/status")
 
 	logger.logDebug(SUBMODULE, "Finding all skills...")
 	more_plus:scanAndReadSkillFiles(basePath)
