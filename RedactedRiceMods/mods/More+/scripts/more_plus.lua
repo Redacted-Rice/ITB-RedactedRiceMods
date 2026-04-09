@@ -26,34 +26,31 @@ function more_plus:scanAndReadSkillFiles()
 			local category = subDir:name()
 
 			-- Skip libs folder - it contains libraries, not skills
-			if category == "libs" then
-				logger.logDebug(SUBMODULE, "Skipping libs folder")
-				goto continue
-			end
+			if category ~= "libs" then
+				local subDirPath = subDir:relative_path()
+				logger.logDebug(SUBMODULE, "Checking sub dir %s", subDirPath)
 
-			local subDirPath = subDir:relative_path()
-			logger.logDebug(SUBMODULE, "Checking sub dir %s", subDirPath)
+				local skillObjs = {}
+				for _, file in ipairs(subDir:files()) do
+					local filename = file:name():match("(.+)%.lua$") or file:name()
+					logger.logDebug(SUBMODULE, "Found skill file %s", filename)
 
-			local skillObjs = {}
-			for _, file in ipairs(subDir:files()) do
-				local filename = file:name():match("(.+)%.lua$") or file:name()
-				logger.logDebug(SUBMODULE, "Found skill file %s", filename)
-
-				local requirePath = subDirPath .. filename
-				local success, skillObj = pcall(require, requirePath)
-				if success and type(skillObj) == "table" then
-					skillObj.file = requirePath
-					skillObj.category = category
-					table.insert(skillObjs, skillObj)
-					numSkills = numSkills + 1
-				else
-					logger.logError(SUBMODULE, string.format("Failed to load %s: %s", requirePath, tostring(skillObj)))
+					local requirePath = subDirPath .. filename
+					local success, skillObj = pcall(require, requirePath)
+					if success and type(skillObj) == "table" then
+						skillObj.file = requirePath
+						skillObj.category = category
+						table.insert(skillObjs, skillObj)
+						numSkills = numSkills + 1
+					else
+						logger.logError(SUBMODULE, string.format("Failed to load %s: %s", requirePath, tostring(skillObj)))
+					end
 				end
+				self.skillsByCategory[category] = skillObjs
+				numCats = numCats + 1
+			else
+				logger.logDebug(SUBMODULE, "Skipping libs folder")
 			end
-			self.skillsByCategory[category] = skillObjs
-			numCats = numCats + 1
-
-			::continue::
         end
     end
 	logger.logDebug(SUBMODULE, "Found %d skills in %d categories", numSkills, numCats)
@@ -131,7 +128,7 @@ function more_plus:init()
 	self.SkillActive:baseInit()
 
 	logger.logDebug(SUBMODULE, "Loading libraries...")
-	require(self.scriptPath .. "libs/status")
+	require(path .. "libs/status")
 
 	logger.logDebug(SUBMODULE, "Finding all skills...")
 	more_plus:scanAndReadSkillFiles(basePath)
