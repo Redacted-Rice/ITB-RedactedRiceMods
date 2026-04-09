@@ -66,7 +66,7 @@ Dependencies:
 * ModLoader     2.9.5
 * ModLoaderExt  1.24
 * Memedit       1.2.1
-* Memhack       1.0.1
+* Memhack       1.0.2
 * CPLUS+        1.0.0
 
 ## 1.3.0

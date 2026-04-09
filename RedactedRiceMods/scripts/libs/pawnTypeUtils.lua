@@ -2,14 +2,14 @@
 PawnTypeUtils - functions to allow determining more detailed pawn types
 
 Author: Das Keifer of Redacted Rice
-Version: 1.0.0
+Version: 1.1.0
 Discord Server: https://discord.gg/CNjTVrpN4v
 
 Builds on top of easy edit to allow determining in game what spawn
 category a pawn belongs to
 ]]
 
-local VERSION = "1.0.0"
+local VERSION = "1.1.0"
 
 -- Version check
 local isNewestVersion = false
@@ -18,18 +18,18 @@ local isNewestVersion = false
 
 if isNewestVersion then
 	LOG("PawnTypeUtils: Loading version " .. VERSION .. " (previous: " .. tostring(PawnTypeUtils and PawnTypeUtils.version or "none") .. ")")
-	
+
 	-- Initialize global singleton
 	PawnTypeUtils = PawnTypeUtils or {}
 	PawnTypeUtils.version = VERSION
-	
+
 	-- Easy edit defines these locally so we have to redefine
 	PawnTypeUtils.EASY_EDIT_CATEGORIES = PawnTypeUtils.EASY_EDIT_CATEGORIES or { "Core", "Leaders", "Unique", "Bots" }
 	PawnTypeUtils.SPAWN_CATEGORIES_STRS = PawnTypeUtils.SPAWN_CATEGORIES_STRS or { "Core", "Leader", "Unique", "Bots", "Boss" }
 	PawnTypeUtils.SPAWN_CATEGORIES = PawnTypeUtils.SPAWN_CATEGORIES or { CORE = 1, LEADER = 2, UNIQUE = 3, BOTS = 4, BOSS = 5 }
 
 	-- Helper functions (part of the object, version-guarded)
-	
+
 	--- Check if the current mission is a finale mission.
 	function PawnTypeUtils.isFinaleMission()
 		local mission = GetCurrentMission()

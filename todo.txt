@@ -7,21 +7,16 @@ None
 Treeherders:
 None
 
-Next release candidates:
-1. Treevac doesn't distinguish between damage in the attack that causes the push vs follow on attacks when checking for spaces to push to
-
 Known issues:
 1. Forest Firer bounce happens after push. Doesn't seem to be a way around this but its just visual anyways
 2. Forest Firer teleport and launch SFX just sometimes don't play. Not sure why this is
 3. Forest armor icon will sometimes appear when environment effects are occuring. I think this should be mostly fixed now but may show occasionally
+4. Treevac doesn't distinguish between damage in the attack that causes the push vs follow on attacks when checking for spaces to push to
 
 
 ------------------------------------------------------------------------------
 
 World Builders:
-None
-
-Next release candidates:
 None
 
 Known Issues:
@@ -39,7 +34,7 @@ Vanilla+
 ------------------------------------------------------------------------------
 
 MoreLvlUpSkills:
-1. Add icon for resilient?
+None
 
 Next Release candidates:
 1. More Skills - stay tuned ;)
@@ -83,7 +78,7 @@ Squad 4: Full on Expansion - Its also still a secret ;)
 Libs:
 None
 
-Future releases:
+Known Issues:
 1. TraitReplaceLib
 	a. Flying icon on other UIs (see pyramid icon)
 		This is tricky to do generically as the hanger positioning relies on offsets. A more generical

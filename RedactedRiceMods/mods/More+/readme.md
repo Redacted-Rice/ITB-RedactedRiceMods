@@ -60,8 +60,8 @@ Released: 04/10/2026
 compatible with:
 * ItB AE 	1.2.93
 * ModLoader 2.9.5
-* memhack	1.0.1
-* CPLUS+ Ex	1.0.0
+* memhack	1.0.0
+* CPLUS+ Ex	1.0.2
 
 ### Notes
 Includes:

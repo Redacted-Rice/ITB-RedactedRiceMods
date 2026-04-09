@@ -6,7 +6,7 @@ local mod = {
 	modApiVersion = "2.9.5",
 	gameVersion = "1.2.93",
 	dependencies = {
-        redactedrice_cplus_plus = "1.0.1",
+        redactedrice_cplus_plus = "1.0.2",
     }
 }
 
@@ -79,7 +79,7 @@ function mod:init(options)
 	cplus_plus_ex:registerSkill(cplusCategory, healthPlus)
 	cplus_plus_ex:registerSkill(cplusCategory, movePlus)
 	cplus_plus_ex:registerSkill(cplusCategory, gridPlus)
-	
+
 	-- Exclude vanilla version with them
 	cplus_plus_ex:registerSkillExclusion(healthPlus.id, "Health")
 	cplus_plus_ex:registerSkillExclusion(movePlus.id, "Move")
@@ -88,9 +88,9 @@ function mod:init(options)
 	-- Respect the vanilla health exclusions
 	cplus_plus_ex:registerPilotSkillExclusions("Pilot_Rock", healthPlus.id)
 	cplus_plus_ex:registerPilotSkillExclusions("Pilot_Zoltan", healthPlus.id)
-	
+
 	-- TODO: Mirror any health exclusions? Probably just wait for pool
-	
+
 end
 
 function mod:load(options, version)
