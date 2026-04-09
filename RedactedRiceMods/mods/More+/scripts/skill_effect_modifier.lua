@@ -5,7 +5,7 @@ setmetatable(SkillEffectModifier, { __index = more_plus.SkillActive })
 SkillEffectModifier.__index = SkillEffectModifier
 
 -- Initialize logger
-SkillEffectModifier.DEBUG = false
+SkillEffectModifier.DEBUG = true
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "SkillEffectModifier", SkillEffectModifier.DEBUG)
 
@@ -20,11 +20,13 @@ function SkillEffectModifier:setupEffect()
 	logger.logDebug(SUBMODULE, "Setting up effect modifier for %s", self.id)
 	table.insert(self.events, modapiext.events.onSkillBuild:subscribe(
 		function(mission, pawn, weaponId, p1, p2, skillEffect)
+			logger.logDebug(SUBMODULE, "onSkillBuild %s", weaponId)
 			self:processEffects(pawn, false, skillEffect.effect, skillEffect, p2)
 			self:processEffects(pawn, false, skillEffect.q_effect, skillEffect, p2)
 		end))
 	table.insert(self.events, modapiext.events.onFinalEffectBuild:subscribe(
 		function(mission, pawn, weaponId, p1, p2, p3, skillEffect)
+			logger.logDebug(SUBMODULE, "onFinalEffectBuild %s", weaponId)
 			self:processEffects(pawn, true, skillEffect.effect, skillEffect, p2)
 			self:processEffects(pawn, true, skillEffect.q_effect, skillEffect, p2)
 		end))

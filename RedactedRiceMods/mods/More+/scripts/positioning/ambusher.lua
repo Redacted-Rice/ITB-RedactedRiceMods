@@ -13,7 +13,8 @@ customSkill:addCustomTrait()
 
 function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes, spacePawn)
 	-- Check if this is damage from the pawn with ambusher skill
-	if spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
+	if spacePawn and spacePawn:IsEnemy() and spaceDamage.iDamage > 0 and 
+			spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
 		local pawnLoc = pawn:GetSpace()
 		local terrain = Board:GetTerrain(pawnLoc)
 
