@@ -11,10 +11,10 @@ local SUBMODULE = logger.register("More+", "Militia", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes, spacePawn)
+function customSkill:modifySpaceDamage(attackingPawn, isFinalEffect, spaceDamage, indexes, targetPawn)
 	-- Check if this is damage to an enemy
-	if spacePawn and spacePawn:IsEnemy() and spaceDamage.iDamage > 0 and
-	   spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
+	if targetPawn and targetPawn:IsEnemy() and spaceDamage.iDamage > 0 and
+	   		spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
 
 		-- Check if target is adjacent to any building
 		local targetLoc = spaceDamage.loc
@@ -43,7 +43,6 @@ function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes
 			logger.logDebug(SUBMODULE, "No militia bonus - target not adjacent to building")
 		end
 	end
-
 	return nil
 end
 

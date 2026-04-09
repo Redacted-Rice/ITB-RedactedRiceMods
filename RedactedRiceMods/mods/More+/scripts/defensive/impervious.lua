@@ -5,22 +5,17 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }
 
-customSkill.DEBUG = true
+customSkill.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Impervious", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes, spacePawn)
-	-- Check if the attacker is an ally
-	if not pawn then return nil end
-
-	-- Only process if attacker is an ally (including self)
-	if pawn:GetTeam() ~= TEAM_MECH then return nil end
-
-	-- Check if the target has the Impervious skill
-	if spacePawn and cplus_plus_ex:isSkillOnPawn(customSkill.id, spacePawn) and
-	   spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
+function customSkill:modifySpaceDamage(attackingPawn, isFinalEffect, spaceDamage, indexes, targetPawn)
+	-- Only process if attacker is an ally and target is taking damage
+	-- we will have already checked target has the skill
+	if attackingPawn and attackingPawn:GetTeam() == TEAM_MECH and
+	    	spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
 		-- Show icon
 		local previewState = isFinalEffect and more_plus.libs.weaponPreview.STATE_FINAL_EFFECT or
 				more_plus.libs.weaponPreview.STATE_SKILL_EFFECT
@@ -34,9 +29,8 @@ function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes
 		spaceDamage.iDamage = 0
 
 		logger.logDebug(SUBMODULE, "Blocked ally damage from pawn %d to pawn %d (damage: %d -> 0)",
-				pawn:GetId(), spacePawn:GetId(), spaceDamage.iDamage)
+				attackingPawn:GetId(), targetPawn:GetId(), spaceDamage.iDamage)
 	end
-
 	return nil
 end
 

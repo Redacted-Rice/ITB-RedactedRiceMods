@@ -11,11 +11,11 @@ local SUBMODULE = logger.register("More+", "Ambusher", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes, spacePawn)
-	-- Check if this is damage from the pawn with ambusher skill
-	if spacePawn and spacePawn:IsEnemy() and spaceDamage.iDamage > 0 and 
+function customSkill:modifySpaceDamage(attackingPawn, isFinalEffect, spaceDamage, indexes, targetPawn)
+	-- Check if attacking an enemy
+	if targetPawn and targetPawn:IsEnemy() and spaceDamage.iDamage > 0 and
 			spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
-		local pawnLoc = pawn:GetSpace()
+		local pawnLoc = attackingPawn:GetSpace()
 		local terrain = Board:GetTerrain(pawnLoc)
 
 		-- Check if NOT on road, liquid, or hole
@@ -45,7 +45,6 @@ function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes
 					terrain, tostring(isOnHole))
 		end
 	end
-
 	return nil
 end
 

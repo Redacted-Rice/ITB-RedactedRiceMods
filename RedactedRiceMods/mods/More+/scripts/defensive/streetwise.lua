@@ -12,11 +12,10 @@ local SUBMODULE = logger.register("More+", "Streetwise", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes, spacePawn)
-	if Board:IsBuilding(spaceDamage.loc) and
-	   spaceDamage.iDamage > 0 and
-	   spaceDamage.iDamage ~= DAMAGE_DEATH then
-	   
+function customSkill:modifySpaceDamage(attackingPawn, isFinalEffect, spaceDamage, indexes, targetPawn)
+	if Board:IsBuilding(spaceDamage.loc) and spaceDamage.iDamage > 0 and
+			spaceDamage.iDamage ~= DAMAGE_DEATH then
+
 		local previewState = isFinalEffect and more_plus.libs.weaponPreview.STATE_FINAL_EFFECT or
 				more_plus.libs.weaponPreview.STATE_SKILL_EFFECT
 		for _, idx in ipairs(indexes) do
@@ -26,11 +25,12 @@ function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes
 						more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc,
 								more_plus.commonIcons.noDamage.key.."_"..idx)
 					end)
-
-			spaceDamage.iDamage = DAMAGE_ZERO
 		end
+
+		spaceDamage.iDamage = DAMAGE_ZERO
 		logger.logDebug(SUBMODULE, "Prevented damage to building at %s", spaceDamage.loc:GetString())
 	end
+	return nil
 end
 
 return customSkill

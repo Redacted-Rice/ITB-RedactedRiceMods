@@ -12,7 +12,7 @@ local SUBMODULE = logger.register("More+", "CoveringFire", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes, targetPawn)
+function customSkill:modifySpaceDamage(attackingPawn, isFinalEffect, spaceDamage, indexes, targetPawn)
 	if targetPawn and targetPawn:IsEnemy() then
 		local previewState = isFinalEffect and more_plus.libs.weaponPreview.STATE_FINAL_EFFECT or
 				more_plus.libs.weaponPreview.STATE_SKILL_EFFECT
@@ -32,9 +32,8 @@ function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes
 		spaceDamage.sScript = "Board:GetPawn("..targetPawn:GetId().."):AddMoveBonus(-"..moveReduction..")"
 		logger.logDebug(SUBMODULE, "Will reduce movement of enemy at %s to %d (base: %d, reduction: %d)",
 				spaceDamage.loc:GetString(), targetMoveSpeed, baseMoveSpeed, moveReduction)
-	else
-		logger.logDebug(SUBMODULE, "No target pawn found for %s", spaceDamage.loc:GetString())
 	end
+	return nil
 end
 
 return customSkill

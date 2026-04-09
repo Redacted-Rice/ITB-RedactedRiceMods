@@ -18,21 +18,21 @@ local adverseStatuses = {
 	"Shatterburst", "Shocked", "Sleep", "Toxin", "Weaken", "Wet", "Insanity"
 }
 
-function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes, spacePawn)
-	-- Check if this is actual damage being dealt
-	if spacePawn and spacePawn:IsEnemy() and spaceDamage.iDamage > 0 and
+function customSkill:modifySpaceDamage(attackingPawn, isFinalEffect, spaceDamage, indexes, targetPawn)
+	-- Check if attacker is dealing damage to enemy
+	if attackingPawn and targetPawn and targetPawn:IsEnemy() and spaceDamage.iDamage > 0 and
 			spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
 
-		local pawnId = pawn:GetId()
+		local pawnId = attackingPawn:GetId()
 		local statusCount = 0
 		local activeStatuses = {}
 
 		-- Count vanilla fire and acid status
-		if pawn:IsFire() then
+		if attackingPawn:IsFire() then
 			statusCount = statusCount + 1
 			table.insert(activeStatuses, "Fire")
 		end
-		if pawn:IsAcid() then
+		if attackingPawn:IsAcid() then
 			statusCount = statusCount + 1
 			table.insert(activeStatuses, "Acid")
 		end
@@ -64,7 +64,7 @@ function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes
 
 			spaceDamage.iDamage = spaceDamage.iDamage + statusCount
 			logger.logDebug(SUBMODULE, "Added +%d vindictive damage (pawn %d has %d statuses: %s)",
-					statusCount, pawn:GetId(), statusCount, table.concat(activeStatuses, ", "))
+					statusCount, attackingPawn:GetId(), statusCount, table.concat(activeStatuses, ", "))
 		end
 	end
 

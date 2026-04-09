@@ -12,9 +12,9 @@ local SUBMODULE = logger.register("More+", "BigGameHunter", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes, spacePawn)
+function customSkill:modifySpaceDamage(attackingPawn, isFinalEffect, spaceDamage, indexes, targetPawn)
 
-	if spacePawn and more_plus.libs.pawnTypeUtils.isSpawnCategory(spacePawn, "Boss") and
+	if targetPawn and more_plus.libs.pawnTypeUtils.isSpawnCategory(targetPawn, "Boss") and
 			spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and
 			spaceDamage.iDamage ~= DAMAGE_ZERO then
 		local originalDamage = spaceDamage.iDamage
@@ -33,6 +33,7 @@ function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes
 				spaceDamage.loc:GetString(), originalDamage, spaceDamage.iDamage, idx)
 		end
 	end
+	return nil
 end
 
 return customSkill
