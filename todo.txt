@@ -34,18 +34,34 @@ Vanilla+
 ------------------------------------------------------------------------------
 
 MoreLvlUpSkills:
+* Effect modifier
+	* Only accounts for self pawn skills
+	* Doesn't work for queued? Same as above or different hooks? Probably latter or both
+	* Needs to manage and loop through all - doesn't properly handle multiple rounds of skills
 
-Next Release candidates:
+To Test
 * Movement
 	* Supporter
 * Tradeoffs
-	* Hot Headed, Malevolent, Vindictive
+	* Hot Headed, Malevolent
 * Offensive
-	* Reflect, Vigor, Vampire
+	* Reflect, Vigor
 * Positioning
-	* Ambusher, Urban, Rally, Militia, Escort, Alert
+	* Urban, Rally, Militia, Escort, Alert
 * Defensive
 	* Iron Plating, Impervious
+
+Tested Semi working at least:
+* Movement
+	* 
+* Tradeoffs
+	* Vindictive
+* Offensive
+	* Vampire
+* Positioning
+	* Ambusher
+* Defensive
+	* 
 
 
 ------------------------------------------------------------------------------

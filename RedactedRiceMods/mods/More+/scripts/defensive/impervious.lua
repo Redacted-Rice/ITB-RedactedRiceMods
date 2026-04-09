@@ -5,7 +5,7 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }
 
-customSkill.DEBUG = false
+customSkill.DEBUG = true
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Impervious", customSkill.DEBUG)
 

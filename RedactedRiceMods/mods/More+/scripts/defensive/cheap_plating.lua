@@ -5,7 +5,7 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }
 
-customSkill.DEBUG = false
+customSkill.DEBUG = true
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Cheap Plating", customSkill.DEBUG)
 
@@ -43,6 +43,9 @@ function customSkill:setupEffect()
 end
 
 function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes, spacePawn)
+	
+	logger.logDebug(SUBMODULE, "Space damage %s", spaceDamage.loc:GetString())
+			
 	-- Check if the target has the Cheap Plating skill
 	if spacePawn and cplus_plus_ex:isSkillOnPawn(customSkill.id, spacePawn) and
 	   		spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
@@ -63,13 +66,14 @@ function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes
 									more_plus.commonIcons.noDamage.key.."_"..idx)
 						end)
 			end
-
-			-- Mark that this pawn has used their first attack reduction
-			GAME.more_plus.cheap_plating.used[pawnId] = true
-
+			
 			-- Reduce damage by 3 (minimum 0)
 			local oldDamage = spaceDamage.iDamage
 			spaceDamage.iDamage = math.max(0, spaceDamage.iDamage - 3)
+			-- Mark that this pawn has used their first attack reduction
+			spaceDamage.sScript = spaceDamage.sScript .. [[
+					GAME.more_plus.cheap_plating.used[]].. pawnId ..[[] = true
+			]]
 			logger.logDebug(SUBMODULE, "Pawn %d using first attack reduction, reducing damage from %d to %d",
 					pawnId, oldDamage, spaceDamage.iDamage)
 		else
