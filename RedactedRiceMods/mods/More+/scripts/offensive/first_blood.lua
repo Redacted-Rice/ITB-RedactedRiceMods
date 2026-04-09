@@ -12,10 +12,10 @@ local SUBMODULE = logger.register("More+", "FirstBlood", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes, spacePawn)
-	if spacePawn and spacePawn:IsEnemy() then
-		local maxHealth = _G[spacePawn:GetType()].Health
-		if spacePawn:GetHealth() == maxHealth and maxHealth >= 4 and spaceDamage.iDamage > 0 and
+function customSkill:modifySpaceDamage(attackingPawn, isFinalEffect, spaceDamage, indexes, targetPawn)
+	if targetPawn and targetPawn:IsEnemy() then
+		local maxHealth = _G[targetPawn:GetType()].Health
+		if targetPawn:GetHealth() == maxHealth and maxHealth >= 4 and spaceDamage.iDamage > 0 and
 				spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
 			local previewState = isFinalEffect and more_plus.libs.weaponPreview.STATE_FINAL_EFFECT or
 					more_plus.libs.weaponPreview.STATE_SKILL_EFFECT
@@ -29,10 +29,11 @@ function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes
 
 				spaceDamage.iDamage = spaceDamage.iDamage + 1
 				logger.logDebug(SUBMODULE, "Added +1 damage to undamaged vek at %s (health: %d/%d) for idx %d",
-					spaceDamage.loc:GetString(), spacePawn:GetHealth(), maxHealth, idx)
+					spaceDamage.loc:GetString(), targetPawn:GetHealth(), maxHealth, idx)
 			end
 		end
 	end
+	return nil
 end
 
 return customSkill

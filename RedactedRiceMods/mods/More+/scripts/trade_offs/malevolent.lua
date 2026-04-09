@@ -18,21 +18,21 @@ local adverseStatuses = {
 	"Shatterburst", "Shocked", "Sleep", "Toxin", "Weaken", "Wet", "Insanity"
 }
 
-function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes, spacePawn)
-	-- Check if this is damage to an enemy
-	if spacePawn and spacePawn:IsEnemy() and spaceDamage.iDamage > 0 and
+function customSkill:modifySpaceDamage(attackingPawn, isFinalEffect, spaceDamage, indexes, targetPawn)
+	-- Check if attacker is dealing damage to an enemy
+	if attackingPawn and targetPawn and targetPawn:IsEnemy() and spaceDamage.iDamage > 0 and
 			spaceDamage.iDamage ~= DAMAGE_ZERO then
 
-		local pawnId = pawn:GetId()
+		local pawnId = attackingPawn:GetId()
 		local appliedStatuses = {}
 
 		-- Check vanilla fire and acid status
-		if pawn:IsFire() then
+		if attackingPawn:IsFire() then
 			spaceDamage.iFire = EFFECT_CREATE
 			table.insert(appliedStatuses, "Fire")
 			logger.logDebug(SUBMODULE, "Applied fire to target at %s", spaceDamage.loc:GetString())
 		end
-		if pawn:IsAcid() then
+		if attackingPawn:IsAcid() then
 			spaceDamage.iAcid = EFFECT_CREATE
 			table.insert(appliedStatuses, "Acid")
 			logger.logDebug(SUBMODULE, "Applied acid to target at %s", spaceDamage.loc:GetString())

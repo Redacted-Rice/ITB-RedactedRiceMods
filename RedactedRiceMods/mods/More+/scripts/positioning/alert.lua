@@ -27,10 +27,12 @@ function customSkill.isAdjacentToVek(loc)
 	end)
 end
 
--- SkillEffectModifier implementation: reduce damage by 1 if target is adjacent to vek
-function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes, spacePawn)
+-- Reduce damage by 1 if target is adjacent to vek
+-- We don't have a setArmor so I took this approach instead which
+-- is different than vanilla armor
+function customSkill:modifySpaceDamage(attackingPawn, isFinalEffect, spaceDamage, indexes, targetPawn)
 	-- Check if the target pawn is taking damage and is adjacent to a vek
-	if spacePawn and spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_ZERO and spaceDamage.iDamage ~= DAMAGE_DEATH then
+	if spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_ZERO and spaceDamage.iDamage ~= DAMAGE_DEATH then
 		local targetLoc = spaceDamage.loc
 
 		if customSkill.isAdjacentToVek(targetLoc) then
@@ -54,10 +56,9 @@ function customSkill:modifySpaceDamage(pawn, isFinalEffect, spaceDamage, indexes
 			end
 
 			logger.logDebug(SUBMODULE, "Alert reduced damage for pawn %d at %s (adjacent to vek)",
-					spacePawn:GetId(), targetLoc:GetString())
+					targetPawn:GetId(), targetLoc:GetString())
 		end
 	end
-
 	return nil
 end
 
