@@ -38,6 +38,7 @@ MoreLvlUpSkills:
 	* Only accounts for self pawn skills
 	* Doesn't work for queued? Same as above or different hooks? Probably latter or both
 	* Needs to manage and loop through all - doesn't properly handle multiple rounds of skills
+* Damage Icons for -1 armor, -3 armor, mirror
 
 To Test
 * Movement
@@ -53,7 +54,7 @@ To Test
 
 Tested Semi working at least:
 * Movement
-	* 
+	*
 * Tradeoffs
 	* Vindictive
 * Offensive
@@ -61,7 +62,7 @@ Tested Semi working at least:
 * Positioning
 	* Ambusher
 * Defensive
-	* 
+	*
 
 
 ------------------------------------------------------------------------------
