@@ -61,7 +61,7 @@ function WorldBuilders_Mold:CanTargetSpace(space, damage)
 end
 
 function WorldBuilders_Mold:NoPawnOrWillDie(p1, p2)
-	local actualDamage = self.Damage 
+	local actualDamage = self.Damage
 	if Board:GetPawn(p1):IsBoosted() then
 		actualDamage = actualDamage + 1
 	end
@@ -82,10 +82,10 @@ end
 
 function WorldBuilders_Mold:GetSecondTargetArea(p1, p2)
 	local ret = PointList()
-	
-	local isPawnTargetted = Board:IsPawnSpace(p2)
+
+	local isPawnTargeted = Board:IsPawnSpace(p2)
 	-- if the pawn will die, allow any adj target
-	local anyValid = self:NoPawnOrWillDie(p1, p2) or (isPawnTargetted and Board:GetPawn(p2):IsGuarding())
+	local anyValid = self:NoPawnOrWillDie(p1, p2) or (isPawnTargeted and Board:GetPawn(p2):IsGuarding())
 	if anyValid then
 		ret:push_back(p2)
 	end
@@ -100,9 +100,9 @@ function WorldBuilders_Mold:GetSecondTargetArea(p1, p2)
 		local diff = p2 - p
 		local dist = math.abs(diff.x) + math.abs(diff.y)
 		-- If the space is not an invalid target (multispace, non pushable pawn)
-		if dist <= size and Board:IsValid(p) and 
+		if dist <= size and Board:IsValid(p) and
 				(anyValid or
-					(not isPawnTargetted or not Board:IsBlocked(p, PATH_FLYER))) then
+					(not isPawnTargeted or not Board:IsBlocked(p, PATH_FLYER))) then
 			ret:push_back(p)
 		end
 		p = p + VEC_RIGHT
@@ -133,10 +133,10 @@ function WorldBuilders_Mold:GetFinalEffect(p1,p2,p3)
 	local damage = SpaceDamage(p2, self.Damage)
 	local terrain = SpaceDamage(p2, 0)
 	local pawnTarget = Board:GetPawn(p2)
-	local isPawnTargetted = pawnTarget ~= nil
+	local isPawnTargeted = pawnTarget ~= nil
 
 	-- is it a building or is it an unpushable pawn that won
-	local isUnpushablePawn = isPawnTargetted and Board:GetPawn(p2):IsGuarding()
+	local isUnpushablePawn = isPawnTargeted and Board:GetPawn(p2):IsGuarding()
 	local pawnWillDie = self:NoPawnOrWillDie(p1, p2)
 	local unTerraformable = Board:IsTerrain(p2, TERRAIN_BUILDING) or
 			(isUnpushablePawn and not pawnWillDie)
@@ -156,7 +156,7 @@ function WorldBuilders_Mold:GetFinalEffect(p1,p2,p3)
 	ret:AddDamage(damage)
 	ret:AddBounce(p2, bounce)
 
-	if isPawnTargetted and not isUnpushablePawn then
+	if isPawnTargeted and not isUnpushablePawn then
 		local move = PointList()
 		move:push_back(p2)
 		move:push_back(p3)
@@ -172,7 +172,7 @@ function WorldBuilders_Mold:GetFinalEffect(p1,p2,p3)
 			local adjSpace = p2 + DIR_VECTORS[dir]
 			local adjDamage = SpaceDamage(adjSpace, 0)
 			local terrain = Board:GetTerrain(adjSpace)
-			if (pawnWillDie or isUnpushablePawn or not isPawnTargetted or p3 ~= adjSpace) and terrain ~= TERRAIN_BUILDING and terrain ~= TERRAIN_MOUNTAIN and Board:GetPawn(adjSpace) == nil then
+			if (pawnWillDie or isUnpushablePawn or not isPawnTargeted or p3 ~= adjSpace) and terrain ~= TERRAIN_BUILDING and terrain ~= TERRAIN_MOUNTAIN and Board:GetPawn(adjSpace) == nil then
 				self:AddRock(adjDamage, adjSpace)
 				ret:AddBounce(adjSpace, -3)
 			end

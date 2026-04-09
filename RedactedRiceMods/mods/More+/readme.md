@@ -1,5 +1,5 @@
 # More Pilot Level Up Skills
-Have you ever wished there was even more variety for Pilot Level Up Skills than in AE? 
+Have you ever wished there was even more variety for Pilot Level Up Skills than in AE?
 Well this is the mod for you! This mod currenlty adds 19 more Pilot Level Up Skills to
 the game in 4 different categorical groups. Enable and disable groups or individual
 skills in the CPLUS+ Modify Pilot Abilities Menu.
@@ -20,7 +20,7 @@ Please enjoy and contact us if you run into any issues.
 ### Defensive
 Skills related to grid and mech defense and hampering enemy power
 
-* Covering Fire - Targetted enemies lose half their movement for a turn (rounded down).
+* Covering Fire - Targeted enemies lose half their movement for a turn (rounded down).
 * Defiant - +3 grid defense per enemy on the board.
 * Foolhardy - +12 grid defense if no buildings are damaged.
 * Resilient - Gain a shield each time the piloted mech is damaged after the attack completes.
@@ -55,7 +55,7 @@ These are skills that have a stronger than typical positive effect but also incl
 Latest release: 1.0.0
 
 ## 1.0.0
-Released: 04/10/2026 
+Released: 04/10/2026
 
 compatible with:
 * ItB AE 	1.2.93
