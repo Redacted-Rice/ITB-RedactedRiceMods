@@ -12,21 +12,16 @@ local SUBMODULE = logger.register("More+", "FocusedStrike", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
--- Exclude Kai and Morgan as they give boosted already
-cplus_plus_ex:registerPilotSkillExclusions("Pilot_Arrogant", customSkill.id)
-cplus_plus_ex:registerPilotSkillExclusions("Pilot_Chemical", customSkill.id)
-
-function customSkill:modifySpaceDamage(attackingPawn, isFinalEffect, spaceDamage, indexes, targetPawn)
+function customSkill:modifySpaceDamage(attackingPawn, previewState, spaceDamage, indexes, targetPawn)
 	-- If the pawn has used its movement, then return
 	if attackingPawn:IsMovementSpent() then
 		logger.logDebug(SUBMODULE, "Pawn %d already moved, no bonus damage", attackingPawn:GetId())
-		return
+		return nil
 	end
+
 	if targetPawn and targetPawn:IsEnemy() and
 			spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and
 			spaceDamage.iDamage ~= DAMAGE_ZERO then
-		local previewState = isFinalEffect and more_plus.libs.weaponPreview.STATE_FINAL_EFFECT or
-				more_plus.libs.weaponPreview.STATE_SKILL_EFFECT
 		for _, idx in ipairs(indexes) do
 			logger.logDebug(SUBMODULE, "Adding icon for %s with idx %d", spaceDamage.loc:GetString(), idx)
 			more_plus.libs.weaponPreview.ExecuteWithState(previewState,
@@ -34,11 +29,10 @@ function customSkill:modifySpaceDamage(attackingPawn, isFinalEffect, spaceDamage
 						more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc,
 								more_plus.commonIcons.crit.key.."_"..idx)
 					end)
-
 			local originalDamage = spaceDamage.iDamage
 			spaceDamage.iDamage = spaceDamage.iDamage * 2
-			logger.logDebug(SUBMODULE, "Doubled damage to enemy at %s from %d to %d (not moved yet) for idx %d",
-					spaceDamage.loc:GetString(), originalDamage, spaceDamage.iDamage, idx)
+			logger.logDebug(SUBMODULE, "Doubled damage to enemy at %s from %d to %d (not moved yet)",
+					spaceDamage.loc:GetString(), originalDamage, spaceDamage.iDamage)
 		end
 	end
 	return nil

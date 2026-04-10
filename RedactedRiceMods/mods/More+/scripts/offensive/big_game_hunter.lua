@@ -12,14 +12,11 @@ local SUBMODULE = logger.register("More+", "BigGameHunter", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(attackingPawn, isFinalEffect, spaceDamage, indexes, targetPawn)
-
+function customSkill:modifySpaceDamage(attackingPawn, previewState, spaceDamage, indexes, targetPawn)
 	if targetPawn and more_plus.libs.pawnTypeUtils.isSpawnCategory(targetPawn, "Boss") and
 			spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and
 			spaceDamage.iDamage ~= DAMAGE_ZERO then
 		local originalDamage = spaceDamage.iDamage
-		local previewState = isFinalEffect and more_plus.libs.weaponPreview.STATE_FINAL_EFFECT or
-				more_plus.libs.weaponPreview.STATE_SKILL_EFFECT
 		for _, idx in ipairs(indexes) do
 			logger.logDebug(SUBMODULE, "Adding icon for %s with idx %d", spaceDamage.loc:GetString(), idx)
 			more_plus.libs.weaponPreview.ExecuteWithState(previewState,
@@ -27,10 +24,9 @@ function customSkill:modifySpaceDamage(attackingPawn, isFinalEffect, spaceDamage
 						more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc,
 								more_plus.commonIcons.crit.key.."_"..idx)
 					end)
-
 			spaceDamage.iDamage = spaceDamage.iDamage * 2
-			logger.logDebug(SUBMODULE, "Doubled damage to boss at %s from %d to %d for idx %d",
-				spaceDamage.loc:GetString(), originalDamage, spaceDamage.iDamage, idx)
+			logger.logDebug(SUBMODULE, "Doubled damage to boss at %s from %d to %d",
+					spaceDamage.loc:GetString(), originalDamage, spaceDamage.iDamage)
 		end
 	end
 	return nil

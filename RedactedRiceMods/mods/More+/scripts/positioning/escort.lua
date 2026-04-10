@@ -25,7 +25,9 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 			-- Moving pawn with Escort - check for adjacent allies at destination
 			local adjacentMechs = more_plus.libs.boardUtils.getAdjacent(p2, function(adjacentLoc)
 					local adjacentPawn = Board:GetPawn(adjacentLoc)
-					return adjacentPawn and adjacentPawn:IsMech() and not adjacentPawn:IsShield()
+					-- Don't include self...
+					return adjacentPawn and adjacentPawn:GetId() ~= pawn:GetId() and
+							adjacentPawn:IsMech() and not adjacentPawn:IsShield()
 			end)
 
 			for _, adjacentLoc in ipairs(adjacentMechs) do
@@ -45,13 +47,14 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 		-- Check if moving pawn is moving adjacent to a pawn with Escort
 		local hasAdjacentEscort = more_plus.libs.boardUtils.isAdjacent(p2, function(adjacentLoc)
 			local adjacentPawn = Board:GetPawn(adjacentLoc)
-			if adjacentPawn and adjacentPawn:IsMech() then
+			-- Don't include self again
+			if adjacentPawn and adjacentPawn:GetId() ~= pawn:GetId() and adjacentPawn:IsMech() then
 				local adjacentPilot = adjacentPawn:GetPilot()
 				return adjacentPilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, adjacentPilot)
 			end
 			return false
 		end)
-		
+
 		-- Shield the moving pawn if not already shielded and found an Escort pilot
 		if hasAdjacentEscort and not pawn:IsShield() then
 			logger.logDebug(SUBMODULE, "Pawn %d moving adjacent to Escort pawn, shielding",

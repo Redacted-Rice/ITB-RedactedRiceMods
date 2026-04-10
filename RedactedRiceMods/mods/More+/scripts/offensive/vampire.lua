@@ -11,7 +11,7 @@ local SUBMODULE = logger.register("More+", "Vampire", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(attackingPawn, isFinalEffect, spaceDamage, indexes, targetPawn)
+function customSkill:modifySpaceDamage(attackingPawn, previewState, spaceDamage, indexes, targetPawn)
 	if targetPawn and targetPawn:IsEnemy() and spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_ZERO then
 		local wouldKill = false
 		if spaceDamage.iDamage == DAMAGE_DEATH then

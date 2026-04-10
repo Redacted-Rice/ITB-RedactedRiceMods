@@ -30,21 +30,22 @@ end
 -- Reduce damage by 1 if target is adjacent to vek
 -- We don't have a setArmor so I took this approach instead which
 -- is different than vanilla armor
-function customSkill:modifySpaceDamage(attackingPawn, isFinalEffect, spaceDamage, indexes, targetPawn)
+function customSkill:modifySpaceDamage(attackingPawn, previewState, spaceDamage, indexes, targetPawn)
 	-- Check if the target pawn is taking damage and is adjacent to a vek
 	if spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_ZERO and spaceDamage.iDamage ~= DAMAGE_DEATH then
 		local targetLoc = spaceDamage.loc
 
 		if customSkill.isAdjacentToVek(targetLoc) then
 			-- Reduce damage by 1
-			spaceDamage.iDamage = math.max(0, spaceDamage.iDamage - 1)
+			local oldDamage = spaceDamage.iDamage
+			spaceDamage.iDamage = math.max(oldDamage - 1, 0)
+			-- Replace 0 with DAMAGE_ZERO to display right
+			if spaceDamage.iDamage == 0 then
+				spaceDamage.iDamage = DAMAGE_ZERO
+			end
 
 			-- TODO: Need to make a different armor icon since this won't behave as vanilla
-
 			-- Show damage reduction icon
-			local previewState = isFinalEffect and more_plus.libs.weaponPreview.STATE_FINAL_EFFECT or
-					more_plus.libs.weaponPreview.STATE_SKILL_EFFECT
-
 			for _, idx in ipairs(indexes) do
 				logger.logDebug(SUBMODULE, "Adding damage reduction icon for %s with idx %d",
 						spaceDamage.loc:GetString(), idx)
@@ -55,8 +56,8 @@ function customSkill:modifySpaceDamage(attackingPawn, isFinalEffect, spaceDamage
 						end)
 			end
 
-			logger.logDebug(SUBMODULE, "Alert reduced damage for pawn %d at %s (adjacent to vek)",
-					targetPawn:GetId(), targetLoc:GetString())
+			logger.logDebug(SUBMODULE, "Alert reduced damage for pawn %d at %s from %d to %d (adjacent to vek)",
+					targetPawn:GetId(), targetLoc:GetString(), oldDamage, spaceDamage.iDamage)
 		end
 	end
 	return nil

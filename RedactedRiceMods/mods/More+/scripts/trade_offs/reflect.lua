@@ -11,16 +11,12 @@ local SUBMODULE = logger.register("More+", "Reflect", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(attackingPawn, isFinalEffect, spaceDamage, indexes, targetPawn)
+function customSkill:modifySpaceDamage(attackingPawn, previewState, spaceDamage, indexes, targetPawn)
 	-- Check if this is damage from an enemy to a mech
 	if targetPawn and targetPawn:IsMech() and attackingPawn and attackingPawn:IsEnemy() and 
 			spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_ZERO then
 		local attackerLoc = attackingPawn:GetSpace()
 		local defenderLoc = targetPawn:GetSpace()
-		
-		-- Determine preview state for animations
-		local previewState = isFinalEffect and more_plus.libs.weaponPreview.STATE_FINAL_EFFECT or
-				more_plus.libs.weaponPreview.STATE_SKILL_EFFECT
 		
 		-- Add reflect animation icons
 		for _, idx in ipairs(indexes) do

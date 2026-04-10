@@ -11,7 +11,7 @@ local SUBMODULE = logger.register("More+", "Militia", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(attackingPawn, isFinalEffect, spaceDamage, indexes, targetPawn)
+function customSkill:modifySpaceDamage(attackingPawn, previewState, spaceDamage, indexes, targetPawn)
 	-- Check if this is damage to an enemy
 	if targetPawn and targetPawn:IsEnemy() and spaceDamage.iDamage > 0 and
 	   		spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
@@ -23,9 +23,6 @@ function customSkill:modifySpaceDamage(attackingPawn, isFinalEffect, spaceDamage
 		end)
 
 		if isAdjacentToBuilding then
-			local previewState = isFinalEffect and more_plus.libs.weaponPreview.STATE_FINAL_EFFECT or
-					more_plus.libs.weaponPreview.STATE_SKILL_EFFECT
-
 			for _, idx in ipairs(indexes) do
 				logger.logDebug(SUBMODULE, "Adding militia damage icon for %s with idx %d",
 					spaceDamage.loc:GetString(), idx)
