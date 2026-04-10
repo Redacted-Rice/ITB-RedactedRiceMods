@@ -16,7 +16,20 @@ Please enjoy and contact us if you run into any issues!
 3. Forest armor icon will sometimes appear when environment effects are occuring. I think this should be mostly fixed now but may show occasionally
 
 # Releases
-Latest release: 3.1.0
+Latest release: 3.1.1
+
+## 3.1.1
+Released: 04/10/2026 
+
+compatible with:
+* ItB AE        1.2.93
+* ModLoader     2.9.4
+* ModLoaderExt  1.21 
+* memedit       1.2.0
+* easyEdit      2.0.8
+
+### Notes
+* Added missed dependency
 
 ## 3.1.0
 Released: 03/28/2026 

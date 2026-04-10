@@ -13,7 +13,7 @@ Please enjoy and contact us if you run into any issues!
 * Email: RedactedRice@gmail.com
 
 # Squads
-* Treeherders - v3.1.0 - Inspired by ents, this squad focuses on using forests tiles to increase their power. The flagship entborg mech gets stronger as the forests get destroyed
+* Treeherders - v3.1.1 - Inspired by ents, this squad focuses on using forests tiles to increase their power. The flagship entborg mech gets stronger as the forests get destroyed
 * WorldBuilders - v1.3.1 - This squad focuses on terrain manipulation to block and avoid damage. It has some strong single target effects but you can easily get overwhelmed by numbers if not strategically manipulating the terrain
 
 # Other
@@ -36,7 +36,37 @@ Please enjoy and contact us if you run into any issues!
 To uninstall, delete the folder in mods
 
 # Releases
-Latest release: 1.4.0
+Latest release: 1.4.1
+
+## 1.4.1
+Updating missed dependencies in treeherders and top level scripts
+
+Released: 04/10/2026
+
+Squads:
+* Treeherders    3.1.1
+* WorldBuilders  1.3.1
+
+Other Mods:
+* RebalanceCore+ 1.0.1
+
+Libs:
+* BoardUtils        1.3.0
+* PassiveEffect     1.4.0
+* PawnTypeUtils     1.1.0
+* PredictableRandom 1.2.0
+* Trait             3.0.1
+* TraitReplace      0.8.1
+* WeaponPreview     4.0.1
+
+Dependencies:
+* ItB AE        1.2.93
+* ModLoader     2.9.5
+* ModLoaderExt  1.24
+* Memedit       1.2.1
+* EasyEdit		2.0.8
+* Memhack       1.0.2
+* CPLUS+        1.0.0
 
 ## 1.4.0
 Initial release of More Pilot Level Up Skills (More+)
