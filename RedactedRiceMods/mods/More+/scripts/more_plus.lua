@@ -128,6 +128,7 @@ function more_plus:init()
 	self.SkillActive:baseInit()
 
 	logger.logDebug(SUBMODULE, "Loading libraries...")
+	require(path .. "libs/customAnim")
 	require(path .. "libs/status")
 
 	logger.logDebug(SUBMODULE, "Finding all skills...")
