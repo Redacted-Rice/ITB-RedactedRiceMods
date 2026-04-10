@@ -2,12 +2,14 @@
 local mod =  {
 	id = "redactedrice_libs",
 	name = "Redacted Rice Mods",
-	version = "1.4.0",
+	version = "1.4.1",
 	icon = "scripts/icon.png",
 	description = "A Collection of mods made by Redacted Rice",
 	submodFolders = {"mods/"},
 	modApiVersion = "2.9.5",
 	gameVersion = "1.2.93",
+	-- include all dependencies here to make sure they enable right
+	-- when enabling all mods at once with the group checkbox
 	dependencies = {
         modApiExt = "1.24",
         memedit = "1.2.1",
