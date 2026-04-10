@@ -15,13 +15,10 @@ cplus_plus_ex:registerPilotSkillExclusions("Pilot_Chemical", customSkill.id)
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(attackingPawn, isFinalEffect, spaceDamage, indexes, targetPawn)
+function customSkill:modifySpaceDamage(attackingPawn, previewState, spaceDamage, indexes, targetPawn)
 	if targetPawn and targetPawn:IsMech() and spaceDamage.iDamage < 0 and
 			spaceDamage.iDamage ~= DAMAGE_ZERO and spaceDamage.iDamage ~= DAMAGE_DEATH then
 		if not targetPawn:IsBoosted() then
-			local previewState = isFinalEffect and more_plus.libs.weaponPreview.STATE_FINAL_EFFECT or
-					more_plus.libs.weaponPreview.STATE_SKILL_EFFECT
-
 			for _, idx in ipairs(indexes) do
 				logger.logDebug(SUBMODULE, "Adding boost icon for healed mech at %s with idx %d",
 						spaceDamage.loc:GetString(), idx)
@@ -32,7 +29,7 @@ function customSkill:modifySpaceDamage(attackingPawn, isFinalEffect, spaceDamage
 						end)
 			end
 
-			spaceDamage.sScript = string.format("Board:GetPawn(%d):SetBoosted(true)", targetPawn:GetId())
+			spaceDamage.sScript = spaceDamage.sScript .. string.format("Board:GetPawn(%d):SetBoosted(true)", targetPawn:GetId())
 			logger.logDebug(SUBMODULE, "Will grant boosted to healed mech %d at %s (heal amount: %d)",
 					targetPawn:GetId(), spaceDamage.loc:GetString(), -spaceDamage.iDamage)
 		else

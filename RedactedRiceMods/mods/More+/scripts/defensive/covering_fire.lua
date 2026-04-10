@@ -12,10 +12,8 @@ local SUBMODULE = logger.register("More+", "CoveringFire", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(attackingPawn, isFinalEffect, spaceDamage, indexes, targetPawn)
+function customSkill:modifySpaceDamage(attackingPawn, previewState, spaceDamage, indexes, targetPawn)
 	if targetPawn and targetPawn:IsEnemy() then
-		local previewState = isFinalEffect and more_plus.libs.weaponPreview.STATE_FINAL_EFFECT or
-				more_plus.libs.weaponPreview.STATE_SKILL_EFFECT
 		for _, idx in ipairs(indexes) do
 			logger.logDebug(SUBMODULE, "Adding icon for %s with idx %d", spaceDamage.loc:GetString(), idx)
 			more_plus.libs.weaponPreview.ExecuteWithState(previewState,
@@ -29,7 +27,7 @@ function customSkill:modifySpaceDamage(attackingPawn, isFinalEffect, spaceDamage
 		local targetMoveSpeed = math.floor(baseMoveSpeed / 2)
 		local moveReduction = targetPawn:GetMoveSpeed() - targetMoveSpeed
 
-		spaceDamage.sScript = "Board:GetPawn("..targetPawn:GetId().."):AddMoveBonus(-"..moveReduction..")"
+		spaceDamage.sScript = spaceDamage.sScript .. "Board:GetPawn("..targetPawn:GetId().."):AddMoveBonus(-"..moveReduction..")"
 		logger.logDebug(SUBMODULE, "Will reduce movement of enemy at %s to %d (base: %d, reduction: %d)",
 				spaceDamage.loc:GetString(), targetMoveSpeed, baseMoveSpeed, moveReduction)
 	end

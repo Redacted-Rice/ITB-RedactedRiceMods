@@ -42,7 +42,7 @@ function customSkill:setupEffect()
 	end))
 end
 
-function customSkill:modifySpaceDamage(attackingPawn, isFinalEffect, spaceDamage, indexes, targetPawn)
+function customSkill:modifySpaceDamage(attackingPawn, previewState, spaceDamage, indexes, targetPawn)
 	-- Check if the target is taking damage
 	if targetPawn and spaceDamage.iDamage > 0 and
 			spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
@@ -53,9 +53,6 @@ function customSkill:modifySpaceDamage(attackingPawn, isFinalEffect, spaceDamage
 		-- Check if this pawn hasn't used their first attack reduction yet
 		if not GAME.more_plus.cheap_plating.used[pawnId] then
 			-- TODO: Add another icon for this
-			local previewState = isFinalEffect and more_plus.libs.weaponPreview.STATE_FINAL_EFFECT or
-					more_plus.libs.weaponPreview.STATE_SKILL_EFFECT
-
 			for _, idx in ipairs(indexes) do
 				more_plus.libs.weaponPreview.ExecuteWithState(previewState,
 						function()
@@ -64,9 +61,13 @@ function customSkill:modifySpaceDamage(attackingPawn, isFinalEffect, spaceDamage
 						end)
 			end
 
-			-- Reduce damage by 3 (minimum 0)
+			-- Reduce damage by 3 (minimum DAMAGE_ZERO)
 			local oldDamage = spaceDamage.iDamage
-			spaceDamage.iDamage = math.max(0, spaceDamage.iDamage - 3)
+			spaceDamage.iDamage = math.max(0, oldDamage - 3)
+			-- If it no longer does damage, switch to damage zero to display right
+			if spaceDamage.iDamage == 0 then
+				spaceDamage.iDamage = DAMAGE_ZERO
+			end
 			-- Mark that this pawn has used their first attack reduction
 			spaceDamage.sScript = spaceDamage.sScript .. [[
 					GAME.more_plus.cheap_plating.used[]].. pawnId ..[[] = true

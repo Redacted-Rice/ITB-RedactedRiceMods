@@ -18,7 +18,7 @@ local adverseStatuses = {
 	"Shatterburst", "Shocked", "Sleep", "Toxin", "Weaken", "Wet", "Insanity"
 }
 
-function customSkill:modifySpaceDamage(attackingPawn, isFinalEffect, spaceDamage, indexes, targetPawn)
+function customSkill:modifySpaceDamage(attackingPawn, previewState, spaceDamage, indexes, targetPawn)
 	-- Check if attacker is dealing damage to enemy
 	if attackingPawn and targetPawn and targetPawn:IsEnemy() and spaceDamage.iDamage > 0 and
 			spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
@@ -49,9 +49,6 @@ function customSkill:modifySpaceDamage(attackingPawn, isFinalEffect, spaceDamage
 
 		-- Add damage for each adverse status
 		if statusCount > 0 then
-			local previewState = isFinalEffect and more_plus.libs.weaponPreview.STATE_FINAL_EFFECT or
-					more_plus.libs.weaponPreview.STATE_SKILL_EFFECT
-
 			for _, idx in ipairs(indexes) do
 				logger.logDebug(SUBMODULE, "Adding vindictive damage icon for %s with idx %d",
 						spaceDamage.loc:GetString(), idx)

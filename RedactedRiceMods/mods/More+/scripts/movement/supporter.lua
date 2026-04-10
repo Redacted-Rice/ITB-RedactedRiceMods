@@ -34,39 +34,54 @@ function customSkill.moveTargetArea(mission, pawn, weaponId, p1, targetArea)
 			local addedCount = 0
 			local addedPoints = {}
 
+			-- Build set of existing target area points to avoid duplicates
+			local existingPoints = {}
+			for i = 0, targetArea:size() - 1 do
+				local point = targetArea:index(i)
+				existingPoints[point:GetString()] = true
+			end
+
 			for _, pawnId in ipairs(extract_table(Board:GetPawns(TEAM_MECH))) do
 				local allyPawn = Board:GetPawn(pawnId)
-				local allyLoc = allyPawn:GetSpace()
-				logger.logDebug(SUBMODULE, "Found ally %d at %s", allyPawn:GetId(), allyLoc:GetString())
 
-				-- Get all potential adjacent tiles to the ally
-				local adjacentTiles = more_plus.libs.boardUtils.getAdjacent(allyLoc, function(adjacentLoc)
-					-- Check if valid board space
-					if not Board:IsValid(adjacentLoc) then
-						return false
-					end
-					-- Check if occupied by a pawn
-					if Board:GetPawn(adjacentLoc) then
-						return false
-					end
-					-- check if its passable
-					local terrain = Board:GetTerrain(adjacentLoc)
-					if (not more_plus.libs.boardUtils.isPawnFlying(pawn)) and
-							terrain == TERRAIN_HOLE then
-						return false
-					end
-					if (not cplus_plus_ex:isSkillOnPawn("RrNimble", pawn)) and
-							(terrain == TERRAIN_BUILDING or terrain == TERRAIN_MOUNTAIN) then
-						return false
-					end
-					return true
-				end)
+				-- Skip self
+				if allyPawn:GetId() ~= pawn:GetId() then
+					local allyLoc = allyPawn:GetSpace()
+					logger.logDebug(SUBMODULE, "Found ally %d at %s", allyPawn:GetId(), allyLoc:GetString())
 
-				-- Add each valid adjacent tile to move area
-				for _, adjLoc in ipairs(adjacentTiles) do
-					targetArea:push_back(adjLoc)
-					table.insert(addedPoints, adjLoc:GetString())
-					addedCount = addedCount + 1
+					-- Get all potential adjacent tiles to the ally
+					local adjacentTiles = more_plus.libs.boardUtils.getAdjacent(allyLoc, function(adjacentLoc)
+						-- Check if valid board space
+						if not Board:IsValid(adjacentLoc) then
+							return false
+						end
+						-- Check if occupied by a pawn
+						if Board:GetPawn(adjacentLoc) then
+							return false
+						end
+						-- check if its passable
+						local terrain = Board:GetTerrain(adjacentLoc)
+						if (not more_plus.libs.boardUtils.isPawnFlying(pawn)) and
+								terrain == TERRAIN_HOLE then
+							return false
+						end
+						if (not cplus_plus_ex:isSkillOnPawn("RrNimble", pawn)) and
+								(terrain == TERRAIN_BUILDING or terrain == TERRAIN_MOUNTAIN) then
+							return false
+						end
+						return true
+					end)
+
+					-- Add each new valid adjacent tile to move area
+					for _, adjLoc in ipairs(adjacentTiles) do
+						local locStr = adjLoc:GetString()
+						if not existingPoints[locStr] then
+							targetArea:push_back(adjLoc)
+							existingPoints[locStr] = true
+							table.insert(addedPoints, locStr)
+							addedCount = addedCount + 1
+						end
+					end
 				end
 			end
 

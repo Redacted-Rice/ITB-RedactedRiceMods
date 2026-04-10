@@ -11,14 +11,12 @@ local SUBMODULE = logger.register("More+", "Impervious", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(attackingPawn, isFinalEffect, spaceDamage, indexes, targetPawn)
-	-- Only process if attacker is an ally and target is taking damage
-	-- we will have already checked target has the skill
-	if attackingPawn and attackingPawn:GetTeam() == TEAM_MECH and
+function customSkill:modifySpaceDamage(attackingPawn, previewState, spaceDamage, indexes, targetPawn)
+	-- Only process if attacker is an ally (but not self) and target is taking damage
+	if attackingPawn and attackingPawn:GetTeam() == TEAM_MECH
 	    	spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
+
 		-- Show icon
-		local previewState = isFinalEffect and more_plus.libs.weaponPreview.STATE_FINAL_EFFECT or
-				more_plus.libs.weaponPreview.STATE_SKILL_EFFECT
 		for _, idx in ipairs(indexes) do
 			more_plus.libs.weaponPreview.ExecuteWithState(previewState,
 					function()
@@ -26,10 +24,10 @@ function customSkill:modifySpaceDamage(attackingPawn, isFinalEffect, spaceDamage
 								more_plus.commonIcons.noDamage.key.."_"..idx)
 					end)
 		end
-		spaceDamage.iDamage = 0
-
-		logger.logDebug(SUBMODULE, "Blocked ally damage from pawn %d to pawn %d (damage: %d -> 0)",
-				attackingPawn:GetId(), targetPawn:GetId(), spaceDamage.iDamage)
+		local oldDamage = spaceDamage.iDamage
+		spaceDamage.iDamage = DAMAGE_ZERO
+		logger.logDebug(SUBMODULE, "Blocked ally damage from pawn %d to pawn %d (damage: %d -> DAMAGE_ZERO)",
+				attackingPawn:GetId(), targetPawn:GetId(), oldDamage)
 	end
 	return nil
 end
