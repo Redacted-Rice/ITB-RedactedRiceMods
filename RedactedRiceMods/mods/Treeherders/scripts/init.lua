@@ -8,6 +8,7 @@ local mod = {
 	dependencies = {
         modApiExt = "1.21",
         memedit = "1.2.0",
+        easyEdit = "2.0.8",
     },
 	libs = {},
 }
