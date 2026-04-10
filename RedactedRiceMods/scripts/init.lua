@@ -6,12 +6,14 @@ local mod =  {
 	icon = "scripts/icon.png",
 	description = "A Collection of mods made by Redacted Rice",
 	submodFolders = {"mods/"},
-	modApiVersion = "2.9.4",
+	modApiVersion = "2.9.5",
 	gameVersion = "1.2.93",
 	dependencies = {
-        modApiExt = "1.21",
-        memedit = "1.2.0",
+        modApiExt = "1.24",
+        memedit = "1.2.1",
         easyEdit = "2.0.8",
+        redactedrice_memhack = "1.0.0",
+        redactedrice_cplus_plus = "1.0.2",
     }
 }
 
