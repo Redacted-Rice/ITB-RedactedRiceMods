@@ -34,35 +34,25 @@ Vanilla+
 ------------------------------------------------------------------------------
 
 MoreLvlUpSkills:
-* Effect modifier
-	* Only accounts for self pawn skills
-	* Doesn't work for queued? Same as above or different hooks? Probably latter or both
-	* Needs to manage and loop through all - doesn't properly handle multiple rounds of skills
-* Damage Icons for -1 armor, -3 armor, mirror
-
-To Test
-* Movement
-	* Supporter
-* Tradeoffs
-	* Hot Headed, Malevolent
-* Offensive
-	* Reflect, Vigor
-* Positioning
-	* Urban, Rally, Militia, Escort, Alert
-* Defensive
-	* Iron Plating, Impervious
-
-Tested Semi working at least:
-* Movement
-	*
-* Tradeoffs
-	* Vindictive
-* Offensive
-	* Vampire
-* Positioning
-	* Ambusher
-* Defensive
-	*
+* Damage Icons for -1 armor, -3 armor, mirror, vampire or generic status?
+* Cheap plating 
+	doesn't show icon for queued skills (need to pass if queued vs normal attack)
+	Applies to targeted pawns too...
+* Add text popup for rally (and other skills?)
+* Supporter 
+	* Double adds spaces
+	* doesn't need to consider self...
+* Vigor shows icon but doesn't actually apply boost
+	Actually seems to show but then immediately disappears
+	didn't show on harold
+* Vampire with harold?
+	Maybe make it just heal
+* General
+	change damage to DAMAGE_ZERO
+	Queued effect icons flash on moving
+* Impervious not working at all
+* Reflect not working right either
+* Escort - Moving one space counbts as adjacent to self...
 
 
 ------------------------------------------------------------------------------

@@ -33,14 +33,6 @@ local function registerGlobalCallbacks()
 		function(mission, pawn, weaponId, p1, p2, p3, skillEffect)
 			SkillEffectModifier.processAllSkills(pawn, true, skillEffect, p2)
 		end))
-	table.insert(globalEventSubscriptions, modapiext.events.onQueuedSkillBuild:subscribe(
-		function(mission, pawn, weaponId, p1, p2, skillEffect)
-			SkillEffectModifier.processAllSkills(pawn, false, skillEffect, p2)
-		end))
-	table.insert(globalEventSubscriptions, modapiext.events.onQueuedFinalEffectBuild:subscribe(
-		function(mission, pawn, weaponId, p1, p2, p3, skillEffect)
-			SkillEffectModifier.processAllSkills(pawn, true, skillEffect, p2)
-		end))
 
 	logger.logDebug(SUBMODULE, "Registered %d global callbacks", #globalEventSubscriptions)
 end
