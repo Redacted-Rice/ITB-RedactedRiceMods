@@ -112,8 +112,9 @@ function SkillEffectModifier:processDamageList(attackingPawn, isFinalEffect, dam
 	local previewState = isFinalEffect and more_plus.libs.weaponPreview.STATE_FINAL_EFFECT or
 			more_plus.libs.weaponPreview.STATE_SKILL_EFFECT
 	if isQueued then
-		previewState = isFinalEffect and more_plus.libs.weaponPreview.STATE_QUEUED_FINAL_EFFECT or
-				more_plus.libs.weaponPreview.STATE_QUEUED_SKILL_EFFECT
+		-- TODO: No queued effect final?
+		previewState = --isFinalEffect and more_plus.libs.weaponPreview.STATE_QUEUED_FINAL_EFFECT or
+				more_plus.libs.weaponPreview.STATE_QUEUED_SKILL
 	end
 
 	for i, spaceDamage in ipairs(damageList) do
@@ -174,7 +175,7 @@ function SkillEffectModifier:processDamageList(attackingPawn, isFinalEffect, dam
 end
 
 -- Helper function to process effects with a specific isQueued value
-local function processEffectsWithQueuedFlag(effectsTable, isQueued)
+local function processEffectsWithQueuedFlag(attackingPawn, skillEffect, effectsTable, isQueued)
 	if #effectsTable == 0 then
 		logger.logDebug(SUBMODULE, "No effects to process for isQueued=%s", tostring(isQueued))
 		return
@@ -309,7 +310,7 @@ function SkillEffectModifier.processAllSkills(attackingPawn, isFinalEffect, skil
 	local regularEffects = extract_table(skillEffect.effect)
 	if #regularEffects > 0 then
 		logger.logDebug(SUBMODULE, "Processing %d regular effects", #regularEffects)
-		processEffectsWithQueuedFlag(regularEffects, false)
+		processEffectsWithQueuedFlag(attackingPawn, skillEffect, regularEffects, false)
 	end
 
 	-- Process queued effect with isQueued = true
@@ -317,7 +318,7 @@ function SkillEffectModifier.processAllSkills(attackingPawn, isFinalEffect, skil
 		local queuedEffects = extract_table(skillEffect.q_effect)
 		if #queuedEffects > 0 then
 			logger.logDebug(SUBMODULE, "Processing %d queued effects", #queuedEffects)
-			processEffectsWithQueuedFlag(queuedEffects, true)
+			processEffectsWithQueuedFlag(attackingPawn, skillEffect, queuedEffects, true)
 		end
 	end
 end
