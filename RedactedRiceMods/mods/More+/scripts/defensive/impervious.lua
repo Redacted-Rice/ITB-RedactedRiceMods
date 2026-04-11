@@ -13,7 +13,7 @@ customSkill:addCustomTrait()
 
 function customSkill:modifySpaceDamage(attackingPawn, previewState, spaceDamage, indexes, targetPawn)
 	-- Only process if attacker is an ally (but not self) and target is taking damage
-	if attackingPawn and attackingPawn:GetTeam() == TEAM_MECH
+	if attackingPawn and attackingPawn:GetTeam() == TEAM_MECH and
 	    	spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
 
 		-- Show icon

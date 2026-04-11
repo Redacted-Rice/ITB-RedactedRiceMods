@@ -29,13 +29,14 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 			-- Moving pawn with Rally - check for adjacent allies at destination
 			local adjacentMechs = more_plus.libs.boardUtils.getAdjacent(p2, function(adjacentLoc)
 					local adjacentPawn = Board:GetPawn(adjacentLoc)
-					return adjacentPawn and adjacentPawn:IsMech() and not adjacentPawn:IsBoosted()
+					return adjacentPawn and adjacentPawn:GetId() ~= pawn:GetId() and 
+							adjacentPawn:GetTeam() == TEAM_PLAYER and not adjacentPawn:IsBoosted()
 			end)
 
 			for _, adjacentLoc in ipairs(adjacentMechs) do
 				local adjacentPawn = Board:GetPawn(adjacentLoc)
 				logger.logDebug(SUBMODULE, "Rally pawn %d moving to %s, boosting adjacent ally %d at %s",
-					pawn:GetId(), p2:GetString(), adjacentPawn:GetId(), adjacentLoc:GetString())
+						pawn:GetId(), p2:GetString(), adjacentPawn:GetId(), adjacentLoc:GetString())
 
 				more_plus.libs.weaponPreview.ExecuteWithState(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
 						function()
@@ -55,7 +56,8 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 		-- Check if moving pawn is moving adjacent to a pawn with Rally
 		local hasAdjacentRally = more_plus.libs.boardUtils.isAdjacent(p2, function(adjacentLoc)
 			local adjacentPawn = Board:GetPawn(adjacentLoc)
-			if adjacentPawn and adjacentPawn:IsMech() then
+			if adjacentPawn and adjacentPawn:GetId() ~= pawn:GetId() and
+					adjacentPawn:GetTeam() == TEAM_PLAYER then
 				local adjacentPilot = adjacentPawn:GetPilot()
 				return adjacentPilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, adjacentPilot)
 			end
