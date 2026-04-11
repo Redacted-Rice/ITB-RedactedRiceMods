@@ -27,7 +27,7 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 					local adjacentPawn = Board:GetPawn(adjacentLoc)
 					-- Don't include self...
 					return adjacentPawn and adjacentPawn:GetId() ~= pawn:GetId() and
-							adjacentPawn:IsMech() and not adjacentPawn:IsShield()
+							adjacentPawn:GetTeam() == TEAM_PLAYER and not adjacentPawn:IsShield()
 			end)
 
 			for _, adjacentLoc in ipairs(adjacentMechs) do
@@ -48,7 +48,7 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 		local hasAdjacentEscort = more_plus.libs.boardUtils.isAdjacent(p2, function(adjacentLoc)
 			local adjacentPawn = Board:GetPawn(adjacentLoc)
 			-- Don't include self again
-			if adjacentPawn and adjacentPawn:GetId() ~= pawn:GetId() and adjacentPawn:IsMech() then
+			if adjacentPawn and adjacentPawn:GetId() ~= pawn:GetId() and adjacentPawn:GetTeam() == TEAM_PLAYER then
 				local adjacentPilot = adjacentPawn:GetPilot()
 				return adjacentPilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, adjacentPilot)
 			end
