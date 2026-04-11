@@ -13,7 +13,7 @@ customSkill:addCustomTrait()
 
 function customSkill:modifySpaceDamage(attackingPawn, previewState, spaceDamage, indexes, targetPawn)
 	-- Check if this is damage from an enemy to a mech
-	if targetPawn and targetPawn:IsMech() and attackingPawn and attackingPawn:IsEnemy() and 
+	if targetPawn and attackingPawn and attackingPawn:IsEnemy() and 
 			spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_ZERO then
 		local attackerLoc = attackingPawn:GetSpace()
 		local defenderLoc = targetPawn:GetSpace()
