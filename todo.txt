@@ -39,9 +39,6 @@ MoreLvlUpSkills:
 	doesn't show icon for queued skills (need to pass if queued vs normal attack)
 	Applies to targeted pawns too...
 * Add text popup for rally (and other skills?)
-* Supporter 
-	* Double adds spaces
-	* doesn't need to consider self...
 * Vigor shows icon but doesn't actually apply boost
 	Actually seems to show but then immediately disappears
 	didn't show on harold
@@ -53,6 +50,11 @@ MoreLvlUpSkills:
 * Impervious not working at all
 * Reflect not working right either
 * Escort - Moving one space counbts as adjacent to self...
+
+Done testing and "working"
+Supporter, Rally
+
+* Rally can boost things like missle silos. Not a big deal IMHO but a bit weird
 
 
 ------------------------------------------------------------------------------

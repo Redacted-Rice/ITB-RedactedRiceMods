@@ -36,7 +36,7 @@ function customSkill.moveTargetArea(mission, pawn, weaponId, p1, targetArea)
 
 			-- Build set of existing target area points to avoid duplicates
 			local existingPoints = {}
-			for i = 0, targetArea:size() - 1 do
+			for i = 1, targetArea:size() do
 				local point = targetArea:index(i)
 				existingPoints[point:GetString()] = true
 			end
