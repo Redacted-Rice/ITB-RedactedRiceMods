@@ -41,7 +41,7 @@ function customSkill.moveTargetArea(mission, pawn, weaponId, p1, targetArea)
 				existingPoints[point:GetString()] = true
 			end
 
-			for _, pawnId in ipairs(extract_table(Board:GetPawns(TEAM_MECH))) do
+			for _, pawnId in ipairs(extract_table(Board:GetPawns(TEAM_PLAYER))) do
 				local allyPawn = Board:GetPawn(pawnId)
 
 				-- Skip self

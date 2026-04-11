@@ -16,7 +16,7 @@ cplus_plus_ex:registerPilotSkillExclusions("Pilot_Chemical", customSkill.id)
 customSkill:addCustomTrait()
 
 function customSkill:modifySpaceDamage(attackingPawn, previewState, spaceDamage, indexes, targetPawn)
-	if targetPawn and targetPawn:IsMech() and spaceDamage.iDamage < 0 and
+	if targetPawn and spaceDamage.iDamage < 0 and
 			spaceDamage.iDamage ~= DAMAGE_ZERO and spaceDamage.iDamage ~= DAMAGE_DEATH then
 		if not targetPawn:IsBoosted() then
 			for _, idx in ipairs(indexes) do

@@ -1,7 +1,7 @@
 local customSkill = more_plus.SkillEffectModifier:new{
 	id = "RrAlert",
 	name = "Alert",
-	description = "Reduce damage taken by 1 while adjacent to a vek.",
+	description = "Reduce damage taken from enemies by 1 while adjacent to an enemy.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }
 
@@ -32,7 +32,8 @@ end
 -- is different than vanilla armor
 function customSkill:modifySpaceDamage(attackingPawn, previewState, spaceDamage, indexes, targetPawn)
 	-- Check if the target pawn is taking damage and is adjacent to a vek
-	if spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_ZERO and spaceDamage.iDamage ~= DAMAGE_DEATH then
+	if attackingPawn and attackingPawn:IsEnemy() and spaceDamage.iDamage > 0 and 
+			spaceDamage.iDamage ~= DAMAGE_ZERO and spaceDamage.iDamage ~= DAMAGE_DEATH then
 		local targetLoc = spaceDamage.loc
 
 		if customSkill.isAdjacentToVek(targetLoc) then
