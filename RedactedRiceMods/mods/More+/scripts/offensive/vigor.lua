@@ -15,9 +15,10 @@ cplus_plus_ex:registerPilotSkillExclusions("Pilot_Chemical", customSkill.id)
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(attackingPawn, previewState, spaceDamage, indexes, targetPawn)
-	if targetPawn and spaceDamage.iDamage < 0 and
-			spaceDamage.iDamage ~= DAMAGE_ZERO and spaceDamage.iDamage ~= DAMAGE_DEATH then
+function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spaceDamage, indexes, targetPawn)
+	if source == self.SOURCE_ATTACKER and targetPawn and 
+			spaceDamage.iDamage < 0 and spaceDamage.iDamage ~= DAMAGE_ZERO and
+			spaceDamage.iDamage ~= DAMAGE_DEATH then
 		if not targetPawn:IsBoosted() then
 			for _, idx in ipairs(indexes) do
 				logger.logDebug(SUBMODULE, "Adding boost icon for healed mech at %s with idx %d",

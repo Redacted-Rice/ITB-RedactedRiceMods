@@ -35,30 +35,23 @@ Vanilla+
 
 MoreLvlUpSkills:
 
-Retest
-* alert - enemy atks only
-
 Issues
-Cheap Plating, Impervious, Vigor
-* Cheap plating applying to everyone
-	* Needs to account for attacker vs target better. Either label and handle in 
-	  base class or pass as arg. Could use skill check but we have the info
-	  already in base class
-	* Also was lagging on artilery
+* Lagging on artillery and some pushes. Definitely seems to be more+ related
+Impervious, Vigor
 * Vigor shows icon but doesn't actually apply boost
 	Actually seems to show but then immediately disappears
-	didn't show on harold	
-* Reflect shows icon but doesn't do the damage or preview it
+	didn't show on harold
 * Test ambush more - works for forests at least
 
 Done testing and "working"
 * Supporter, Rally, Vampire, Vindictive, Hot Headed, Escort, 
-* Urban, Militia, Malevolent, Impervious
+* Urban, Militia, Malevolent, Impervious, cheap plating, reflect
 
 Pending Issues:
 * Rally can boost things like missle silos. Not a big deal IMHO but a bit weird
 * Work on vindictive icon
 * Damage Icons for -1 armor, -3 armor, mirror, vampire or generic status?
+* Add more fx for reflect
 * Queued weapon preview separate from base one? Do we even need a seapration between final and first?
 
 * Go through and make sure using team = PLAYER instead of isMech

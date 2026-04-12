@@ -18,9 +18,10 @@ local adverseStatuses = {
 	"Shatterburst", "Shocked", "Sleep", "Toxin", "Weaken", "Wet", "Insanity"
 }
 
-function customSkill:modifySpaceDamage(attackingPawn, previewState, spaceDamage, indexes, targetPawn)
+function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spaceDamage, indexes, targetPawn)
 	-- Check if attacker is dealing damage to an enemy
-	if attackingPawn and targetPawn and targetPawn:IsEnemy() and spaceDamage.iDamage > 0 and
+	if source == self.SOURCE_ATTACKER and targetPawn and 
+			targetPawn:IsEnemy() and spaceDamage.iDamage > 0 and 
 			spaceDamage.iDamage ~= DAMAGE_ZERO then
 
 		local pawnId = attackingPawn:GetId()

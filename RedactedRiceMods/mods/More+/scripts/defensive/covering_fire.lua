@@ -12,8 +12,9 @@ local SUBMODULE = logger.register("More+", "CoveringFire", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(attackingPawn, previewState, spaceDamage, indexes, targetPawn)
-	if targetPawn and targetPawn:IsEnemy() then
+function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spaceDamage, indexes, targetPawn)
+	if source == self.SOURCE_ATTACKER and targetPawn and 
+			targetPawn:IsEnemy() then
 		for _, idx in ipairs(indexes) do
 			logger.logDebug(SUBMODULE, "Adding icon for %s with idx %d", spaceDamage.loc:GetString(), idx)
 			more_plus.libs.weaponPreview.ExecuteWithState(previewState,

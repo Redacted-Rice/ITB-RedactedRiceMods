@@ -11,9 +11,10 @@ local SUBMODULE = logger.register("More+", "Militia", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(attackingPawn, previewState, spaceDamage, indexes, targetPawn)
+function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spaceDamage, indexes, targetPawn)
 	-- Check if this is damage to an enemy
-	if targetPawn and targetPawn:IsEnemy() and spaceDamage.iDamage > 0 and
+	if source == self.SOURCE_ATTACKER and targetPawn and 
+			targetPawn:IsEnemy() and spaceDamage.iDamage > 0 and
 	   		spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
 
 		-- Check if target is adjacent to any building

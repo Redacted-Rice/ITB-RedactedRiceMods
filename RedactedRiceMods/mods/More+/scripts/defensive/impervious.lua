@@ -11,10 +11,11 @@ local SUBMODULE = logger.register("More+", "Impervious", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(attackingPawn, previewState, spaceDamage, indexes, targetPawn)
+function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spaceDamage, indexes, targetPawn)
 	-- Only process if attacker is an ally (but not self) and target is taking damage
-	if attackingPawn and attackingPawn:GetTeam() == TEAM_PLAYER and
-	    	spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
+	if source == self.SOURCE_TARGET and attackingPawn and
+			attackingPawn:GetTeam() == TEAM_PLAYER and spaceDamage.iDamage > 0 and 
+			spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
 
 		-- Show icon
 		for _, idx in ipairs(indexes) do
