@@ -37,6 +37,7 @@ MoreLvlUpSkills:
 
 Issues
 * Lagging on artillery and some pushes. Definitely seems to be more+ related
+
 Impervious, Vigor
 * Vigor shows icon but doesn't actually apply boost
 	Actually seems to show but then immediately disappears
