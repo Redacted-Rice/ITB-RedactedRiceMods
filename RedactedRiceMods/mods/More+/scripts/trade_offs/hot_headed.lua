@@ -6,6 +6,7 @@ local customSkill = more_plus.SkillActive:new{
 	name = "Hot Headed",
 	description = "Gains boosted every other turn but loses 2 XP per kill (can't level down from this)",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
+	slotRestriction = cplus_plus_ex.SLOT_RESTRICTION.FIRST,
 	pawnWasKilled = false,
 }
 
