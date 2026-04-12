@@ -12,8 +12,9 @@ local SUBMODULE = logger.register("More+", "TrophyHunter", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(attackingPawn, previewState, spaceDamage, indexes, targetPawn)
-	if targetPawn and targetPawn:IsEnemy() and more_plus.libs.pawnTypeUtils.isSpawnCategory(targetPawn, "Unique") and
+function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spaceDamage, indexes, targetPawn)
+	if source == self.SOURCE_ATTACKER and targetPawn and 
+			targetPawn:IsEnemy() and more_plus.libs.pawnTypeUtils.isSpawnCategory(targetPawn, "Unique") and
 			spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and
 			spaceDamage.iDamage ~= DAMAGE_ZERO then
 		for _, idx in ipairs(indexes) do

@@ -12,8 +12,9 @@ local SUBMODULE = logger.register("More+", "FirstBlood", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(attackingPawn, previewState, spaceDamage, indexes, targetPawn)
-	if targetPawn and targetPawn:IsEnemy() then
+function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spaceDamage, indexes, targetPawn)
+	if source == self.SOURCE_ATTACKER and targetPawn and 
+			targetPawn:IsEnemy() then
 		local maxHealth = _G[targetPawn:GetType()].Health
 		if targetPawn:GetHealth() == maxHealth and maxHealth >= 4 and spaceDamage.iDamage > 0 and
 				spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then

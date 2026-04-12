@@ -30,9 +30,10 @@ end
 -- Reduce damage by 1 if target is adjacent to vek
 -- We don't have a setArmor so I took this approach instead which
 -- is different than vanilla armor
-function customSkill:modifySpaceDamage(attackingPawn, previewState, spaceDamage, indexes, targetPawn)
+function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spaceDamage, indexes, targetPawn)
 	-- Check if the target pawn is taking damage and is adjacent to a vek
-	if attackingPawn and attackingPawn:IsEnemy() and spaceDamage.iDamage > 0 and 
+	if source == self.SOURCE_TARGET and attackingPawn and 
+			attackingPawn:IsEnemy() and spaceDamage.iDamage > 0 and 
 			spaceDamage.iDamage ~= DAMAGE_ZERO and spaceDamage.iDamage ~= DAMAGE_DEATH then
 		local targetLoc = spaceDamage.loc
 

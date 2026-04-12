@@ -42,10 +42,11 @@ function customSkill:setupEffect()
 	end))
 end
 
-function customSkill:modifySpaceDamage(attackingPawn, previewState, spaceDamage, indexes, targetPawn)
+function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spaceDamage, indexes, targetPawn)
 	-- Check if the target is taking damage
-	if targetPawn and spaceDamage.iDamage > 0 and
-			spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
+	if source == self.SOURCE_TARGET and
+			spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and 
+			spaceDamage.iDamage ~= DAMAGE_ZERO then
 
 		initGameSaveData()
 		local pawnId = targetPawn:GetId()

@@ -11,9 +11,10 @@ local SUBMODULE = logger.register("More+", "Ambusher", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(attackingPawn, previewState, spaceDamage, indexes, targetPawn)
+function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spaceDamage, indexes, targetPawn)
 	-- Check if attacking an enemy
-	if targetPawn and targetPawn:IsEnemy() and spaceDamage.iDamage > 0 and
+	if source == self.SOURCE_ATTACKER and targetPawn and 
+			targetPawn:IsEnemy() and spaceDamage.iDamage > 0 and
 			spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
 		local pawnLoc = attackingPawn:GetSpace()
 		local terrain = Board:GetTerrain(pawnLoc)

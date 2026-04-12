@@ -12,7 +12,11 @@ local SUBMODULE = logger.register("More+", "Streetwise", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(attackingPawn, previewState, spaceDamage, indexes, targetPawn)
+function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spaceDamage, indexes, targetPawn)
+	if source == self.SOURCE_ATTACKER then
+		return nil
+	end
+	
 	if Board:IsBuilding(spaceDamage.loc) and spaceDamage.iDamage > 0 and
 			spaceDamage.iDamage ~= DAMAGE_DEATH then
 

@@ -5,24 +5,24 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }
 
-customSkill.DEBUG = false
+customSkill.DEBUG = true
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Reflect", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(attackingPawn, previewState, spaceDamage, indexes, targetPawn)
+function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spaceDamage, indexes, targetPawn)
 	-- Check if this is damage from an enemy to a mech
-	if targetPawn and attackingPawn and attackingPawn:IsEnemy() and 
-			spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_ZERO then
+	if source == self.SOURCE_TARGET and attackingPawn and 
+			attackingPawn:IsEnemy() and spaceDamage.iDamage > 0 and 
+			spaceDamage.iDamage ~= DAMAGE_ZERO then
 		local attackerLoc = attackingPawn:GetSpace()
-		local defenderLoc = targetPawn:GetSpace()
 		
 		-- Add reflect animation icons
 		for _, idx in ipairs(indexes) do
 			-- Show damage icon on attacker (where reflect damage will hit)
 			logger.logDebug(SUBMODULE, "Adding reflect damage icon at attacker %s with idx %d", 
-				attackerLoc:GetString(), idx)
+					attackerLoc:GetString(), idx)
 			more_plus.libs.weaponPreview.ExecuteWithState(previewState,
 					function()
 						more_plus.libs.weaponPreview:AddAnimation(attackerLoc,
@@ -31,7 +31,7 @@ function customSkill:modifySpaceDamage(attackingPawn, previewState, spaceDamage,
 		end
 
 		-- Add a pause before reflect damage for visual clarity
-		local reflectPause = SpaceDamage(attackerLoc, DAMAGE_ZERO)
+		local reflectPause = SpaceDamage(attackerLoc)
 		reflectPause.fDelay = 0.3
 
 		-- Handle DAMAGE_DEATH case
@@ -42,12 +42,9 @@ function customSkill:modifySpaceDamage(attackingPawn, previewState, spaceDamage,
 		else
 			reflectDamage = math.ceil(spaceDamage.iDamage / 2)
 			logger.logDebug(SUBMODULE, "Reflecting %d damage back to attacker at %s (original: %d)",
-				reflectDamage, attackerLoc:GetString(), spaceDamage.iDamage)
+					reflectDamage, attackerLoc:GetString(), spaceDamage.iDamage)
 		end
-		
-		local reflectSpaceDamage = SpaceDamage(attackerLoc, reflectDamage)
-
-		return {reflectPause, reflectSpaceDamage}
+		return {reflectPause, SpaceDamage(attackerLoc, reflectDamage)}
 	end
 
 	-- Return nil if no reflection should occur
