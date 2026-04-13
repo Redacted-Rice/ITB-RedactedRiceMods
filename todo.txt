@@ -35,6 +35,8 @@ Vanilla+
 
 MoreLvlUpSkills:
 
+Test Anger
+
 Issues
 * Lagging on artillery and some pushes. Definitely seems to be more+ related
 
@@ -45,7 +47,7 @@ Impervious, Vigor
 * Test ambush more - works for forests at least
 
 Done testing and "working"
-* Supporter, Rally, Vampire, Vindictive, Hot Headed, Escort, 
+* Supporter, Rally, Vampire, Vindictive, Hot Headed, Escort,
 * Urban, Militia, Malevolent, Impervious, cheap plating, reflect
 
 Pending Issues:
