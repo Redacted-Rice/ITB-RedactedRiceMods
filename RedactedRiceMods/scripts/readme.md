@@ -102,7 +102,12 @@ Released: 02/14/2026
 Copied from Lemonymous and updated to handle multiple traits by appending text together and cycling through images
 
 ## TraitReplace
-Current Release: 0.8.1
+Current Release: 0.8.2
+
+### 0.8.2
+Released: XX/XX/2026
+
+Optimizations to redraw less and recreate less to remove some cases where I was seeing noticable lag
 
 ### 0.8.1
 Released: 04/10/2026

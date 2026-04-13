@@ -2,7 +2,7 @@
 TraitReplace - Allows adding custom UI traits that cycle with vanilla traits
 
 Author: Das Keifer of Redacted Rice
-Version: 0.8.1
+Version: 0.8.2
 Discord Server: https://discord.gg/CNjTVrpN4v
 
 Overrides target traits to allow custom traits to be displayed
@@ -14,7 +14,7 @@ icons on top of flying and Lemonymous for the trait library which was
 the inspiration/starting point for this
 ]]
 
-local VERSION = "0.8.1"
+local VERSION = "0.8.2"
 
 local mod_path = mod_loader.mods[modApi.currentMod]
 local path = mod_path.scriptPath
@@ -394,10 +394,17 @@ local function createUIWidgetsForTrait(uiRoot, replaceTraitId)
 	-- Small widget draw function
 	-- Initialize to vanilla icon being replaces
 	local lastSmallIconId = replaceTraitId .. "_vanilla"
-	local lastTraitCount = 1  -- Start with 1 - the vanilla icon
+	local lastSmallCycleIndex = -1  -- Track last cycle index for caching
+	local cachedSmallIconId = nil  -- Cache the current icon ID
+	local cachedSmallActiveTraits = nil  -- Cache active traits
+	local lastSmallPawnId = nil  -- Track pawn changes
+	local lastSmallTooltipVisible = false  -- Track tooltip state
+	local lastSmallTargetX, lastSmallTargetY = nil, nil  -- Track target icon position
 
 	traitData.smallWidget.draw = function(self, screen)
+		local wasVisible = self.visible
 		self.visible = false
+
 		if traitData.targetIcon:wasDrawn() then
 			local pawn = getUIEnabledPawn()
 			local showIcon = shouldShowIcon(pawn, replaceTraitId)
@@ -405,19 +412,34 @@ local function createUIWidgetsForTrait(uiRoot, replaceTraitId)
 			-- Always show at least vanilla icon if target icon is drawn
 			-- This prevents showing placeholder before deployment
 			if showIcon or traitData.targetIcon.x and traitData.targetIcon.y then
-				-- Check if number of active traits changed
-				local activeTraits = getActiveTraits(pawn, replaceTraitId)
-				local currentTraitCount = #activeTraits
+				local currentPawnId = pawn and pawn:GetId() or nil
+				local currentCycleIndex = TraitReplace.globalCycleIndex
+				local tooltipVisible = sdlext:isStatusTooltipWindowVisible()
+				local targetPosChanged = (traitData.targetIcon.x ~= lastSmallTargetX or traitData.targetIcon.y ~= lastSmallTargetY)
+				local needsUpdate = false
 
-				-- If trait count changed immediately update icon
-				if currentTraitCount ~= lastTraitCount then
-					-- Trait was added or removed - force icon update
-					lastSmallIconId = nil  -- Force recreation on next frame
-					lastTraitCount = currentTraitCount
+				-- Invalidate cache if pawn changed or cycle changed
+				if currentPawnId ~= lastSmallPawnId or currentCycleIndex ~= lastSmallCycleIndex then
+					cachedSmallActiveTraits = nil
+					cachedSmallIconId = nil
+					lastSmallPawnId = currentPawnId
+					needsUpdate = true
 				end
 
-				-- Recalculate icon every frame to support cycling
-				local iconId = getCurrentIcon(pawn, replaceTraitId)
+				-- Cache active traits calculation (only when invalidated)
+				if cachedSmallActiveTraits == nil then
+					cachedSmallActiveTraits = getActiveTraits(pawn, replaceTraitId)
+				end
+				local activeTraits = cachedSmallActiveTraits
+
+				-- Only recalculate icon when cycle index changes or cache is invalid
+				if currentCycleIndex ~= lastSmallCycleIndex or cachedSmallIconId == nil then
+					cachedSmallIconId = getCurrentIcon(pawn, replaceTraitId)
+					lastSmallCycleIndex = currentCycleIndex
+					needsUpdate = true
+				end
+
+				local iconId = cachedSmallIconId
 				local surface = getIconSurface(iconId, replaceTraitId, true)
 
 				-- Fallback to vanilla if no icon found - i.e. before deployement
@@ -427,34 +449,47 @@ local function createUIWidgetsForTrait(uiRoot, replaceTraitId)
 				end
 
 				if surface then
-					local tooltipVisible = sdlext:isStatusTooltipWindowVisible()
-
-					-- Only update position when tooltip is closed
-					-- When tooltip opens, widget stays at its current position
-					if not tooltipVisible then
+					-- Only update position when tooltip state changes or position changes
+					if (tooltipVisible ~= lastSmallTooltipVisible or targetPosChanged) and not tooltipVisible then
 						updateWidgetPosition(self, traitData.targetIcon.x, traitData.targetIcon.y, SMALL_ICON_W, SMALL_ICON_H)
+						lastSmallTargetX = traitData.targetIcon.x
+						lastSmallTargetY = traitData.targetIcon.y
+						needsUpdate = true
 					end
+					lastSmallTooltipVisible = tooltipVisible
 
-					-- Recreate icon widget when icon changes
+					-- Only recreate icon widget when icon actually changes
 					if iconId ~= lastSmallIconId then
 						recreateSmallIcon(surface, replaceTraitId)
 						lastSmallIconId = iconId
+						needsUpdate = true
 					end
 
-					-- Update child position and rect manually since we're bypassing normal layout
-					updateChildPosition(traitData.smallWidgetIcon, self, SMALL_ICON_W, SMALL_ICON_H)
+					-- Only update child position when something changed
+					if needsUpdate then
+						updateChildPosition(traitData.smallWidgetIcon, self, SMALL_ICON_W, SMALL_ICON_H)
+					end
+
 					self.visible = true
 				end
 			end
 		end
-		-- Use clip to mask outside game window which also draws
-		clip(Ui, self, screen)
+
+		-- Only call expensive clip operation when visible or visibility changed
+		if self.visible or (wasVisible ~= self.visible) then
+			clip(Ui, self, screen)
+		end
 	end
 
 	-- Large widget draw function
 	-- Initialize to vanilla icon being replaces
 	local lastLargeIconId = replaceTraitId .. "_vanilla"
-	local lastLargeTraitCount = 1  -- Start with 1 - the vanilla icon
+	local lastLargeCycleIndex = -1  -- Track last cycle index for caching
+	local cachedLargeIconId = nil  -- Cache the current icon ID
+	local cachedLargeActiveTraits = nil  -- Cache active traits
+	local lastLargePawnId = nil  -- Track pawn changes
+	local lastLargeTargetX, lastLargeTargetY = nil, nil  -- Track target icon position
+	local lastLargeVisible = false  -- Track visibility state
 
 	traitData.largeWidget.draw = function(self, screen)
 		self.visible = false
@@ -465,19 +500,32 @@ local function createUIWidgetsForTrait(uiRoot, replaceTraitId)
 			-- Always show at least vanilla icon if target icon is drawn
 			-- This prevents showing placeholder before deployment
 			if showIcon or traitData.targetIcon.x and traitData.targetIcon.y then
-				-- Check if number of active traits changed
-				local activeTraits = getActiveTraits(pawn, replaceTraitId)
-				local currentTraitCount = #activeTraits
+				local currentPawnId = pawn and pawn:GetId() or nil
+				local currentCycleIndex = TraitReplace.globalCycleIndex
+				local needsUpdate = false
 
-				-- If trait count changed immediately update icon
-				if currentTraitCount ~= lastLargeTraitCount then
-					-- Trait was added or removed - force icon update
-					lastLargeIconId = nil  -- Force recreation on next frame
-					lastLargeTraitCount = currentTraitCount
+				-- Invalidate cache if pawn changed or cycle changed
+				if currentPawnId ~= lastLargePawnId or currentCycleIndex ~= lastLargeCycleIndex then
+					cachedLargeActiveTraits = nil
+					cachedLargeIconId = nil
+					lastLargePawnId = currentPawnId
+					needsUpdate = true
 				end
 
-				-- Recalculate icon every frame to support cycling
-				local iconId = getCurrentIcon(pawn, replaceTraitId)
+				-- Cache active traits calculation (only when invalidated)
+				if cachedLargeActiveTraits == nil then
+					cachedLargeActiveTraits = getActiveTraits(pawn, replaceTraitId)
+				end
+				local activeTraits = cachedLargeActiveTraits
+
+				-- Only recalculate icon when cycle index changes or cache is invalid
+				if currentCycleIndex ~= lastLargeCycleIndex or cachedLargeIconId == nil then
+					cachedLargeIconId = getCurrentIcon(pawn, replaceTraitId)
+					lastLargeCycleIndex = currentCycleIndex
+					needsUpdate = true
+				end
+
+				local iconId = cachedLargeIconId
 				local surface = getIconSurface(iconId, replaceTraitId, true)
 
 				-- Fallback to vanilla if no icon found - i.e. before deployement
@@ -490,8 +538,9 @@ local function createUIWidgetsForTrait(uiRoot, replaceTraitId)
 				local tooltipVisible = sdlext:isStatusTooltipWindowVisible()
 				local escapeVisible = sdlext:isEscapeMenuWindowVisible()
 				local hoveringSmallIcon = traitData.smallWidget.visible and traitData.smallWidget.containsMouse
+				local shouldBeVisible = (tooltipVisible or hoveringSmallIcon) and not escapeVisible
 
-				if surface and (tooltipVisible or hoveringSmallIcon) and not escapeVisible then
+				if surface and shouldBeVisible then
 					-- Don't show large icon if targetIcon is still at the small icon position
 					-- This happens on first frame when tooltip opens - vanilla icon hasn't moved yet
 					-- Just compare against small widget's current position directly
@@ -499,22 +548,49 @@ local function createUIWidgetsForTrait(uiRoot, replaceTraitId)
 					                             traitData.smallWidget.y == traitData.targetIcon.y)
 
 					if not atSmallIconPosition then
-						-- targetIcon has moved to its tooltip position, safe to show large icon
-						-- Recreate icon widget when icon changes
+						-- Check if visibility state changed
+						if shouldBeVisible ~= lastLargeVisible then
+							needsUpdate = true
+							lastLargeVisible = shouldBeVisible
+						end
+
+						-- Check if target position changed
+						local targetPosChanged = (traitData.targetIcon.x ~= lastLargeTargetX or traitData.targetIcon.y ~= lastLargeTargetY)
+						if targetPosChanged then
+							needsUpdate = true
+							lastLargeTargetX = traitData.targetIcon.x
+							lastLargeTargetY = traitData.targetIcon.y
+						end
+
+						-- Only recreate icon widget when icon actually changes
 						if iconId ~= lastLargeIconId then
 							recreateLargeIcon(surface, replaceTraitId)
 							lastLargeIconId = iconId
+							needsUpdate = true
 						end
 
-						-- Use targetIcon's current position
-						updateWidgetPosition(self, traitData.targetIcon.x, traitData.targetIcon.y, LARGE_ICON_W, LARGE_ICON_H)
-						updateChildPosition(traitData.largeWidgetIcon, self, LARGE_ICON_W, LARGE_ICON_H)
+						-- Only update positions when something changed
+						if needsUpdate then
+							updateWidgetPosition(self, traitData.targetIcon.x, traitData.targetIcon.y, LARGE_ICON_W, LARGE_ICON_H)
+							updateChildPosition(traitData.largeWidgetIcon, self, LARGE_ICON_W, LARGE_ICON_H)
+						end
+
 						self.visible = true
+					end
+				else
+					-- Track when we become invisible
+					if lastLargeVisible then
+						lastLargeVisible = false
+						needsUpdate = true
 					end
 				end
 			end
 		end
-		Ui.draw(self, screen)
+
+		-- Only call Ui.draw (base class) when visible - no need for expensive operations when hidden
+		if self.visible then
+			Ui.draw(self, screen)
+		end
 	end
 end
 
