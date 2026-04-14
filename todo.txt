@@ -39,13 +39,13 @@ Test Anger
 
 Impervious, Vigor
 * Vigor shows icon but doesn't actually apply boost
-	Actually seems to show but then immediately disappears
-	didn't show on harold
+	didn't show on harold?
 * Test ambush more - works for forests at least
 
 Done testing and "working"
 * Supporter, Rally, Vampire, Vindictive, Hot Headed, Escort,
 * Urban, Militia, Malevolent, Impervious, cheap plating, reflect
+* anger
 
 Pending Issues:
 * Rally can boost things like missle silos. Not a big deal IMHO but a bit weird

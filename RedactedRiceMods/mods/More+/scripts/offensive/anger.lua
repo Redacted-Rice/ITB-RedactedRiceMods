@@ -5,7 +5,7 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }
 
-customSkill.DEBUG = false
+customSkill.DEBUG = true
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Anger", customSkill.DEBUG)
 
@@ -15,7 +15,7 @@ cplus_plus_ex:registerPilotSkillExclusions("Pilot_Chemical", customSkill.id)
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(attackingPawn, previewState, spaceDamage, indexes, targetPawn)
+function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spaceDamage, indexes, targetPawn)
 	-- Check if target is being damaged by an enemy
 	if source == self.SOURCE_TARGET and attackingPawn and attackingPawn:IsEnemy() and
 			spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_ZERO and spaceDamage.iDamage ~= DAMAGE_DEATH then
