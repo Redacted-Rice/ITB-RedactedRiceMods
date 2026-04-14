@@ -30,7 +30,8 @@ function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spac
 						end)
 			end
 
-			spaceDamage.sScript = spaceDamage.sScript .. string.format("Board:GetPawn(%d):SetBoosted(true)", targetPawn:GetId())
+			spaceDamage.sScript = spaceDamage.sScript .. string.format(
+					"modApi:runLater(function() Board:GetPawn(%d):SetBoosted(true) end)", targetPawn:GetId())
 			logger.logDebug(SUBMODULE, "Will grant boosted to healed mech %d at %s (heal amount: %d)",
 					targetPawn:GetId(), spaceDamage.loc:GetString(), -spaceDamage.iDamage)
 		else
