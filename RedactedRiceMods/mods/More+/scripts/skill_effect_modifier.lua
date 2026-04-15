@@ -185,7 +185,7 @@ function SkillEffectModifier:processDamageList(source, attackingPawn, isFinalEff
 end
 
 -- Helper function to process effects with a specific isQueued value
-local function processEffectsWithQueuedFlag(attackingPawn, skillEffect, effectsTable, isQueued)
+local function processEffectsWithQueuedFlag(attackingPawn, skillEffect, effectsTable, isFinalEffect, isQueued)
 	if #effectsTable == 0 then
 		logger.logDebug(SUBMODULE, "No effects to process for isQueued=%s", tostring(isQueued))
 		return
@@ -223,26 +223,15 @@ local function processEffectsWithQueuedFlag(attackingPawn, skillEffect, effectsT
 		for pawnId, targetPawn in pairs(allTargetedPawns) do
 			local targetPilot = targetPawn:GetPilot()
 			if targetPilot and cplus_plus_ex:isSkillOnPilot(skill.id, targetPilot) then
-				-- Don't add duplicate if attacking pawn is also a target
-				local alreadyAdded = false
-				for _, existing in ipairs(skillPawnCombos) do
-					if existing.skill.id == skill.id and existing.pawn:GetId() == targetPawn:GetId() then
-						alreadyAdded = true
-						break
-					end
-				end
-
-				if not alreadyAdded then
-					local indexes = cplus_plus_ex:getPilotSkillIndices(skill.id, targetPilot)
-					table.insert(skillPawnCombos, {
-						skill = skill,
-						pawn = targetPawn,
-						indexes = indexes,
-						source = SkillEffectModifier.SOURCE_TARGET
-					})
-					logger.logDebug(SUBMODULE, "Skill %s applies to targeted pawn %d (isQueued=%s)",
-							skill.id, targetPawn:GetId(), tostring(isQueued))
-				end
+				local indexes = cplus_plus_ex:getPilotSkillIndices(skill.id, targetPilot)
+				table.insert(skillPawnCombos, {
+					skill = skill,
+					pawn = targetPawn,
+					indexes = indexes,
+					source = SkillEffectModifier.SOURCE_TARGET
+				})
+				logger.logDebug(SUBMODULE, "Skill %s applies to targeted pawn %d (isQueued=%s)",
+						skill.id, targetPawn:GetId(), tostring(isQueued))
 			end
 		end
 	end
@@ -270,7 +259,7 @@ local function processEffectsWithQueuedFlag(attackingPawn, skillEffect, effectsT
 					currentPass, combo.skill.id, #damagesToProcess, combo.pawn:GetId(), combo.source, tostring(isQueued))
 
 			local newDamages = combo.skill:processDamageList(combo.source, attackingPawn, isFinalEffect, damagesToProcess,
-				combo.indexes, pawnPositions, pendingMoves, isQueued)
+					combo.indexes, pawnPositions, pendingMoves, isQueued)
 
 			if newDamages and #newDamages > 0 then
 				for _, newDamage in ipairs(newDamages) do
@@ -288,7 +277,7 @@ local function processEffectsWithQueuedFlag(attackingPawn, skillEffect, effectsT
 					skillEffect:AddDamage(newDamage)
 				end
 				logger.logDebug(SUBMODULE, "Added space damage at %s (pass %d, isQueued=%s)",
-					newDamage.loc:GetString(), currentPass, tostring(isQueued))
+						newDamage.loc:GetString(), currentPass, tostring(isQueued))
 			end
 
 			-- Prepare for next pass with the new damages
@@ -324,7 +313,7 @@ function SkillEffectModifier.processAllSkills(attackingPawn, isFinalEffect, skil
 	local regularEffects = extract_table(skillEffect.effect)
 	if #regularEffects > 0 then
 		logger.logDebug(SUBMODULE, "Processing %d regular effects", #regularEffects)
-		processEffectsWithQueuedFlag(attackingPawn, skillEffect, regularEffects, false)
+		processEffectsWithQueuedFlag(attackingPawn, skillEffect, regularEffects, isFinalEffect, false)
 	end
 
 	-- Process queued effect with isQueued = true
@@ -332,7 +321,7 @@ function SkillEffectModifier.processAllSkills(attackingPawn, isFinalEffect, skil
 		local queuedEffects = extract_table(skillEffect.q_effect)
 		if #queuedEffects > 0 then
 			logger.logDebug(SUBMODULE, "Processing %d queued effects", #queuedEffects)
-			processEffectsWithQueuedFlag(attackingPawn, skillEffect, queuedEffects, true)
+			processEffectsWithQueuedFlag(attackingPawn, skillEffect, queuedEffects, isFinalEffect, true)
 		end
 	end
 end

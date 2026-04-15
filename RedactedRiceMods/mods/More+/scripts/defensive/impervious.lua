@@ -1,7 +1,7 @@
 local customSkill = more_plus.SkillEffectModifier:new{
 	id = "RrImpervious",
 	name = "Impervious",
-	description = "Cannot take non-instakill damage from self or allies.",
+	description = "Immune to self and friendly, non-instakill damage",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }
 
