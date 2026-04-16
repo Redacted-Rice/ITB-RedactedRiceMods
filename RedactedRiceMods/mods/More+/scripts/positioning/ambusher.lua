@@ -3,6 +3,7 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	name = "Ambusher",
 	description = "Gain +1 damage if not on road, liquid, or hole.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
+	groups = {more_plus.GROUPS.ADD_DAMAGE},
 }
 
 customSkill.DEBUG = false
@@ -13,7 +14,7 @@ customSkill:addCustomTrait()
 
 function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spaceDamage, indexes, targetPawn)
 	-- Check if attacking an enemy
-	if source == self.SOURCE_ATTACKER and targetPawn and 
+	if source == self.SOURCE_ATTACKER and targetPawn and
 			targetPawn:IsEnemy() and spaceDamage.iDamage > 0 and
 			spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
 		local pawnLoc = attackingPawn:GetSpace()

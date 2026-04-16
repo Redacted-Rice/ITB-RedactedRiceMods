@@ -3,17 +3,17 @@ local customSkill = more_plus.SkillActive:new{
 	name = "Jump Jets",
 	description = "Piloted Mech can jump with -1 move as its movement.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
-	skipJump = false
+	skipJump = false,
+	-- Don't allow on kwan - its mostly duplicative with his skill
+	-- Propsero already has flying so it doesn't help at all either
+	groups = {more_plus.GROUPS.MOVE_TYPE, "Henry Kwan", "Prospero"},
 }
+
 
 -- Initialize logger
 customSkill.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "JumpJets", customSkill.DEBUG)
-
--- Exclude prospero as he has flying and Henry as he already moves through enemies
-cplus_plus_ex:registerPilotSkillExclusions("Pilot_Recycler", customSkill.id)
-cplus_plus_ex:registerPilotSkillExclusions("Pilot_Hotshot", customSkill.id)
 
 customSkill:addCustomTrait()
 

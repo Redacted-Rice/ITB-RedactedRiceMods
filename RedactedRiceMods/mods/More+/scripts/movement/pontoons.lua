@@ -3,7 +3,9 @@ local customSkill = more_plus.SkillActive:new{
 	name = "Pontoons",
 	description = "Piloted mech floats on top of liquid tiles without being affected by them.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
-	modified = {}
+	modified = {},
+	-- Prospero already has flying so it doesn't help at all
+	groups = {more_plus.GROUPS.MOVE_TYPE, "Prospero"},
 }
 
 -- Initialize logger
@@ -12,9 +14,6 @@ local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Amphibious", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
-
--- Exclude prospero as he has flying
-cplus_plus_ex:registerPilotSkillExclusions("Pilot_Recycler", customSkill.id)
 
 function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onTargetAreaBuild:subscribe(customSkill.moveTargetArea))
@@ -37,7 +36,7 @@ function customSkill.moveTargetArea(mission, pawn, weaponId, p1, targetArea)
 					targetArea:erase(0)
 				end
 				local newPoints = Move:GetTargetArea(p1)
-				for idx = 1, newPoints:size() do 
+				for idx = 1, newPoints:size() do
 					targetArea:push_back(newPoints:index(idx))
 				end
 				pawn:SetFlying(true)

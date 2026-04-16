@@ -7,16 +7,13 @@ local customSkill = more_plus.SkillActive:new{
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 	notPreBoosted = {},
 	reentrant = false,
+	groups = {more_plus.GROUPS.BOOST},
 }
 
 -- Initialize logger
 customSkill.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Momentum", customSkill.DEBUG)
-
--- Exclude Kai and Morgan as they give boosted already
-cplus_plus_ex:registerPilotSkillExclusions("Pilot_Arrogant", customSkill.id)
-cplus_plus_ex:registerPilotSkillExclusions("Pilot_Chemical", customSkill.id)
 
 customSkill:addCustomTrait()
 

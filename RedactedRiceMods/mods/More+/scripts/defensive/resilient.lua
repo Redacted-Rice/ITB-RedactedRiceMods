@@ -3,14 +3,13 @@ local customSkill = more_plus.SkillActive:new{
 	name = "Resilient",
 	description = "Gain a shield each time the piloted mech is damaged after the attack completes.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
+	groups = {more_plus.GROUPS.SHIELD},
 }
 
 -- Initialize logger
 customSkill.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Resilient", customSkill.DEBUG)
-
-cplus_plus_ex:registerPilotSkillExclusions("Pilot_Zoltan", customSkill.id)
 
 customSkill:addCustomTrait()
 

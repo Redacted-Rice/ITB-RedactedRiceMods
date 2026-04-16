@@ -3,20 +3,18 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	name = "Vigor",
 	description = "Gain boosted when healed.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
+	-- Despite not being able to heal, zoltan can still be healed by an effect and get this
+	groups = {more_plus.GROUPS.BOOST},
 }
 
 customSkill.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Vigor", customSkill.DEBUG)
 
--- Exclude Kai and Morgan as they give boosted already
-cplus_plus_ex:registerPilotSkillExclusions("Pilot_Arrogant", customSkill.id)
-cplus_plus_ex:registerPilotSkillExclusions("Pilot_Chemical", customSkill.id)
-
 customSkill:addCustomTrait()
 
 function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spaceDamage, indexes, targetPawn)
-	if source == self.SOURCE_TARGET and 
+	if source == self.SOURCE_TARGET and
 			spaceDamage.iDamage < 0 and spaceDamage.iDamage ~= DAMAGE_ZERO and
 			spaceDamage.iDamage ~= DAMAGE_DEATH then
 		if not targetPawn:IsBoosted() then

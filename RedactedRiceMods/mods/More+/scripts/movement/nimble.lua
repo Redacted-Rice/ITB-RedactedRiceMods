@@ -3,6 +3,7 @@ local customSkill = more_plus.SkillActive:new{
 	name = "Nimble",
 	description = "Piloted mech can move onto and through buildings and mountains.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
+	groups = {more_plus.GROUPS.MOVE_TYPE},
 }
 
 -- Initialize logger
