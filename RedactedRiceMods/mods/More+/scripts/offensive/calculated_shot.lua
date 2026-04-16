@@ -3,6 +3,7 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	name = "Calculated Shot",
 	description = "+1 damage to enemies with movement <= to half (rounded up) the piloted mech's movement.",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
+	groups = {more_plus.GROUPS.ADD_DAMAGE},
 }
 
 -- Initialize logger
@@ -16,7 +17,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spac
 	if source ~= self.SOURCE_ATTACKER then
 		return nil
 	end
-	
+
 	local mechMoveSpeed = attackingPawn:GetMoveSpeed()
 	local moveThreshold = math.ceil(mechMoveSpeed / 2)
 

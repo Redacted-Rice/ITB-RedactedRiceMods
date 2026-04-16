@@ -50,7 +50,9 @@ function mod:init(options)
 		description = "RebalCorePlus_HealthPlus_Description",
 		bonuses = {health = 3},
 		saveVal = 0,
-		reusability = cplus_plus_ex.REUSABLILITY.REUSABLE
+		reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
+		-- Respect the vanilla health exclusions (via groups)
+		groups = {"Mafan", "Ariadne"},
 	}
 
 	local movePlus = {
@@ -88,9 +90,6 @@ function mod:init(options)
 	-- Respect the vanilla health exclusions
 	cplus_plus_ex:registerPilotSkillExclusions("Pilot_Rock", healthPlus.id)
 	cplus_plus_ex:registerPilotSkillExclusions("Pilot_Zoltan", healthPlus.id)
-
-	-- TODO: Mirror any health exclusions? Probably just wait for pool
-
 end
 
 function mod:load(options, version)

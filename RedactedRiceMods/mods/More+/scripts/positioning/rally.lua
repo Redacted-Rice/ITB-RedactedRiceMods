@@ -10,10 +10,6 @@ customSkill.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Rally", customSkill.DEBUG)
 
--- Exclude pilots who already give boosted
-cplus_plus_ex:registerPilotSkillExclusions("Pilot_Arrogant", customSkill.id)
-cplus_plus_ex:registerPilotSkillExclusions("Pilot_Chemical", customSkill.id)
-
 customSkill:addCustomTrait()
 
 function customSkill:setupEffect()
@@ -29,7 +25,7 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 			-- Moving pawn with Rally - check for adjacent allies at destination
 			local adjacentMechs = more_plus.libs.boardUtils.getAdjacent(p2, function(adjacentLoc)
 					local adjacentPawn = Board:GetPawn(adjacentLoc)
-					return adjacentPawn and adjacentPawn:GetId() ~= pawn:GetId() and 
+					return adjacentPawn and adjacentPawn:GetId() ~= pawn:GetId() and
 							adjacentPawn:GetTeam() == TEAM_PLAYER and not adjacentPawn:IsBoosted()
 			end)
 
@@ -63,7 +59,7 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 			end
 			return false
 		end)
-		
+
 		-- Boost the moving pawn if not already boosted and found a Rally pilot
 		if hasAdjacentRally and not pawn:IsBoosted() then
 			logger.logDebug(SUBMODULE, "Pawn %d moving adjacent to Rally pawn, boosting",

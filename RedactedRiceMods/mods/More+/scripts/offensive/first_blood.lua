@@ -3,6 +3,7 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	name = "First Blood",
 	description = "+1 damage to undamaged enemies with 4+ health.",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
+	groups = {more_plus.GROUPS.ADD_DAMAGE},
 }
 
 -- Initialize logger
@@ -13,7 +14,7 @@ local SUBMODULE = logger.register("More+", "FirstBlood", customSkill.DEBUG)
 customSkill:addCustomTrait()
 
 function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spaceDamage, indexes, targetPawn)
-	if source == self.SOURCE_ATTACKER and targetPawn and 
+	if source == self.SOURCE_ATTACKER and targetPawn and
 			targetPawn:IsEnemy() then
 		local maxHealth = _G[targetPawn:GetType()].Health
 		if targetPawn:GetHealth() == maxHealth and maxHealth >= 4 and spaceDamage.iDamage > 0 and

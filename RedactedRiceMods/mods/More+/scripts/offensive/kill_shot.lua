@@ -3,6 +3,7 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	name = "Kill Shot",
 	description = "+1 damage to enemies that would be killed by the extra damage.",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
+	groups = {more_plus.GROUPS.ADD_DAMAGE},
 }
 
 -- Initialize logger
@@ -15,7 +16,7 @@ customSkill:addCustomTrait()
 function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spaceDamage, indexes, targetPawn)
 	local numInstances = #indexes
 
-	if source == self.SOURCE_ATTACKER and targetPawn and 
+	if source == self.SOURCE_ATTACKER and targetPawn and
 			targetPawn:IsEnemy() and spaceDamage.iDamage > 0 and
 			spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
 		local currentHealth = targetPawn:GetHealth()

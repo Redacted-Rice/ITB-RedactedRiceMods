@@ -8,6 +8,7 @@ local customSkill = more_plus.SkillActive:new{
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 	slotRestriction = cplus_plus_ex.SLOT_RESTRICTION.FIRST,
 	pawnWasKilled = false,
+	groups = {more_plus.GROUPS.BOOST},
 }
 
 customSkill:addCustomTrait()

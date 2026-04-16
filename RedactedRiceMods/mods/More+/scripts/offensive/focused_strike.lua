@@ -3,6 +3,7 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	name = "Focused Strike",
 	description = "Doubles damage to enemies if the piloted mech has not used its movement.",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
+	groups = {more_plus.GROUPS.ADD_DAMAGE},
 }
 
 -- Initialize logger
@@ -16,7 +17,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spac
 	if source ~= self.SOURCE_ATTACKER then
 		return nil
 	end
-	
+
 	-- If the pawn has used its movement, then return
 	if attackingPawn:IsMovementSpent() then
 		logger.logDebug(SUBMODULE, "Pawn %d already moved, no bonus damage", attackingPawn:GetId())

@@ -3,6 +3,7 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	name = "Malevolent",
 	description = "If piloted mech has a negative status, apply it to attacks that damage enemies.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
+	groups = {more_plus.GROUPS.STATUS_BASED},
 }
 
 customSkill.DEBUG = false
@@ -20,8 +21,8 @@ local adverseStatuses = {
 
 function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spaceDamage, indexes, targetPawn)
 	-- Check if attacker is dealing damage to an enemy
-	if source == self.SOURCE_ATTACKER and targetPawn and 
-			targetPawn:IsEnemy() and spaceDamage.iDamage > 0 and 
+	if source == self.SOURCE_ATTACKER and targetPawn and
+			targetPawn:IsEnemy() and spaceDamage.iDamage > 0 and
 			spaceDamage.iDamage ~= DAMAGE_ZERO then
 
 		local pawnId = attackingPawn:GetId()

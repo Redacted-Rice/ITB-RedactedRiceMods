@@ -3,15 +3,12 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	name = "Anger",
 	description = "Gain boosted when piloted mech is directly damaged by an enemy.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
+	groups = {more_plus.GROUPS.BOOST},
 }
 
 customSkill.DEBUG = true
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Anger", customSkill.DEBUG)
-
--- Exclude Kai and Morgan as they give boosted already
-cplus_plus_ex:registerPilotSkillExclusions("Pilot_Arrogant", customSkill.id)
-cplus_plus_ex:registerPilotSkillExclusions("Pilot_Chemical", customSkill.id)
 
 customSkill:addCustomTrait()
 

@@ -3,6 +3,8 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	name = "Vampire",
 	description = "Repair when you kill a vek.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
+	-- Zoltan only has 1 health
+	groups = {"Mafan"},
 }
 
 customSkill.DEBUG = false
@@ -12,8 +14,8 @@ local SUBMODULE = logger.register("More+", "Vampire", customSkill.DEBUG)
 customSkill:addCustomTrait()
 
 function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spaceDamage, indexes, targetPawn)
-	if source == self.SOURCE_ATTACKER and targetPawn and 
-			targetPawn:IsEnemy() and spaceDamage.iDamage > 0 and 
+	if source == self.SOURCE_ATTACKER and targetPawn and
+			targetPawn:IsEnemy() and spaceDamage.iDamage > 0 and
 			spaceDamage.iDamage ~= DAMAGE_ZERO then
 		local wouldKill = false
 		if spaceDamage.iDamage == DAMAGE_DEATH then

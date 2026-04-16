@@ -3,6 +3,7 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	name = "Vindictive",
 	description = "+1 damage for each negative status effect on piloted mech.",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
+	groups = {more_plus.GROUPS.ADD_DAMAGE, more_plus.GROUPS.STATUS_BASED},
 }
 
 customSkill.DEBUG = false
@@ -20,7 +21,7 @@ local adverseStatuses = {
 
 function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spaceDamage, indexes, targetPawn)
 	-- Check if attacker is dealing damage to enemy
-	if source == self.SOURCE_ATTACKER and targetPawn and 
+	if source == self.SOURCE_ATTACKER and targetPawn and
 			targetPawn:IsEnemy() and spaceDamage.iDamage > 0 and
 			spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
 

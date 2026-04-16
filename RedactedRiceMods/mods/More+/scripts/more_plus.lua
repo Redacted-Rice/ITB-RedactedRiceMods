@@ -14,6 +14,63 @@ more_plus.SkillTrait = require(path.."skill_trait")
 more_plus.SkillActive = require(path.."skill_active")
 more_plus.SkillEffectModifier = require(path.."skill_effect_modifier")
 
+-- Define group names as constants for easy reference
+more_plus.GROUPS = {
+	ADD_HEALTH = "Add Health",
+	ADD_MOVE = "Add Move",
+	ADD_GRID_DEF = "Add Grid Def",
+	MOVE_TYPE = "Move Type",
+	BOOST = "Boost",
+	SHIELD = "Shield",
+	ADD_DAMAGE = "Add Damage",
+	STATUS_BASED = "Status Based",
+}
+
+-- Add vanilla skills to groups
+function more_plus:addVanillaSkillsToGroups()
+	logger.logDebug(SUBMODULE, "Adding vanilla skills to groups...")
+
+	-- Register all groups to allow only one skill per pilot
+	for groupKey, groupName in pairs(self.GROUPS) do
+		cplus_plus_ex:registerGroup(groupName, true)
+		logger.logDebug(SUBMODULE, "Registered group '%s' to allow only one per pilot", groupName)
+	end
+
+	-- Add Health group
+	cplus_plus_ex:registerSkillToGroup("Health", self.GROUPS.ADD_HEALTH)
+	cplus_plus_ex:registerSkillToGroup("HealthPlus", self.GROUPS.ADD_HEALTH)
+	cplus_plus_ex:registerSkillToGroup("Skilled", self.GROUPS.ADD_HEALTH)
+	-- Zoltan & Rock can't gain health
+	--cplus_plus_ex:registerPilotGroupExclusion("Pilot_Zoltan", self.GROUPS.ADD_HEALTH)
+	cplus_plus_ex:registerPilotGroupExclusion("Pilot_Rock", self.GROUPS.ADD_HEALTH)
+
+	-- Add Move group
+	cplus_plus_ex:registerSkillToGroup("Move", self.GROUPS.ADD_MOVE)
+	cplus_plus_ex:registerSkillToGroup("MovePlus", self.GROUPS.ADD_MOVE)
+	cplus_plus_ex:registerSkillToGroup("Skilled", self.GROUPS.ADD_MOVE)
+	cplus_plus_ex:registerSkillToGroup("Adrenaline", self.GROUPS.ADD_MOVE)
+
+	-- Add Grid Def group
+	cplus_plus_ex:registerSkillToGroup("Grid", self.GROUPS.ADD_GRID_DEF)
+	cplus_plus_ex:registerSkillToGroup("GridPlus", self.GROUPS.ADD_GRID_DEF)
+
+	-- Boost group
+	cplus_plus_ex:registerSkillToGroup("Opener", self.GROUPS.BOOST)
+	cplus_plus_ex:registerSkillToGroup("Closer", self.GROUPS.BOOST)
+	-- Kai and Morgan get boost as part of their skill
+	cplus_plus_ex:registerPilotGroupExclusion("Pilot_Arrogant", self.GROUPS.BOOST)
+	cplus_plus_ex:registerPilotGroupExclusion("Pilot_Chemical", self.GROUPS.BOOST)
+
+	-- Status based group
+	cplus_plus_ex:registerSkillToGroup("Thick", self.GROUPS.STATUS_BASED)
+	cplus_plus_ex:registerPilotGroupExclusion("Pilot_Rock", self.GROUPS.STATUS_BASED)
+
+	-- Zoltan has built in shield
+	--cplus_plus_ex:registerPilotGroupExclusion("Pilot_Zoltan", self.GROUPS.SHIELD)
+
+	logger.logDebug(SUBMODULE, "Vanilla skills added to groups")
+end
+
 function more_plus:scanAndReadSkillFiles()
 	logger.logDebug(SUBMODULE, "Scanning subdirs in dir %s", path)
 
@@ -203,6 +260,10 @@ function more_plus:init()
 end
 
 function more_plus:load()
+	-- Add vanilla skills to groups after CPLUS+_Ex has registered them
+	logger.logDebug(SUBMODULE, "Adding vanilla skills to groups...")
+	self:addVanillaSkillsToGroups()
+
 	logger.logDebug(SUBMODULE, "Loading all skills...")
 	for category, skills in pairs(more_plus.skillsByCategory) do
 		logger.logDebug(SUBMODULE, "Loading skills for category %s", category)
