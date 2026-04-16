@@ -41,7 +41,7 @@ function more_plus:addVanillaSkillsToGroups()
 	cplus_plus_ex:registerSkillToGroup("HealthPlus", self.GROUPS.ADD_HEALTH)
 	cplus_plus_ex:registerSkillToGroup("Skilled", self.GROUPS.ADD_HEALTH)
 	-- Zoltan & Rock can't gain health
-	--cplus_plus_ex:registerPilotGroupExclusion("Pilot_Zoltan", self.GROUPS.ADD_HEALTH)
+	cplus_plus_ex:registerPilotGroupExclusion("Pilot_Zoltan", self.GROUPS.ADD_HEALTH)
 	cplus_plus_ex:registerPilotGroupExclusion("Pilot_Rock", self.GROUPS.ADD_HEALTH)
 
 	-- Add Move group
@@ -66,7 +66,7 @@ function more_plus:addVanillaSkillsToGroups()
 	cplus_plus_ex:registerPilotGroupExclusion("Pilot_Rock", self.GROUPS.STATUS_BASED)
 
 	-- Zoltan has built in shield
-	--cplus_plus_ex:registerPilotGroupExclusion("Pilot_Zoltan", self.GROUPS.SHIELD)
+	cplus_plus_ex:registerPilotGroupExclusion("Pilot_Zoltan", self.GROUPS.SHIELD)
 
 	logger.logDebug(SUBMODULE, "Vanilla skills added to groups")
 end
