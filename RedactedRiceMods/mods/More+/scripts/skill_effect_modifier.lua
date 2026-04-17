@@ -5,7 +5,7 @@ setmetatable(SkillEffectModifier, { __index = more_plus.SkillActive })
 SkillEffectModifier.__index = SkillEffectModifier
 
 -- Initialize logger
-SkillEffectModifier.DEBUG = true
+SkillEffectModifier.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "SkillEffectModifier", SkillEffectModifier.DEBUG)
 
