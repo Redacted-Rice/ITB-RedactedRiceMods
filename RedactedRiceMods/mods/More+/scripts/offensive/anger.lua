@@ -3,7 +3,10 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	name = "Anger",
 	description = "Gain boosted when piloted mech is directly damaged by an enemy.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
-	groups = {more_plus.GROUPS.BOOST},
+	constraints = {
+		groups = {more_plus.GROUPS.BOOST},
+		pilotExclusions = {"Pilot_Arrogant", "Pilot_Chemical"},
+	}
 }
 
 customSkill.DEBUG = true

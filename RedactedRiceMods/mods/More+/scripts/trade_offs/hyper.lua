@@ -9,7 +9,10 @@ local customSkill = more_plus.SkillActive:new{
 	-- Not strictly needed but makes more sense
 	bonuses = {move = BASE_MOVE},
 	-- Alot of overlap with lily's skill
-	groups = {more_plus.GROUPS.ADD_MOVE, "Lily Reed"},
+	constraints = {
+		groups = {more_plus.GROUPS.ADD_MOVE},
+		pilotExclusions = {"Pilot_Youth"},
+	}
 }
 
 -- Initialize logger

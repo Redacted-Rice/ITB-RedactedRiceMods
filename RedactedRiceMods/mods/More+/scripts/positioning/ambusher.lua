@@ -3,7 +3,9 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	name = "Ambusher",
 	description = "Gain +1 damage if not on road, liquid, or hole.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
-	groups = {more_plus.GROUPS.ADD_DAMAGE},
+	constraints = {
+		groups = {more_plus.GROUPS.ADD_DAMAGE},
+	}
 }
 
 customSkill.DEBUG = false

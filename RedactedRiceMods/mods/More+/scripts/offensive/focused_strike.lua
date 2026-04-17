@@ -3,7 +3,9 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	name = "Focused Strike",
 	description = "Doubles damage to enemies if the piloted mech has not used its movement.",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
-	groups = {more_plus.GROUPS.ADD_DAMAGE},
+	constraints = {
+		groups = {more_plus.GROUPS.ADD_DAMAGE},
+	}
 }
 
 -- Initialize logger

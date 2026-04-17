@@ -3,7 +3,10 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	name = "Malevolent",
 	description = "If piloted mech has a negative status, apply it to attacks that damage enemies.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
-	groups = {more_plus.GROUPS.STATUS_BASED},
+	constraints = {
+		groups = {more_plus.GROUPS.STATUS_BASED},
+		pilotExclusions = {"Pilot_Rock"},
+	}
 }
 
 customSkill.DEBUG = false

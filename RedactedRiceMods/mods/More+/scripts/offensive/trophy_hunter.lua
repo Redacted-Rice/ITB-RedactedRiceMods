@@ -3,7 +3,9 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	name = "Trophy Hunter",
 	description = "+1 damage to \"unique\" (non-common) enemies.",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
-	groups = {more_plus.GROUPS.ADD_DAMAGE},
+	constraints = {
+		groups = {more_plus.GROUPS.ADD_DAMAGE},
+	}
 }
 
 -- Initialize logger

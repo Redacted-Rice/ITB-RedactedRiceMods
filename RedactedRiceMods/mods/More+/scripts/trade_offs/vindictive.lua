@@ -3,7 +3,10 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	name = "Vindictive",
 	description = "+1 damage for each negative status effect on piloted mech.",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
-	groups = {more_plus.GROUPS.ADD_DAMAGE, more_plus.GROUPS.STATUS_BASED},
+	constraints = {
+		groups = {more_plus.GROUPS.ADD_DAMAGE, more_plus.GROUPS.STATUS_BASED},
+		pilotExclusions = {"Pilot_Rock"},
+	}
 }
 
 customSkill.DEBUG = false

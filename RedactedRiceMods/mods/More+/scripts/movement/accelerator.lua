@@ -8,7 +8,9 @@ local customSkill = more_plus.SkillActive:new{
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 	-- Not strictly needed but makes more sense
 	bonuses = {move = BASE_MOVE},
-	groups = {more_plus.GROUPS.ADD_MOVE},
+	constraints = {
+		groups = {more_plus.GROUPS.ADD_MOVE},
+	}
 }
 
 -- Initialize logger

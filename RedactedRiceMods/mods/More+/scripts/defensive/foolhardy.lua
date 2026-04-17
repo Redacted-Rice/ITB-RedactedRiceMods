@@ -5,7 +5,9 @@ local customSkill = more_plus.SkillActive:new{
 	name = "Foolhardy",
 	description = "+"..GRID_DEF_BONUS.." grid defense if no buildings are damaged.",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
-	groups = {more_plus.GROUPS.ADD_GRID_DEF},
+	constraints = {
+		groups = {more_plus.GROUPS.ADD_GRID_DEF},
+	}
 }
 
 -- Initialize logger
