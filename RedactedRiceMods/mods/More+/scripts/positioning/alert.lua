@@ -1,7 +1,7 @@
 local customSkill = more_plus.SkillEffectModifier:new{
 	id = "RrAlert",
 	name = "Alert",
-	description = "Reduce damage taken from enemies by 1 while adjacent to an enemy.",
+	description = "Reduce damage taken from enemies by 1 while adjacent to an enemy (stacks with armor, not cancelled by armor).",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }
 
@@ -46,7 +46,6 @@ function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spac
 				spaceDamage.iDamage = DAMAGE_ZERO
 			end
 
-			-- TODO: Need to make a different armor icon since this won't behave as vanilla
 			-- Show damage reduction icon
 			for _, idx in ipairs(indexes) do
 				logger.logDebug(SUBMODULE, "Adding damage reduction icon for %s with idx %d",
@@ -54,7 +53,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spac
 				more_plus.libs.weaponPreview.ExecuteWithState(previewState,
 						function()
 							more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc,
-									more_plus.commonIcons.armor.key.."_"..idx)
+									more_plus.commonIcons.armor1.key.."_"..idx)
 						end)
 			end
 
@@ -77,7 +76,7 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 				more_plus.libs.weaponPreview.ExecuteWithState(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
 						function()
 							more_plus.libs.weaponPreview:AddAnimation(p2,
-									more_plus.commonIcons.armor.key.."_1")
+									more_plus.commonIcons.armor1.key.."_1")
 						end)
 				logger.logDebug(SUBMODULE, "Pawn %d moving to %s adjacent to vek, showing damage reduction icon",
 						pawn:GetId(), p2:GetString())

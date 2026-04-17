@@ -53,12 +53,11 @@ function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spac
 
 		-- Check if this pawn hasn't used their first attack reduction yet
 		if not GAME.more_plus.cheap_plating.used[pawnId] then
-			-- TODO: Add another icon for this
 			for _, idx in ipairs(indexes) do
 				more_plus.libs.weaponPreview.ExecuteWithState(previewState,
 						function()
 							more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc,
-									more_plus.commonIcons.noDamage.key.."_"..idx)
+									more_plus.commonIcons.armor3.key.."_"..idx)
 						end)
 			end
 
