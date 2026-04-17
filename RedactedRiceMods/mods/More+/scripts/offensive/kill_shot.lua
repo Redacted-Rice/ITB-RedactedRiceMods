@@ -3,7 +3,9 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	name = "Kill Shot",
 	description = "+1 damage to enemies that would be killed by the extra damage.",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
-	groups = {more_plus.GROUPS.ADD_DAMAGE},
+	constraints = {
+		groups = {more_plus.GROUPS.ADD_DAMAGE},
+	}
 }
 
 -- Initialize logger

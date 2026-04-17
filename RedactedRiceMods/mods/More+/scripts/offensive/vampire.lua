@@ -4,7 +4,9 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	description = "Repair when you kill a vek.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 	-- Zoltan only has 1 health
-	groups = {"Mafan"},
+	constraints = {
+		pilotExclusions = {"Pilot_Zoltan"},
+	}
 }
 
 customSkill.DEBUG = false

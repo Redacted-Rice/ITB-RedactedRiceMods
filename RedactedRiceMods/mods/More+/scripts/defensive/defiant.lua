@@ -5,7 +5,9 @@ local customSkill = more_plus.SkillActive:new{
 	name = "Defiant",
 	description = "+"..GRID_DEF_PER_ENEMY.." grid defense per enemy on the board.",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
-	groups = {more_plus.GROUPS.ADD_GRID_DEF},
+	constraints = {
+		groups = {more_plus.GROUPS.ADD_GRID_DEF},
+	}
 }
 
 -- Initialize logger

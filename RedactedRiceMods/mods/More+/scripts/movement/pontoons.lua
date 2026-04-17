@@ -5,7 +5,10 @@ local customSkill = more_plus.SkillActive:new{
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 	modified = {},
 	-- Prospero already has flying so it doesn't help at all
-	groups = {more_plus.GROUPS.MOVE_TYPE, "Prospero"},
+	constraints = {
+		groups = {more_plus.GROUPS.MOVE_TYPE},
+		pilotExclusions = {"Pilot_Recycler"},
+	}
 }
 
 -- Initialize logger

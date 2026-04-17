@@ -3,8 +3,11 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	name = "Vigor",
 	description = "Gain boosted when healed.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
-	-- Despite not being able to heal, zoltan can still be healed by an effect and get this
-	groups = {more_plus.GROUPS.BOOST},
+	constraints = {
+		groups = {more_plus.GROUPS.BOOST},
+		-- Despite not being able to heal, zoltan can still be healed by an effect and get this
+		pilotExclusions = {"Pilot_Arrogant", "Pilot_Chemical"},
+	}
 }
 
 customSkill.DEBUG = false

@@ -3,7 +3,10 @@ local customSkill = more_plus.SkillActive:new{
 	name = "Nimble",
 	description = "Piloted mech can move onto and through buildings and mountains.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
-	groups = {more_plus.GROUPS.MOVE_TYPE},
+	constraints = {
+		groups = {more_plus.GROUPS.MOVE_TYPE},
+		pilotExclusions = {"Pilot_Recycler"},
+	}
 }
 
 -- Initialize logger
@@ -35,7 +38,7 @@ function customSkill.moveTargetArea(mission, pawn, weaponId, p1, targetArea)
 		local pilot = pawn:GetPilot()
 		if pilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot) then
 			local passThroughMode = customSkill.getPassThroughMode(pilot)
-			logger.logDebug(SUBMODULE, "Calculating nimble target area for pawn %d from %s with mode %s", 
+			logger.logDebug(SUBMODULE, "Calculating nimble target area for pawn %d from %s with mode %s",
 					pawn:GetId(), p1:GetString(), passThroughMode)
 
 			local newPoints = PointList()
@@ -76,7 +79,7 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 			-- Burrowers follow a path but already have special pathing
 			if not (pawn:IsJumper() or pawn:IsTeleporter() or pawn:IsBurrower()) then
 				local passThroughMode = customSkill.getPassThroughMode(pilot)
-				logger.logDebug(SUBMODULE, "Calculating custom path for pawn %d from %s to %s with mode %s", 
+				logger.logDebug(SUBMODULE, "Calculating custom path for pawn %d from %s to %s with mode %s",
 						pawn:GetId(), p1:GetString(), p2:GetString(), passThroughMode)
 
 				local path = more_plus.libs.boardUtils.findBfsPath(p1, p2,

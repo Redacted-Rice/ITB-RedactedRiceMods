@@ -30,19 +30,10 @@ more_plus.GROUPS = {
 function more_plus:addVanillaSkillsToGroups()
 	logger.logDebug(SUBMODULE, "Adding vanilla skills to groups...")
 
-	-- Register all groups to allow only one skill per pilot
-	for groupKey, groupName in pairs(self.GROUPS) do
-		cplus_plus_ex:registerGroup(groupName, true)
-		logger.logDebug(SUBMODULE, "Registered group '%s' to allow only one per pilot", groupName)
-	end
-
 	-- Add Health group
 	cplus_plus_ex:registerSkillToGroup("Health", self.GROUPS.ADD_HEALTH)
 	cplus_plus_ex:registerSkillToGroup("HealthPlus", self.GROUPS.ADD_HEALTH)
 	cplus_plus_ex:registerSkillToGroup("Skilled", self.GROUPS.ADD_HEALTH)
-	-- Zoltan & Rock can't gain health
-	cplus_plus_ex:registerPilotGroupExclusion("Pilot_Zoltan", self.GROUPS.ADD_HEALTH)
-	cplus_plus_ex:registerPilotGroupExclusion("Pilot_Rock", self.GROUPS.ADD_HEALTH)
 
 	-- Add Move group
 	cplus_plus_ex:registerSkillToGroup("Move", self.GROUPS.ADD_MOVE)
@@ -57,16 +48,9 @@ function more_plus:addVanillaSkillsToGroups()
 	-- Boost group
 	cplus_plus_ex:registerSkillToGroup("Opener", self.GROUPS.BOOST)
 	cplus_plus_ex:registerSkillToGroup("Closer", self.GROUPS.BOOST)
-	-- Kai and Morgan get boost as part of their skill
-	cplus_plus_ex:registerPilotGroupExclusion("Pilot_Arrogant", self.GROUPS.BOOST)
-	cplus_plus_ex:registerPilotGroupExclusion("Pilot_Chemical", self.GROUPS.BOOST)
 
 	-- Status based group
 	cplus_plus_ex:registerSkillToGroup("Thick", self.GROUPS.STATUS_BASED)
-	cplus_plus_ex:registerPilotGroupExclusion("Pilot_Rock", self.GROUPS.STATUS_BASED)
-
-	-- Zoltan has built in shield
-	cplus_plus_ex:registerPilotGroupExclusion("Pilot_Zoltan", self.GROUPS.SHIELD)
 
 	logger.logDebug(SUBMODULE, "Vanilla skills added to groups")
 end

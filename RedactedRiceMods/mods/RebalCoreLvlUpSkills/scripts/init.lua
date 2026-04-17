@@ -51,8 +51,11 @@ function mod:init(options)
 		bonuses = {health = 3},
 		saveVal = 0,
 		reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
-		-- Respect the vanilla health exclusions (via groups)
-		groups = {"Mafan", "Ariadne"},
+		-- Respect the vanilla health exclusions
+		constraints = {
+			pilotExclusions = {"Pilot_Zoltan", "Pilot_Rock"},
+			skillExclusions = "Health",
+		}
 	}
 
 	local movePlus = {
@@ -63,7 +66,10 @@ function mod:init(options)
 		description = "RebalCorePlus_MovePlus_Description",
 		bonuses = {move = 1, grid = halfRounded},
 		saveVal = 1,
-		reusability = cplus_plus_ex.REUSABLILITY.REUSABLE
+		reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
+		constraints = {
+			skillExclusions = "Move",
+		}
 	}
 
 	local gridPlus = {
@@ -74,22 +80,11 @@ function mod:init(options)
 		description = "RebalCorePlus_GridPlus_Description",
 		bonuses = {grid = gridDef},
 		saveVal = 2,
-		reusability = cplus_plus_ex.REUSABLILITY.REUSABLE
+		reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
+		constraints = {
+			skillExclusions = "Grid",
+		}
 	}
-
-	-- register on init
-	cplus_plus_ex:registerSkill(cplusCategory, healthPlus)
-	cplus_plus_ex:registerSkill(cplusCategory, movePlus)
-	cplus_plus_ex:registerSkill(cplusCategory, gridPlus)
-
-	-- Exclude vanilla version with them
-	cplus_plus_ex:registerSkillExclusion(healthPlus.id, "Health")
-	cplus_plus_ex:registerSkillExclusion(movePlus.id, "Move")
-	cplus_plus_ex:registerSkillExclusion(gridPlus.id, "Grid")
-
-	-- Respect the vanilla health exclusions
-	cplus_plus_ex:registerPilotSkillExclusions("Pilot_Rock", healthPlus.id)
-	cplus_plus_ex:registerPilotSkillExclusions("Pilot_Zoltan", healthPlus.id)
 end
 
 function mod:load(options, version)
