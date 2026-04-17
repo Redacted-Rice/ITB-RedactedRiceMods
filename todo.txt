@@ -40,21 +40,21 @@ Done testing and "working"
 * Urban, Militia, Malevolent, Impervious, cheap plating, reflect
 * Anger, Vigor
 
-Pending Issues:
-* Work on vindictive icon
-* Damage Icons for -1 armor, -3 armor, mirror, vampire or generic status?
+Pre beta:
+* Damage Icons for mirror, vampire or generic status?
+* Anger Icon
+* Do a pass over the texts
+
+Full release:
 * Add more fx for reflect
 * Queued weapon preview separate from base one? Do we even need a seapration between final and first?
-
 * Go through and make sure using team = PLAYER instead of isMech
 * Add text popups for some events
 * Queued effect icons flash on moving
 
-* Do a pass over the texts
 
 Known Issues:
 * Vigor on Harold will not show icon when using repair. Not sure why its not displaying. Seems to be something unique with how his repair skill works
-
 
 
 ------------------------------------------------------------------------------
