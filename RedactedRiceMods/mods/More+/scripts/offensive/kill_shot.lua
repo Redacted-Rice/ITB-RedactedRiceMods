@@ -20,9 +20,22 @@ function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spac
 			targetPawn:IsEnemy() and spaceDamage.iDamage > 0 and
 			spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
 		local currentHealth = targetPawn:GetHealth()
+		local baseDamage = spaceDamage.iDamage
 		local totalBonusDamage = numInstances
-		local wouldKillWithExtra = (currentHealth - (spaceDamage.iDamage + totalBonusDamage)) <= 0
+		local hasAcid = targetPawn:IsAcid()
+		local hasArmor = targetPawn:IsArmor()
 
+		local resultDamage = baseDamage + totalBonusDamage
+		
+		if hasAcid then
+			-- Acid doubles ALL damage
+			resultDamage = resultDamage * 2
+		-- Armor only applies if not acid
+		elseif hasArmor then
+			resultDamage = resultDamage - 1
+		end
+		
+		local wouldKillWithExtra = currentHealth <= resultDamage
 		if wouldKillWithExtra then
 			for _, idx in ipairs(indexes) do
 				logger.logDebug(SUBMODULE, "Adding icon for %s with idx %d", spaceDamage.loc:GetString(), idx)
@@ -34,11 +47,13 @@ function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spac
 			end
 
 			spaceDamage.iDamage = spaceDamage.iDamage + totalBonusDamage
-			logger.logDebug(SUBMODULE, "Added +%d damage to finish off vek at %s (health: %d, base damage: %d, instances: %d)",
-				totalBonusDamage, spaceDamage.loc:GetString(), currentHealth, spaceDamage.iDamage - totalBonusDamage, numInstances)
+			logger.logDebug(SUBMODULE, "Added %d damage to finish off vek at %s ("..
+					"health: %d, base damage: %d, final with boost: %d, armor: %s, acid: %s)",
+					totalBonusDamage, spaceDamage.loc:GetString(), currentHealth, baseDamage, resultDamage, tostring(hasArmor), tostring(hasAcid))
 		else
-			logger.logDebug(SUBMODULE, "No bonus damage - vek at %s would survive (health: %d, damage: %d)",
-				spaceDamage.loc:GetString(), currentHealth, spaceDamage.iDamage)
+			logger.logDebug(SUBMODULE, "No bonus damage - vek at %s would survive ("..
+					"health: %d, base damage: %d, final with boost: %d, armor: %s, acid: %s)",
+					spaceDamage.loc:GetString(), currentHealth, baseDamage, resultDamage, tostring(hasArmor), tostring(hasAcid))
 		end
 	end
 	return nil
