@@ -36,7 +36,11 @@ None
 MoreLvlUpSkills:
 
 Pre beta:
-None
+* Rally + Supporter doesn't work (Probably same with escort)
+* Vampire don't take effect for boost/acid/armor
+	* Update kill shot for boosted as well
+* Cheap plating + Impervious sometimes causes cheap plating to activate first. More general issue. Maybe make a pool or exclusion?
+	* same for reflect and cheap plating
 
 Full release:
 * Add more fx for reflect
@@ -44,6 +48,7 @@ Full release:
 * Go through and make sure using team = PLAYER instead of isMech
 * Add text popups for some events
 * Queued effect icons flash on moving
+* Alert icon changes locations
 
 Known Issues:
 * Vigor on Harold will not show icon when using repair. Not sure why its not displaying. Seems to be something unique with how his repair skill works
