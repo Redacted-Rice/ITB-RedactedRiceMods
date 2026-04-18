@@ -51,6 +51,7 @@ function more_plus:addVanillaSkillsToGroups()
 
 	-- Status based group
 	cplus_plus_ex:registerSkillToGroup("Thick", self.GROUPS.STATUS_BASED)
+	cplus_plus_ex:registerPilotSkillExclusions("Pilot_Rock", {"Thick"})
 
 	logger.logDebug(SUBMODULE, "Vanilla skills added to groups")
 end

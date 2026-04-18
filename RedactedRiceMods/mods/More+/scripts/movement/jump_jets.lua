@@ -6,9 +6,10 @@ local customSkill = more_plus.SkillActive:new{
 	skipJump = false,
 	-- Don't allow on kwan - its mostly duplicative with his skill
 	-- Propsero already has flying so it doesn't help at all either
+	-- Flying cyborgs (Hornet) also don't benefit from jump jets
 	constraints = {
 		groups = {more_plus.GROUPS.MOVE_TYPE},
-		pilotExclusions = {"Pilot_Hotshot", "Pilot_Recycler"},
+		pilotExclusions = {"Pilot_Hotshot", "Pilot_Recycler", cplus_plus_ex.isFlyingCyborg},
 	}
 }
 
