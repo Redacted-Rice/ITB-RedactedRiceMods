@@ -17,16 +17,20 @@ function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spac
 			attackingPawn:IsEnemy() and spaceDamage.iDamage > 0 and 
 			spaceDamage.iDamage ~= DAMAGE_ZERO then
 		local attackerLoc = attackingPawn:GetSpace()
+		local targetLoc = targetPawn:GetSpace()
 		
 		-- Add reflect animation icons
 		for _, idx in ipairs(indexes) do
 			-- Show damage icon on attacker (where reflect damage will hit)
-			logger.logDebug(SUBMODULE, "Adding reflect damage icon at attacker %s with idx %d", 
-					attackerLoc:GetString(), idx)
+			logger.logDebug(SUBMODULE, "Adding reflect damage icon from %s to attacker %s with idx %d", 
+					targetLoc:GetString(), attackerLoc:GetString(), idx)
 			more_plus.libs.weaponPreview.ExecuteWithState(previewState,
 					function()
+						-- add to attacker and target
 						more_plus.libs.weaponPreview:AddAnimation(attackerLoc,
-								more_plus.commonIcons.extraDamage.key.."_"..idx)
+								more_plus.commonIcons.reflect.key.."_"..idx)
+						more_plus.libs.weaponPreview:AddAnimation(targetLoc,
+								more_plus.commonIcons.reflect.key.."_"..idx)
 					end)
 		end
 

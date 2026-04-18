@@ -133,14 +133,17 @@ function more_plus:folderToDisplayName(str)
 end
 
 more_plus.commonIcons = {
-	extraDamage = {key = "rr_extra_damage", img =  "combat/icons/icon_mp_RrExtraDamage.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
-	crit = {key = "rr_crit", img =  "combat/icons/icon_mp_RrCrit.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
-	shackle = {key = "rr_shackle", img =  "combat/icons/icon_mp_RrShackle.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
-	noDamage = {key = "rr_no_damage", img =  "combat/icons/icon_mp_RrNoDamage.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
-	boost = {key = "rr_boosted", img = "advanced/combat/icons/icon_boosted.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
+	extraDamage = {key = "rr_extra_damage", img =  "combat/icons/icon_mp_RrExtraDamage_glow.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
+	crit = {key = "rr_crit", img =  "combat/icons/icon_mp_RrCrit_glow.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
+	shackle = {key = "rr_shackle", img =  "combat/icons/icon_mp_RrShackle_glow.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
+	noDamage = {key = "rr_no_damage", img =  "combat/icons/icon_mp_RrNoDamage_glow.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
+	boost = {key = "rr_boosted", img = "advanced/combat/icons/icon_boosted_glow.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
 	-- Game seems to not like 1 and 3 in names or maybe I just messed something else up? either way this works
-	armor1 = {key = "rr_armor_one", img = "combat/icons/icon_mp_RrArmorOne.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
-	armor3 = {key = "rr_armor_three", img = "combat/icons/icon_mp_RrArmorThree.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
+	armor1 = {key = "rr_armor_one", img = "combat/icons/icon_mp_RrArmorOne_glow.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
+	armor3 = {key = "rr_armor_three", img = "combat/icons/icon_mp_RrArmorThree_glow.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
+	reflect = {key = "rr_Reflect", img = "combat/icons/icon_mp_RrReflect_glow.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
+	vampire = {key = "rr_vampire", img = "combat/icons/icon_mp_RrVampire_glow.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
+
 }
 
 function more_plus:addCommonCustomImages()
