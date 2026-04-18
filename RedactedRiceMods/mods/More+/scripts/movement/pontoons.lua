@@ -5,9 +5,10 @@ local customSkill = more_plus.SkillActive:new{
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 	modified = {},
 	-- Prospero already has flying so it doesn't help at all
+	-- Flying cyborgs (Hornet) also don't benefit from pontoons
 	constraints = {
 		groups = {more_plus.GROUPS.MOVE_TYPE},
-		pilotExclusions = {"Pilot_Recycler"},
+		pilotExclusions = {"Pilot_Recycler", cplus_plus_ex.isFlyingCyborg},
 	}
 }
 
