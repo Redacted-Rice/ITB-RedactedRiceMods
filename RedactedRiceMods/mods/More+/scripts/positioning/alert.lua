@@ -1,7 +1,7 @@
 local customSkill = more_plus.SkillEffectModifier:new{
 	id = "RrAlert",
 	name = "Alert",
-	description = "Reduce damage taken from enemies by 1 while adjacent to an enemy (stacks with armor, not cancelled by armor).",
+	description = "Reduce damage taken from enemies by 1 while adjacent to an enemy (stacks with armor, not cancelled by acid).",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }
 

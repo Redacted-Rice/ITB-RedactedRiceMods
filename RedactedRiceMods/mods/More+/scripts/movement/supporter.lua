@@ -1,7 +1,7 @@
 local customSkill = more_plus.SkillActive:new{
 	id = "RrSupporter",
 	name = "Supporter",
-	description = "Can teleport to tiles adjacent to allies.",
+	description = "Piloted mech can teleport to tiles adjacent to allies.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 	skipSupporter = false
 }

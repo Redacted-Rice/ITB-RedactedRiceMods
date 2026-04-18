@@ -35,15 +35,8 @@ None
 
 MoreLvlUpSkills:
 
-Done testing and "working"
-* Supporter, Rally, Vampire, Vindictive, Hot Headed, Escort,
-* Urban, Militia, Malevolent, Impervious, cheap plating, reflect
-* Anger, Vigor
-
 Pre beta:
-* Damage Icons for mirror, vampire or generic status?
-* Anger Icon
-* Do a pass over the texts
+None
 
 Full release:
 * Add more fx for reflect
@@ -51,7 +44,6 @@ Full release:
 * Go through and make sure using team = PLAYER instead of isMech
 * Add text popups for some events
 * Queued effect icons flash on moving
-
 
 Known Issues:
 * Vigor on Harold will not show icon when using repair. Not sure why its not displaying. Seems to be something unique with how his repair skill works

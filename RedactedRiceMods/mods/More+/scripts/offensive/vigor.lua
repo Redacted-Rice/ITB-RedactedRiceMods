@@ -1,7 +1,7 @@
 local customSkill = more_plus.SkillEffectModifier:new{
 	id = "RrVigor",
 	name = "Vigor",
-	description = "Gain boosted when healed.",
+	description = "Gain Boost when piloted mech is healed (even if already at full health).",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 	constraints = {
 		groups = {more_plus.GROUPS.BOOST},

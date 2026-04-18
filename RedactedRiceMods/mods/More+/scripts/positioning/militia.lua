@@ -1,7 +1,7 @@
 local customSkill = more_plus.SkillEffectModifier:new{
 	id = "RrMilitia",
 	name = "Militia",
-	description = "Gain +1 damage against enemies adjacent to buildings.",
+	description = "+1 damage to enemies adjacent to buildings.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 	constraints = {
 		groups = {more_plus.GROUPS.ADD_DAMAGE},
