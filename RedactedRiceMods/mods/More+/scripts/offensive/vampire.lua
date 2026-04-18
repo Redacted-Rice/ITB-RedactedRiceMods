@@ -1,7 +1,7 @@
 local customSkill = more_plus.SkillEffectModifier:new{
 	id = "RrVampire",
 	name = "Vampire",
-	description = "Repair when you kill a vek.",
+	description = "Repair (regardless of pilot repair skill) piloted mech when you kill a vek.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 	-- Zoltan only has 1 health
 	constraints = {

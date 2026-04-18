@@ -1,7 +1,7 @@
 local customSkill = more_plus.SkillEffectModifier:new{
 	id = "RrReflect",
 	name = "Reflect",
-	description = "If damaged by an enemy, deals half (rounded up) back to the attacker.",
+	description = "If damaged by an enemy, deals half (rounded up) damage back to the attacker.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }
 
