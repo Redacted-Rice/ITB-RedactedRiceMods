@@ -6,7 +6,8 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	-- Zoltan only has 1 health
 	constraints = {
 		pilotExclusions = {"Pilot_Zoltan"},
-	}
+	},
+	priority = 150, -- go after other calculations
 }
 
 customSkill.DEBUG = false
@@ -22,9 +23,37 @@ function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spac
 		local wouldKill = false
 		if spaceDamage.iDamage == DAMAGE_DEATH then
 			wouldKill = true
+			logger.logDebug(SUBMODULE, "Repair added - instakill vek at %s",
+					spaceDamage.loc:GetString())
 		else
 			local currentHealth = targetPawn:GetHealth()
-			wouldKill = (currentHealth - spaceDamage.iDamage) <= 0
+			local baseDamage = spaceDamage.iDamage
+			local hasBoosted = attackingPawn:IsBoosted()
+			local hasAcid = targetPawn:IsAcid()
+			local hasArmor = targetPawn:IsArmor()
+			local resultDamage = baseDamage
+			
+			if hasBoosted then
+				resultDamage = resultDamage + 1
+			end
+			if hasAcid then
+				-- Acid doubles ALL damage
+				resultDamage = resultDamage * 2
+			-- Armor only applies if not acid
+			elseif hasArmor then
+				resultDamage = resultDamage - 1
+			end
+			
+			if currentHealth <= resultDamage then
+				wouldKill = true
+				logger.logDebug(SUBMODULE, "Repair added - will kill vek at %s ("..
+						"health: %d, base damage: %d, final %d, boost: %s, armor: %s, acid: %s)",
+						spaceDamage.loc:GetString(), currentHealth, baseDamage, resultDamage, tostring(hasBoosted), tostring(hasArmor), tostring(hasAcid))
+			else
+				logger.logDebug(SUBMODULE, "No repair - vek at %s would survive ("..
+						"health: %d, base damage: %d, final %d, boost: %s, armor: %s, acid: %s)",
+						spaceDamage.loc:GetString(), currentHealth, baseDamage, resultDamage, tostring(hasBoosted), tostring(hasArmor), tostring(hasAcid))
+			end
 		end
 
 		if wouldKill then

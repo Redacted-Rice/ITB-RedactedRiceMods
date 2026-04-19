@@ -3,6 +3,7 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	name = "Alert",
 	description = "Reduce damage taken from enemies by 1 while adjacent to an enemy (stacks with armor, not cancelled by acid).",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
+	priority = 80, -- go after doubling
 }
 
 customSkill.DEBUG = false

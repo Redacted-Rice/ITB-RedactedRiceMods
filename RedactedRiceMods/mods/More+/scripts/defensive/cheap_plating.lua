@@ -2,7 +2,7 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	id = "RrCheapPlating",
 	name = "Cheap Plating",
 	description = "The first attack each mission that would damage the piloted mech does -3 damage.",
-	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
+	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT
 }
 
 customSkill.DEBUG = false

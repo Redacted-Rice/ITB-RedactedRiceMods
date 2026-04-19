@@ -5,7 +5,8 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 	constraints = {
 		groups = {more_plus.GROUPS.ADD_DAMAGE},
-	}
+	},
+	priority = 150, -- go after other calculations
 }
 
 -- Initialize logger
@@ -24,11 +25,15 @@ function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spac
 		local currentHealth = targetPawn:GetHealth()
 		local baseDamage = spaceDamage.iDamage
 		local totalBonusDamage = numInstances
+		local hasBoosted = attackingPawn:IsBoosted()
 		local hasAcid = targetPawn:IsAcid()
 		local hasArmor = targetPawn:IsArmor()
 
 		local resultDamage = baseDamage + totalBonusDamage
 		
+		if hasBoosted then 
+			resultDamage = resultDamage + 1
+		end
 		if hasAcid then
 			-- Acid doubles ALL damage
 			resultDamage = resultDamage * 2
@@ -50,12 +55,12 @@ function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spac
 
 			spaceDamage.iDamage = spaceDamage.iDamage + totalBonusDamage
 			logger.logDebug(SUBMODULE, "Added %d damage to finish off vek at %s ("..
-					"health: %d, base damage: %d, final with boost: %d, armor: %s, acid: %s)",
-					totalBonusDamage, spaceDamage.loc:GetString(), currentHealth, baseDamage, resultDamage, tostring(hasArmor), tostring(hasAcid))
+					"health: %d, base damage: %d, final %d, boost: %s, armor: %s, acid: %s)",
+					totalBonusDamage, spaceDamage.loc:GetString(), currentHealth, baseDamage, resultDamage, tostring(hasBoosted), tostring(hasArmor), tostring(hasAcid))
 		else
 			logger.logDebug(SUBMODULE, "No bonus damage - vek at %s would survive ("..
-					"health: %d, base damage: %d, final with boost: %d, armor: %s, acid: %s)",
-					spaceDamage.loc:GetString(), currentHealth, baseDamage, resultDamage, tostring(hasArmor), tostring(hasAcid))
+					"health: %d, base damage: %d, final %d, boost: %s, armor: %s, acid: %s)",
+					spaceDamage.loc:GetString(), currentHealth, baseDamage, resultDamage, tostring(hasBoosted), tostring(hasArmor), tostring(hasAcid))
 		end
 	end
 	return nil
