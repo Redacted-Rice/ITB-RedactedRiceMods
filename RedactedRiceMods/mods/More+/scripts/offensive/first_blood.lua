@@ -5,7 +5,8 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 	constraints = {
 		groups = {more_plus.GROUPS.ADD_DAMAGE},
-	}
+	},
+	priority = 80 -- go after doubling
 }
 
 -- Initialize logger

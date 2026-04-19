@@ -15,6 +15,7 @@ the inspiration/starting point for this
 ]]
 
 local VERSION = "0.8.2"
+local DEBUG = false
 
 local mod_path = mod_loader.mods[modApi.currentMod]
 local path = mod_path.scriptPath
@@ -82,7 +83,7 @@ local function registerTargetTrait(config)
 		return false
 	end
 
-	LOG("Registering target trait: " .. config.id)
+	if DEBUG then LOG("Registering target trait: " .. config.id) end
 
 	-- Get next sequential placeholder
 	local placeholderName = getNextPlaceholder()
@@ -704,7 +705,7 @@ local function addTraitInternal(trait)
 	local id = targetTrait .. "_custom_" .. totalCount
 	trait.id = id
 
-	LOG("Adding custom trait '" .. id .. "' to target trait '" .. targetTrait .. "'")
+	if DEBUG then LOG("Adding custom trait '" .. id .. "' to target trait '" .. targetTrait .. "'") end
 
 	-- Load the icon surface
 	local iconPath = trait.icon:match(".-.png$") or trait.icon..".png"
@@ -829,7 +830,7 @@ if isHighestVersion then
 				traitData.surfaces[config.id .. "_vanilla"] = traitData.targetOrigIcon
 
 				-- Log registration summary
-				LOG("Registered target trait '" .. config.id .. "' with " .. #traitData.allTraits .. " custom traits")
+				if DEBUG then LOG("Registered target trait '" .. config.id .. "' with " .. #traitData.allTraits .. " custom traits") end
 			end
 		end
 		self.queuedRegistrations = {}

@@ -35,13 +35,6 @@ None
 
 MoreLvlUpSkills:
 
-Pre beta:
-* Rally + Supporter doesn't work (Probably same with escort)
-* Vampire don't take effect for boost/acid/armor
-	* Update kill shot for boosted as well
-* Cheap plating + Impervious sometimes causes cheap plating to activate first. More general issue. Maybe make a pool or exclusion?
-	* same for reflect and cheap plating
-
 Full release:
 * Add more fx for reflect
 * Queued weapon preview separate from base one? Do we even need a seapration between final and first?

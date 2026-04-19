@@ -3,6 +3,8 @@ local SkillEffectModifier = {}
 -- Extend SkillActive class
 setmetatable(SkillEffectModifier, { __index = more_plus.SkillActive })
 SkillEffectModifier.__index = SkillEffectModifier
+-- Default priority
+SkillEffectModifier.priority = 100
 
 -- Initialize logger
 SkillEffectModifier.DEBUG = false
@@ -209,7 +211,8 @@ local function processEffectsWithQueuedFlag(attackingPawn, skillEffect, effectsT
 		local attackingPilot = attackingPawn:GetPilot()
 		if attackingPilot and cplus_plus_ex:isSkillOnPilot(skill.id, attackingPilot) then
 			local indexes = cplus_plus_ex:getPilotSkillIndices(skill.id, attackingPilot)
-			table.insert(skillPawnCombos, {
+			if not skillPawnCombos[skill.priority] then skillPawnCombos[skill.priority] = {} end
+			table.insert(skillPawnCombos[skill.priority], {
 				skill = skill,
 				pawn = attackingPawn,
 				indexes = indexes,
@@ -224,7 +227,8 @@ local function processEffectsWithQueuedFlag(attackingPawn, skillEffect, effectsT
 			local targetPilot = targetPawn:GetPilot()
 			if targetPilot and cplus_plus_ex:isSkillOnPilot(skill.id, targetPilot) then
 				local indexes = cplus_plus_ex:getPilotSkillIndices(skill.id, targetPilot)
-				table.insert(skillPawnCombos, {
+				if not skillPawnCombos[skill.priority] then skillPawnCombos[skill.priority] = {} end
+				table.insert(skillPawnCombos[skill.priority], {
 					skill = skill,
 					pawn = targetPawn,
 					indexes = indexes,
@@ -236,12 +240,19 @@ local function processEffectsWithQueuedFlag(attackingPawn, skillEffect, effectsT
 		end
 	end
 
-	if #skillPawnCombos == 0 then
+	local priorities = {}
+	local skillPawnCombosCount = 0
+	for priority, priorityList in pairs(skillPawnCombos) do
+		skillPawnCombosCount = skillPawnCombosCount + #priorityList
+		table.insert(priorities, priority)
+	end
+	if skillPawnCombosCount == 0 then
 		logger.logDebug(SUBMODULE, "No skills apply to this effect (isQueued=%s)", tostring(isQueued))
 		return
 	end
+	table.sort(priorities)
 	logger.logDebug(SUBMODULE, "Processing %d skill+pawn combinations (isQueued=%s)",
-			#skillPawnCombos, tostring(isQueued))
+			skillPawnCombosCount, tostring(isQueued))
 
 	-- Loop through all skills, checking for new damages and repeating until no new damages
 	local pawnPositions = {}
@@ -254,16 +265,18 @@ local function processEffectsWithQueuedFlag(attackingPawn, skillEffect, effectsT
 		local pendingMoves = {}
 
 		-- Process ALL skill+pawn combinations for this pass
-		for _, combo in ipairs(skillPawnCombos) do
-			logger.logDebug(SUBMODULE, "Pass %d: Processing skill %s with %d space damages for pawn %d (%s, isQueued=%s)",
-					currentPass, combo.skill.id, #damagesToProcess, combo.pawn:GetId(), combo.source, tostring(isQueued))
+		for _, priority in ipairs(priorities) do
+			for _, combo in ipairs(skillPawnCombos[priority]) do
+				logger.logDebug(SUBMODULE, "Pass %d: Processing skill %s with %d space damages for pawn %d (%s, isQueued=%s)",
+						currentPass, combo.skill.id, #damagesToProcess, combo.pawn:GetId(), combo.source, tostring(isQueued))
 
-			local newDamages = combo.skill:processDamageList(combo.source, attackingPawn, isFinalEffect, damagesToProcess,
-					combo.indexes, pawnPositions, pendingMoves, isQueued)
+				local newDamages = combo.skill:processDamageList(combo.source, attackingPawn, isFinalEffect, damagesToProcess,
+						combo.indexes, pawnPositions, pendingMoves, isQueued)
 
-			if newDamages and #newDamages > 0 then
-				for _, newDamage in ipairs(newDamages) do
-					table.insert(allNewDamages, newDamage)
+				if newDamages and #newDamages > 0 then
+					for _, newDamage in ipairs(newDamages) do
+						table.insert(allNewDamages, newDamage)
+					end
 				end
 			end
 		end

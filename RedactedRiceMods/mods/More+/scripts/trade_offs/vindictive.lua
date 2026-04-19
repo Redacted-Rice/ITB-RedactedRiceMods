@@ -6,7 +6,8 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	constraints = {
 		groups = {more_plus.GROUPS.ADD_DAMAGE, more_plus.GROUPS.STATUS_BASED},
 		pilotExclusions = {"Pilot_Rock"},
-	}
+	},
+	priority = 80, -- go after doubling
 }
 
 customSkill.DEBUG = false

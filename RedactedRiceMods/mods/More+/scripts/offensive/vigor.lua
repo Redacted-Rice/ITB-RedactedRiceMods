@@ -7,7 +7,8 @@ local customSkill = more_plus.SkillEffectModifier:new{
 		groups = {more_plus.GROUPS.BOOST},
 		-- Despite not being able to heal, zoltan can still be healed by an effect and get this
 		pilotExclusions = {"Pilot_Arrogant", "Pilot_Chemical"},
-	}
+	},
+	priority = 180, -- Go after everything else including vampire
 }
 
 customSkill.DEBUG = false

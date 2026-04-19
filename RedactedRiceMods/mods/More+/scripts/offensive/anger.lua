@@ -6,7 +6,8 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	constraints = {
 		groups = {more_plus.GROUPS.BOOST},
 		pilotExclusions = {"Pilot_Arrogant", "Pilot_Chemical"},
-	}
+	},
+	priority = 200 -- go after any adjustments
 }
 
 customSkill.DEBUG = true
