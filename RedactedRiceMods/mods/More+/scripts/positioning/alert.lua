@@ -74,11 +74,16 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 
 			-- Show icon if will be adjacent to vek
 			if willBeAdjacentToVek then
-				more_plus.libs.weaponPreview.ExecuteWithState(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
-						function()
-							more_plus.libs.weaponPreview:AddAnimation(p2,
-									more_plus.commonIcons.armor1.key.."_1")
-						end)
+				local indexes = cplus_plus_ex:getPilotSkillIndices(customSkill.id, pilot)
+				for _, idx in ipairs(indexes) do
+					logger.logDebug(SUBMODULE, "Adding damage reduction icon for %s with idx %d",
+							p2:GetString(), idx)
+					more_plus.libs.weaponPreview.ExecuteWithState(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
+							function()
+								more_plus.libs.weaponPreview:AddAnimation(p2,
+										more_plus.commonIcons.armor1.key.."_"..idx)
+							end)
+				end
 				logger.logDebug(SUBMODULE, "Pawn %d moving to %s adjacent to vek, showing damage reduction icon",
 						pawn:GetId(), p2:GetString())
 			end

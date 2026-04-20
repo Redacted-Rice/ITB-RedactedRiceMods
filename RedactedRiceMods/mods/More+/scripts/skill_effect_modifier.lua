@@ -117,8 +117,7 @@ function SkillEffectModifier:processDamageList(source, attackingPawn, isFinalEff
 	local previewState = isFinalEffect and more_plus.libs.weaponPreview.STATE_FINAL_EFFECT or
 			more_plus.libs.weaponPreview.STATE_SKILL_EFFECT
 	if isQueued then
-		-- TODO: No queued effect final?
-		previewState = --isFinalEffect and more_plus.libs.weaponPreview.STATE_QUEUED_FINAL_EFFECT or
+		previewState = isFinalEffect and more_plus.libs.weaponPreview.STATE_QUEUED_FINAL_EFFECT or
 				more_plus.libs.weaponPreview.STATE_QUEUED_SKILL
 	end
 
