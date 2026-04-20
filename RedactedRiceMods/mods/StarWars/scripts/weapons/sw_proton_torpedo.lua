@@ -9,11 +9,10 @@ StarWars_ProtonTorpedo = TankDefault:new{
 	Limited = 1,
 	
 	Icon = "weapons/brute_tankmech.png",
-	Explosion = "ExploAir1",
+	Explosion = "explo_fire1",
 	ProjectileArt = "effects/shot_mechtank",
-	Sound = "/general/combat/explode_small",
-	LaunchSound = "/weapons/modified_cannons",
-	ImpactSound = "/impact/generic/explosion",
+	LaunchSound = "/weapons/unstable_cannon",
+	ImpactSound = "/impact/generic/explosion_large",
 	
 	SplashDamage = 1,
 	
@@ -21,14 +20,14 @@ StarWars_ProtonTorpedo = TankDefault:new{
 	ZoneTargeting = ZONE_DIR,
 }
 			
-Weapon_Texts.StarWars_ProtonTorpedo_Upgrade1 = "+ Damage"
+Weapon_Texts.StarWars_ProtonTorpedo_Upgrade1 = "+1 Damage"
 StarWars_ProtonTorpedo_A = StarWars_ProtonTorpedo:new{
 	UpgradeDescription = "",
 	Damage = 4,
 	SplashDamage = 2,
 }
 
-Weapon_Texts.StarWars_ProtonTorpedo_Upgrade2 = "+ Use"
+Weapon_Texts.StarWars_ProtonTorpedo_Upgrade2 = "+1 Use"
 StarWars_ProtonTorpedo_B = StarWars_ProtonTorpedo:new{
 	UpgradeDescription = "",
 	Limited = 2,

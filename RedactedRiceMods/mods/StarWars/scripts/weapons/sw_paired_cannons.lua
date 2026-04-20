@@ -11,11 +11,10 @@ StarWars_PairedCannons = TankDefault:new{
 	Push = false,
 	
 	Icon = "weapons/brute_tankmech.png",
-	Explosion = "ExploAir1",
+	Explosion = "",
 	ProjectileArt = "effects/shot_mechtank",
-	Sound = "/general/combat/explode_small",
-	LaunchSound = "/weapons/modified_cannons",
-	ImpactSound = "/impact/generic/explosion",
+	LaunchSound = "/weapons/ricochet",
+	ImpactSound = "/impact/generic/ricochet",
 	
     TipImage = {
 		Unit = Point(3,3),
