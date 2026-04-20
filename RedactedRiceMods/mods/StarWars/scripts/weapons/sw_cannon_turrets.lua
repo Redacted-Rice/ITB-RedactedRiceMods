@@ -9,10 +9,9 @@ StarWars_CannonTurrets = TankDefault:new{
 	
 	Icon = "weapons/brute_tankmech.png",
 	Explosion = "",
-	ProjectileArt = "effects/shot_mechtank",
-	Sound = "/general/combat/explode_small",
-	LaunchSound = "/weapons/modified_cannons",
-	ImpactSound = "/impact/generic/explosion",
+	UpShot = "effects/shotup_missileswarm.png",
+	FireSound = "/weapons/ricochet",
+	ImpactSound = "/impact/generic/ricochet",
 	
 	Range = 2,
 	SpecialTargets = false,
@@ -29,13 +28,13 @@ StarWars_CannonTurrets = TankDefault:new{
 	},
 }
 			
-Weapon_Texts.StarWars_CannonTurrets_Upgrade1 = "+ Range"
+Weapon_Texts.StarWars_CannonTurrets_Upgrade1 = "+1 Range"
 StarWars_CannonTurrets_A = StarWars_CannonTurrets:new{
 	UpgradeDescription = "",
 	Range = 3
 }
 
-Weapon_Texts.StarWars_CannonTurrets_Upgrade2 = "Percision"
+Weapon_Texts.StarWars_CannonTurrets_Upgrade2 = "Focus Fire"
 StarWars_CannonTurrets_B = StarWars_CannonTurrets:new{
 	UpgradeDescription = "",
 	TwoClick = true,
@@ -72,24 +71,30 @@ function StarWars_CannonTurrets:MakeSkillEffect(p1, p2, p3)
 		if p ~= p3 and Board:IsValid(p) and Board:GetPawn(p) and Board:GetPawn(p):IsEnemy() then
 			if self.TwoClick and p == p2 then
 				local sd = SpaceDamage(p, self.Damage * 2)
+				sd.bHidePath = true
 				--sd.sAnimation = self.Explo..backdir
-				ret:AddArtillery(sd, self.ProjectileArt, NO_DELAY)
-				ret:AddDelay(0.1)
-				ret:AddArtillery(SpaceDamage(p), self.ProjectileArt, NO_DELAY)
-				ret:AddDelay(0.1)
+				ret:AddSound(self.FireSound)
+				ret:AddArtillery(sd, self.UpShot, 0.1)
+				ret:AddSound(self.FireSound)
+				local sd2 = SpaceDamage(p)
+				sd2.bHidePath = true
+				ret:AddArtillery(sd2, self.UpShot, 0.1)
 				extraHitDone = true
 			else
 				local sd = SpaceDamage(p, self.Damage)
+				sd.bHidePath = true
 				--sd.sAnimation = self.Explo..backdir
-				ret:AddArtillery(sd, self.ProjectileArt, NO_DELAY)
-				ret:AddDelay(0.1)
+				ret:AddSound(self.FireSound)
+				ret:AddArtillery(sd, self.UpShot, 0.1)
 			end
 		end
 	end
 	if self.TwoClick and not extraHitDone then
 		local sd = SpaceDamage(p2, self.Damage)
+				sd.bHidePath = true
 		--sd.sAnimation = self.Explo..backdir
-		ret:AddArtillery(sd, self.ProjectileArt, NO_DELAY)
+		ret:AddSound(self.FireSound)
+		ret:AddArtillery(sd, self.UpShot, 0.1)
 	end
 	return ret
 end

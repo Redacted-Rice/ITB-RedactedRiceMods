@@ -22,8 +22,8 @@ end
 -- -x = left, +x = right
 -- -y = up, +y - down
 local a = ANIMS
-a.sw_melfalcon =         a.MechUnit:new{Image = "units/player/sw_melfalcon.png",      PosX = -21, PosY = -10 }
-a.sw_melfalcona =        a.MechUnit:new{Image = "units/player/sw_melfalcon_a.png",      PosX = -21, PosY = -10, NumFrames = 4 }
+a.sw_melfalcon =         a.MechUnit:new{Image = "units/player/sw_melfalcon.png",      PosX = -19, PosY = -11 }
+a.sw_melfalcona =        a.MechUnit:new{Image = "units/player/sw_melfalcon_a.png",    PosX = -19, PosY = -11, NumFrames = 5 }
 a.sw_melfalcon_broken =  a.MechUnit:new{Image = "units/player/wb_eater_broken.png",   PosX = -22, PosY = -13 }
 a.sw_melfalconw_broken = a.MechUnit:new{Image = "units/player/wb_eater_w_broken.png", PosX = -22, PosY = -5 }
 a.sw_melfalcon_ns =      a.MechIcon:new{Image = "units/player/sw_melfalcon_ns.png" }
@@ -36,7 +36,7 @@ StarWars_MelFalconMech = Pawn:new{
 	MoveSpeed = 3,
 	Image = "sw_melfalcon",
 	ImageOffset = squadColors,
-	SkillList = { "StarWars_CannonTurrets" },
+	SkillList = { "StarWars_CannonTurrets","Support_Missiles" },
 	SoundLocation = "/mech/distance/artillery/",
 	DefaultTeam = TEAM_PLAYER,
 	ImpactMaterial = IMPACT_METAL,

@@ -22,8 +22,8 @@ end
 -- -x = left, +x = right
 -- -y = up, +y - down
 local a = ANIMS
-a.sw_xwing =         a.MechUnit:new{Image = "units/player/sw_xwing.png",          PosX = -18, PosY = -12 }
-a.sw_xwinga =        a.MechUnit:new{Image = "units/player/sw_xwing_a.png",        PosX = -18, PosY = -12, NumFrames = 4 }
+a.sw_xwing =         a.MechUnit:new{Image = "units/player/sw_xwing.png",          PosX = -19, PosY = -9 }
+a.sw_xwinga =        a.MechUnit:new{Image = "units/player/sw_xwing_a.png",        PosX = -19, PosY = -9, NumFrames = 4 }
 a.sw_xwing_broken =  a.MechUnit:new{Image = "units/player/wb_maker_broken.png",   PosX = -18, PosY = -14 }
 a.sw_xwingw_broken = a.MechUnit:new{Image = "units/player/wb_maker_w_broken.png", PosX = -21, PosY = -7 }
 a.sw_xwing_ns =      a.MechIcon:new{Image = "units/player/sw_xwing_ns.png" }
