@@ -16,6 +16,9 @@ function mod:init()
 	for libId, lib in pairs(mod_loader.mods.redactedrice_libs.libs) do
 		self.libs[libId] = lib
 	end
+	
+	require(self.scriptPath .. "libs/weaponArmed")
+	require(self.scriptPath .. "libs/artilleryArc")
 
 	-- Assets
 	require(self.scriptPath .. "images")
