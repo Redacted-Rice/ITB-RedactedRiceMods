@@ -27,7 +27,20 @@ Known Issues:
 
 ------------------------------------------------------------------------------
 
-Vanilla+
+Star Wars:
+Rebels:
+* Second Weapons
+* Straight artillery
+* broken and highlights images
+* Laser and explosion images
+* Weapon icons
+* Descriptions
+* Achievments?
+
+
+------------------------------------------------------------------------------
+
+Vanilla+:
 None
 
 
