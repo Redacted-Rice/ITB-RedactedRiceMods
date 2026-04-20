@@ -3,6 +3,7 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	name = "Reflect",
 	description = "If damaged by an enemy, deals half (rounded up) damage back to the attacker.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
+	priority = 180, -- go after kill shot
 }
 
 customSkill.DEBUG = true
@@ -48,7 +49,9 @@ function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spac
 			logger.logDebug(SUBMODULE, "Reflecting %d damage back to attacker at %s (original: %d)",
 					reflectDamage, attackerLoc:GetString(), spaceDamage.iDamage)
 		end
-		return {reflectPause, SpaceDamage(attackerLoc, reflectDamage)}
+		local reflectSd = SpaceDamage(attackerLoc, reflectDamage)
+		reflectSd.sScript = "Board:Ping("..attackerLoc:GetString()..", GL_Color(175, 175, 255))"
+		return {reflectPause, reflectSd}
 	end
 
 	-- Return nil if no reflection should occur
