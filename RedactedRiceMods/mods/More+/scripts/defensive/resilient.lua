@@ -24,6 +24,7 @@ function customSkill:setupEffect()
 				if pilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot) then
 					logger.logDebug(SUBMODULE, "Pawn %d took %d damage, adding shield", pawn:GetId(), damageTaken)
 					pawn:SetShield(true)
+					Board:AddAlert(pawn:GetSpace(), "RESILIENT")
 				end
 			end
 		end))

@@ -628,11 +628,18 @@ local function getSkillEffect(self, p1, p2, ...)
 
 		elseif pawn and skillId == pawn:GetQueuedWeapon() then
 			previewState = STATE_QUEUED_SKILL
-			previewMarks[previewState] = {}
-			queuedPreviewMarks[previewState] = {}
+			local pawnId = pawn:GetId()
+
+			-- Initialize queued marks structure if needed
+			if not queuedPreviewMarks[previewState] then
+				queuedPreviewMarks[previewState] = {}
+			end
+			-- Always regenerate marks for this pawn
+			queuedPreviewMarks[previewState][pawnId] = {}
+			previewMarks[previewState] = queuedPreviewMarks[previewState][pawnId]
 
 			result = oldGetSkillEffects[skillId](self, p1, p2, ...)
-			queuedPreviewMarks[previewState][pawn:GetId()] = previewMarks[previewState]
+			queuedPreviewMarks[previewState][pawnId] = previewMarks[previewState]
 			previewState = STATE_NONE
 		end
 	end
@@ -668,11 +675,18 @@ local function getFinalEffect(self, p1, p2, p3, ...)
 
 		elseif pawn and skillId == pawn:GetQueuedWeapon() then
 			previewState = STATE_QUEUED_FINAL_EFFECT
-			previewMarks[previewState] = {}
-			queuedPreviewMarks[previewState] = {}
+			local pawnId = pawn:GetId()
 
-			result = oldGetFinalEffects[skillId](self, p1, p2, p3, ...)
-			queuedPreviewMarks[previewState][pawn:GetId()] = previewMarks[previewState]
+			-- Initialize queued marks structure if needed
+			if not queuedPreviewMarks[previewState] then
+				queuedPreviewMarks[previewState] = {}
+			end
+			-- Always regenerate marks for this pawn
+			queuedPreviewMarks[previewState][pawnId] = {}
+			previewMarks[previewState] = queuedPreviewMarks[previewState][pawnId]
+
+			result = oldGetFinalEffects[skillId](self, p1, p2, ...)
+			queuedPreviewMarks[previewState][pawnId] = previewMarks[previewState]
 			previewState = STATE_NONE
 		end
 	end
@@ -835,50 +849,19 @@ local function onMissionUpdate()
 		actingMarker:clear()
 	end
 
-	-- Update queued skill marker
-	if queuedMarker ~= actingMarker then
-		if queuedMarker:isActive() then
-			events.onQueuedSkillEffectHidden:dispatch(queuedMarker:unpack())
-			queuedMarker:clear()
+	-- Display all queued marks
+	if queuedPreviewMarks[STATE_QUEUED_SKILL] then
+		for pawnId, marks in pairs(queuedPreviewMarks[STATE_QUEUED_SKILL]) do
+			markSpaces(marks, queuedMarker.ticker)
 		end
-
-		queuedMarker:copy(actingMarker)
-
-		if queuedMarker:isActive() then
-			events.onQueuedSkillEffectShown:dispatch(queuedMarker:unpack())
-		end
+		queuedMarker.ticker = queuedMarker.ticker + time_delta
 	end
 
-	-- Update queued final effect marker
-	if queuedFinalEffectMarker ~= actingMarker then
-		if queuedFinalEffectMarker:isActive() then
-			events.onQueuedFinalEffectHidden:dispatch(queuedFinalEffectMarker:unpack())
-			queuedFinalEffectMarker:clear()
+	if queuedPreviewMarks[STATE_QUEUED_FINAL_EFFECT] then
+		for pawnId, marks in pairs(queuedPreviewMarks[STATE_QUEUED_FINAL_EFFECT]) do
+			markSpaces(marks, queuedFinalEffectMarker.ticker)
 		end
-
-		queuedFinalEffectMarker:copy(actingMarker)
-
-		if queuedFinalEffectMarker:isActive() then
-			events.onQueuedFinalEffectShown:dispatch(queuedFinalEffectMarker:unpack())
-		end
-	end
-
-	if queuedMarker:isActive() then
-		local queuedMarks = queuedPreviewMarks[STATE_QUEUED_SKILL] and
-				queuedPreviewMarks[STATE_QUEUED_SKILL][queuedMarker.pawnId]
-		if queuedMarks then
-			markSpaces(queuedMarks, queuedMarker.ticker)
-			queuedMarker.ticker = queuedMarker.ticker + time_delta
-		end
-	end
-
-	if queuedFinalEffectMarker:isActive() then
-		local queuedMarks = queuedPreviewMarks[STATE_QUEUED_FINAL_EFFECT] and
-				queuedPreviewMarks[STATE_QUEUED_FINAL_EFFECT][queuedFinalEffectMarker.pawnId]
-		if queuedMarks then
-			markSpaces(queuedMarks, queuedFinalEffectMarker.ticker)
-			queuedFinalEffectMarker.ticker = queuedFinalEffectMarker.ticker + time_delta
-		end
+		queuedFinalEffectMarker.ticker = queuedFinalEffectMarker.ticker + time_delta
 	end
 end
 

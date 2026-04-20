@@ -7,7 +7,7 @@ local customSkill = more_plus.SkillEffectModifier:new{
 	constraints = {
 		pilotExclusions = {"Pilot_Zoltan"},
 	},
-	priority = 150, -- go after other calculations
+	priority = 180, -- go after kill shot
 }
 
 customSkill.DEBUG = false
