@@ -9,7 +9,8 @@ StarWars_CannonTurrets = TankDefault:new{
 	
 	Icon = "weapons/brute_tankmech.png",
 	Explosion = "",
-	UpShot = "effects/shotup_missileswarm.png",
+	Projectile1 = "effects/shot_sw_dual_red_split_1.png",
+	Projectile2 = "effects/shot_sw_dual_red_split_2.png",
 	FireSound = "/weapons/ricochet",
 	ImpactSound = "/impact/generic/ricochet",
 	-- seems to  be the value that gets them pretty flat in all cases
@@ -63,6 +64,32 @@ function StarWars_CannonTurrets:GetSecondTargetArea(p1, p2)
 	return self:MakeTargetArea(p1, p2)
 end
 
+function StarWars_CannonTurrets:addDoubleShot(skillEffect, p1, target, double)
+	local damage = self.Damage
+	if double then 
+		damage = damage * 2
+		local third = SpaceDamage(target)
+		local fourth = SpaceDamage(target)
+		third.bHidePath = true
+		fourth.bHidePath = true
+		
+		skillEffect:AddSound(self.FireSound)
+		skillEffect:AddArtillery(third, self.Projectile1, 0.035)
+		skillEffect:AddSound(self.FireSound)
+		skillEffect:AddArtillery(fourth, self.Projectile2, 0.035)
+	end
+	local first = SpaceDamage(target)
+	local second = SpaceDamage(target, damage)
+	first.bHidePath = true
+	second.bHidePath = true
+	
+	skillEffect:AddSound(self.FireSound)
+	skillEffect:AddArtillery(first, self.Projectile1, 0.035)
+	skillEffect:AddSound(self.FireSound)
+	skillEffect:AddArtillery(second, self.Projectile2, 0.035)
+	skillEffect:AddDelay(0.13)
+end
+
 function StarWars_CannonTurrets:MakeSkillEffect(p1, p2, p3)
 	local ret = SkillEffect()
 	local targets = self:GetTargetArea(p1)
@@ -70,32 +97,17 @@ function StarWars_CannonTurrets:MakeSkillEffect(p1, p2, p3)
 	local extraHitDone = false
 	for _, p in ipairs(extract_table(targets)) do
 		if p ~= p3 and Board:IsValid(p) and Board:GetPawn(p) and Board:GetPawn(p):IsEnemy() then
+			
 			if self.TwoClick and p == p2 then
-				local sd = SpaceDamage(p, self.Damage * 2)
-				sd.bHidePath = true
-				--sd.sAnimation = self.Explo..backdir
-				ret:AddSound(self.FireSound)
-				ret:AddArtillery(sd, self.UpShot, 0.1)
-				ret:AddSound(self.FireSound)
-				local sd2 = SpaceDamage(p)
-				sd2.bHidePath = true
-				ret:AddArtillery(sd2, self.UpShot, 0.1)
+				self:addDoubleShot(ret, p1, p, true)
 				extraHitDone = true
 			else
-				local sd = SpaceDamage(p, self.Damage)
-				sd.bHidePath = true
-				--sd.sAnimation = self.Explo..backdir
-				ret:AddSound(self.FireSound)
-				ret:AddArtillery(sd, self.UpShot, 0.1)
+				self:addDoubleShot(ret, p1, p, false)
 			end
 		end
 	end
 	if self.TwoClick and not extraHitDone then
-		local sd = SpaceDamage(p2, self.Damage)
-				sd.bHidePath = true
-		--sd.sAnimation = self.Explo..backdir
-		ret:AddSound(self.FireSound)
-		ret:AddArtillery(sd, self.UpShot, 0.1)
+		self:addDoubleShot(ret, p1, p2, false)
 	end
 	return ret
 end

@@ -56,7 +56,7 @@ function StarWars_PairedCannons:GetSkillEffect(p1, p2)
 	if self.HitBehind then
 		local pBehind = p2 + DIR_VECTORS[attackDir]
 		ret:AddProjectile(self:MakeSpaceDamage(pBehind, attackDir), self.ProjectileArt, NO_DELAY)
-		ret:AddDelay(0.1)
+		ret:AddDelay(0.2)
 	end
 	ret:AddProjectile(self:MakeSpaceDamage(p2, attackDir), self.ProjectileArt)
 	return ret
