@@ -10,7 +10,7 @@ StarWars_ProtonTorpedo = TankDefault:new{
 	
 	Icon = "weapons/brute_tankmech.png",
 	Explosion = "explo_fire1",
-	ProjectileArt = "effects/shot_mechtank",
+	ProjectileArt = "effects/shot_sw_proton_torp",
 	LaunchSound = "/weapons/unstable_cannon",
 	ImpactSound = "/impact/generic/explosion_large",
 	
