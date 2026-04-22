@@ -12,7 +12,7 @@ StarWars_PairedCannons = TankDefault:new{
 	
 	Icon = "weapons/brute_tankmech.png",
 	Explosion = "",
-	ProjectileArt = "effects/shot_sw_red",
+	ProjectileArt = "effects/shot_sw_dual_red",
 	LaunchSound = "/weapons/ricochet",
 	ImpactSound = "/impact/generic/ricochet",
 	
