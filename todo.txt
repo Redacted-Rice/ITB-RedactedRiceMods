@@ -34,8 +34,7 @@ Rebels:
 * Tow Cable, rebel hope, quad lasers
 	* implement
 * Squad mech icons 
-	* broken and hangar highlights
-	* Add some exhaust to sprites?
+	* hangar highlights
 * Weapon icons
 	* All
 * Descriptions & rebalance
