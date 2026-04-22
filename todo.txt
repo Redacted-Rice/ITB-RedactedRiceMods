@@ -29,11 +29,20 @@ Known Issues:
 
 Star Wars:
 Rebels:
-* Second Weapons
-* broken and highlights images
-* Laser and explosion images
+* Paired Cannons, Cannon Turrets
+	* Write working, consider balance
+* Proton torpedo
+	* torpedo image
+	* Maybe explosion?
+* Tow Cable, rebel hope, quad lasers
+	* implement
+* Squad mech icons 
+	* broken and hangar highlights
+	* Add some exhaust to sprites?
 * Weapon icons
-* Descriptions
+	* All
+* Descriptions & rebalance
+	* All
 * Achievments?
 
 
