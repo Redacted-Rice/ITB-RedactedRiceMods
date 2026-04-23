@@ -1,12 +1,10 @@
 # More Pilot Level Up Skills
 Have you ever wished there was even more variety for Pilot Level Up Skills than in AE?
-Well this is the mod for you! This mod currenlty adds 19 more Pilot Level Up Skills to
-the game in 4 different categorical groups. Enable and disable groups or individual
+Well this is the mod for you! This mod currently adds 35 more Pilot Level Up Skills to
+the game in 5 different categorical groups. Enable and disable groups or individual
 skills in the CPLUS+ Modify Pilot Abilities Menu.
 
 Customize and enhance your game like never before!
-
-A bunch more skills are comming for a 2.0 release soon
 
 Join the Redacted Rice discord for support, more mods, discussion and other projects: https://discord.gg/CNjTVrpN4v
 
@@ -20,9 +18,11 @@ Please enjoy and contact us if you run into any issues.
 ### Defensive
 Skills related to grid and mech defense and hampering enemy power
 
+* Cheap Plating - The first attack each mission that would damage the piloted mech does -3 damage.
 * Covering Fire - Targeted enemies lose half their movement for a turn (rounded down).
 * Defiant - +3 grid defense per enemy on the board.
 * Foolhardy - +12 grid defense if no buildings are damaged.
+* Impervious - Piloted mech is immune to self and friendly, non-instakill damage (direct damage from attack only).
 * Resilient - Gain a shield each time the piloted mech is damaged after the attack completes.
 * Streetwise - Prevents (not-instakill) damage to buildings from piloted mech's attacks.
 
@@ -34,9 +34,12 @@ Skills related to mechs moving around the board in any way
 * Jump Jets - Piloted Mech can jump with -1 move as its movement.
 * Nimble - Piloted mech can move onto and through buildings and mountains.
 * Pontoons - Piloted mech floats on top of liquid tiles without being affected by them.
+* Supporter - Piloted mech can teleport to tiles adjacent to allies.
 
 ### Offensive
+Skills related to dealing damage to enemies
 
+* Anger - Gain boosted when piloted mech is directly damaged by an enemy.
 * Big Game Hunter - Doubles damage to boss vek.
 * Calculated Shot - +1 damage to enemies with movement <= to half (rounded up) the piloted mech's movement.
 * First Blood - +1 damage to undamaged enemies with 4+ health.
@@ -44,12 +47,28 @@ Skills related to mechs moving around the board in any way
 * Kill Shot - +1 damage to enemies that would be killed by the extra damage.
 * Momentum - Gain boosted after moving at least 4 tiles.
 * Trophy Hunter - +1 damage to "unique" (non-common) enemies.
+* Vampire - Repair (regardless of pilot repair skill) piloted mech when you kill a vek.
+* Vigor - Gain Boost when piloted mech is healed (even if already at full health).
+
+### Positioning
+Skills based on where the piloted mech or enemies are positioned on the board
+
+* Alert - Reduce damage taken from enemies by 1 while adjacent to an enemy (stacks with armor, not cancelled by acid).
+* Ambusher - +1 damage to enemies if piloted mech is not on a road, liquid, or hole tile.
+* Escort - Shield adjacent allies when you move next to them or they move next to you.
+* Militia - +1 damage to enemies adjacent to buildings.
+* Rally - Boost adjacent allies when you move next to them or they move next to you.
+* Urban - Gain a shield when moving adjacent to a building.
 
 ### Trade Offs
 These are skills that have a stronger than typical positive effect but also include a negative effect
 
+* Hot Headed - Gain Boost every other turn but loses 2 XP per kill (can't level down from this).
 * Hyper - +2 movement for the first 2 turns, +1 movement for the 3rd turn, then +0 movement.
+* Malevolent - If piloted mech has a negative status, apply it to attacks that damage enemies.
+* Reflect - If damaged by an enemy, deals half (rounded up) damage back to the attacker.
 * Shatterstep - When moving, cracks the tile moved from.
+* Vindictive - +1 damage to enemies for each negative status effect on piloted mech.
 
 # Releases
 Latest release: 1.0.0
@@ -65,7 +84,8 @@ compatible with:
 
 ### Notes
 Includes:
-* Defensive (5) - Covering Fire, Defiant, Foolhardy, Resilient, Streetwise
-* Movement (5) - Accelerator, Guarded, Jump Jets, Nimble, Pontoons
-* Offensive (7) - Big Game Hunter, Calculated Shot, First Blood, Focused Strike, Kill Shot, Momentum, Trophy Hunter
-* Trade Offs (2) - Hyper, Shatterstep
+* Defensive (7) - Cheap Plating, Covering Fire, Defiant, Foolhardy, Impervious, Resilient, Streetwise
+* Movement (6) - Accelerator, Guarded, Jump Jets, Nimble, Pontoons, Supporter
+* Offensive (10) - Anger, Big Game Hunter, Calculated Shot, First Blood, Focused Strike, Kill Shot, Momentum, Trophy Hunter, Vampire, Vigor
+* Positioning (6) - Alert, Ambusher, Escort, Militia, Rally, Urban
+* Trade Offs (6) - Hot Headed, Hyper, Malevolent, Reflect, Shatterstep, Vindictive
