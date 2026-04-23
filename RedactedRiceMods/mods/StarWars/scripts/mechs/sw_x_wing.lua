@@ -24,8 +24,8 @@ end
 local a = ANIMS
 a.sw_xwing =         a.MechUnit:new{Image = "units/player/sw_xwing.png",          PosX = -19, PosY = -9 }
 a.sw_xwinga =        a.MechUnit:new{Image = "units/player/sw_xwing_a.png",        PosX = -19, PosY = -9, NumFrames = 4 }
-a.sw_xwing_broken =  a.MechUnit:new{Image = "units/player/sw_xwing.png",   		  PosX = -19, PosY = -13 }
-a.sw_xwingw_broken = a.MechUnit:new{Image = "units/player/sw_xwing_w_broken.png", PosX = -19, PosY = -13 }
+a.sw_xwing_broken =  a.MechUnit:new{Image = "units/player/sw_xwing_broken.png",   PosX = -19, PosY = 0 }
+a.sw_xwingw_broken = a.MechUnit:new{Image = "units/player/sw_xwing_w_broken.png", PosX = -21, PosY = 6 }
 a.sw_xwing_ns =      a.MechIcon:new{Image = "units/player/sw_xwing_ns.png" }
 
 

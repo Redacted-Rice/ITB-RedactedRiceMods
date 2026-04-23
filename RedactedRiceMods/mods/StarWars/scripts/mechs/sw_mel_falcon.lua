@@ -22,10 +22,10 @@ end
 -- -x = left, +x = right
 -- -y = up, +y - down
 local a = ANIMS
-a.sw_melfalcon =         a.MechUnit:new{Image = "units/player/sw_melfalcon.png",      PosX = -19, PosY = -11 }
-a.sw_melfalcona =        a.MechUnit:new{Image = "units/player/sw_melfalcon_a.png",    PosX = -19, PosY = -11, NumFrames = 5 }
-a.sw_melfalcon_broken =  a.MechUnit:new{Image = "units/player/sw_melfalcon_broken.png",   PosX = -19, PosY = -15 }
-a.sw_melfalconw_broken = a.MechUnit:new{Image = "units/player/sw_melfalcon_w_broken.png", PosX = -19, PosY = -15 }
+a.sw_melfalcon =         a.MechUnit:new{Image = "units/player/sw_melfalcon.png",          PosX = -19, PosY = -11 }
+a.sw_melfalcona =        a.MechUnit:new{Image = "units/player/sw_melfalcon_a.png",        PosX = -19, PosY = -11, NumFrames = 5 }
+a.sw_melfalcon_broken =  a.MechUnit:new{Image = "units/player/sw_melfalcon_broken.png",   PosX = -19, PosY = 1 }
+a.sw_melfalconw_broken = a.MechUnit:new{Image = "units/player/sw_melfalcon_w_broken.png", PosX = -18, PosY = 4 }
 a.sw_melfalcon_ns =      a.MechIcon:new{Image = "units/player/sw_melfalcon_ns.png" }
 
 
