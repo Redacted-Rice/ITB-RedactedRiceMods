@@ -24,8 +24,8 @@ end
 local a = ANIMS
 a.sw_snowspeeder =         a.MechUnit:new{Image = "units/player/sw_snowspeeder.png",          PosX = -20, PosY = -6 }
 a.sw_snowspeedera =        a.MechUnit:new{Image = "units/player/sw_snowspeeder_a.png",        PosX = -20, PosY = -6, NumFrames = 6 }
-a.sw_snowspeeder_broken =  a.MechUnit:new{Image = "units/player/sw_snowspeeder_broken.png",   PosX = -20, PosY = -10 }
-a.sw_snowspeederw_broken = a.MechUnit:new{Image = "units/player/sw_snowspeeder_w_broken.png", PosX = -20, PosY = -10 }
+a.sw_snowspeeder_broken =  a.MechUnit:new{Image = "units/player/sw_snowspeeder_broken.png",   PosX = -18, PosY = -1 }
+a.sw_snowspeederw_broken = a.MechUnit:new{Image = "units/player/sw_snowspeeder_w_broken.png", PosX = -18, PosY = 6 }
 a.sw_snowspeeder_ns =      a.MechIcon:new{Image = "units/player/sw_snowspeeder_ns.png" }
 
 
