@@ -57,6 +57,16 @@ function mod:load(options, version)
 		self.resourcePath .. "img/squad_icon.png"
 	)
 
+	-- Register squad skill exclusions if CPLUS+ is available
+	if cplus_plus_ex then
+		-- Prevent Jump Jets and Pontoons for the Rebels squad
+		-- These flying mechs already have built-in movement advantages
+		cplus_plus_ex:registerSquadSkillExclusions("starwars_rebels", {
+			"RrJumpJets",
+			"RrPontoons"
+		})
+	end
+
 	--WorldBuildersAchievements:addHooks()
 end
 

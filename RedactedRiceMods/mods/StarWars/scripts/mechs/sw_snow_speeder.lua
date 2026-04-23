@@ -9,8 +9,8 @@ local squadColors = modApi:getPaletteImageOffset("starwars_rebels_color")
 local files = {
 	"sw_snowspeeder.png",
 	"sw_snowspeeder_a.png",
-	"wb_shaper_w_broken.png",
-	"wb_shaper_broken.png",
+	"sw_snowspeeder_w_broken.png",
+	"sw_snowspeeder_broken.png",
 	"sw_snowspeeder_ns.png",
 	"wb_shaper_h.png"
 }
@@ -22,10 +22,10 @@ end
 -- -x = left, +x = right
 -- -y = up, +y - down
 local a = ANIMS
-a.sw_snowspeeder =         a.MechUnit:new{Image = "units/player/sw_snowspeeder.png",     PosX = -20, PosY = -6 }
-a.sw_snowspeedera =        a.MechUnit:new{Image = "units/player/sw_snowspeeder_a.png",   PosX = -20, PosY = -6, NumFrames = 6 }
-a.sw_snowspeeder_broken =  a.MechUnit:new{Image = "units/player/wb_shaper_broken.png",   PosX = -21, PosY =  -9 }
-a.sw_snowspeederw_broken = a.MechUnit:new{Image = "units/player/wb_shaper_w_broken.png", PosX = -26, PosY =  -3 }
+a.sw_snowspeeder =         a.MechUnit:new{Image = "units/player/sw_snowspeeder.png",          PosX = -20, PosY = -6 }
+a.sw_snowspeedera =        a.MechUnit:new{Image = "units/player/sw_snowspeeder_a.png",        PosX = -20, PosY = -6, NumFrames = 6 }
+a.sw_snowspeeder_broken =  a.MechUnit:new{Image = "units/player/sw_snowspeeder_broken.png",   PosX = -20, PosY = -10 }
+a.sw_snowspeederw_broken = a.MechUnit:new{Image = "units/player/sw_snowspeeder_w_broken.png", PosX = -20, PosY = -10 }
 a.sw_snowspeeder_ns =      a.MechIcon:new{Image = "units/player/sw_snowspeeder_ns.png" }
 
 
