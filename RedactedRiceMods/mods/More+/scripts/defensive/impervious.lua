@@ -1,7 +1,7 @@
 local customSkill = more_plus.SkillEffectModifier:new{
 	id = "RrImpervious",
 	name = "Impervious",
-	description = "Piloted mech is immune to self and friendly, non-instakill damage.",
+	description = "Piloted mech is immune to self and friendly, non-instakill damage (direct damage from attack only).",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 	priority = 30 -- execute before other skills such as cheap plating
 }
