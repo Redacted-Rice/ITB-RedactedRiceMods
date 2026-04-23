@@ -12,7 +12,7 @@ local files = {
 	"sw_melfalcon_w_broken.png",
 	"sw_melfalcon_broken.png",
 	"sw_melfalcon_ns.png",
-	"wb_eater_h.png"
+	"sw_melfalcon_h.png"
 }
 
 for _, file in ipairs(files) do

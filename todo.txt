@@ -33,8 +33,6 @@ Rebels:
 	* Write working, consider balance
 * Tow Cable, rebel hope, quad lasers
 	* implement
-* Squad mech icons 
-	* hangar highlights
 * Weapon icons
 	* All
 * Descriptions & rebalance
