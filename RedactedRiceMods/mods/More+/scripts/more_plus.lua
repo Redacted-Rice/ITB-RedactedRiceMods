@@ -32,18 +32,15 @@ function more_plus:addVanillaSkillsToGroups()
 
 	-- Add Health group
 	cplus_plus_ex:registerSkillToGroup("Health", self.GROUPS.ADD_HEALTH)
-	cplus_plus_ex:registerSkillToGroup("HealthPlus", self.GROUPS.ADD_HEALTH)
 	cplus_plus_ex:registerSkillToGroup("Skilled", self.GROUPS.ADD_HEALTH)
 
 	-- Add Move group
 	cplus_plus_ex:registerSkillToGroup("Move", self.GROUPS.ADD_MOVE)
-	cplus_plus_ex:registerSkillToGroup("MovePlus", self.GROUPS.ADD_MOVE)
 	cplus_plus_ex:registerSkillToGroup("Skilled", self.GROUPS.ADD_MOVE)
 	cplus_plus_ex:registerSkillToGroup("Adrenaline", self.GROUPS.ADD_MOVE)
 
 	-- Add Grid Def group
 	cplus_plus_ex:registerSkillToGroup("Grid", self.GROUPS.ADD_GRID_DEF)
-	cplus_plus_ex:registerSkillToGroup("GridPlus", self.GROUPS.ADD_GRID_DEF)
 
 	-- Boost group
 	cplus_plus_ex:registerSkillToGroup("Opener", self.GROUPS.BOOST)
