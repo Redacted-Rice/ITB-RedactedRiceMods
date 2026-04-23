@@ -9,8 +9,8 @@ local squadColors = modApi:getPaletteImageOffset("starwars_rebels_color")
 local files = {
 	"sw_melfalcon.png",
 	"sw_melfalcon_a.png",
-	"wb_eater_w_broken.png",
-	"wb_eater_broken.png",
+	"sw_melfalcon_w_broken.png",
+	"sw_melfalcon_broken.png",
 	"sw_melfalcon_ns.png",
 	"wb_eater_h.png"
 }
@@ -24,8 +24,8 @@ end
 local a = ANIMS
 a.sw_melfalcon =         a.MechUnit:new{Image = "units/player/sw_melfalcon.png",      PosX = -19, PosY = -11 }
 a.sw_melfalcona =        a.MechUnit:new{Image = "units/player/sw_melfalcon_a.png",    PosX = -19, PosY = -11, NumFrames = 5 }
-a.sw_melfalcon_broken =  a.MechUnit:new{Image = "units/player/wb_eater_broken.png",   PosX = -22, PosY = -13 }
-a.sw_melfalconw_broken = a.MechUnit:new{Image = "units/player/wb_eater_w_broken.png", PosX = -22, PosY = -5 }
+a.sw_melfalcon_broken =  a.MechUnit:new{Image = "units/player/sw_melfalcon_broken.png",   PosX = -19, PosY = -15 }
+a.sw_melfalconw_broken = a.MechUnit:new{Image = "units/player/sw_melfalcon_w_broken.png", PosX = -19, PosY = -15 }
 a.sw_melfalcon_ns =      a.MechIcon:new{Image = "units/player/sw_melfalcon_ns.png" }
 
 
