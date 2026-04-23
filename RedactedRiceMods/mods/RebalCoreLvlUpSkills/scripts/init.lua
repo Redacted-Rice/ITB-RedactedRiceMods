@@ -55,6 +55,7 @@ function mod:init(options)
 		constraints = {
 			pilotExclusions = {"Pilot_Zoltan", "Pilot_Rock"},
 			skillExclusions = "Health",
+			groups = {"Add Health"},
 		}
 	}
 
@@ -69,6 +70,7 @@ function mod:init(options)
 		reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 		constraints = {
 			skillExclusions = "Move",
+			groups = {"Add Move", "Add Grid Def"},
 		}
 	}
 
@@ -83,8 +85,24 @@ function mod:init(options)
 		reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 		constraints = {
 			skillExclusions = "Grid",
+			groups = {"Add Grid Def"},
 		}
 	}
+	
+	-- register on init (constraints are now defined in the skill tables)
+	cplus_plus_ex:registerSkill(cplusCategory, healthPlus)
+	cplus_plus_ex:registerSkill(cplusCategory, movePlus)
+	cplus_plus_ex:registerSkill(cplusCategory, gridPlus)
+	
+	-- Some additional vanilla groups
+	cplus_plus_ex:registerSkillToGroup("Health", "Add Health")
+	cplus_plus_ex:registerSkillToGroup("Skilled", "Add Health")
+	
+	cplus_plus_ex:registerSkillToGroup("Move", "Add Move")
+	cplus_plus_ex:registerSkillToGroup("Skilled", "Add Move")
+	cplus_plus_ex:registerSkillToGroup("Adrenaline", "Add Move")
+	
+	cplus_plus_ex:registerSkillToGroup("Grid", "Add Grid Def")
 end
 
 function mod:load(options, version)
