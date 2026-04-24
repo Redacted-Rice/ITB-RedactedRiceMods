@@ -7,7 +7,7 @@ StarWars_CannonTurrets = TankDefault:new{
 	Upgrades = 2,
 	UpgradeCost = {2,2},
 	
-	Icon = "weapons/brute_tankmech.png",
+	Icon = "weapons/science_sw_cannon_turrets.png",
 	Explosion = "",
 	Projectile1 = "effects/shot_sw_dual_red_split_1.png",
 	Projectile2 = "effects/shot_sw_dual_red_split_2.png",
