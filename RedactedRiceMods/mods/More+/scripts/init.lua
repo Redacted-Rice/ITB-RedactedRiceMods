@@ -2,12 +2,12 @@ local mod = {
 	id = "redactedrice_More+",
 	name = "More Lvl Up Skills",
 	icon = "mod_icon.png",
-	version = "1.0.0",
+	version = "2.0.0",
 	modApiVersion = "2.9.5",
 	gameVersion = "1.2.93",
 	dependencies = {
-        redactedrice_memhack = "1.0.0",
-        redactedrice_cplus_plus = "1.0.2",
+        redactedrice_memhack = "1.1.0",
+        redactedrice_cplus_plus = "1.1.0",
     }
 }
 

@@ -71,7 +71,39 @@ These are skills that have a stronger than typical positive effect but also incl
 * Vindictive - +1 damage to enemies for each negative status effect on piloted mech.
 
 # Releases
-Latest release: 1.0.0
+Latest release: 2.0.0
+
+## 2.0.0
+Released: XX/XX/2026
+
+compatible with:
+* ItB AE 	1.2.93
+* ModLoader 2.9.5
+* memhack	1.1.0
+* CPLUS+ Ex	1.1.0
+
+### Notes
+Major 2.0 release with 16 new skills!
+
+New Skills:
+* Defensive (2) - Cheap Plating, Impervious
+* Movement (1) - Supporter
+* Offensive (3) - Anger, Vampire, Vigor
+* Positioning (6) - Alert, Ambusher, Escort, Militia, Rally, Urban (entire new category!)
+* Trade Offs (4) - Hot Headed, Malevolent, Reflect, Vindictive
+
+Other improvements:
+* Integrated Status Library for malevolent and vindictive
+* Many bug fixes and balance improvements
+* Enhanced visual feedback and icons
+* Improved skill compatibility and constraints via pools
+
+Full skill list:
+* Defensive (7) - Cheap Plating, Covering Fire, Defiant, Foolhardy, Impervious, Resilient, Streetwise
+* Movement (6) - Accelerator, Guarded, Jump Jets, Nimble, Pontoons, Supporter
+* Offensive (10) - Anger, Big Game Hunter, Calculated Shot, First Blood, Focused Strike, Kill Shot, Momentum, Trophy Hunter, Vampire, Vigor
+* Positioning (6) - Alert, Ambusher, Escort, Militia, Rally, Urban
+* Trade Offs (6) - Hot Headed, Hyper, Malevolent, Reflect, Shatterstep, Vindictive
 
 ## 1.0.0
 Released: 04/10/2026
@@ -83,9 +115,8 @@ compatible with:
 * CPLUS+ Ex	1.0.2
 
 ### Notes
-Includes:
-* Defensive (7) - Cheap Plating, Covering Fire, Defiant, Foolhardy, Impervious, Resilient, Streetwise
-* Movement (6) - Accelerator, Guarded, Jump Jets, Nimble, Pontoons, Supporter
-* Offensive (10) - Anger, Big Game Hunter, Calculated Shot, First Blood, Focused Strike, Kill Shot, Momentum, Trophy Hunter, Vampire, Vigor
-* Positioning (6) - Alert, Ambusher, Escort, Militia, Rally, Urban
-* Trade Offs (6) - Hot Headed, Hyper, Malevolent, Reflect, Shatterstep, Vindictive
+Initial release with 19 pilot level up skills across 4 categories:
+* Defensive (5) - Covering Fire, Defiant, Foolhardy, Resilient, Streetwise
+* Movement (5) - Accelerator, Guarded, Jump Jets, Nimble, Pontoons
+* Offensive (7) - Big Game Hunter, Calculated Shot, First Blood, Focused Strike, Kill Shot, Momentum, Trophy Hunter
+* Trade Offs (2) - Hyper, Shatterstep
