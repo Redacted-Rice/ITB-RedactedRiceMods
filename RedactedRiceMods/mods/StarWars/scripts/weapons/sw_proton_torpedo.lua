@@ -8,7 +8,7 @@ StarWars_ProtonTorpedo = TankDefault:new{
 	UpgradeCost = {2,2},
 	Limited = 1,
 	
-	Icon = "weapons/brute_tankmech.png",
+	Icon = "weapons/brute_sw_proton_torpedo.png",
 	Explosion = "explo_fire1",
 	ProjectileArt = "effects/shot_sw_proton_torp",
 	LaunchSound = "/weapons/unstable_cannon",
@@ -47,7 +47,7 @@ function StarWars_ProtonTorpedo:GetSkillEffect(p1, p2)
 	for dir = DIR_START, DIR_END do
 		local targetSpace = p2 + DIR_VECTORS[dir]
 		if Board:IsValid(targetSpace) then
-			ret:AddDamage(SpaceDamage(targetSpace, self.SplashDamage))
+			ret:AddSafeDamage(SpaceDamage(targetSpace, self.SplashDamage))
 			ret:AddBounce(targetSpace, self.SplashDamage)
 		end
 	end
