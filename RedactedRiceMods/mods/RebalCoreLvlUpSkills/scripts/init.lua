@@ -2,11 +2,11 @@ local mod = {
 	id = "redactedrice_RebalCorePlus",
 	name = "Rebalanced Core Lvl Up Skills",
 	icon = "mod_icon.png",
-	version = "1.0.1",
+	version = "1.0.2",
 	modApiVersion = "2.9.5",
 	gameVersion = "1.2.93",
 	dependencies = {
-        redactedrice_cplus_plus = "1.0.2",
+        redactedrice_cplus_plus = "1.1.0",
     }
 }
 
@@ -88,20 +88,20 @@ function mod:init(options)
 			groups = {"Add Grid Def"},
 		}
 	}
-	
+
 	-- register on init (constraints are now defined in the skill tables)
 	cplus_plus_ex:registerSkill(cplusCategory, healthPlus)
 	cplus_plus_ex:registerSkill(cplusCategory, movePlus)
 	cplus_plus_ex:registerSkill(cplusCategory, gridPlus)
-	
+
 	-- Some additional vanilla groups
 	cplus_plus_ex:registerSkillToGroup("Health", "Add Health")
 	cplus_plus_ex:registerSkillToGroup("Skilled", "Add Health")
-	
+
 	cplus_plus_ex:registerSkillToGroup("Move", "Add Move")
 	cplus_plus_ex:registerSkillToGroup("Skilled", "Add Move")
 	cplus_plus_ex:registerSkillToGroup("Adrenaline", "Add Move")
-	
+
 	cplus_plus_ex:registerSkillToGroup("Grid", "Add Grid Def")
 end
 
