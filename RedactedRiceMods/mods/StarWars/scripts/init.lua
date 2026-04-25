@@ -19,7 +19,9 @@ function mod:init()
 	
 	require(self.scriptPath .. "libs/weaponArmed")
 	require(self.scriptPath .. "libs/artilleryArc")
-
+	self.libs.pilotSkill_tooltip = require(self.scriptPath .. "libs/pilotSkill_tooltip")
+	self.libs.personality = require(self.scriptPath .. "libs/personality")
+ 
 	-- Assets
 	require(self.scriptPath .. "images")
 	require(self.scriptPath .. "palettes")
@@ -41,9 +43,19 @@ function mod:init()
 	
 	require(self.scriptPath .. "weapons/sw_proton_torpedo")
 	modApi:addWeaponDrop("StarWars_ProtonTorpedo")
+	
+	-- Pilots
+	local pilots = require(self.scriptPath .. "pilots/init")
+	pilots:init()
+	self.pilots = pilots
 end
 
 function mod:load(options, version)
+	-- Load pilots
+	if self.pilots then
+		self.pilots:load(options, version)
+	end
+
 	modApi:addSquad(
 		{
 			id = "starwars_rebels",
