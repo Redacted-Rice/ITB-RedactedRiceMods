@@ -1,4 +1,4 @@
-local customSkill = more_plus.SkillEffectModifier:new{
+local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
 	id = "RrVampire",
 	name = "Vampire",
 	description = "Repair (regardless of pilot repair skill) piloted mech when you kill a vek.",
@@ -16,7 +16,7 @@ local SUBMODULE = logger.register("More+", "Vampire", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spaceDamage, indexes, targetPawn)
+function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage, indexes, targetPawn)
 	if source == self.SOURCE_ATTACKER and targetPawn and
 			targetPawn:IsEnemy() and spaceDamage.iDamage > 0 and
 			spaceDamage.iDamage ~= DAMAGE_ZERO then
@@ -32,7 +32,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spac
 			local hasAcid = targetPawn:IsAcid()
 			local hasArmor = targetPawn:IsArmor()
 			local resultDamage = baseDamage
-			
+
 			if hasBoosted then
 				resultDamage = resultDamage + 1
 			end
@@ -43,7 +43,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spac
 			elseif hasArmor then
 				resultDamage = resultDamage - 1
 			end
-			
+
 			if currentHealth <= resultDamage then
 				wouldKill = true
 				logger.logDebug(SUBMODULE, "Repair added - will kill vek at %s ("..
@@ -59,13 +59,13 @@ function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spac
 		if wouldKill then
 			local attackerLoc = attackingPawn:GetSpace()
 			local targetLoc = targetPawn:GetSpace()
-		
+
 			-- Add vampire animation icons
 			for _, idx in ipairs(indexes) do
 				-- Show damage icon on attacker (where reflect damage will hit)
-				logger.logDebug(SUBMODULE, "Adding reflect damage icon from %s to attacker %s with idx %d", 
+				logger.logDebug(SUBMODULE, "Adding reflect damage icon from %s to attacker %s with idx %d",
 						targetLoc:GetString(), attackerLoc:GetString(), idx)
-				more_plus.libs.weaponPreview.ExecuteWithState(previewState,
+				more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
 						function()
 							-- add to attacker and target
 							more_plus.libs.weaponPreview:AddAnimation(attackerLoc,
@@ -74,7 +74,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spac
 									more_plus.commonIcons.vampire.key.."_"..idx)
 						end)
 			end
-		
+
 			-- Call repair skill and return array of all the space damages from it
 			local repairEffect = _G["Skill_Repair"]:GetSkillEffect(attackerLoc, attackerLoc)
 			local repairEffectTable = extract_table(repairEffect.effect)

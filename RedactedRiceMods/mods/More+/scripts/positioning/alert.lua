@@ -1,4 +1,4 @@
-local customSkill = more_plus.SkillEffectModifier:new{
+local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
 	id = "RrAlert",
 	name = "Alert",
 	description = "Reduce damage taken from enemies by 1 while adjacent to an enemy (stacks with armor, not cancelled by acid).",
@@ -14,7 +14,7 @@ customSkill:addCustomTrait()
 
 function customSkill:setupEffect()
 	-- Call parent's setupEffect to register with SkillEffectModifier system
-	more_plus.SkillEffectModifier.setupEffect(self)
+	cplus_plus_ex.baseClasses.SkillEffectModifier.setupEffect(self)
 
 	-- Track move skill builds to show icons when moving adjacent to vek
 	table.insert(customSkill.events, modapiext.events.onSkillBuild:subscribe(customSkill.moveSkillBuild))
@@ -31,10 +31,10 @@ end
 -- Reduce damage by 1 if target is adjacent to vek
 -- We don't have a setArmor so I took this approach instead which
 -- is different than vanilla armor
-function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spaceDamage, indexes, targetPawn)
+function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage, indexes, targetPawn)
 	-- Check if the target pawn is taking damage and is adjacent to a vek
-	if source == self.SOURCE_TARGET and attackingPawn and 
-			attackingPawn:IsEnemy() and spaceDamage.iDamage > 0 and 
+	if source == self.SOURCE_TARGET and attackingPawn and
+			attackingPawn:IsEnemy() and spaceDamage.iDamage > 0 and
 			spaceDamage.iDamage ~= DAMAGE_ZERO and spaceDamage.iDamage ~= DAMAGE_DEATH then
 		local targetLoc = spaceDamage.loc
 
@@ -51,7 +51,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spac
 			for _, idx in ipairs(indexes) do
 				logger.logDebug(SUBMODULE, "Adding damage reduction icon for %s with idx %d",
 						spaceDamage.loc:GetString(), idx)
-				more_plus.libs.weaponPreview.ExecuteWithState(previewState,
+				more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
 						function()
 							more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc,
 									more_plus.commonIcons.armor1.key.."_"..idx)

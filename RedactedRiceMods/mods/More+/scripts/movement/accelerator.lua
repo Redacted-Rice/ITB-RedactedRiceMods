@@ -1,7 +1,7 @@
 local BASE_MOVE = 0
 local MOVE_BOOST_COLOR = GL_Color(50, 255, 50)
 
-local customSkill = more_plus.SkillActive:new{
+local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	id = "RrAccelerator",
 	name = "Accelerator",
 	description = "+1 Move at the end of each turn.",

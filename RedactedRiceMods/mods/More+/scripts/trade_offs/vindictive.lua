@@ -1,4 +1,4 @@
-local customSkill = more_plus.SkillEffectModifier:new{
+local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
 	id = "RrVindictive",
 	name = "Vindictive",
 	description = "+1 damage to enemies for each negative status effect on piloted mech.",
@@ -23,7 +23,7 @@ local adverseStatuses = {
 	"Shatterburst", "Shocked", "Sleep", "Toxin", "Weaken", "Wet", "Insanity"
 }
 
-function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spaceDamage, indexes, targetPawn)
+function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage, indexes, targetPawn)
 	-- Check if attacker is dealing damage to enemy
 	if source == self.SOURCE_ATTACKER and targetPawn and
 			targetPawn:IsEnemy() and spaceDamage.iDamage > 0 and
@@ -58,7 +58,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spac
 			for _, idx in ipairs(indexes) do
 				logger.logDebug(SUBMODULE, "Adding vindictive damage icon for %s with idx %d",
 						spaceDamage.loc:GetString(), idx)
-				more_plus.libs.weaponPreview.ExecuteWithState(previewState,
+				more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
 						function()
 							more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc,
 									more_plus.commonIcons.extraDamage.key.."_"..idx)

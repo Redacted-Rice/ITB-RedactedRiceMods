@@ -1,4 +1,4 @@
-local customSkill = more_plus.SkillTrait:new{
+local customSkill = cplus_plus_ex.baseClasses.SkillTrait:new{
 	id = "RrGuarded",
 	icon = "img/combat/icons/icon_guard.png",
 	name = "Guarded",

@@ -10,9 +10,31 @@ more_plus.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Core", more_plus.DEBUG)
 
-more_plus.SkillTrait = require(path.."skill_trait")
-more_plus.SkillActive = require(path.."skill_active")
-more_plus.SkillEffectModifier = require(path.."skill_effect_modifier")
+-- Convert CPLUS+ Ex phase enum to weaponPreview library enum
+function more_plus.convertPhase(phase)
+	local SkillEffectModifier = cplus_plus_ex.baseClasses.SkillEffectModifier
+	local weaponPreview = more_plus.libs.weaponPreview
+
+	if phase == SkillEffectModifier.PHASE_NONE then
+		return weaponPreview.STATE_NONE
+	elseif phase == SkillEffectModifier.PHASE_SKILL_EFFECT then
+		return weaponPreview.STATE_SKILL_EFFECT
+	elseif phase == SkillEffectModifier.PHASE_TARGET_AREA then
+		return weaponPreview.STATE_TARGET_AREA
+	elseif phase == SkillEffectModifier.PHASE_QUEUED_SKILL then
+		return weaponPreview.STATE_QUEUED_SKILL
+	elseif phase == SkillEffectModifier.PHASE_SECOND_TARGET_AREA then
+		return weaponPreview.STATE_SECOND_TARGET_AREA
+	elseif phase == SkillEffectModifier.PHASE_FINAL_EFFECT then
+		return weaponPreview.STATE_FINAL_EFFECT
+	elseif phase == SkillEffectModifier.PHASE_QUEUED_FINAL_EFFECT then
+		return weaponPreview.STATE_QUEUED_FINAL_EFFECT
+	end
+
+	-- Default to none if unknown
+	logger.logWarn(SUBMODULE, "Unknown phase: %s", tostring(phase))
+	return weaponPreview.STATE_NONE
+end
 
 -- Define group names as constants for easy reference
 more_plus.GROUPS = {

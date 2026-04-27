@@ -85,6 +85,8 @@ compatible with:
 ### Notes
 Major 2.0 release with 16 new skills!
 
+Moved skill base classes into CPLUS+
+
 New Skills:
 * Defensive (2) - Cheap Plating, Impervious
 * Movement (1) - Supporter

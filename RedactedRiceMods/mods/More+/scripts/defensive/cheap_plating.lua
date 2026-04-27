@@ -1,4 +1,4 @@
-local customSkill = more_plus.SkillEffectModifier:new{
+local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
 	id = "RrCheapPlating",
 	name = "Cheap Plating",
 	description = "The first attack each mission that would damage the piloted mech does -3 damage.",
@@ -32,7 +32,7 @@ end
 
 function customSkill:setupEffect()
 	-- Call parent setupEffect to subscribe to skill build events
-	more_plus.SkillEffectModifier.setupEffect(self)
+	cplus_plus_ex.baseClasses.SkillEffectModifier.setupEffect(self)
 
 	-- Reset first attack tracking on mission start
 	table.insert(customSkill.events, modApi.events.onMissionStart:subscribe(function()
@@ -42,10 +42,10 @@ function customSkill:setupEffect()
 	end))
 end
 
-function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spaceDamage, indexes, targetPawn)
+function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage, indexes, targetPawn)
 	-- Check if the target is taking damage
 	if source == self.SOURCE_TARGET and
-			spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and 
+			spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and
 			spaceDamage.iDamage ~= DAMAGE_ZERO then
 
 		initGameSaveData()
@@ -54,7 +54,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spac
 		-- Check if this pawn hasn't used their first attack reduction yet
 		if not GAME.more_plus.cheap_plating.used[pawnId] then
 			for _, idx in ipairs(indexes) do
-				more_plus.libs.weaponPreview.ExecuteWithState(previewState,
+				more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
 						function()
 							more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc,
 									more_plus.commonIcons.armor3.key.."_"..idx)

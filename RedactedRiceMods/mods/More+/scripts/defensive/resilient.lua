@@ -1,4 +1,4 @@
-local customSkill = more_plus.SkillActive:new{
+local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	id = "RrResilient",
 	name = "Resilient",
 	description = "Gain a shield each time the piloted mech is damaged after the attack completes.",

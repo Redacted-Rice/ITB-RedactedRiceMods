@@ -1,4 +1,4 @@
-local customSkill = more_plus.SkillActive:new{
+local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	id = "RrSupporter",
 	name = "Supporter",
 	description = "Piloted mech can teleport to tiles adjacent to allies.",
