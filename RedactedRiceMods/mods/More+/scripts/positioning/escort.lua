@@ -1,4 +1,4 @@
-local customSkill = more_plus.SkillActive:new{
+local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	id = "RrEscort",
 	name = "Escort",
 	description = "Shield adjacent allies when you move next to them or they move next to you.",
@@ -38,7 +38,7 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 				local shieldDamage = SpaceDamage(adjacentLoc, 0)
 				shieldDamage.iShield = EFFECT_CREATE
 				shieldDamage.sScript = string.format([[
-						more_plus.SkillActive.skills.RrEscort.shieldedPawns[%d] = true]],
+						cplus_plus_ex.baseClasses.SkillActive.skills.RrEscort.shieldedPawns[%d] = true]],
 						adjacentPawn:GetId())
 				skillEffect:AddDamage(shieldDamage)
 			end
@@ -63,7 +63,7 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 			local shieldDamage = SpaceDamage(p2, 0)
 			shieldDamage.iShield = EFFECT_CREATE
 			shieldDamage.sScript = string.format([[
-					more_plus.SkillActive.skills.RrEscort.shieldedPawns[%d] = true]],
+					cplus_plus_ex.baseClasses.SkillActive.skills.RrEscort.shieldedPawns[%d] = true]],
 					pawn:GetId())
 			skillEffect:AddDamage(shieldDamage)
 		end

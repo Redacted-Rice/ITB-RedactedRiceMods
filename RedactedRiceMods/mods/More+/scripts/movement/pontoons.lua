@@ -1,4 +1,4 @@
-local customSkill = more_plus.SkillActive:new{
+local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	id = "RrPontoons",
 	name = "Pontoons",
 	description = "Piloted mech floats on top of liquid tiles without being affected by them.",

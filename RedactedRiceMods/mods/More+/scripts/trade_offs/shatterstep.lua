@@ -1,4 +1,4 @@
-local customSkill = more_plus.SkillActive:new{
+local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	id = "RrShatterstep",
 	name = "Shatterstep",
 	description = "When moving, cracks the tile moved from.",
@@ -27,7 +27,7 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 				local damageC = SpaceDamage(p1, 0)
 				damageC.iCrack = EFFECT_CREATE
 				damageC.sScript = [[
-					more_plus.SkillActive.skills.RrShatterstep.moveStartPositions[]]..pawn:GetId()..[[] = ]] .. p1:GetString()
+					cplus_plus_ex.baseClasses.SkillActive.skills.RrShatterstep.moveStartPositions[]]..pawn:GetId()..[[] = ]] .. p1:GetString()
 				skillEffect:AddDamage(damageC)
 				logger.logDebug(SUBMODULE, "Will crack %s when pawn %d moves", p1:GetString(), pawn:GetId())
 			else

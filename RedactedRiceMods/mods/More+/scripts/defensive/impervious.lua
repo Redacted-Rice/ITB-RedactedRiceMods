@@ -1,4 +1,4 @@
-local customSkill = more_plus.SkillEffectModifier:new{
+local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
 	id = "RrImpervious",
 	name = "Impervious",
 	description = "Piloted mech is immune to self and friendly, non-instakill damage (direct damage from attack only).",
@@ -12,15 +12,15 @@ local SUBMODULE = logger.register("More+", "Impervious", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spaceDamage, indexes, targetPawn)
+function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage, indexes, targetPawn)
 	-- Only process if attacker is an ally (but not self) and target is taking damage
 	if source == self.SOURCE_TARGET and attackingPawn and
-			attackingPawn:GetTeam() == TEAM_PLAYER and spaceDamage.iDamage > 0 and 
+			attackingPawn:GetTeam() == TEAM_PLAYER and spaceDamage.iDamage > 0 and
 			spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
 
 		-- Show icon
 		for _, idx in ipairs(indexes) do
-			more_plus.libs.weaponPreview.ExecuteWithState(previewState,
+			more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
 					function()
 						more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc,
 								more_plus.commonIcons.noDamage.key.."_"..idx)

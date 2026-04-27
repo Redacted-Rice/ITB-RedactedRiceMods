@@ -1,7 +1,7 @@
 local XP_LOSS = 2
 local XP_LOSS_PING_COLOR = GL_Color(200, 50, 50)
 
-local customSkill = more_plus.SkillActive:new{
+local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	id = "RrHotHeaded",
 	name = "Hot Headed",
 	description = "Gain Boost every other turn but loses 2 XP per kill (can't level down from this).",

@@ -1,6 +1,6 @@
 local GRID_DEF_PER_ENEMY = 3
 
-local customSkill = more_plus.SkillActive:new{
+local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	id = "RrDefiant",
 	name = "Defiant",
 	description = "+"..GRID_DEF_PER_ENEMY.." grid defense per enemy on the board.",

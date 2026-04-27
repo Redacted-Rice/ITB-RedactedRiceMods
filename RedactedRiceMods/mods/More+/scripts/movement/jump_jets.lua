@@ -1,4 +1,4 @@
-local customSkill = more_plus.SkillActive:new{
+local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	id = "RrJumpJets",
 	name = "Jump Jets",
 	description = "Piloted Mech can jump with -1 move as its movement.",
@@ -107,9 +107,9 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 					replacedMovement = true
 				end
 			end
-			
+
 			if not replacedMovement then
-				logger.logDebug(SUBMODULE, "No movement to modify; Adding jump from %s to %s", 
+				logger.logDebug(SUBMODULE, "No movement to modify; Adding jump from %s to %s",
 						p1:GetString(), p2:GetString())
 				-- Replace first movement with leap
 				local leapPath = PointList()

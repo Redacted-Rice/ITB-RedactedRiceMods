@@ -1,4 +1,4 @@
-local customSkill = more_plus.SkillActive:new{
+local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	id = "RrRally",
 	name = "Rally",
 	description = "Boost adjacent allies when you move next to them or they move next to you.",
@@ -42,7 +42,7 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 
 				local boostDamage = SpaceDamage(adjacentLoc, 0)
 				boostDamage.sScript = string.format([[
-						more_plus.SkillActive.skills.RrRally.boostedPawns[%d] = true
+						cplus_plus_ex.baseClasses.SkillActive.skills.RrRally.boostedPawns[%d] = true
 						Board:GetPawn(%d):SetBoosted(true)]],
 						adjacentPawn:GetId(), adjacentPawn:GetId())
 				skillEffect:AddDamage(boostDamage)
@@ -73,7 +73,7 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 
 			local boostDamage = SpaceDamage(p2, 0)
 			boostDamage.sScript = string.format([[
-					more_plus.SkillActive.skills.RrRally.boostedPawns[%d] = true
+					cplus_plus_ex.baseClasses.SkillActive.skills.RrRally.boostedPawns[%d] = true
 					Board:GetPawn(%d):SetBoosted(true)]],
 					pawn:GetId(), pawn:GetId())
 			skillEffect:AddDamage(boostDamage)

@@ -1,4 +1,4 @@
-local customSkill = more_plus.SkillActive:new{
+local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	id = "RrUrban",
 	name = "Urban",
 	description = "Gain a shield when moving adjacent to a building.",
@@ -37,7 +37,7 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 				local shieldDamage = SpaceDamage(p2, 0)
 				shieldDamage.iShield = EFFECT_CREATE
 				shieldDamage.sScript = [[
-						more_plus.SkillActive.skills.RrUrban.shieldedPawns[]]..pawn:GetId()..[[] = true]]
+						cplus_plus_ex.baseClasses.SkillActive.skills.RrUrban.shieldedPawns[]]..pawn:GetId()..[[] = true]]
 				skillEffect:AddDamage(shieldDamage)
 			else
 				logger.logDebug(SUBMODULE, "No shield - not adjacent to building or already shielded")

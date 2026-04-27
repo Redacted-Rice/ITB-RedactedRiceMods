@@ -1,6 +1,6 @@
 local MIN_DISTANCE = 4
 
-local customSkill = more_plus.SkillActive:new{
+local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	id = "RrMomentum",
 	name = "Momentum",
 	description = "Gain boosted after moving at least 4 tiles.",
@@ -61,7 +61,7 @@ function customSkill:momentumTriggered(pawnId, p1, p2, effect)
 				more_plus.libs.weaponPreview:AddAnimation(p2,
 						more_plus.commonIcons.boost.key.."_1")
 			end)
-		effect:AddScript([[more_plus.SkillActive.skills.RrMomentum.notPreBoosted[]]..pawnId..[[] = true
+		effect:AddScript([[cplus_plus_ex.baseClasses.SkillActive.skills.RrMomentum.notPreBoosted[]]..pawnId..[[] = true
 						Board:GetPawn(]]..pawnId..[[):SetBoosted(true)]])
 		logger.logDebug(SUBMODULE, "Will apply boosted to pawn %d moving %d tiles", pawnId, distance)
 	end

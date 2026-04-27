@@ -1,4 +1,4 @@
-local customSkill = more_plus.SkillEffectModifier:new{
+local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
 	id = "RrFocused",
 	name = "Focused Strike",
 	description = "Doubles damage to enemies if the piloted mech has not used its movement.",
@@ -16,7 +16,7 @@ local SUBMODULE = logger.register("More+", "FocusedStrike", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spaceDamage, indexes, targetPawn)
+function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage, indexes, targetPawn)
 	if source ~= self.SOURCE_ATTACKER then
 		return nil
 	end
@@ -32,7 +32,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spac
 			spaceDamage.iDamage ~= DAMAGE_ZERO then
 		for _, idx in ipairs(indexes) do
 			logger.logDebug(SUBMODULE, "Adding icon for %s with idx %d", spaceDamage.loc:GetString(), idx)
-			more_plus.libs.weaponPreview.ExecuteWithState(previewState,
+			more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
 					function()
 						more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc,
 								more_plus.commonIcons.crit.key.."_"..idx)

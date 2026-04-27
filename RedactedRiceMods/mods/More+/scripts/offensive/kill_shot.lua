@@ -1,4 +1,4 @@
-local customSkill = more_plus.SkillEffectModifier:new{
+local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
 	id = "RrKillShot",
 	name = "Kill Shot",
 	description = "+1 damage to enemies that would be killed by the extra damage.",
@@ -16,7 +16,7 @@ local SUBMODULE = logger.register("More+", "KillShot", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spaceDamage, indexes, targetPawn)
+function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage, indexes, targetPawn)
 	local numInstances = #indexes
 
 	if source == self.SOURCE_ATTACKER and targetPawn and
@@ -30,8 +30,8 @@ function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spac
 		local hasArmor = targetPawn:IsArmor()
 
 		local resultDamage = baseDamage + totalBonusDamage
-		
-		if hasBoosted then 
+
+		if hasBoosted then
 			resultDamage = resultDamage + 1
 		end
 		if hasAcid then
@@ -41,12 +41,12 @@ function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spac
 		elseif hasArmor then
 			resultDamage = resultDamage - 1
 		end
-		
+
 		local wouldKillWithExtra = currentHealth <= resultDamage
 		if wouldKillWithExtra then
 			for _, idx in ipairs(indexes) do
 				logger.logDebug(SUBMODULE, "Adding icon for %s with idx %d", spaceDamage.loc:GetString(), idx)
-				more_plus.libs.weaponPreview.ExecuteWithState(previewState,
+				more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
 						function()
 							more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc,
 									more_plus.commonIcons.extraDamage.key.."_"..idx)

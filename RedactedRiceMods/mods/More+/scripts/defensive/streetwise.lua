@@ -1,4 +1,4 @@
-local customSkill = more_plus.SkillEffectModifier:new{
+local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
 	id = "RrStreetwise",
 	name = "Streetwise",
 	description = "Prevents (not-instakill) damage to buildings from piloted mech's attacks (direct damage from attack only).",
@@ -12,17 +12,17 @@ local SUBMODULE = logger.register("More+", "Streetwise", customSkill.DEBUG)
 
 customSkill:addCustomTrait()
 
-function customSkill:modifySpaceDamage(source, attackingPawn, previewState, spaceDamage, indexes, targetPawn)
+function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage, indexes, targetPawn)
 	if source == self.SOURCE_ATTACKER then
 		return nil
 	end
-	
+
 	if Board:IsBuilding(spaceDamage.loc) and spaceDamage.iDamage > 0 and
 			spaceDamage.iDamage ~= DAMAGE_DEATH then
 
 		for _, idx in ipairs(indexes) do
 			logger.logDebug(SUBMODULE, "Adding icon for building at %s with idx %d", spaceDamage.loc:GetString(), idx)
-			more_plus.libs.weaponPreview.ExecuteWithState(previewState,
+			more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
 					function()
 						more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc,
 								more_plus.commonIcons.noDamage.key.."_"..idx)

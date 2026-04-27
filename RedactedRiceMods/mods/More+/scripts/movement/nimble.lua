@@ -1,4 +1,4 @@
-local customSkill = more_plus.SkillActive:new{
+local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	id = "RrNimble",
 	name = "Nimble",
 	description = "Piloted mech can move onto and through buildings and mountains.",
