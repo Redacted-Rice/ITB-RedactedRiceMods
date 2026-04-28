@@ -15,6 +15,7 @@ StarWars_CannonTurrets = TankDefault:new{
 	ImpactSound = "/impact/generic/ricochet",
 	-- seems to  be the value that gets them pretty flat in all cases
 	ArtilleryHeight = -5,
+	ArtilleryHeightLock = true,
 	Range = 2,
 	SpecialTargets = false,
 
