@@ -128,6 +128,7 @@ return {
 	Mission_Snowstorm_FrozenVek = {"The cold has stopped them cold!"},
 	Mission_Shields_Down = {"Enemy shields are down!"},
 
-	-- Luke's custom pilot ability dialog (only this one is custom for the mod)
-	Luke_ForceFocus_Used = {"The Force guides my movements.", "I can see what needs to be done.", "Trust in the Force."},
+	-- Luke's custom pilot ability dialog
+	Luke_ForceFocused = {"I can feel it... the Force is with me", "Trust in the Force", "Use the Force."},
+	Luke_ForceFocus_Used = {"The Force guides my movements.", "I can see what needs to be done.", "This ends now!"},
 }

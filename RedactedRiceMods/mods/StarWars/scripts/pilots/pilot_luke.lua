@@ -15,34 +15,25 @@ local pilot = {
 
 local dialog = require(path .. "scripts/pilots/dialog_luke")
 
+-- Register Force Focus icon animation
+local function registerForceFocusIcon()
+	local iconImg = "combat/icons/icon_sw_force_focus.png"
+	ANIMS["sw_force_focus"] = ANIMS.Animation:new{
+		Image = iconImg,
+		NumFrames = 1,
+		Time = 1,
+		Loop = true,
+		PosX = -25, -- TODO: Adjust
+		PosY = 11
+	}
+end
+
 function this:GetPilot()
 	return pilot
 end
 
-function this:init(mod)
-	-- Create the pilot
-	CreatePilot(pilot)
-
-	-- Add skill tooltip if pilotSkill_tooltip library is available
-	mod.libs.pilotSkill_tooltip.Add(
-		pilot.Skill,
-		PilotSkill(
-			"Force Focus",
-			"First attack deals double damage if they did not attack last turn."
-		)
-	)
-end
-
-function this:load(modApiExt, options)
-	-- Add ruled dialogs for Luke specific situations if needed
-	modApiExt.dialog:addRuledDialog("Luke_ForceFocus_Used", {
-			Odds = 75,
-			{ main = "Luke_ForceFocus_Used" },
-	})
-end
-
 -- Initialize GAME save data structure
-local function initGameSaveData()
+function this:initGameSaveData()
 	if GAME == nil then
 		GAME = {}
 	end
@@ -51,88 +42,149 @@ local function initGameSaveData()
 		GAME.starwars_luke = {}
 	end
 
-	if GAME.starwars_luke.attacked_this_turn == nil then
-		GAME.starwars_luke.attacked_this_turn = {}
+	if GAME.starwars_luke.force_focused == nil then
+		GAME.starwars_luke.force_focused = {}
+	end
+end
+
+-- Luke's Force Focus Repair Skill
+Luke_ForceFocus_Repair = Skill_Repair:new{
+	Name = "Force Focus",
+	Description = "Repair, gain boost, and deal double damage next turn",
+	TipImage = {
+		Unit = Point(2, 2),
+		Target = Point(2, 2),
+	}
+}
+
+function Luke_ForceFocus_Repair:GetSkillEffect(p1, p2)
+	-- We can't use the base repair effect so manually
+	-- create it
+	local ret = SkillEffect()
+	local repairDamage = SpaceDamage(p2, -1)
+	if Board:IsAcid(p1) then
+		repairDamage.iFire = EFFECT_REMOVE
+	end
+	if Board:IsAcid(p1) then
+		repairDamage.iAcid = EFFECT_REMOVE
 	end
 
-	if GAME.starwars_luke.attacked_last_turn == nil then
-		GAME.starwars_luke.attacked_last_turn = {}
+	-- Add Force Focus icon animation
+	WeaponPreview:AddAnimation(p1, "sw_force_focus")
+
+	repairDamage.sScript = repairDamage.sScript .. [[
+			local pawnId = ]] .. Board:GetPawn(p1):GetId() .. [[
+			-- Initialize data
+			Pilot_Luke_Ref:initGameSaveData()
+
+			GAME.starwars_luke.force_focused[pawnId] = true
+
+			-- trigger a dialog
+			local cast = { main = pawnId }
+			modapiext.dialog:triggerRuledDialog("Luke_ForceFocused", cast)
+			
+			modApi:runLater(function() 
+				Board:GetPawn(pawnId):SetBoosted(true)
+			end)
+	]]
+	ret:AddDamage(repairDamage)
+	
+	return ret
+end
+
+-- Skill build hook to double damage when force focused
+local function onLukeSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect)
+	-- If luke is not the pilot, then return
+	if not pawn or not pawn:IsAbility(pilot.Skill) then
+		return
 	end
+
+	Pilot_Luke_Ref:initGameSaveData()
+	local pawnId = pawn:GetId()
+
+	-- Check if this pawn is force focused
+	if GAME.starwars_luke.force_focused[pawnId] then
+		-- Double all damage in the skill effect and add Force Focus icon
+		local hasDoubledDamage = false
+
+		for i = 1, skillEffect.effect:size() do
+			local spaceDamage = skillEffect.effect:index(i)
+			if spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and
+					spaceDamage.iDamage ~= DAMAGE_ZERO then
+				spaceDamage.iDamage = spaceDamage.iDamage * 2
+				hasDoubledDamage = true
+				WeaponPreview:AddAnimation(spaceDamage.loc, "sw_force_focus")
+			end
+		end
+
+		-- Trigger dialog if we actually doubled some damage
+		if hasDoubledDamage then
+			local firstDamage = skillEffect.effect:index(1)
+			if firstDamage then
+				firstDamage.sScript = (firstDamage.sScript or "") .. [[
+					local cast = { main = ]]..pawnId..[[ }
+					modapiext.dialog:triggerRuledDialog("Luke_ForceFocus_Used", cast)
+				]]
+			end
+		end
+	end
+end
+
+function this:init(mod)
+	-- Register Force Focus icon animation
+	registerForceFocusIcon()
+
+	-- Create the pilot
+	CreatePilot(pilot)
+
+	-- Add skill tooltip if pilotSkill_tooltip library is available
+	mod.libs.pilotSkill_tooltip.Add(
+		pilot.Skill,
+		PilotSkill(
+			"Force Focus",
+			"When repairing, gain boosted and next turn your attacks deal double damage."
+		)
+	)
+
+	-- Add the modified repair skill
+	ReplaceRepair:addSkill({
+		weapon = "Luke_ForceFocus_Repair",
+		icon = "img/weapons/luke_repair.png",
+		IsActive = function(pawn)
+			return pawn:IsAbility("Luke_ForceFocus")
+		end
+	})
+end
+
+function this:load(modApiExt, options)
+	-- Add ruled dialogs for Luke
+	modApiExt.dialog:addRuledDialog("Luke_ForceFocused", {
+			Odds = 75,
+			{ main = "Luke_ForceFocused" },
+	})
+	modApiExt.dialog:addRuledDialog("Luke_ForceFocus_Used", {
+			Odds = 75,
+			{ main = "Luke_ForceFocus_Used" },
+	})
 end
 
 local function onModsLoaded()
 	-- Hook into mission start to reset tracking
 	modApi:addMissionStartHook(function(mission)
-		initGameSaveData()
-		GAME.starwars_luke.attacked_this_turn = {}
-		GAME.starwars_luke.attacked_last_turn = {}
-		for id = 0, 2 do
-			GAME.starwars_luke.attacked_this_turn[id] = true
-		end
+		Pilot_Luke_Ref:initGameSaveData()
+		GAME.starwars_luke.force_focused = {}
 	end)
 
 	modApi:addNextTurnHook(function(mission)
 		if Game:GetTeamTurn() == TEAM_PLAYER then
-			initGameSaveData()
-			-- Copy current turn's attack status to last turn
-			GAME.starwars_luke.attacked_last_turn = {}
-			for pawnId, attacked in pairs(GAME.starwars_luke.attacked_this_turn) do
-				GAME.starwars_luke.attacked_last_turn[pawnId] = attacked
-			end
-			-- Reset this turn's tracking
-			GAME.starwars_luke.attacked_this_turn = {}
+			Pilot_Luke_Ref:initGameSaveData()
+			-- Clear force focus flags at start of turn
+			GAME.starwars_luke.force_focused = {}
 		end
 	end)
 
-	modapiext:addSkillStartHook(function(mission, pawn, weaponId, p1, p2)
-		if weaponId == "Move" or not pawn or not pawn:IsAbility(pilot.Skill) then
-			return
-		end
-
-		initGameSaveData()
-		local pawnId = pawn:GetId()
-
-		-- Mark that this pawn attacked this turn
-		GAME.starwars_luke.attacked_this_turn[pawnId] = true
-	end)
-
-	-- Hook to modify damage output (double damage if didn't attack last turn)
-	modapiext:addSkillBuildHook(function(mission, pawn, weaponId, p1, p2, skillEffect)
-		if weaponId  == "Move" or not pawn or not pawn:IsAbility(pilot.Skill) then
-			return
-		end
-		
-		initGameSaveData()
-		local pawnId = pawn:GetId()
-		
-		-- Check if this pawn didn't attack last turn
-		if not GAME.starwars_luke.attacked_last_turn[pawnId] then
-			-- Double all damage in the skill effect
-			local hasDoubledDamage = false
-
-			for i = 1, skillEffect.effect:size() do
-				local spaceDamage = skillEffect.effect:index(i)
-				if spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and 
-						spaceDamage.iDamage ~= DAMAGE_ZERO then
-					spaceDamage.iDamage = spaceDamage.iDamage * 2
-					hasDoubledDamage = true
-				end
-			end
-			
-			-- Trigger dialog if we actually doubled some damage
-			if hasDoubledDamage then
-				-- Add script to trigger the dialog during execution
-				-- Use AddScript on the first damage space to trigger it
-				local firstDamage = skillEffect.effect:index(1)
-				if firstDamage then
-					firstDamage.sScript = firstDamage.sScript .. [[
-						local cast = { main = ]]..pawnId..[[ }
-						modapiext.dialog:triggerRuledDialog("Luke_ForceFocus_Used", cast)
-					]]
-				end
-			end
-		end
-	end)
+	-- Hook to modify damage output
+	modapiext:addSkillBuildHook(onLukeSkillBuild)
 end
 
 -- Add personality with dialog
@@ -143,4 +195,5 @@ Personality[pilot.Personality] = personality
 -- Subscribe to events
 modApi.events.onModsLoaded:subscribe(onModsLoaded)
 
-return this
+Pilot_Luke_Ref = this
+return Pilot_Luke_Ref

@@ -1,5 +1,5 @@
 
-local VERSION = "1.2.0"
+local VERSION = "1.2.1"
 ---------------------------------------------------
 -- Artillery Arc - code library
 --
@@ -59,12 +59,19 @@ local isNewestVersion = false
 if isNewestVersion then
 	ArtilleryArc = ArtilleryArc or {}
 	ArtilleryArc.version = VERSION
+	ArtilleryArc.activeWeapon = nil
 
 	local function resetArtilleryHeight()
-		Values.y_velocity = DEFAULT_HEIGHT
+		if ArtilleryArc.activeWeapon == nil then
+			Values.y_velocity = DEFAULT_HEIGHT
+		end
 	end
 
 	local function setSkillArtilleryHeight(skill)
+		if ArtilleryArc.activeWeapon ~= nil then
+			return
+		end
+		
 		local artilleryHeight
 		if type(skill.GetArtilleryHeight) == 'function' then
 			artilleryHeight = skill:GetArtilleryHeight()
@@ -95,7 +102,21 @@ if isNewestVersion then
 		resetArtilleryHeight()
 	end
 
+	ArtilleryArc.onSkillStart = function(mission, pawn, weaponId, p1, p2)
+		local skill = _G[weaponId]
+		if skill then
+			setSkillArtilleryHeight(skill)
+			if skill.ArtilleryHeightLock then
+				ArtilleryArc.activeWeapon = weaponId
+			end
+		end
+	end
+
 	ArtilleryArc.onSkillEnd = function(mission, pawn, weaponId, p1, p2)
+		if ArtilleryArc.activeWeapon == weaponId then
+			ArtilleryArc.activeWeapon = nil
+		end
+		
 		local hoveredSkill = modApi:getHoveredSkill()
 		if hoveredSkill then return end
 
@@ -132,6 +153,7 @@ if isNewestVersion then
 	function ArtilleryArc:finalizeInit()
 		weaponArmed.events.onWeaponArmed:subscribe(self.onWeaponArmed)
 		weaponArmed.events.onWeaponUnarmed:subscribe(self.onWeaponUnarmed)
+		modApiExt.events.onSkillStart:subscribe(self.onSkillStart)
 		modApiExt.events.onSkillEnd:subscribe(self.onSkillEnd)
 		modApi.events.onTipImageShown:subscribe(self.onTipImageShown)
 		modApi.events.onTipImageHidden:subscribe(self.onTipImageHidden)
