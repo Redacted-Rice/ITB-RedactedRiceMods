@@ -21,7 +21,7 @@ Please enjoy and contact us if you run into any issues!
 * RebalanceCore+ - v1.0.2 - Reblances the core vanilla level up skills (other than reactor) so they are not strictly worse than the AE ones
 
 # Libs
-* BoardUtils - v1.3.0 - Board related functions and pathing
+* BoardUtils - v1.4.0 - Board related functions and pathing
 * PassiveEffect - v1.4.0 - Helps with adding passive weapons to the game. This will handle automatically detecting if the weapon is powered and only call hooks when it is
 * PawnTypeUtils - v1.1.0 - Functions to allow determining more detailed pawn types (using EasyEdit)
 * PredictableRandom - v1.2.0 - Get random numbers in a way that is repeatable for when undoing moves or resetting turns
@@ -44,7 +44,7 @@ Major More+ 2.0 release with 16 new pilot skills!
 
 Updates to several libraries and minor fixes to other mods
 
-Released: 04/23/2026
+Released: 05/01/2026
 
 Squads:
 * Treeherders    3.1.1
@@ -55,7 +55,7 @@ Other Mods:
 * RebalanceCore+ 1.0.2
 
 Libs:
-* BoardUtils        1.3.0
+* BoardUtils        1.4.0
 * PassiveEffect     1.4.0
 * PawnTypeUtils     1.1.0
 * PredictableRandom 1.2.0

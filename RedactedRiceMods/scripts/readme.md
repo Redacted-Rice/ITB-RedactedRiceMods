@@ -13,7 +13,12 @@ Please enjoy and contact us if you run into any issues!
 # Releases:
 
 ## BoardUtils
-Current Release: 1.3.0
+Current Release: 1.4.0
+
+### 1.4.0
+Released: 05/01/2026
+
+Added functions for tracking pawns
 
 ### 1.3.0
 Released: 03/30/2026

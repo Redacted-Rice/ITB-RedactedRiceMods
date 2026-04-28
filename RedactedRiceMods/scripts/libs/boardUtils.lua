@@ -2,11 +2,10 @@
 BoardUtils - Utilities related to board, pathing, and movement
 
 Author: Das Keifer of Redacted Rice
-Version: 1.3.0
 Discord Server: https://discord.gg/CNjTVrpN4v
 ]]
 
-local VERSION = "1.3.0"
+local VERSION = "1.4.0"
 
 -- Version check
 local isNewestVersion = false
@@ -293,11 +292,30 @@ if isNewestVersion then
 		return adjacent
 	end
 
+	-- Last Acted Pawn Tracking
+	-- Tracks the last pawn that performed an action for use by skills that need to reference it
+	BoardUtils.lastActed = nil
+
+	function BoardUtils.setLastActed(pawn)
+		BoardUtils.lastActed = pawn
+	end
+
+	function BoardUtils.unsetLastActed()
+		BoardUtils.lastActed = nil
+	end
+
 	function BoardUtils:init()
 		-- Initialize event subscriptions
 		modapiext.events.onPawnUndoMove:subscribe(function(mission, pawn, undonePosition)
 			BoardUtils.clearHijackedPath()
 		end)
+
+		-- Setup last acted pawn tracking
+		modapiext.events.onSkillStart:subscribe(function(mission, pawn) BoardUtils.setLastActed(pawn) end)
+		modapiext.events.onFinalEffectStart:subscribe(function(mission, pawn) BoardUtils.setLastActed(pawn) end)
+		modapiext.events.onQueuedSkillStart:subscribe(function(mission, pawn) BoardUtils.setLastActed(pawn) end)
+		modapiext.events.onQueuedFinalEffectStart:subscribe(function(mission, pawn) BoardUtils.setLastActed(pawn) end)
+		modApi.events.onSaveGame:subscribe(function() BoardUtils.unsetLastActed() end)
 	end
 else
 	LOG("BoardUtils: Skipping version " .. VERSION .. " (already have " .. BoardUtils.version .. ")")
