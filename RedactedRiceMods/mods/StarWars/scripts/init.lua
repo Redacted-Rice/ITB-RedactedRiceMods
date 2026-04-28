@@ -16,9 +16,10 @@ function mod:init()
 	for libId, lib in pairs(mod_loader.mods.redactedrice_libs.libs) do
 		self.libs[libId] = lib
 	end
-
-	require(self.scriptPath .. "libs/weaponArmed")
-	require(self.scriptPath .. "libs/artilleryArc")
+	
+	-- Load replace repair
+	require(self.scriptPath .. "replaceRepair/api")
+	
 	self.libs.pilotSkill_tooltip = require(self.scriptPath .. "libs/pilotSkill_tooltip")
 	self.libs.personality = require(self.scriptPath .. "libs/personality")
 

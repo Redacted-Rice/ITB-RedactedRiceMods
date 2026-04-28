@@ -20,6 +20,7 @@ local mod =  {
 }
 
 local libs = {
+	"weaponArmed",
 	"boardUtils",
 	"pawnTypeUtils",
 	"passiveEffect",
@@ -39,6 +40,9 @@ function mod:init(options)
 			self.libs[libId]:init()
 		end
 	end
+
+	-- ArtilleryArc behaves a bit differentluyy
+	require(path.."libs/artilleryArc")
 
     -- add modApiExt as well
 	self.libs.modApiExt = modapiext
