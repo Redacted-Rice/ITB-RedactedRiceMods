@@ -29,14 +29,14 @@ a.sw_snowspeederw_broken = a.MechUnit:new{Image = "units/player/sw_snowspeeder_w
 a.sw_snowspeeder_ns =      a.MechIcon:new{Image = "units/player/sw_snowspeeder_ns.png" }
 
 
-StarWars_SnowSpeederMech = Pawn:new{	
+StarWars_SnowSpeederMech = Pawn:new{
 	Name = "Snow Speeder",
 	Class = "Brute",
 	Health = 2,
 	MoveSpeed = 4,
 	Image = "sw_snowspeeder",
 	ImageOffset = squadColors,
-	SkillList = { "StarWars_PairedCannons" },
+	SkillList = { "StarWars_PairedCannons", "StarWars_TowCable" },
 	SoundLocation = "/mech/science/pulse_mech/",
 	DefaultTeam = TEAM_PLAYER,
 	ImpactMaterial = IMPACT_METAL,

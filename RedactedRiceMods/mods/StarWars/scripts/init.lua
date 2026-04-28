@@ -16,12 +16,12 @@ function mod:init()
 	for libId, lib in pairs(mod_loader.mods.redactedrice_libs.libs) do
 		self.libs[libId] = lib
 	end
-	
+
 	require(self.scriptPath .. "libs/weaponArmed")
 	require(self.scriptPath .. "libs/artilleryArc")
 	self.libs.pilotSkill_tooltip = require(self.scriptPath .. "libs/pilotSkill_tooltip")
 	self.libs.personality = require(self.scriptPath .. "libs/personality")
- 
+
 	-- Assets
 	require(self.scriptPath .. "images")
 	require(self.scriptPath .. "palettes")
@@ -40,10 +40,19 @@ function mod:init()
 
 	require(self.scriptPath .. "weapons/sw_paired_cannons")
 	modApi:addWeaponDrop("StarWars_PairedTurrets")
-	
+
 	require(self.scriptPath .. "weapons/sw_proton_torpedo")
 	modApi:addWeaponDrop("StarWars_ProtonTorpedo")
-	
+
+	require(self.scriptPath .. "weapons/sw_rebel_hope")
+	modApi:addWeaponDrop("StarWars_RebelHope")
+
+	require(self.scriptPath .. "weapons/sw_cannon_array")
+	modApi:addWeaponDrop("StarWars_CannonArray")
+
+	require(self.scriptPath .. "weapons/sw_tow_cable")
+	modApi:addWeaponDrop("StarWars_TowCable")
+
 	-- Pilots
 	local pilots = require(self.scriptPath .. "pilots/init")
 	pilots:init()
