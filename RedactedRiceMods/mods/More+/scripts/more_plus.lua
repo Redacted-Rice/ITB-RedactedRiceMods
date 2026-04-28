@@ -117,26 +117,6 @@ function more_plus:scanAndReadSkillFiles()
 	logger.logDebug(SUBMODULE, "Found %d skills in %d categories", numSkills, numCats)
 end
 
-function more_plus:setLastActed(pawn)
-	self.lastActed = pawn
-	logger.logDebug(SUBMODULE, "SET PAWN %d", pawn:GetId())
-end
-
-function more_plus:unsetLastActed()
-	if self.lastActed then
-		logger.logDebug(SUBMODULE, "UNSET PAWN %d", self.lastActed:GetId())
-		self.lastActed = nil
-	end
-end
-
-more_plus.lastActed = nil
-function more_plus:setupLastActedTracking()
-	modapiext.events.onSkillStart:subscribe(function(mission, pawn) self:setLastActed(pawn) end)
-	modapiext.events.onFinalEffectStart:subscribe(function(mission, pawn) self:setLastActed(pawn) end)
-	modapiext.events.onQueuedSkillStart:subscribe(function(mission, pawn) self:setLastActed(pawn) end)
-	modapiext.events.onQueuedFinalEffectStart:subscribe(function(mission, pawn) self:setLastActed(pawn) end)
-	modApi.events.onSaveGame:subscribe(function() self:unsetLastActed() end)
-end
 
 function more_plus:folderToDisplayName(str)
     -- underscores to spaces
@@ -189,9 +169,6 @@ end
 function more_plus:init()
 	modApi:appendAssets("img/combat/icons/", "img/combat/icons/")
 	self:addCommonCustomImages()
-	self:setupLastActedTracking()
-	self.SkillTrait:baseInit()
-	self.SkillActive:baseInit()
 
 	logger.logDebug(SUBMODULE, "Loading libraries...")
 	require(path .. "libs/customAnim")

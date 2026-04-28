@@ -24,17 +24,17 @@ end
 
 function customSkill.killedPawn(mission, pawn)
 	--[[LOG("PAWN KILLED! "..pawn:GetId())
-	if more_plus.lastActed then
-		LOG("KILLER! "..more_plus.lastActed:GetId())
+	if BoardUtils.lastActed then
+		LOG("KILLER! "..BoardUtils.lastActed:GetId())
 	end]]--
-	if more_plus.lastActed and pawn:IsEnemy() then
+	if BoardUtils.lastActed and pawn:IsEnemy() then
 		customSkill.pawnWasKilled = true
 	end
 end
 
 function customSkill.xpAwarded(pilot, changes)
-	if changes.xp and customSkill.pawnWasKilled and more_plus.lastActed then
-		if more_plus.lastActed:GetPilot() == pilot then
+	if changes.xp and customSkill.pawnWasKilled and BoardUtils.lastActed then
+		if BoardUtils.lastActed:GetPilot() == pilot then
 			--LOG("PILOT MATCH!")
 			if pilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot) then
 				customSkill.pawnWasKilled = false
@@ -42,8 +42,8 @@ function customSkill.xpAwarded(pilot, changes)
 				local xp = changes.xp.new
 				xpLoss = math.min(xp, XP_LOSS)
 				if xpLoss > 0 and pilot:getLevel() ~= 2 then
-					Board:AddAlert(more_plus.lastActed:GetSpace(), "HOT HEADED -".. xpLoss.." XP")
-					Board:Ping(more_plus.lastActed:GetSpace(), XP_LOSS_PING_COLOR)
+					Board:AddAlert(BoardUtils.lastActed:GetSpace(), "HOT HEADED -".. xpLoss.." XP")
+					Board:Ping(BoardUtils.lastActed:GetSpace(), XP_LOSS_PING_COLOR)
 					pilot:setXp(xp - xpLoss)
 				end
 			end
