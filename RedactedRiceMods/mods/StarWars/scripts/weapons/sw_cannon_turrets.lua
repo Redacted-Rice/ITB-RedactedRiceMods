@@ -5,8 +5,8 @@ StarWars_CannonTurrets = TankDefault:new{
 	Damage = 1,
 	PowerCost = 1,
 	Upgrades = 2,
-	UpgradeCost = {2,2},
-	
+	UpgradeCost = {2,1},
+
 	Icon = "weapons/science_sw_cannon_turrets.png",
 	Explosion = "",
 	Projectile1 = "effects/shot_sw_dual_red_split_1.png",
@@ -14,10 +14,10 @@ StarWars_CannonTurrets = TankDefault:new{
 	FireSound = "/weapons/ricochet",
 	ImpactSound = "/impact/generic/ricochet",
 	-- seems to  be the value that gets them pretty flat in all cases
-	ArtilleryHeight = -5, 
+	ArtilleryHeight = -5,
 	Range = 2,
 	SpecialTargets = false,
-	
+
     TipImage = {
 		Unit = Point(2,2),
 		Enemy = Point(2,1),
@@ -29,7 +29,7 @@ StarWars_CannonTurrets = TankDefault:new{
 		Second_Click = Point(1,2),
 	},
 }
-			
+
 Weapon_Texts.StarWars_CannonTurrets_Upgrade1 = "+1 Range"
 StarWars_CannonTurrets_A = StarWars_CannonTurrets:new{
 	UpgradeDescription = "",
@@ -66,13 +66,13 @@ end
 
 function StarWars_CannonTurrets:addDoubleShot(skillEffect, p1, target, double)
 	local damage = self.Damage
-	if double then 
+	if double then
 		damage = damage * 2
 		local third = SpaceDamage(target)
 		local fourth = SpaceDamage(target)
 		third.bHidePath = true
 		fourth.bHidePath = true
-		
+
 		skillEffect:AddSound(self.FireSound)
 		skillEffect:AddArtillery(third, self.Projectile1, 0.035)
 		skillEffect:AddSound(self.FireSound)
@@ -82,7 +82,7 @@ function StarWars_CannonTurrets:addDoubleShot(skillEffect, p1, target, double)
 	local second = SpaceDamage(target, damage)
 	first.bHidePath = true
 	second.bHidePath = true
-	
+
 	skillEffect:AddSound(self.FireSound)
 	skillEffect:AddArtillery(first, self.Projectile1, 0.035)
 	skillEffect:AddSound(self.FireSound)
@@ -93,11 +93,11 @@ end
 function StarWars_CannonTurrets:MakeSkillEffect(p1, p2, p3)
 	local ret = SkillEffect()
 	local targets = self:GetTargetArea(p1)
-	
+
 	local extraHitDone = false
 	for _, p in ipairs(extract_table(targets)) do
 		if p ~= p3 and Board:IsValid(p) and Board:GetPawn(p) and Board:GetPawn(p):IsEnemy() then
-			
+
 			if self.TwoClick and p == p2 then
 				self:addDoubleShot(ret, p1, p, true)
 				extraHitDone = true

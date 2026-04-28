@@ -6,17 +6,18 @@ StarWars_PairedCannons = TankDefault:new{
 	PowerCost = 0,
 	Upgrades = 2,
 	UpgradeCost = {1,1},
-	
+
 	HitBehind = false,
 	Push = false,
-	
+
 	Icon = "weapons/brute_sw_paired_cannons.png",
 	Explosion = "",
 	ProjectileArt = "effects/shot_sw_dual_red",
 	LaunchSound = "/weapons/ricochet",
 	ImpactSound = "/impact/generic/ricochet",
-	
+
     TipImage = {
+		CustomPawn = "StarWars_SnowSpeederMech",
 		Unit = Point(3,3),
 		Enemy = Point(3,2),
 		Enemy2 = Point(3,1),
@@ -41,7 +42,7 @@ StarWars_PairedCannons_AB = StarWars_PairedCannons_A:new{
 	Push = true,
 }
 
-function StarWars_PairedCannons:MakeSpaceDamage(p, pushDir) 
+function StarWars_PairedCannons:MakeSpaceDamage(p, pushDir)
 	if self.Push then
 		return SpaceDamage(p, self.Damage, pushDir)
 	else
@@ -51,7 +52,7 @@ end
 
 function StarWars_PairedCannons:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
-	
+
 	local attackDir = GetDirection(p2 - p1)
 	if self.HitBehind then
 		local pBehind = p2 + DIR_VECTORS[attackDir]

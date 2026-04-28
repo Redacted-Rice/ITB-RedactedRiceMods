@@ -29,14 +29,14 @@ a.sw_xwingw_broken = a.MechUnit:new{Image = "units/player/sw_xwing_w_broken.png"
 a.sw_xwing_ns =      a.MechIcon:new{Image = "units/player/sw_xwing_ns.png" }
 
 
-StarWars_XWingMech = Pawn:new{	
+StarWars_XWingMech = Pawn:new{
 	Name = "X-Wing",
 	Class = "Brute",
 	Health = 2,
 	MoveSpeed = 3,
 	Image = "sw_xwing",
 	ImageOffset = squadColors,
-	SkillList = { "StarWars_ProtonTorpedo" },
+	SkillList = { "StarWars_CannonArray", "StarWars_ProtonTorpedo" },
 	SoundLocation = "/mech/prime/punch_mech/",
 	DefaultTeam = TEAM_PLAYER,
 	ImpactMaterial = IMPACT_METAL,
