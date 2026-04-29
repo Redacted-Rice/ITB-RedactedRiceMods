@@ -17,7 +17,7 @@ local dialog = require(path .. "scripts/pilots/dialog_luke")
 
 -- Register Force Focus icon animation
 local function registerForceFocusIcon()
-	local iconImg = "combat/icons/icon_sw_force_focus.png"
+	local iconImg = "combat/icons/icon_sw_force_focus_glow.png"
 	ANIMS["sw_force_focus"] = ANIMS.Animation:new{
 		Image = iconImg,
 		NumFrames = 1,
