@@ -53,11 +53,13 @@ function StarWars_TowCable:GetSkillEffect(p1, p2)
 	end
 
 	-- Set speed to 0
-	projectileDamage.sScript = projectileDamage.sScript .. [[
-			local pawn = Board:GetPawn(]].. p2:GetString() ..[[)
-			Board:Ping(pawn:GetSpace(), GL_Color(255, 0, 0))
-			pawn:SetMoveSpeed(0)
-	]]
+	if Board:IsPawnSpace(p2) then
+		projectileDamage.sScript = projectileDamage.sScript .. [[
+				local pawn = Board:GetPawn(]].. p2:GetString() ..[[)
+					Board:Ping(pawn:GetSpace(), GL_Color(255, 0, 0))
+					pawn:SetMoveSpeed(0)
+				]]
+	end
 
 	ret:AddProjectile(projectileDamage, self.ProjectileArt)
 	return ret

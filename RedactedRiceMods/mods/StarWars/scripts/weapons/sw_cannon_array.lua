@@ -86,29 +86,19 @@ end
 
 function StarWars_CannonArray:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
-	local pawn = Board:GetPawn(p1)
+	local moveDir = GetDirection(p2 - p1)
 
-	-- Build the path
+	-- Build the path with all the points
 	local movePath = PointList()
-	movePath:push_back(p1)
-	movePath:push_back(p2)
-
-	-- Temporarily enable flying to allow movement over obstacles
-	local wasFlying = pawn and pawn:IsFlying()
-	if pawn and not wasFlying then
-		self.boardUtils.setHijackedFlying(pawn, true)
+	local pLast = p1
+	while pLast ~= p2 do
+		movePath:push_back(pLast)
+		pLast = pLast + DIR_VECTORS[moveDir]
 	end
+	-- Add the last point too
+	movePath:push_back(pLast)
 
-	-- Use AddMove for smooth movement
 	ret:AddMove(movePath, FULL_DELAY)
-
-	-- Restore flying state if needed
-	if pawn and not wasFlying then
-		ret:AddScript(string.format([[
-			BoardUtils.setHijackedFlying(Board:GetPawn(%d), false)
-		]], pawn:GetId()))
-	end
-
 	return ret
 end
 
