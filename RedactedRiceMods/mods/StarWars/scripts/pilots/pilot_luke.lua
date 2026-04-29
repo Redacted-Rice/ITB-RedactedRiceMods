@@ -45,12 +45,15 @@ function this:initGameSaveData()
 	if GAME.starwars_luke.force_focused == nil then
 		GAME.starwars_luke.force_focused = {}
 	end
+	if GAME.starwars_luke.force_focused_last == nil then
+		GAME.starwars_luke.force_focused_last = {}
+	end
 end
 
 -- Luke's Force Focus Repair Skill
 Luke_ForceFocus_Repair = Skill_Repair:new{
 	Name = "Force Focus",
-	Description = "Repair, gain boost, and deal double damage next turn",
+	Description = "Repair, gain boost, and deal double damage (before boost) next turn",
 	TipImage = {
 		Unit = Point(2, 2),
 		Target = Point(2, 2),
@@ -102,8 +105,8 @@ local function onLukeSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect)
 	Pilot_Luke_Ref:initGameSaveData()
 	local pawnId = pawn:GetId()
 
-	-- Check if this pawn is force focused
-	if GAME.starwars_luke.force_focused[pawnId] then
+	-- Check if this pawn is force focused last turn
+	if GAME.starwars_luke.force_focused_last[pawnId] then
 		-- Double all damage in the skill effect and add Force Focus icon
 		local hasDoubledDamage = false
 
@@ -142,7 +145,7 @@ function this:init(mod)
 		pilot.Skill,
 		PilotSkill(
 			"Force Focus",
-			"When repairing, gain boosted and next turn your attacks deal double damage."
+			"When repairing, gain boosted and next turn your attacks deal double damage (before boost)."
 		)
 	)
 
@@ -173,11 +176,13 @@ local function onModsLoaded()
 	modApi:addMissionStartHook(function(mission)
 		Pilot_Luke_Ref:initGameSaveData()
 		GAME.starwars_luke.force_focused = {}
+		GAME.starwars_luke.force_focused_last = {}
 	end)
 
 	modApi:addNextTurnHook(function(mission)
 		if Game:GetTeamTurn() == TEAM_PLAYER then
 			Pilot_Luke_Ref:initGameSaveData()
+			GAME.starwars_luke.force_focused_last = GAME.starwars_luke.force_focused
 			-- Clear force focus flags at start of turn
 			GAME.starwars_luke.force_focused = {}
 		end

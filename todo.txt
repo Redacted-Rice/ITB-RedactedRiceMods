@@ -29,11 +29,10 @@ Known Issues:
 
 Star Wars:
 Rebels:
-* Weapon icons
-	* Tow Cable
 * Descriptions & rebalance
 	* All
 * Achievments?
+* Luke icon not working
 
 
 ------------------------------------------------------------------------------
