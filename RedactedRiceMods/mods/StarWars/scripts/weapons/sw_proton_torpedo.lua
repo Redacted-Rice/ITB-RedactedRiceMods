@@ -55,7 +55,7 @@ function StarWars_ProtonTorpedo:GetSkillEffect(p1, p2)
 	for dir = DIR_START, DIR_END do
 		local targetSpace = p2 + DIR_VECTORS[dir]
 		if Board:IsValid(targetSpace) then
-			ret:AddSafeDamage(SpaceDamage(targetSpace, self.SplashDamage))
+			ret:AddDamage(SpaceDamage(targetSpace, self.SplashDamage))
 			ret:AddBounce(targetSpace, self.SplashDamage)
 		end
 	end
