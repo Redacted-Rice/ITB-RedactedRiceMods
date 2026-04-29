@@ -95,7 +95,7 @@ function Luke_ForceFocus_Repair:GetSkillEffect(p1, p2)
 				-- trigger a dialog
 				local cast = { main = pawnId }
 				modapiext.dialog:triggerRuledDialog("Luke_ForceFocused", cast)
-				modApi:runLater(function() 
+				modApi:runLater(function()
 					Board:GetPawn(]]..p1:GetString()..[[):SetBoosted(true)
 				end)
 		]]
@@ -105,12 +105,40 @@ function Luke_ForceFocus_Repair:GetSkillEffect(p1, p2)
 		]]
 	end
 	ret:AddDamage(repairDamage)
-	
+
 	return ret
 end
 
+-- Helper to double damage in a damage list
+local function doubleDamageInEffect(damageList, pawnId, previewState)
+	local hasDoubledDamage = false
+
+	for i = 1, damageList:size() do
+		local spaceDamage = damageList:index(i)
+
+		if spaceDamage.iDamage > 0 and
+				spaceDamage.iDamage ~= DAMAGE_DEATH and
+				spaceDamage.iDamage ~= DAMAGE_ZERO then
+			spaceDamage.iDamage = spaceDamage.iDamage * 2
+			hasDoubledDamage = true
+
+			WeaponPreview.ExecuteWithState(previewState,
+					function()
+						WeaponPreview:AddAnimation(spaceDamage.loc,"sw_force_focus_dmg")
+					end)
+		end
+	end
+
+	return hasDoubledDamage
+end
+
 -- Skill build hook to double damage when force focused
-local function onLukeSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect)
+local function processSkills(pawn, previewState, skillEffect)
+	-- Skip nested calls to prevent modifying more than once
+	if modApiExt_internal.nestedCall_GetSkillEffect or modApiExt_internal.nestedCall_GetFinalEffect then
+		return
+	end
+
 	-- If luke is not the pilot, then return
 	if not pawn or not pawn:IsAbility(pilot.Skill) then
 		return
@@ -122,20 +150,7 @@ local function onLukeSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect)
 	-- Check if this pawn is force focused last turn
 	if GAME.starwars_luke.force_focused_last[pawnId] then
 		-- Double all damage in the skill effect and add Force Focus icon
-		local hasDoubledDamage = false
-
-		for i = 1, skillEffect.effect:size() do
-			local spaceDamage = skillEffect.effect:index(i)
-			if spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and
-					spaceDamage.iDamage ~= DAMAGE_ZERO then
-				spaceDamage.iDamage = spaceDamage.iDamage * 2
-				hasDoubledDamage = true
-				WeaponPreview.ExecuteWithState(WeaponPreview.STATE_SKILL_EFFECT,
-						function()
-							WeaponPreview:AddAnimation(spaceDamage.loc,"sw_force_focus_dmg")
-						end)
-			end
-		end
+		local hasDoubledDamage = doubleDamageInEffect(skillEffect.effect, pawnId, previewState)
 
 		-- Trigger dialog if we actually doubled some damage
 		if hasDoubledDamage then
@@ -205,8 +220,13 @@ local function onModsLoaded()
 		end
 	end)
 
-	-- Hook to modify damage output
-	modapiext:addSkillBuildHook(onLukeSkillBuild)
+	-- Hook to modify damage output in both skill effect and final effect
+	modapiext:addSkillBuildHook(function(mission, pawn, weaponId, p1, p2, skillEffect)
+		processSkills(pawn, WeaponPreview.STATE_SKILL_EFFECT, skillEffect)
+	end)
+	modapiext.events.onFinalEffectBuild:subscribe(function(mission, pawn, weaponId, p1, p2, p3, skillEffect)
+		processSkills(pawn, WeaponPreview.STATE_FINAL_EFFECT, skillEffect)
+	end)
 end
 
 -- Add personality with dialog
