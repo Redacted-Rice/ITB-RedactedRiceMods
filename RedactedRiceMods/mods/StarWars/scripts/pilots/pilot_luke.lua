@@ -52,15 +52,12 @@ function this:initGameSaveData()
 	if GAME.starwars_luke.force_focused == nil then
 		GAME.starwars_luke.force_focused = {}
 	end
-	if GAME.starwars_luke.force_focused_last == nil then
-		GAME.starwars_luke.force_focused_last = {}
-	end
 end
 
 -- Luke's Force Focus Repair Skill
 Luke_ForceFocus_Repair = Skill_Repair:new{
 	Name = "Force Focus",
-	Description = "Repair, gain boost, and deal double damage (before boost) next turn",
+	Description = "Repair, gain boost, and deal double damage (before boost) on next attack",
 	TipImage = {
 		Unit = Point(2, 2),
 		Target = Point(2, 2),
@@ -133,7 +130,11 @@ local function doubleDamageInEffect(damageList, pawnId, previewState)
 end
 
 -- Skill build hook to double damage when force focused
-local function processSkills(pawn, previewState, skillEffect)
+local function processSkills(pawn, weaponId, previewState, skillEffect)
+	if weaponId == "Move" or weaponId == "Skill_Repair" or weaponId == "Luke_ForceFocus_Repair" then
+		return
+	end
+
 	-- Skip nested calls to prevent modifying more than once
 	if modApiExt_internal.nestedCall_GetSkillEffect or modApiExt_internal.nestedCall_GetFinalEffect then
 		return
@@ -147,17 +148,26 @@ local function processSkills(pawn, previewState, skillEffect)
 	Pilot_Luke_Ref:initGameSaveData()
 	local pawnId = pawn:GetId()
 
-	-- Check if this pawn is force focused last turn
-	if GAME.starwars_luke.force_focused_last[pawnId] then
+	-- Check if this pawn has force focus active
+	if GAME.starwars_luke.force_focused[pawnId] then
 		-- Double all damage in the skill effect and add Force Focus icon
 		local hasDoubledDamage = doubleDamageInEffect(skillEffect.effect, pawnId, previewState)
 
-		-- Trigger dialog if we actually doubled some damage
-		if hasDoubledDamage then
-			local firstDamage = skillEffect.effect:index(1)
-			if firstDamage then
-				firstDamage.sScript = (firstDamage.sScript or "") .. [[
-					local cast = { main = ]]..pawnId..[[ }
+		-- Clear force focus after use and trigger dialog
+		local firstDamage = skillEffect.effect:index(1)
+		if firstDamage then
+			-- Clear out the force focus
+			firstDamage.sScript = (firstDamage.sScript or "") .. [[
+				local pawnId = ]] .. pawnId .. [[
+				Pilot_Luke_Ref:initGameSaveData()
+				GAME.starwars_luke.force_focused[pawnId] = nil
+			]]
+
+			-- Only trigger dialog if we actually doubled some damage
+			if hasDoubledDamage then
+				firstDamage.sScript = firstDamage.sScript .. [[
+					-- Trigger dialog
+					local cast = { main = pawnId }
 					modapiext.dialog:triggerRuledDialog("Luke_ForceFocus_Used", cast)
 				]]
 			end
@@ -177,7 +187,7 @@ function this:init(mod)
 		pilot.Skill,
 		PilotSkill(
 			"Force Focus",
-			"When repairing, gain boosted and next turn your attacks deal double damage (before boost)."
+			"When repairing, gain boosted and your next attack deals double damage (before boost)."
 		)
 	)
 
@@ -204,28 +214,18 @@ function this:load(modApiExt, options)
 end
 
 local function onModsLoaded()
-	-- Hook into mission start to reset tracking
+	-- Hook into mission start to reset force focus tracking
 	modApi:addMissionStartHook(function(mission)
 		Pilot_Luke_Ref:initGameSaveData()
 		GAME.starwars_luke.force_focused = {}
-		GAME.starwars_luke.force_focused_last = {}
-	end)
-
-	modApi:addNextTurnHook(function(mission)
-		if Game:GetTeamTurn() == TEAM_PLAYER then
-			Pilot_Luke_Ref:initGameSaveData()
-			GAME.starwars_luke.force_focused_last = GAME.starwars_luke.force_focused
-			-- Clear force focus flags at start of turn
-			GAME.starwars_luke.force_focused = {}
-		end
 	end)
 
 	-- Hook to modify damage output in both skill effect and final effect
 	modapiext:addSkillBuildHook(function(mission, pawn, weaponId, p1, p2, skillEffect)
-		processSkills(pawn, WeaponPreview.STATE_SKILL_EFFECT, skillEffect)
+		processSkills(pawn, weaponId, WeaponPreview.STATE_SKILL_EFFECT, skillEffect)
 	end)
-	modapiext.events.onFinalEffectBuild:subscribe(function(mission, pawn, weaponId, p1, p2, p3, skillEffect)
-		processSkills(pawn, WeaponPreview.STATE_FINAL_EFFECT, skillEffect)
+	modapiext:addFinalEffectBuildHook(function(mission, pawn, weaponId, p1, p2, p3, skillEffect)
+		processSkills(pawn, weaponId, WeaponPreview.STATE_FINAL_EFFECT, skillEffect)
 	end)
 end
 
