@@ -29,12 +29,8 @@ Known Issues:
 
 Star Wars:
 Rebels:
-* Paired Cannons, Cannon Turrets, Proton torpedo
-	* Write working, consider balance
-* Tow Cable, rebel hope, quad lasers
-	* implement
 * Weapon icons
-	* All
+	* Tow Cable
 * Descriptions & rebalance
 	* All
 * Achievments?
