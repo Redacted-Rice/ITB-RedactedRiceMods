@@ -17,14 +17,21 @@ local dialog = require(path .. "scripts/pilots/dialog_luke")
 
 -- Register Force Focus icon animation
 local function registerForceFocusIcon()
-	local iconImg = "combat/icons/icon_sw_force_focus_glow.png"
-	ANIMS["sw_force_focus"] = ANIMS.Animation:new{
-		Image = iconImg,
+	ANIMS["sw_force_focus_repair"] = ANIMS.Animation:new{
+		Image = "combat/icons/icon_sw_force_focus_glow.png",
 		NumFrames = 1,
 		Time = 1,
 		Loop = true,
-		PosX = -25, -- TODO: Adjust
-		PosY = 11
+		PosX = -24,
+		PosY = 18
+	}
+	ANIMS["sw_force_focus_dmg"] = ANIMS.Animation:new{
+		Image = "combat/icons/icon_sw_force_focus_glow.png",
+		NumFrames = 1,
+		Time = 1,
+		Loop = true,
+		PosX = 4,
+		PosY = 8
 	}
 end
 
@@ -73,23 +80,30 @@ function Luke_ForceFocus_Repair:GetSkillEffect(p1, p2)
 	end
 
 	-- Add Force Focus icon animation
-	WeaponPreview:AddAnimation(p1, "sw_force_focus")
+	WeaponPreview:AddAnimation(p1, "sw_force_focus_repair")
 
-	repairDamage.sScript = repairDamage.sScript .. [[
-			local pawnId = ]] .. Board:GetPawn(p1):GetId() .. [[
-			-- Initialize data
-			Pilot_Luke_Ref:initGameSaveData()
+	-- This causes crashes in tool tip and we don't to set the
+	-- save value so just do something real simple in tool tip
+	if not Board:IsTipImage() then
+		repairDamage.sScript = repairDamage.sScript .. [[
+				local pawnId = ]] .. Board:GetPawn(p1):GetId() .. [[
+				-- Initialize data
+				Pilot_Luke_Ref:initGameSaveData()
 
-			GAME.starwars_luke.force_focused[pawnId] = true
+				GAME.starwars_luke.force_focused[pawnId] = true
 
-			-- trigger a dialog
-			local cast = { main = pawnId }
-			modapiext.dialog:triggerRuledDialog("Luke_ForceFocused", cast)
-			
-			modApi:runLater(function() 
-				Board:GetPawn(pawnId):SetBoosted(true)
-			end)
-	]]
+				-- trigger a dialog
+				local cast = { main = pawnId }
+				modapiext.dialog:triggerRuledDialog("Luke_ForceFocused", cast)
+				modApi:runLater(function() 
+					Board:GetPawn(]]..p1:GetString()..[[):SetBoosted(true)
+				end)
+		]]
+	else
+		repairDamage.sScript = repairDamage.sScript .. [[
+				Board:GetPawn(]]..p1:GetString()..[[):SetBoosted(true)
+		]]
+	end
 	ret:AddDamage(repairDamage)
 	
 	return ret
@@ -116,7 +130,10 @@ local function onLukeSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect)
 					spaceDamage.iDamage ~= DAMAGE_ZERO then
 				spaceDamage.iDamage = spaceDamage.iDamage * 2
 				hasDoubledDamage = true
-				WeaponPreview:AddAnimation(spaceDamage.loc, "sw_force_focus")
+				WeaponPreview.ExecuteWithState(WeaponPreview.STATE_SKILL_EFFECT,
+						function()
+							WeaponPreview:AddAnimation(spaceDamage.loc,"sw_force_focus_dmg")
+						end)
 			end
 		end
 
