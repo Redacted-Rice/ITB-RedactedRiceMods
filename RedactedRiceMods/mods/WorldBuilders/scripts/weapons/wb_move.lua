@@ -54,6 +54,34 @@ WorldBuilders_Passive_Move.traitReplace:add{
 	desc_text = "This unit can move past units and over/on buildings and mountains",
 }
 
+-- Store the original methods
+
+local originalCanMoveOnMountains = BoardUtils.CanMoveOnMountains
+BoardUtils.CanMoveOnMountains = function(pawn)
+	-- Check if this pawn has All Terrain passive active
+	if pawn:IsMech() and WorldBuilders_Passive_Move.passiveEffect:countAnyVersionOfPassiveActive("WorldBuilders_Passive_Move") > 0 then
+		return true
+	end
+	-- Fall back to original implementation
+	if originalCanMoveOnMountains ~= nil then
+		return originalCanMoveOnMountains(pawn)
+	end
+	return false
+end
+
+local originalCanMoveOnBuildings = BoardUtils.CanMoveOnBuildings
+BoardUtils.CanMoveOnBuildings = function(pawn)
+	-- Check if this pawn has All Terrain passive active
+	if pawn:IsMech() and WorldBuilders_Passive_Move.passiveEffect:countAnyVersionOfPassiveActive("WorldBuilders_Passive_Move") > 0 then
+		return true
+	end
+	-- Fall back to original implementation
+	if originalCanMoveOnBuildings ~= nil then
+		return originalCanMoveOnBuildings(pawn)
+	end
+	return false
+end
+
 function WorldBuilders_Passive_Move:GetPassiveSkillEffect_TargetAreaBuildHook(mission, pawn, weaponId, p1, targetArea)
 	if weaponId == "Move" and pawn:IsMech() then
 		-- Remove the other points
@@ -63,8 +91,8 @@ function WorldBuilders_Passive_Move:GetPassiveSkillEffect_TargetAreaBuildHook(mi
 		-- Add the new points
 		-- No pawns block path but any pawn blocks landing
 		self.boardUtils.getReachableInRange(targetArea, pawn:GetMoveSpeed(), p1,
-				self.boardUtils.makeAllTerrainMatcher(pawn, "none"),
-				self.boardUtils.makeAllTerrainMatcher(pawn, "any"))
+				self.boardUtils.makeAllTerrainMatcher(pawn, "none"), -- nothing blocks move through
+				self.boardUtils.makeAllTerrainMatcher(pawn, "any")) -- any blocks land on
 	end
 end
 
@@ -72,7 +100,7 @@ function WorldBuilders_Passive_Move:GetPassiveSkillEffect_SkillBuildHook(mission
 	if weaponId == "Move" and pawn:IsMech() then
 		-- findBfsPath(..., true) == as point list
 		-- No pawns block path but any pawn blocks landing
-		local path = self.boardUtils.findBfsPath(p1, p2, self.boardUtils.makeAllTerrainMatcher(pawn, "none"), true)
+		local path = self.boardUtils.findBfsPath(p1, p2, self.boardUtils.makeAllTerrainMatcher(pawn, "none"), true) -- nothing blocks move through
 		self.boardUtils.addForcedMove(skillEffect, path)
 	end
 end

@@ -166,6 +166,25 @@ function more_plus:addCommonCustomImages()
 	end
 end
 
+function more_plus:addCustomTraitIcon(skill)
+	local iconImg = "img/combat/icons/icon_mp_"..skill.id..".png"
+	skill.icon = iconImg
+	logger.logDebug(SUBMODULE, "Adding trait icon %s at %s", skill.id, iconImg)
+	more_plus.libs.traitReplace:add{
+		targetTrait = "massive",
+		func = function(trait, pawn)
+			if cplus_plus_ex:isSkillOnPawn(skill.id, pawn) then
+				return true
+			end
+			return false
+		end,
+		icon = iconImg,
+		--icon_offset = Point(0,9),
+		desc_title = skill.fullName or skill.name,
+		desc_text = skill.description,
+	}
+end
+
 function more_plus:init()
 	modApi:appendAssets("img/combat/icons/", "img/combat/icons/")
 	self:addCommonCustomImages()

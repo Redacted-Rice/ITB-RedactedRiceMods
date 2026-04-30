@@ -51,6 +51,22 @@ if isNewestVersion then
 		"fDelay",
 		"bHidePath",
 	}
+	
+	-- Override as needed per skills that allow this.
+	-- Make sure to call original
+	if not BoardUtils.CanMoveOnMountains then
+		function BoardUtils.CanMoveOnMountains(pawn)
+			return false
+		end
+	end
+	
+	-- Override as needed per skills that allow this.
+	-- Make sure to call original
+	if not BoardUtils.CanMoveOnBuildings then
+		function BoardUtils.CanMoveOnBuildings(pawn)
+			return false
+		end
+	end
 
 	function BoardUtils.setHijackedFlying(pawn, enabled)
 		if enabled then
@@ -141,13 +157,22 @@ if isNewestVersion then
 			if exclTerrainCheckFn(point) then
 				return false
 			end
-			local pawn = Board:GetPawn(point)
-			if pawn then
+			if pawnCheckType == "none" then
+				return true
+			end
+			
+			local otherPawn = Board:GetPawn(point)
+			if otherPawn then
 				if pawnCheckType == "any" then
 					return false
 				end
-				local pawnTeam = pawn:GetTeam()
-				if pawnCheckType == "friendly" and (pawnTeam == TEAM_BOTS or
+				-- Flying pawns can pass through any other pawn
+				if BoardUtils.isPawnFlying(pawn) then
+					return true
+				end
+				-- Otherwise only can't pass through enemies
+				local pawnTeam = otherPawn:GetTeam()
+				if pawnCheckType == "default" and (pawnTeam == TEAM_BOTS or
 						pawnTeam == TEAM_ENEMY or pawnTeam == TEAM_ENEMY_MAJOR) then
 					return false
 				end
@@ -156,14 +181,14 @@ if isNewestVersion then
 		end
 	end
 
-	--pawnCheckType "none", "friendly", "any"
+	--pawnCheckType "none", "default", "any"
 	function BoardUtils.makeAllTerrainMatcher(pawn, pawnCheckType)
 		return BoardUtils.makeTerrainBasedMatcher(pawn, pawnCheckType, function(point)
 			return not BoardUtils.isPawnFlying(pawn) and Board:GetTerrain(point) == TERRAIN_HOLE
 		end)
 	end
 
-	--pawnCheckType "none", "friendly", "any"
+	--pawnCheckType "none", "default", "any"
 	function BoardUtils.makeGenericMatcher(pawn, pawnCheckType)
 		return BoardUtils.makeTerrainBasedMatcher(pawn, pawnCheckType, function(point)
 			local terrain = Board:GetTerrain(point)

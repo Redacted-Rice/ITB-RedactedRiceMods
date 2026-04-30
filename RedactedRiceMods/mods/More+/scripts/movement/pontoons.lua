@@ -17,7 +17,7 @@ customSkill.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Amphibious", customSkill.DEBUG)
 
-customSkill:addCustomTrait()
+more_plus:addCustomTraitIcon(customSkill)
 
 function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onTargetAreaBuild:subscribe(customSkill.moveTargetArea))

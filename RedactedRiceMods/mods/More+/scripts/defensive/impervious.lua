@@ -10,7 +10,7 @@ customSkill.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Impervious", customSkill.DEBUG)
 
-customSkill:addCustomTrait()
+more_plus:addCustomTraitIcon(customSkill)
 
 function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage, indexes, targetPawn)
 	-- Only process if attacker is an ally (but not self) and target is taking damage

@@ -15,7 +15,7 @@ local mod =  {
         memedit = "1.2.1",
         easyEdit = "2.0.8",
         redactedrice_memhack = "1.1.0",
-        redactedrice_cplus_plus = "1.1.2",
+        redactedrice_cplus_plus = "1.1.0",
     }
 }
 

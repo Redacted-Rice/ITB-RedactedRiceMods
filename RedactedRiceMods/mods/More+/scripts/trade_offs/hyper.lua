@@ -20,7 +20,7 @@ customSkill.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Hyper", customSkill.DEBUG)
 
-customSkill:addCustomTrait()
+more_plus:addCustomTraitIcon(customSkill)
 
 function customSkill:setupEffect()
 	table.insert(customSkill.events, modApi.events.onNextTurn:subscribe(customSkill.setMoveBonus))

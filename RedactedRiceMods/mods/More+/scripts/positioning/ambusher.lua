@@ -13,7 +13,7 @@ customSkill.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Ambusher", customSkill.DEBUG)
 
-customSkill:addCustomTrait()
+more_plus:addCustomTraitIcon(customSkill)
 
 function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage, indexes, targetPawn)
 	-- Check if attacking an enemy

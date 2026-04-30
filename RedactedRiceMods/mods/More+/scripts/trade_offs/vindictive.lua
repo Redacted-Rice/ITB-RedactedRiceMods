@@ -14,7 +14,7 @@ customSkill.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Vindictive", customSkill.DEBUG)
 
-customSkill:addCustomTrait()
+more_plus:addCustomTraitIcon(customSkill)
 
 -- Adverse status effects that should increase damage
 local adverseStatuses = {

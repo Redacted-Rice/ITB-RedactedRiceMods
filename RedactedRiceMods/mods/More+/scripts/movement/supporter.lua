@@ -10,7 +10,7 @@ customSkill.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Supporter", customSkill.DEBUG)
 
-customSkill:addCustomTrait()
+more_plus:addCustomTraitIcon(customSkill)
 
 function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onTargetAreaBuild:subscribe(customSkill.moveTargetArea))
@@ -50,7 +50,7 @@ function customSkill.moveTargetArea(mission, pawn, weaponId, p1, targetArea)
 					logger.logDebug(SUBMODULE, "Found ally %d at %s", allyPawn:GetId(), allyLoc:GetString())
 
 					-- Get all potential adjacent tiles to the ally
-					local adjacentTiles = more_plus.libs.boardUtils.getAdjacent(allyLoc, function(adjacentLoc)
+					local adjacentTiles = BoardUtils.getAdjacent(allyLoc, function(adjacentLoc)
 						-- Check if valid board space
 						if not Board:IsValid(adjacentLoc) then
 							return false
@@ -61,12 +61,14 @@ function customSkill.moveTargetArea(mission, pawn, weaponId, p1, targetArea)
 						end
 						-- check if its passable
 						local terrain = Board:GetTerrain(adjacentLoc)
-						if (not more_plus.libs.boardUtils.isPawnFlying(pawn)) and
+						if (not BoardUtils.isPawnFlying(pawn)) and
 								terrain == TERRAIN_HOLE then
 							return false
 						end
-						if (not cplus_plus_ex:isSkillOnPawn("RrNimble", pawn)) and
-								(terrain == TERRAIN_BUILDING or terrain == TERRAIN_MOUNTAIN) then
+						if terrain == TERRAIN_BUILDING and not BoardUtils.CanMoveOnBuildings(pawn) then
+							return false
+						end
+						if terrain == TERRAIN_MOUNTAIN and not BoardUtils.CanMoveOnMountains(pawn) then
 							return false
 						end
 						return true
