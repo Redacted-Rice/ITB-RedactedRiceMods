@@ -13,7 +13,33 @@ customSkill.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Nimble", customSkill.DEBUG)
 
-customSkill:addCustomTrait()
+more_plus:addCustomTraitIcon(customSkill)
+
+local originalCanMoveOnBuildings = BoardUtils.CanMoveOnMountains
+BoardUtils.CanMoveOnMountains = function(pawn)
+	-- Check if this pawn has Nimble skill
+	if cplus_plus_ex:isSkillOnPawn("RrNimble", pawn) then
+		return true
+	end
+	-- Fall back to original implementation
+	if originalCanMoveOnMountains ~= nil then
+		return originalCanMoveOnMountains(pawn)
+	end
+	return false
+end
+
+local originalCanMoveOnBuildings = BoardUtils.CanMoveOnBuildings
+BoardUtils.CanMoveOnBuildings = function(pawn)
+	-- Check if this pawn has Nimble skill
+	if cplus_plus_ex:isSkillOnPawn("RrNimble", pawn) then
+		return true
+	end
+	-- Fall back to original implementation
+	if originalCanMoveOnBuildings ~= nil then
+		return originalCanMoveOnBuildings(pawn)
+	end
+	return false
+end
 
 function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onTargetAreaBuild:subscribe(customSkill.moveTargetArea))
@@ -21,10 +47,10 @@ function customSkill:setupEffect()
 end
 
 function customSkill.getPassThroughMode(pilot)
-	local passThroughMode = "friendly"
+	local passThroughMode = "default"
 	local mainSkillId = pilot:getSkillStr()
 	if mainSkillId == "Road_Runner" then
-		passThroughMode = "none"
+		passThroughMode = "none" -- can go through any pawn
 		logger.logDebug(SUBMODULE, "Pilot main skill is 'Road_Runner' - enabling pass through enemies")
 	else
 		logger.logDebug(SUBMODULE, "Pilot main skill is not 'Road_Runner' but '%s'", mainSkillId)
@@ -42,8 +68,8 @@ function customSkill.moveTargetArea(mission, pawn, weaponId, p1, targetArea)
 
 			local newPoints = PointList()
 			more_plus.libs.boardUtils.getReachableInRange(newPoints, pawn:GetMoveSpeed(), p1,
-					more_plus.libs.boardUtils.makeAllTerrainMatcher(pawn, passThroughMode),
-					more_plus.libs.boardUtils.makeAllTerrainMatcher(pawn, "any"))
+					more_plus.libs.boardUtils.makeAllTerrainMatcher(pawn, passThroughMode), -- none/deafult to block movement
+					more_plus.libs.boardUtils.makeAllTerrainMatcher(pawn, "any")) -- any blocks landing
 
 			local hashedPoints = {}
 			local addedCount = 0

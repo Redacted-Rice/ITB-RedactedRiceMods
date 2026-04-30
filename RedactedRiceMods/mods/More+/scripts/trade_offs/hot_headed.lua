@@ -14,7 +14,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	}
 }
 
-customSkill:addCustomTrait()
+more_plus:addCustomTraitIcon(customSkill)
 
 function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onPawnKilled:subscribe(customSkill.killedPawn))
