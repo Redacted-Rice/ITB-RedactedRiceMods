@@ -2,7 +2,6 @@ StarWars_CannonArray = Skill:new{
 	Name = "Cannon Array",
 	Description = "Move up to 2 spaces straight firing at all enemies on one side.",
 	Class = "Brute",
-	Description = "",
 	Damage = 2,
 	PowerCost = 1,
 	Upgrades = 2,
@@ -25,8 +24,6 @@ StarWars_CannonArray = Skill:new{
 	}
 }
 
-StarWars_CannonArray.boardUtils = mod_loader.mods[modApi.currentMod].libs.boardUtils
-
 -- Weapon text definitions
 Weapon_Texts.StarWars_CannonArray_Upgrade1 = "+1 Move Range"
 Weapon_Texts.StarWars_CannonArray_A_UpgradeDescription = "Increases movement range to 3."
@@ -46,15 +43,36 @@ StarWars_CannonArray_AB = StarWars_CannonArray_A:new{
 
 function StarWars_CannonArray:GetTargetArea(point)
 	local ret = PointList()
-
-	-- Show straight line movement options in all 4 directions
+	local pawn = Board:GetPawn(point)
+	if not pawn then return ret end
+	
+	-- Temporarily set the pawn's move speed to our weapon range
+	local originalMoveSpeed = pawn:GetMoveSpeed()
+	pawn:SetMoveSpeed(self.MoveRange)
+	
+	-- Get all tiles reachable by the Move skill and fire the skill build manually
+	-- for things like nimble
+	local moveTargets = Move:GetTargetArea(point)
+	modApiExt_internal.fireTargetAreaBuildHooks(
+		modApiExt_internal.mission,
+		pawn, "Move", point, moveTargets
+	)
+	
+	-- Restore original move speed
+	pawn:SetMoveSpeed(originalMoveSpeed)
+	
+	-- Filter to only straight line moves in 4 directions
 	for dir = DIR_START, DIR_END do
 		for i = 1, self.MoveRange do
 			local target = point + DIR_VECTORS[dir] * i
-			if Board:IsValid(target) and not Board:IsBlocked(target, PATH_FLYER) then
-				ret:push_back(target)
-			else
-				break
+			if Board:IsValid(target) then
+				-- Check if this tile is reachable by the Move skill
+				for j = 1, moveTargets:size() do
+					if moveTargets:index(j) == target then
+						ret:push_back(target)
+						break
+					end
+				end
 			end
 		end
 	end
@@ -70,79 +88,115 @@ function StarWars_CannonArray:GetSecondTargetArea(p1, p2)
 	local perpDir1 = (moveDir + 1) % 4
 	local perpDir2 = (moveDir + 3) % 4
 
-	-- Add an indicator for each side
-	local side1 = p2 + DIR_VECTORS[perpDir1]
-	local side2 = p2 + DIR_VECTORS[perpDir2]
+	-- Show the line of targets on each side along the entire move path
+	local current = p1
+	while true do
+		-- Add targets on both sides of current position
+		local side1 = current
+		local side2 = current
+		for i = 1, self.TargetRange do
+			side1 = side1 + DIR_VECTORS[perpDir1]
+			side2 = side2 + DIR_VECTORS[perpDir2]
+			if Board:IsValid(side1) then
+				ret:push_back(side1)
+			end
+			if Board:IsValid(side2) then
+				ret:push_back(side2)
+			end
+		end
 
-	if Board:IsValid(side1) then
-		ret:push_back(side1)
-	end
-	if Board:IsValid(side2) then
-		ret:push_back(side2)
+		-- Move to next position along path
+		if current == p2 then
+			break
+		end
+		current = current + DIR_VECTORS[moveDir]
 	end
 
 	return ret
 end
 
 function StarWars_CannonArray:GetSkillEffect(p1, p2)
+	local pawn = Board:GetPawn(p1)
+	if not pawn then return SkillEffect() end
+	
 	local ret = SkillEffect()
+	
+	-- Build straight line path from p1 to p2
+	local path = PointList()
 	local moveDir = GetDirection(p2 - p1)
-
-	-- Build the path with all the points
-	local movePath = PointList()
-	local pLast = p1
-	while pLast ~= p2 do
-		movePath:push_back(pLast)
-		pLast = pLast + DIR_VECTORS[moveDir]
+	local current = p1
+	path:push_back(current)
+	while current ~= p2 do
+		current = current + DIR_VECTORS[moveDir]
+		path:push_back(current)
 	end
-	-- Add the last point too
-	movePath:push_back(pLast)
-
-	ret:AddMove(movePath, FULL_DELAY)
+	
+	-- Show the path with no delay for preview
+	BoardUtils.addForcedMove(ret, path, NO_DELAY)
+	
 	return ret
 end
 
 function StarWars_CannonArray:GetFinalEffect(p1, p2, p3)
-	local ret = SkillEffect()
-	local moveDir = GetDirection(p2 - p1)
 	local pawn = Board:GetPawn(p1)
-
+	if not pawn then return SkillEffect() end
+	
+	local ret = SkillEffect()
+	
 	-- Determine which side to fire based on p3
-	local fireDir = GetDirection(p3 - p2)
-
-	-- Temporarily enable flying for movement
-	local wasFlying = pawn:IsFlying()
-	if not wasFlying then
-		self.boardUtils.setHijackedFlying(pawn, true)
-	end
-
-	-- Fire from starting position first
-	self:FireFromPositionInDirection(ret, p1, fireDir)
-
-	local prev = p1
+	local moveDir = GetDirection(p2 - p1)
+	local perpDir1 = (moveDir + 1) % 4
+	local perpDir2 = (moveDir + 3) % 4
+	local fireDir = perpDir1
+	
+	-- Build straight line path from p1 to p2
+	local path = PointList()
+	
+	-- Check the first p
 	local current = p1
+	path:push_back(current)
+	
+	-- See which side its on while constructing the path
+	local testSide = current
+	for i = 1, self.TargetRange do
+		testSide = testSide + DIR_VECTORS[perpDir2]
+		if p3 == testSide then
+			fireDir = perpDir2
+		end
+	end
+	
+	-- Check the rest of the ps
 	while current ~= p2 do
 		current = current + DIR_VECTORS[moveDir]
-
-		-- Move one space
-		local movePath = PointList()
-		movePath:push_back(prev)
-		movePath:push_back(current)
-		ret:AddMove(movePath, NO_DELAY)
-
-		-- Add small delay for moving
-		ret:AddDelay(0.1)
-
-		-- Fire at targets on the chosen side from new position
-		self:FireFromPositionInDirection(ret, current, fireDir)
-		prev = current
+		path:push_back(current)
+		
+		testSide = current
+		for i = 1, self.TargetRange do
+			testSide = testSide + DIR_VECTORS[perpDir2]
+			if p3 == testSide then
+				fireDir = perpDir2
+			end
+		end
 	end
-
-	-- Restore flying state
-	if not wasFlying then
-		ret:AddScript(string.format([[
-			BoardUtils.setHijackedFlying(Board:GetPawn(%d), false)
-		]], pawn:GetId()))
+	
+	-- Show the path with no delay for preview
+	BoardUtils.addForcedMove(ret, path, NO_DELAY)
+	
+	-- Move through path one space at a time, firing at each position
+	local pawnId = pawn:GetId()
+	for i = 1, path:size() do
+		local newPos = path:index(i)
+		
+		-- Move to this position
+		BoardUtils.addForcedSigleMove(ret, pawnId, newPos)
+		
+		-- Fire from current position
+		self:FireFromPositionInDirection(ret, newPos, fireDir)
+		
+		-- Add small delay between positions
+		if i < path:size() then
+			ret:AddDelay(0.1)
+		end
 	end
 
 	return ret
