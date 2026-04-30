@@ -98,7 +98,15 @@ if isNewestVersion then
 		BoardUtils.hijackedPath = nil
 	end
 
-	function BoardUtils.addForcedMove(skillEffect, path)
+	function BoardUtils.addForcedSigleMove(skillEffect, pawnId, dest)
+		local moveDamage = SpaceDamage(dest, 0)
+		moveDamage.sScript = [[Board:GetPawn(]] .. pawnId .. [[):SetSpace(]] .. dest:GetString() .. [[)]]
+		skillEffect:AddDamage(moveDamage)
+	end
+
+	function BoardUtils.addForcedMove(skillEffect, path, delay)
+		delay = delay or FULL_DELAY
+		
 		-- Preserve any existing damage effects. This ended up not being the issue
 		-- with boosted not working with momentum and maneuverable but it seems a
 		-- useful and good change so I'm leaving it though its largely untested
@@ -121,7 +129,7 @@ if isNewestVersion then
 		skillEffect.effect = SkillEffect().effect
 
 		-- Add move for display purposes. This won't let us move onto unmovable spaces reliably
-		skillEffect:AddMove(path, FULL_DELAY)
+		skillEffect:AddMove(path, delay)
 
 		-- Store the hijacked path so other systems can use it
 		BoardUtils.setHijackedPath(path)
@@ -130,9 +138,7 @@ if isNewestVersion then
 		local pawnId = Board:GetPawn(path:index(1)):GetId()
 		local secondToLastSpace = path:index(path:size() - 1)
 		local lastSpace = path:index(path:size())
-		local moveDamage = SpaceDamage(secondToLastSpace, 0)
-		moveDamage.sScript = [[Board:GetPawn(]] .. pawnId .. [[):SetSpace(]] .. lastSpace:GetString() .. [[)]]
-		skillEffect:AddDamage(moveDamage)
+		BoardUtils.addForcedSigleMove(skillEffect, pawnId, lastSpace)
 
 		-- Re-add any preserved damage effects
 		for _, damage in ipairs(preservedDamages) do
