@@ -57,30 +57,31 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 		end
 
 		if wouldKill then
-			local attackerLoc = self:getPawnSpace(attackingPawn)
-			local targetLoc = self:getPawnSpace(targetPawn)
+			local attackerOrigLoc = attackingPawn:GetSpace()
+			local attackerCurrLoc = self:getPawnSpace(attackingPawn)
+			local targetOrigLoc = targetPawn:GetSpace()
 
 			-- Add vampire animation icons
 			for _, idx in ipairs(indexes) do
 				-- Show damage icon on attacker and target
 				logger.logDebug(SUBMODULE, "Adding vampire damage icon from %s to attacker %s with idx %d",
-						targetLoc:GetString(), attackerLoc:GetString(), idx)
+						targetOrigLoc:GetString(), attackerOrigLoc:GetString(), idx)
 				more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
 						function()
 							-- add to attacker and target
-							more_plus.libs.weaponPreview:AddAnimation(attackerLoc,
+							more_plus.libs.weaponPreview:AddAnimation(attackerOrigLoc,
 									more_plus.commonIcons.vampire.key.."_"..idx)
-							more_plus.libs.weaponPreview:AddAnimation(targetLoc,
+							more_plus.libs.weaponPreview:AddAnimation(targetOrigLoc,
 									more_plus.commonIcons.vampire.key.."_"..idx)
 						end)
 			end
 
 			-- Call repair skill and return array of all the space damages from it
-			local repairEffect = _G["Skill_Repair"]:GetSkillEffect(attackerLoc, attackerLoc)
+			local repairEffect = _G["Skill_Repair"]:GetSkillEffect(attackerCurrLoc, attackerCurrLoc)
 			local repairEffectTable = extract_table(repairEffect.effect)
 
 			logger.logDebug(SUBMODULE, "Getting repair effect for pawn %d at %s (killed vek at %s)",
-					attackingPawn:GetId(), attackerLoc:GetString(), spaceDamage.loc:GetString())
+					attackingPawn:GetId(), attackerCurrLoc:GetString(), spaceDamage.loc:GetString())
 			return repairEffectTable
 		end
 	end

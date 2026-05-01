@@ -17,41 +17,42 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 	if source == self.SOURCE_TARGET and attackingPawn and
 			attackingPawn:IsEnemy() and spaceDamage.iDamage > 0 and
 			spaceDamage.iDamage ~= DAMAGE_ZERO then
-		local attackerLoc = self:getPawnSpace(attackingPawn)
-		local targetLoc = self:getPawnSpace(targetPawn)
+		local attackerOrigLoc = attackingPawn:GetSpace()
+		local attackerCurrLoc = self:getPawnSpace(attackingPawn)
+		local targetOrigLoc = targetPawn:GetSpace()
+		local targetCurrLoc = self:getPawnSpace(targetPawn)
 
 		-- Add reflect animation icons
 		for _, idx in ipairs(indexes) do
 			-- Show damage icon on attacker (where reflect damage will hit)
 			logger.logDebug(SUBMODULE, "Adding reflect damage icon from %s to attacker %s with idx %d",
-					targetLoc:GetString(), attackerLoc:GetString(), idx)
+					targetOrigLoc:GetString(), attackerOrigLoc:GetString(), idx)
 			more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
 					function()
 						-- add to attacker and target
-						more_plus.libs.weaponPreview:AddAnimation(attackerLoc,
+						more_plus.libs.weaponPreview:AddAnimation(attackerOrigLoc,
 								more_plus.commonIcons.reflect.key.."_"..idx)
-						more_plus.libs.weaponPreview:AddAnimation(targetLoc,
+						more_plus.libs.weaponPreview:AddAnimation(targetOrigLoc,
 								more_plus.commonIcons.reflect.key.."_"..idx)
 					end)
 		end
 
 		-- Add a pause before reflect damage for visual clarity
-		local reflectPause = SpaceDamage(attackerLoc)
+		local reflectPause = SpaceDamage(targetCurrLoc)
+		reflectPause.sScript = "Board:Ping("..targetCurrLoc:GetString()..", GL_Color(175, 175, 255))"
 		reflectPause.fDelay = 0.3
 
 		-- Handle DAMAGE_DEATH case
 		local reflectDamage = 0
 		if spaceDamage.iDamage == DAMAGE_DEATH then
 			reflectDamage = DAMAGE_DEATH
-			logger.logDebug(SUBMODULE, "Reflecting DAMAGE_DEATH back to attacker at %s", attackerLoc:GetString())
+			logger.logDebug(SUBMODULE, "Reflecting DAMAGE_DEATH back to attacker at %s", attackerCurrLoc:GetString())
 		else
 			reflectDamage = math.ceil(spaceDamage.iDamage / 2)
 			logger.logDebug(SUBMODULE, "Reflecting %d damage back to attacker at %s (original: %d)",
-					reflectDamage, attackerLoc:GetString(), spaceDamage.iDamage)
+					reflectDamage, attackerCurrLoc:GetString(), spaceDamage.iDamage)
 		end
-		local reflectSd = SpaceDamage(attackerLoc, reflectDamage)
-		reflectSd.sScript = "Board:Ping("..attackerLoc:GetString()..", GL_Color(175, 175, 255))"
-		return {reflectPause, reflectSd}
+		return {reflectPause, SpaceDamage(attackerCurrLoc, reflectDamage)}
 	end
 
 	-- Return nil if no reflection should occur
