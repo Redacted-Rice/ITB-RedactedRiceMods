@@ -57,13 +57,13 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 		end
 
 		if wouldKill then
-			local attackerLoc = attackingPawn:GetSpace()
-			local targetLoc = targetPawn:GetSpace()
+			local attackerLoc = self:getPawnSpace(attackingPawn)
+			local targetLoc = self:getPawnSpace(targetPawn)
 
 			-- Add vampire animation icons
 			for _, idx in ipairs(indexes) do
-				-- Show damage icon on attacker (where reflect damage will hit)
-				logger.logDebug(SUBMODULE, "Adding reflect damage icon from %s to attacker %s with idx %d",
+				-- Show damage icon on attacker and target
+				logger.logDebug(SUBMODULE, "Adding vampire damage icon from %s to attacker %s with idx %d",
 						targetLoc:GetString(), attackerLoc:GetString(), idx)
 				more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
 						function()
