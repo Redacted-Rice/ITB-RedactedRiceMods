@@ -18,7 +18,9 @@ Current Release: 1.4.0
 ### 1.4.0
 Released: 05/01/2026
 
-Added functions for tracking pawns
+* Added functions for tracking pawns
+* Add functions to support additive checks for allowing pawns on buildings and mountains
+* Fixes to some edge cases of all terrain movement
 
 ### 1.3.0
 Released: 03/30/2026
