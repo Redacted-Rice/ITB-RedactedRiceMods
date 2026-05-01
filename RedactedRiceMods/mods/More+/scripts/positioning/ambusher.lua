@@ -20,6 +20,8 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 	if source == self.SOURCE_ATTACKER and targetPawn and
 			targetPawn:IsEnemy() and spaceDamage.iDamage > 0 and
 			spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
+		-- Intentionally base it off ORIGINAL pawn space so things like charge and jumps
+		-- trigger based on the tile the pawn starts the attack on
 		local pawnLoc = attackingPawn:GetSpace()
 		local terrain = Board:GetTerrain(pawnLoc)
 

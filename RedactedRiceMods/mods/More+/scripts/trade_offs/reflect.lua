@@ -17,8 +17,8 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 	if source == self.SOURCE_TARGET and attackingPawn and
 			attackingPawn:IsEnemy() and spaceDamage.iDamage > 0 and
 			spaceDamage.iDamage ~= DAMAGE_ZERO then
-		local attackerLoc = attackingPawn:GetSpace()
-		local targetLoc = targetPawn:GetSpace()
+		local attackerLoc = self:getPawnSpace(attackingPawn)
+		local targetLoc = self:getPawnSpace(targetPawn)
 
 		-- Add reflect animation icons
 		for _, idx in ipairs(indexes) do
