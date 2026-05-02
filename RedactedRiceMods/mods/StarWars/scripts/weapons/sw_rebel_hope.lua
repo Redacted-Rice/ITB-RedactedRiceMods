@@ -4,7 +4,7 @@ StarWars_RebelHope = PassiveSkill:new{
 	Class = "Science",
 	PowerCost = 0,
 	Upgrades = 1,
-	UpgradeCost = {2},
+	UpgradeCost = {1},
 	Icon = "weapons/science_sw_rebel_hope.png",
 	BoostAllies = false,
 	-- This doesn't work right but the image display is fine so leaving it
