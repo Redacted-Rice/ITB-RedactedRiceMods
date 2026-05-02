@@ -2,7 +2,7 @@ local mod = {
 	id = "redactedrice_starwars",
 	name = "Star Wars",
 	icon = "img/mod_icon.png",
-	version = "0.1.0",
+	version = "0.9.0",
 	modApiVersion = "2.9.5",
 	gameVersion = "1.2.93",
 	dependencies = {
@@ -80,14 +80,15 @@ function mod:load(options, version)
 	)
 
 	-- Register squad skill exclusions if CPLUS+ is available
-	if cplus_plus_ex then
+	-- This is 1.2 which won't be released yet
+	--[[if cplus_plus_ex then
 		-- Prevent Jump Jets and Pontoons for the Rebels squad
 		-- These flying mechs already have built-in movement advantages
 		cplus_plus_ex:registerSquadSkillExclusions("starwars_rebels", {
 			"RrJumpJets",
 			"RrPontoons"
 		})
-	end
+	end]]
 
 	--WorldBuildersAchievements:addHooks()
 end
