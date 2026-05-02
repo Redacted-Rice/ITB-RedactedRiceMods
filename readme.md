@@ -14,7 +14,7 @@ Please enjoy and contact us if you run into any issues!
 
 # Squads
 * Treeherders - v3.1.1 - Inspired by ents, this squad focuses on using forests tiles to increase their power. The flagship entborg mech gets stronger as the forests get destroyed
-* WorldBuilders - v1.3.1 - This squad focuses on terrain manipulation to block and avoid damage. It has some strong single target effects but you can easily get overwhelmed by numbers if not strategically manipulating the terrain
+* WorldBuilders - v1.3.2 - This squad focuses on terrain manipulation to block and avoid damage. It has some strong single target effects but you can easily get overwhelmed by numbers if not strategically manipulating the terrain
 
 # Other
 * More+ - v2.0.0 - 35 custom pilot level up skills across 5 categories with Status Library integration
@@ -40,7 +40,7 @@ To uninstall, delete the folder in mods
 Latest release: 1.5.0
 
 ## 1.5.0
-Major More+ 2.0 release with 16 new pilot skills!
+Major More+ 2.0 release with 16 new pilot skills for a total of 35!
 
 Updates to several libraries and minor fixes to other mods
 
@@ -48,7 +48,7 @@ Released: 05/01/2026
 
 Squads:
 * Treeherders    3.1.1
-* WorldBuilders  1.3.1
+* WorldBuilders  1.3.2
 
 Other Mods:
 * More+          2.0.0
@@ -68,7 +68,7 @@ Dependencies:
 * ModLoader     2.9.5
 * ModLoaderExt  1.24
 * Memedit       1.2.1
-* EasyEdit		  2.0.8
+* EasyEdit		2.0.8
 * Memhack       1.1.0
 * CPLUS+ Ex     1.1.0
 
