@@ -49,7 +49,6 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 					terrain, tostring(isOnHole))
 		end
 	end
-	return nil
 end
 
 return customSkill

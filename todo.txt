@@ -34,14 +34,10 @@ None
 ------------------------------------------------------------------------------
 
 MoreLvlUpSkills:
-Check for more skills like vampire
-cheap plating on pulls not working (alert too?)
-	pawn tracking "too late" - skill targets determined first 
-do pushes work with pawn tracking? probably not
+* Icons are a bit funky sometimes and show up on extra spaces during vek turn
 
 Known Issues:
 * Vigor on Harold will not show icon when using repair. Not sure why its not displaying. Seems to be something unique with how his repair skill works
-
 
 ------------------------------------------------------------------------------
 

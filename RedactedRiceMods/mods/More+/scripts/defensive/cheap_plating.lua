@@ -78,8 +78,6 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 			logger.logDebug(SUBMODULE, "Pawn %d has already used their first attack reduction, skipping", pawnId)
 		end
 	end
-
-	return nil
 end
 
 return customSkill

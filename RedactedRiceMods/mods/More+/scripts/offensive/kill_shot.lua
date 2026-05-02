@@ -63,7 +63,6 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 					spaceDamage.loc:GetString(), currentHealth, baseDamage, resultDamage, tostring(hasBoosted), tostring(hasArmor), tostring(hasAcid))
 		end
 	end
-	return nil
 end
 
 return customSkill

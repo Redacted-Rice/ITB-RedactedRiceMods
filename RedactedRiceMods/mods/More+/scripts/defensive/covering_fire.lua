@@ -32,7 +32,6 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 		logger.logDebug(SUBMODULE, "Will reduce movement of enemy at %s to %d (base: %d, reduction: %d)",
 				spaceDamage.loc:GetString(), targetMoveSpeed, baseMoveSpeed, moveReduction)
 	end
-	return nil
 end
 
 return customSkill

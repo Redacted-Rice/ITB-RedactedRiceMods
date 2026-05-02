@@ -45,7 +45,6 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 			logger.logDebug(SUBMODULE, "No militia bonus - target not adjacent to building")
 		end
 	end
-	return nil
 end
 
 return customSkill

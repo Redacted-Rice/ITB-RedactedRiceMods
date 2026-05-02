@@ -16,6 +16,9 @@ local SUBMODULE = logger.register("More+", "Vampire", customSkill.DEBUG)
 
 more_plus:addCustomTraitIcon(customSkill)
 
+-- Track heals per pawn ID for aggregation
+customSkill.pendingHeals = {}
+
 function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage, indexes, targetPawn)
 	if source == self.SOURCE_ATTACKER and targetPawn and
 			targetPawn:IsEnemy() and spaceDamage.iDamage > 0 and
@@ -23,7 +26,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 		local wouldKill = false
 		if spaceDamage.iDamage == DAMAGE_DEATH then
 			wouldKill = true
-			logger.logDebug(SUBMODULE, "Repair added - instakill vek at %s",
+			logger.logDebug(SUBMODULE, "Instakill vek at %s",
 					spaceDamage.loc:GetString())
 		else
 			local currentHealth = targetPawn:GetHealth()
@@ -46,46 +49,93 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 
 			if currentHealth <= resultDamage then
 				wouldKill = true
-				logger.logDebug(SUBMODULE, "Repair added - will kill vek at %s ("..
+				logger.logDebug(SUBMODULE, "Will kill vek at %s ("..
 						"health: %d, base damage: %d, final %d, boost: %s, armor: %s, acid: %s)",
 						spaceDamage.loc:GetString(), currentHealth, baseDamage, resultDamage, tostring(hasBoosted), tostring(hasArmor), tostring(hasAcid))
 			else
-				logger.logDebug(SUBMODULE, "No repair - vek at %s would survive ("..
+				logger.logDebug(SUBMODULE, "Vek at %s would survive ("..
 						"health: %d, base damage: %d, final %d, boost: %s, armor: %s, acid: %s)",
 						spaceDamage.loc:GetString(), currentHealth, baseDamage, resultDamage, tostring(hasBoosted), tostring(hasArmor), tostring(hasAcid))
 			end
 		end
 
 		if wouldKill then
-			local attackerOrigLoc = attackingPawn:GetSpace()
-			local attackerCurrLoc = self:getPawnSpace(attackingPawn)
-			local targetOrigLoc = targetPawn:GetSpace()
+			local pawnId = attackingPawn:GetId()
+			local targetLoc = self:getPawnSpace(targetPawn)
+			local attackerLoc = self:getPawnSpace(attackingPawn)
+			
+			-- Track this heal for aggregation (by pawn ID)
+			if not self.pendingHeals[pawnId] then
+				self.pendingHeals[pawnId] = {
+					pawnId = pawnId,
+					count = 0
+				}
+			end
+			self.pendingHeals[pawnId].count = self.pendingHeals[pawnId].count + 1
 
-			-- Add vampire animation icons
+			-- Add vampire animation icons at current location
 			for _, idx in ipairs(indexes) do
-				-- Show damage icon on attacker and target
 				logger.logDebug(SUBMODULE, "Adding vampire damage icon from %s to attacker %s with idx %d",
-						targetOrigLoc:GetString(), attackerOrigLoc:GetString(), idx)
+						targetLoc:GetString(), attackerLoc:GetString(), idx)
 				more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
 						function()
 							-- add to attacker and target
-							more_plus.libs.weaponPreview:AddAnimation(attackerOrigLoc,
+							more_plus.libs.weaponPreview:AddAnimation(attackerLoc,
 									more_plus.commonIcons.vampire.key.."_"..idx)
-							more_plus.libs.weaponPreview:AddAnimation(targetOrigLoc,
+							more_plus.libs.weaponPreview:AddAnimation(targetLoc,
 									more_plus.commonIcons.vampire.key.."_"..idx)
 						end)
 			end
 
-			-- Call repair skill and return array of all the space damages from it
-			local repairEffect = _G["Skill_Repair"]:GetSkillEffect(attackerCurrLoc, attackerCurrLoc)
-			local repairEffectTable = extract_table(repairEffect.effect)
-
-			logger.logDebug(SUBMODULE, "Getting repair effect for pawn %d at %s (killed vek at %s)",
-					attackingPawn:GetId(), attackerCurrLoc:GetString(), spaceDamage.loc:GetString())
-			return repairEffectTable
+			logger.logDebug(SUBMODULE, "Tracked vampire heal #%d for pawn %d",
+					self.pendingHeals[pawnId].count, pawnId)
 		end
 	end
-	return nil
+end
+
+function customSkill:SkillEffectEvaluated(phase)
+	if not next(self.pendingHeals) then
+		return nil
+	end
+	local results = {}
+	
+	-- Add a delay before applying heals
+	local delayDamage = SpaceDamage(Point(0, 0), 0)
+	delayDamage.bHide = true
+	delayDamage.fDelay = 0.5
+	table.insert(results, delayDamage)
+	
+	-- Loop through all pawn IDs and apply the summed heal 
+	for pawnId, healData in pairs(self.pendingHeals) do
+		local pawn = Board:GetPawn(pawnId)
+		if pawn then
+			-- Get pawn's current location
+			local currentLoc = self:getPawnSpace(pawn)
+			
+			logger.logDebug(SUBMODULE, "Creating aggregated heal (%d kills) for pawn %d at current location %s",
+					healData.count, pawnId, currentLoc:GetString())
+			
+			-- Adding an alert doesn't work and seems to be overriden by
+			-- the repair alert
+			
+			-- Create a single aggregated heal for all kills
+			local repairDamage = SpaceDamage(currentLoc, -healData.count)
+			repairDamage.iFire = EFFECT_REMOVE
+			repairDamage.iAcid = EFFECT_REMOVE
+			table.insert(results, repairDamage)
+			logger.logDebug(SUBMODULE, "Added aggregated repair effect (x%d) at %s", 
+					healData.count, currentLoc:GetString())
+		else
+			logger.logWarn(SUBMODULE, "Pawn %d not found when applying vampire heal", pawnId)
+		end
+	end
+	
+	-- Clear for next evaluation
+	self.pendingHeals = {}
+	
+	if #results > 0 then
+		return results
+	end
 end
 
 return customSkill
