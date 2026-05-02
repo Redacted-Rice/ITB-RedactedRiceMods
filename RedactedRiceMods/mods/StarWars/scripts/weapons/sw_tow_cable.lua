@@ -9,6 +9,7 @@ StarWars_TowCable = TankDefault:new{
 	Icon = "weapons/brute_sw_tow_cable.png",
 	PathSize = 2,
 	SetFire = false,
+	CancelAttack = false,
 	Limited = 2,
 	LaunchSound = "/weapons/grapple",
 	ImpactSound = "/impact/generic/grapple",
@@ -28,14 +29,14 @@ StarWars_TowCable_A = StarWars_TowCable:new{
 	SetFire = true,
 }
 
-Weapon_Texts.StarWars_TowCable_Upgrade2 = "+1 Damage"
-Weapon_Texts.StarWars_TowCable_B_UpgradeDescription = "Deals 1 damage to the target."
+Weapon_Texts.StarWars_TowCable_Upgrade2 = "Cancel Attack"
+Weapon_Texts.StarWars_TowCable_B_UpgradeDescription = "Cancels target's attack"
 StarWars_TowCable_B = StarWars_TowCable:new{
-	Damage = 1,
+	CancelAttack = true,
 }
 
 StarWars_TowCable_AB = StarWars_TowCable_A:new{
-	Damage = 1,
+	CancelAttack = true,
 }
 
 -- Uses base TankDefault targetting
@@ -51,7 +52,7 @@ function StarWars_TowCable:GetSkillEffect(p1, p2)
 	if self.SetFire then
 		projectileDamage.iFire = EFFECT_CREATE
 	end
-
+	
 	-- Set speed to 0
 	if Board:IsPawnSpace(p2) then
 		projectileDamage.sScript = projectileDamage.sScript .. [[
@@ -60,7 +61,10 @@ function StarWars_TowCable:GetSkillEffect(p1, p2)
 					pawn:SetMoveSpeed(0)
 				]]
 	end
-
 	ret:AddProjectile(projectileDamage, self.ProjectileArt)
+	
+	BoardUtils.addCancelEffect(p2, ret)
+	
+	-- TODO: Probably need to reapply fire
 	return ret
 end

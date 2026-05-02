@@ -8,7 +8,7 @@ StarWars_PairedCannons = TankDefault:new{
 	UpgradeCost = {1,1},
 
 	HitBehind = false,
-	Push = false,
+	Push = true,
 
 	Icon = "weapons/brute_sw_paired_cannons.png",
 	Explosion = "",

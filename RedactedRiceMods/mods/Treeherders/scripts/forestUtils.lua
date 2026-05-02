@@ -313,26 +313,7 @@ end
 -------------------  TEMP FUNCTIONS  ----------------------------
 
 function forestUtils:addCancelEffect(p, effect)
-	local smoked = Board:IsSmoke(p)
-	if not smoked then
-		local fireType = Board:GetFireType(p)
-		effect:AddScript([[Board:SetSmoke(]]..p:GetString()..[[, true, false)]])
-				
-		local damage = SpaceDamage(p, DAMAGE_ZERO)
-		damage.bHide = true
-		-- Needs a frame to cancel attack but not to cancel web interestingly
-		damage.fDelay = 0.00017 --force a one frame delay on the board
-		effect:AddDamage(damage)
-		
-		if fireType ~= FIRE_TYPE_NONE then
-			if fireType == FIRE_TYPE_FOREST_FIRE then
-				effect:AddScript([[Board:SetTerrain(]]..p:GetString()..[[, TERRAIN_FOREST)]])
-			end
-			effect:AddScript([[Board:SetFire(]]..p:GetString()..[[, true)]])
-		else
-			effect:AddScript([[Board:SetSmoke(]]..p:GetString()..[[, false, false)]])
-		end
-	end
+	return BoardUtils.addCancelEffect(p, effect)
 end
 
 function forestUtils:getTileFireType(point)
