@@ -63,7 +63,9 @@ function StarWars_TowCable:GetSkillEffect(p1, p2)
 	end
 	ret:AddProjectile(projectileDamage, self.ProjectileArt)
 	
-	BoardUtils.addCancelEffect(p2, ret)
+	if self.CancelAttack then
+		BoardUtils.addCancelEffect(p2, ret)
+	end
 	
 	-- TODO: Probably need to reapply fire
 	return ret

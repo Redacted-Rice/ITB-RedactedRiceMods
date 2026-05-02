@@ -2,10 +2,10 @@ StarWars_ProtonTorpedo = TankDefault:new{
 	Name = "Proton Torpedo",
 	Description = "",
 	Class = "Brute",
-	Damage = 3,
+	Damage = 4,
 	PowerCost = 1,
-	Upgrades = 2,
-	UpgradeCost = {2,2},
+	Upgrades = 1,
+	UpgradeCost = {2},
 	Limited = 1,
 
 	Icon = "weapons/brute_sw_proton_torpedo.png",
@@ -28,20 +28,9 @@ StarWars_ProtonTorpedo = TankDefault:new{
 	}
 }
 
-Weapon_Texts.StarWars_ProtonTorpedo_Upgrade1 = "+1 Damage"
+Weapon_Texts.StarWars_ProtonTorpedo_Upgrade1 = "+1 Use"
 StarWars_ProtonTorpedo_A = StarWars_ProtonTorpedo:new{
 	UpgradeDescription = "",
-	Damage = 4,
-	SplashDamage = 2,
-}
-
-Weapon_Texts.StarWars_ProtonTorpedo_Upgrade2 = "+1 Use"
-StarWars_ProtonTorpedo_B = StarWars_ProtonTorpedo:new{
-	UpgradeDescription = "",
-	Limited = 2,
-}
-
-StarWars_ProtonTorpedo_AB = StarWars_ProtonTorpedo_A:new{
 	Limited = 2,
 }
 

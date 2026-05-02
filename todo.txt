@@ -28,11 +28,25 @@ Known Issues:
 ------------------------------------------------------------------------------
 
 Star Wars:
-Rebels:
-* Descriptions & rebalance
-	* All
-* Achievments?
-* Luke icon not working
+Pre-release todos
+* cannon array
+	not getting fire and acide from tiles
+	can't attack when webbed (Failing to use attack fdue to webbed?)
+* Fire put out by tow cable cancel
+* undo turn clears tow cable targets - need to save them
+* Artillery arc not working for two click and seems to invert
+* xwing occasionally getting speed set to 0 (smoked?)
+	Maybe same as accelerator glitch
+* weapon descriptions
+
+Release todos:
+* Proton torp - random explosions at 0,0
+* moving an undoing rally will remove existing boost
+* accelerator (vampire) glitched to 152?? xwin (silica)
+	Seems to be when quad cannon is selected/previewing. PRobably reading total move then applying it as base move
+* Seeing infinite loops warning sometimes
+* redo luke art a bit
+* Achievments (and art)
 
 
 ------------------------------------------------------------------------------
