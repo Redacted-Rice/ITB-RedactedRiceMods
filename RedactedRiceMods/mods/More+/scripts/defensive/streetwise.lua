@@ -14,7 +14,6 @@ more_plus:addCustomTraitIcon(customSkill)
 
 function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage, indexes, targetPawn)
 	if source ~= self.SOURCE_ATTACKER then
-		return nil
 	end
 
 	if Board:IsBuilding(spaceDamage.loc) and spaceDamage.iDamage > 0 and
@@ -32,7 +31,6 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 		spaceDamage.iDamage = DAMAGE_ZERO
 		logger.logDebug(SUBMODULE, "Prevented damage to building at %s", spaceDamage.loc:GetString())
 	end
-	return nil
 end
 
 return customSkill

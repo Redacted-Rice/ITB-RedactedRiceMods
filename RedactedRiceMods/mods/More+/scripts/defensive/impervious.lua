@@ -31,7 +31,6 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 		logger.logDebug(SUBMODULE, "Blocked ally damage from pawn %d to pawn %d (damage: %d -> DAMAGE_ZERO)",
 				attackingPawn:GetId(), targetPawn:GetId(), oldDamage)
 	end
-	return nil
 end
 
 return customSkill

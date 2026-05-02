@@ -41,7 +41,6 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 					targetPawn:GetId(), spaceDamage.loc:GetString())
 		end
 	end
-	return nil
 end
 
 return customSkill

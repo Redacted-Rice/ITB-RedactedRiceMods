@@ -18,7 +18,6 @@ more_plus:addCustomTraitIcon(customSkill)
 
 function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage, indexes, targetPawn)
 	if source ~= self.SOURCE_ATTACKER then
-		return nil
 	end
 
 	local mechMoveSpeed = attackingPawn:GetMoveSpeed()
@@ -39,7 +38,6 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 					spaceDamage.loc:GetString(), moveSpeed, mechMoveSpeed, moveThreshold)
 		end
 	end
-	return nil
 end
 
 return customSkill

@@ -6,57 +6,129 @@ local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
 	priority = 180, -- go after kill shot
 }
 
-customSkill.DEBUG = true
+customSkill.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Reflect", customSkill.DEBUG)
 
 more_plus:addCustomTraitIcon(customSkill)
+
+-- Track reflects by attacker pawn ID
+customSkill.pendingReflects = {} -- [attackerPawnId] = {totalDamage, hasInstakill}
+customSkill.reflectorPawns = {} -- Set of pawn IDs that are reflecting
 
 function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage, indexes, targetPawn)
 	-- Check if this is damage from an enemy to a mech
 	if source == self.SOURCE_TARGET and attackingPawn and
 			attackingPawn:IsEnemy() and spaceDamage.iDamage > 0 and
 			spaceDamage.iDamage ~= DAMAGE_ZERO then
-		local attackerOrigLoc = attackingPawn:GetSpace()
-		local attackerCurrLoc = self:getPawnSpace(attackingPawn)
-		local targetOrigLoc = targetPawn:GetSpace()
-		local targetCurrLoc = self:getPawnSpace(targetPawn)
+		local attackerId = attackingPawn:GetId()
+		local reflectorId = targetPawn:GetId()
+		
+		-- Display icons at pawns starting position
+		local attackerStartLoc = attackingPawn:GetSpace()
+		local targetStartLoc = targetPawn:GetSpace()
 
-		-- Add reflect animation icons
+		-- Calculate reflect damage
+		local reflectDamage = 0
+		if spaceDamage.iDamage == DAMAGE_DEATH then
+			reflectDamage = DAMAGE_DEATH
+			logger.logDebug(SUBMODULE, "Reflecting DAMAGE_DEATH back to attacker %d", attackerId)
+		else
+			reflectDamage = math.ceil(spaceDamage.iDamage / 2)
+			logger.logDebug(SUBMODULE, "Reflecting %d damage back to attacker %d (original: %d)",
+					reflectDamage, attackerId, spaceDamage.iDamage)
+		end
+		
+		-- Track reflect damage by attacker ID
+		if not self.pendingReflects[attackerId] then
+			self.pendingReflects[attackerId] = {
+				attackerId = attackerId,
+				totalDamage = 0,
+				hasInstakill = false
+			}
+		end
+		
+		if reflectDamage == DAMAGE_DEATH then
+			self.pendingReflects[attackerId].hasInstakill = true
+		else
+			self.pendingReflects[attackerId].totalDamage = 
+					self.pendingReflects[attackerId].totalDamage + reflectDamage
+		end
+		
+		-- Track reflector pawns
+		self.reflectorPawns[reflectorId] = true
+
+		-- Add reflect icons at start locations
 		for _, idx in ipairs(indexes) do
-			-- Show damage icon on attacker (where reflect damage will hit)
 			logger.logDebug(SUBMODULE, "Adding reflect damage icon from %s to attacker %s with idx %d",
-					targetOrigLoc:GetString(), attackerOrigLoc:GetString(), idx)
+					targetStartLoc:GetString(), attackerStartLoc:GetString(), idx)
 			more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
 					function()
-						-- add to attacker and target
-						more_plus.libs.weaponPreview:AddAnimation(attackerOrigLoc,
+						-- add to attacker and target at their START positions
+						more_plus.libs.weaponPreview:AddAnimation(attackerStartLoc,
 								more_plus.commonIcons.reflect.key.."_"..idx)
-						more_plus.libs.weaponPreview:AddAnimation(targetOrigLoc,
+						more_plus.libs.weaponPreview:AddAnimation(targetStartLoc,
 								more_plus.commonIcons.reflect.key.."_"..idx)
 					end)
 		end
 
-		-- Add a pause before reflect damage for visual clarity
-		local reflectPause = SpaceDamage(targetCurrLoc)
-		reflectPause.sScript = "Board:Ping("..targetCurrLoc:GetString()..", GL_Color(175, 175, 255))"
-		reflectPause.fDelay = 0.3
-
-		-- Handle DAMAGE_DEATH case
-		local reflectDamage = 0
-		if spaceDamage.iDamage == DAMAGE_DEATH then
-			reflectDamage = DAMAGE_DEATH
-			logger.logDebug(SUBMODULE, "Reflecting DAMAGE_DEATH back to attacker at %s", attackerCurrLoc:GetString())
-		else
-			reflectDamage = math.ceil(spaceDamage.iDamage / 2)
-			logger.logDebug(SUBMODULE, "Reflecting %d damage back to attacker at %s (original: %d)",
-					reflectDamage, attackerCurrLoc:GetString(), spaceDamage.iDamage)
-		end
-		return {reflectPause, SpaceDamage(attackerCurrLoc, reflectDamage)}
+		logger.logDebug(SUBMODULE, "Tracked reflect to attacker %d (damage: %s)",
+				attackerId, reflectDamage == DAMAGE_DEATH and "DEATH" or tostring(reflectDamage))
 	end
+end
 
-	-- Return nil if no reflection should occur
-	return nil
+function customSkill:SkillEffectEvaluated(phase)
+	if not next(self.pendingReflects) then
+		return nil
+	end
+	local results = {}
+	local pauseDamage = SpaceDamage()
+	pauseDamage.fDelay = 0.1
+	table.insert(results, pauseDamage)
+	
+	-- First loop: ping all reflector pawns at their current location
+	for reflectorId, _ in pairs(self.reflectorPawns) do
+		local reflector = Board:GetPawn(reflectorId)
+		if reflector then
+			local currentLoc = self:getPawnSpace(reflector)
+			local pingDamage = SpaceDamage(currentLoc)
+			pingDamage.sScript = [[Board:Ping(]]..currentLoc:GetString()..[[, GL_Color(175, 175, 255))
+					Board:AddAlert(]]..currentLoc:GetString()..[[,"REFLECT")]]
+			pingDamage.bHide = true
+			-- Add a delay
+			pingDamage.fDelay = 0.3
+			table.insert(results, pingDamage)
+			logger.logDebug(SUBMODULE, "Added ping for reflector pawn %d at %s", 
+					reflectorId, currentLoc:GetString())
+		end
+	end
+	
+	-- Second loop: deal damage to all attackers at their CURRENT location
+	for attackerId, reflectData in pairs(self.pendingReflects) do
+		local attacker = Board:GetPawn(attackerId)
+		if attacker then
+			local currentLoc = self:getPawnSpace(attacker)
+			
+			-- Create aggregated reflect damage
+			local finalDamage = reflectData.hasInstakill and DAMAGE_DEATH or reflectData.totalDamage
+			local reflectSd = SpaceDamage(currentLoc, finalDamage)
+			table.insert(results, reflectSd)
+			
+			logger.logDebug(SUBMODULE, "Created aggregated reflect damage to attacker %d at %s (damage: %s)",
+					attackerId, currentLoc:GetString(), 
+					finalDamage == DAMAGE_DEATH and "DEATH" or tostring(finalDamage))
+		else
+			logger.logWarn(SUBMODULE, "Attacker pawn %d not found when applying reflect", attackerId)
+		end
+	end
+	
+	-- Clear for next evaluation
+	self.pendingReflects = {}
+	self.reflectorPawns = {}
+	
+	if #results > 0 then
+		return results
+	end
 end
 
 return customSkill

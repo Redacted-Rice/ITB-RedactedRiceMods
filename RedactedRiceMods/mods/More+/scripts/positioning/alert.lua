@@ -62,7 +62,6 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 					targetPawn:GetId(), targetLoc:GetString(), oldDamage, spaceDamage.iDamage)
 		end
 	end
-	return nil
 end
 
 -- Show icon when moving to a location adjacent to vek

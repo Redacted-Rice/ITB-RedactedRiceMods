@@ -32,7 +32,6 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 			logger.logDebug(SUBMODULE, "Added +1 damage to unique vek at %s", spaceDamage.loc:GetString())
 		end
 	end
-	return nil
 end
 
 return customSkill
