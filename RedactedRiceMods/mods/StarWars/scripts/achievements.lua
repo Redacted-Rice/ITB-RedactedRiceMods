@@ -2,11 +2,11 @@ local mod = mod_loader.mods[modApi.currentMod]
 local path = mod.scriptPath
 
 StarWarsAchievements = {
-	kesselRunStartPos = nil,
 	protonTorpedoActive = false,
 	protonTorpedoKills = 0,
 	protonTorpedoKillsThreshold = 3,
 	protonTordepoName = "StarWars_ProtonTorpedo",
+	kesselRunThreshold = 8,
 }
 
 local squad = "starwars_rebels"
@@ -29,8 +29,8 @@ local achievements = {
 
 	almostmany = modApi.achievements:add{
 		id = "almostmany",
-		name = "Almost as many",
-		tooltip = "Get " .. StarWarsAchievements.protonTorpedoKillsThreshold .. " kills from a single proton torpedo",
+		name = "Almost as Impressive",
+		tooltip = "Get " .. StarWarsAchievements.protonTorpedoKillsThreshold .. " (enemy) kills from a single proton torpedo",
 		image = mod.resourcePath .. "img/achievements/spleef.png",
 		squad = squad,
 	},
@@ -49,6 +49,22 @@ local function isInMission()
 	return isGame() and mission ~= nil and mission ~= Mission_Test
 end
 
+local function spacesOffset(mission, pawn)
+	if not mission.starwars or not mission.starwars.achiev_kesselRunStartPos then
+		return 0
+	end
+	--GetCurrentMission.starwars.achiev_kesselRunStartPos[2]
+	local startPos = mission.starwars.achiev_kesselRunStartPos[pawn:GetId()]
+	local endPos = pawn:GetSpace()
+	if not startPos or not endPos then
+		LOG("NIL arg")
+		return 0
+	end
+	
+	LOG("KESSEL CHECK ".. startPos:GetString() .. endPos:GetString())
+	return math.max(math.abs(startPos.x - endPos.x), math.abs(startPos.y - endPos.y))
+end
+
 local baseTooltip = achievements.almostmany.getTooltip
 achievements.almostmany.getTooltip = function(self)
 	local result = baseTooltip(self)
@@ -62,6 +78,50 @@ achievements.almostmany.getTooltip = function(self)
 	return result
 end
 
+local baseTooltip = achievements.kesselrun.getTooltip
+achievements.kesselrun.getTooltip = function(self)
+	local result = baseTooltip(self)
+	
+	if (not achievements.kesselrun:isComplete()) and isInMission() then
+		local mission = GetCurrentMission()
+		if mission and mission.starwars and mission.starwars.achiev_kesselRunStartPos then
+			local farthest = 0
+			for i = 0, 2 do
+				if Board:GetPawn(i) then
+					farthest = math.max(farthest, spacesOffset(mission, Board:GetPawn(i)))
+				end
+			end
+			result = result .. "\n\nFurthest traveled since last turn: " .. farthest
+		end
+	end
+
+	return result
+end
+
+local baseTooltip = achievements.realoriginal.getTooltip
+achievements.realoriginal.getTooltip = function(self)
+	local result = baseTooltip(self)
+	
+	local foundBoss = false
+	if (not achievements.realoriginal:isComplete()) and isInMission() then
+		if GAME and GAME.starwars and GAME.starwars.tow_cabled then
+			for _, pawnId in ipairs(GAME.starwars.tow_cabled) do
+				if Board:GetPawn(pawnId) and
+						mod_loader.mods.redactedrice_libs.libs.pawnTypeUtils.isBoss(Board:GetPawn(pawnId)) then
+					result = result .. "\n\nBoss is grappled"
+					foundBoss = true
+					break
+				end
+			end
+		end
+	end
+
+	if not foundBoss then
+		result = result .. "\n\nNo boss or its not grappled"
+	end
+	return result
+end
+
 local function resetKessleRunSaveData(mission)
 	if mission.starwars == nil then
 		mission.starwars = {}
@@ -70,28 +130,9 @@ local function resetKessleRunSaveData(mission)
 	mission.starwars.achiev_kesselRunStartPos = {}
 	for i = 0, 2 do
 		if Board:GetPawn(i) then
-			table.insert(mission.starwars.achiev_kesselRunStartPos, Board:GetPawn(i):GetSpace())
+			mission.starwars.achiev_kesselRunStartPos[i] = Board:GetPawn(i):GetSpace()
 		end
 	end
-end
-
-local function crossedBoard(mission, pawn)
-	if not mission.starwars or not mission.starwars.achiev_kesselRunStartPos then
-		return false
-	end
-	
-	local startPos = mission.starwars.achiev_kesselRunStartPos[pawn:GetId()]
-	local endPos = pawn:GetSpace()
-	local size = Board:GetSize()
-	if not startPos or not endPos or not size then
-		LOG("NIL arg")
-		return false
-	end
-	
-	local crossedHorizontal = (startPos.x == 0 and endPos.x == size.x - 1) or (startPos.x == size.x - 1 and endPos.x == 0)
-	local crossedVertical = (startPos.y == 0 and endPos.y == size.y - 1) or (startPos.y == size.y - 1 and endPos.y == 0)
-	
-	return crossedHorizontal or crossedVertical
 end
 
 function StarWarsAchievements.onMissionStartHook(mission)
@@ -130,9 +171,13 @@ function StarWarsAchievements.onPawnKilledHook(mission, pawn)
 	
 	if not achievements.realoriginal:isComplete() then
 		if pawn:IsEnemy() and mod_loader.mods.redactedrice_libs.libs.pawnTypeUtils.isBoss(pawn) and
-				GAME and GAME.starwars and GAME.starwars.tow_cabled and
-				GAME.starwars.tow_cabled[pawn:GetId()] then
-			achievements.realoriginal:trigger()
+				GAME and GAME.starwars and GAME.starwars.tow_cabled then
+			for _, pawnId in ipairs(GAME.starwars.tow_cabled) do
+				if pawnId == pawn:GetId() then
+					achievements.realoriginal:trigger()
+					break
+				end
+			end
 		end
 	end
 	
@@ -152,7 +197,8 @@ function StarWarsAchievements.onPawnPositionChangedHook(mission, pawn, oldPos)
 	end
 	
 	if not achievements.kesselrun:isComplete() then
-		if crossedBoard(mission, pawn) then
+		LOG("KESSEL CHECK")
+		if spacesOffset(mission, pawn) >= (StarWarsAchievements.kesselRunThreshold - 1) then
 			achievements.kesselrun:trigger()
 		end
 	end
