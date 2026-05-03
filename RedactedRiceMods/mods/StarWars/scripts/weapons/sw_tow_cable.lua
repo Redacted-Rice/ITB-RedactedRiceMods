@@ -1,6 +1,6 @@
 StarWars_TowCable = TankDefault:new{
 	Name = "Tow Cable",
-	Description = "Fire a tow cable up to 2 spaces in a line to stop an enemy from moving.",
+	Description = "Fire a tow cable up to 2 spaces in a line, wrapping around an enemy to prevent them from moving.",
 	Class = "Brute",
 	Damage = 0,
 	PowerCost = 0,
@@ -23,7 +23,7 @@ StarWars_TowCable = TankDefault:new{
 }
 
 -- Weapon text definitions
-Weapon_Texts.StarWars_TowCable_Upgrade1 = "+Fire"
+Weapon_Texts.StarWars_TowCable_Upgrade1 = "+ Fire"
 Weapon_Texts.StarWars_TowCable_A_UpgradeDescription = "Sets the target space on fire."
 StarWars_TowCable_A = StarWars_TowCable:new{
 	SetFire = true,
@@ -40,6 +40,42 @@ StarWars_TowCable_AB = StarWars_TowCable_A:new{
 }
 
 -- Uses base TankDefault targetting
+
+-- Initialize GAME save data structure
+function StarWars_TowCable:initGameSaveData()
+	if GAME == nil then
+		GAME = {}
+	end
+
+	if GAME.starwars == nil then
+		GAME.starwars = {}
+	end
+
+	if GAME.starwars.tow_cabled == nil then
+		GAME.starwars.tow_cabled = {}
+	end
+end
+
+function StarWars_TowCable:loadTowCabled()
+	modApi:runLater(function()
+		self:initGameSaveData()
+		for _, pawnId in ipairs(GAME.starwars.tow_cabled) do
+			if Board:GetPawn(pawnId) then
+				Board:GetPawn(pawnId):SetMoveSpeed(0)
+			end
+		end
+	end)
+end
+
+function StarWars_TowCable:load(options, version)
+	-- Hook into mission start to reset force focus tracking
+	modApi:addMissionStartHook(function(mission)
+		self:initGameSaveData()
+		GAME.starwars.tow_cabled = {}
+	end)
+	modapiext:addGameLoadedHook(function() self:loadTowCabled() end)
+	modapiext:addResetTurnHook(function() self:loadTowCabled() end)
+end
 
 function StarWars_TowCable:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
@@ -59,6 +95,8 @@ function StarWars_TowCable:GetSkillEffect(p1, p2)
 				local pawn = Board:GetPawn(]].. p2:GetString() ..[[)
 					Board:Ping(pawn:GetSpace(), GL_Color(255, 0, 0))
 					pawn:SetMoveSpeed(0)
+					StarWars_TowCable:initGameSaveData()
+					table.insert(GAME.starwars.tow_cabled, pawn:GetId())
 				]]
 	end
 	ret:AddProjectile(projectileDamage, self.ProjectileArt)
@@ -67,6 +105,12 @@ function StarWars_TowCable:GetSkillEffect(p1, p2)
 		BoardUtils.addCancelEffect(p2, ret)
 	end
 	
-	-- TODO: Probably need to reapply fire
+	-- cancel will put out the fire since its part of the same attack
+	-- so apply it here so it displays (first one) and also takes effect
+	if self.SetFire then
+		local reapplyFire = SpaceDamage(p2)
+		reapplyFire.iFire = EFFECT_CREATE
+		ret:AddDamage(reapplyFire)
+	end
 	return ret
 end

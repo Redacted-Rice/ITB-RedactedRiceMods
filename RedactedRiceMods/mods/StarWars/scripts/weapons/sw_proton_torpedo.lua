@@ -1,6 +1,6 @@
 StarWars_ProtonTorpedo = TankDefault:new{
-	Name = "Proton Torpedo",
-	Description = "",
+	Name = "Proton Torpedos",
+	Description = "Fires a pair of proton torpedos exploding and doing damage in a plus-shaped area",
 	Class = "Brute",
 	Damage = 4,
 	PowerCost = 1,
@@ -14,7 +14,7 @@ StarWars_ProtonTorpedo = TankDefault:new{
 	LaunchSound = "/weapons/unstable_cannon",
 	ImpactSound = "/impact/generic/explosion_large",
 
-	SplashDamage = 1,
+	SplashDamage = 2,
 
 	TipImage = StandardTips.Ranged,
 	ZoneTargeting = ZONE_DIR,
@@ -30,7 +30,7 @@ StarWars_ProtonTorpedo = TankDefault:new{
 
 Weapon_Texts.StarWars_ProtonTorpedo_Upgrade1 = "+1 Use"
 StarWars_ProtonTorpedo_A = StarWars_ProtonTorpedo:new{
-	UpgradeDescription = "",
+	UpgradeDescription = "Add a second pair of proton torpedos",
 	Limited = 2,
 }
 

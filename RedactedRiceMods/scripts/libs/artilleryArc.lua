@@ -155,6 +155,8 @@ if isNewestVersion then
 		weaponArmed.events.onWeaponUnarmed:subscribe(self.onWeaponUnarmed)
 		modApiExt.events.onSkillStart:subscribe(self.onSkillStart)
 		modApiExt.events.onSkillEnd:subscribe(self.onSkillEnd)
+		modApiExt.events.onFinalEffectStart:subscribe(self.onSkillStart)
+		modApiExt.events.onFinalEffectEnd:subscribe(self.onSkillEnd)
 		modApi.events.onTipImageShown:subscribe(self.onTipImageShown)
 		modApi.events.onTipImageHidden:subscribe(self.onTipImageHidden)
 		modApi.events.onMissionUpdate:subscribe(self.onMissionUpdate)

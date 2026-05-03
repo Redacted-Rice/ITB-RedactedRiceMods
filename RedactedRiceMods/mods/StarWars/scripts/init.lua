@@ -61,10 +61,9 @@ function mod:init()
 end
 
 function mod:load(options, version)
-	-- Load pilots
-	if self.pilots then
-		self.pilots:load(options, version)
-	end
+	-- Load as needed
+	self.pilots:load(options, version)
+	StarWars_TowCable:load(options, version)
 
 	modApi:addSquad(
 		{

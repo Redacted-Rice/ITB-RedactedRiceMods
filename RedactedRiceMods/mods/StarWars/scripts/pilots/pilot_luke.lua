@@ -45,12 +45,12 @@ function this:initGameSaveData()
 		GAME = {}
 	end
 
-	if GAME.starwars_luke == nil then
-		GAME.starwars_luke = {}
+	if GAME.starwars == nil then
+		GAME.starwars = {}
 	end
 
-	if GAME.starwars_luke.force_focused == nil then
-		GAME.starwars_luke.force_focused = {}
+	if GAME.starwars.force_focused == nil then
+		GAME.starwars.force_focused = {}
 	end
 end
 
@@ -87,7 +87,7 @@ function Luke_ForceFocus_Repair:GetSkillEffect(p1, p2)
 				-- Initialize data
 				Pilot_Luke_Ref:initGameSaveData()
 
-				GAME.starwars_luke.force_focused[pawnId] = true
+				GAME.starwars.force_focused[pawnId] = true
 
 				-- trigger a dialog
 				local cast = { main = pawnId }
@@ -149,7 +149,7 @@ local function processSkills(pawn, weaponId, previewState, skillEffect)
 	local pawnId = pawn:GetId()
 
 	-- Check if this pawn has force focus active
-	if GAME.starwars_luke.force_focused[pawnId] then
+	if GAME.starwars.force_focused[pawnId] then
 		-- Double all damage in the skill effect and add Force Focus icon
 		local hasDoubledDamage = doubleDamageInEffect(skillEffect.effect, pawnId, previewState)
 
@@ -160,7 +160,7 @@ local function processSkills(pawn, weaponId, previewState, skillEffect)
 			firstDamage.sScript = (firstDamage.sScript or "") .. [[
 				local pawnId = ]] .. pawnId .. [[
 				Pilot_Luke_Ref:initGameSaveData()
-				GAME.starwars_luke.force_focused[pawnId] = nil
+				GAME.starwars.force_focused[pawnId] = nil
 			]]
 
 			-- Only trigger dialog if we actually doubled some damage
@@ -201,23 +201,21 @@ function this:init(mod)
 	})
 end
 
-function this:load(modApiExt, options)
+function this:load(options, version)
 	-- Add ruled dialogs for Luke
-	modApiExt.dialog:addRuledDialog("Luke_ForceFocused", {
+	modapiext.dialog:addRuledDialog("Luke_ForceFocused", {
 			Odds = 75,
 			{ main = "Luke_ForceFocused" },
 	})
-	modApiExt.dialog:addRuledDialog("Luke_ForceFocus_Used", {
+	modapiext.dialog:addRuledDialog("Luke_ForceFocus_Used", {
 			Odds = 75,
 			{ main = "Luke_ForceFocus_Used" },
 	})
-end
-
-local function onModsLoaded()
+	
 	-- Hook into mission start to reset force focus tracking
 	modApi:addMissionStartHook(function(mission)
-		Pilot_Luke_Ref:initGameSaveData()
-		GAME.starwars_luke.force_focused = {}
+		self:initGameSaveData()
+		GAME.starwars.force_focused = {}
 	end)
 
 	-- Hook to modify damage output in both skill effect and final effect
@@ -233,9 +231,6 @@ end
 local personality = mod.libs.personality:new{ Label = "Luke" }
 personality:AddDialog(dialog)
 Personality[pilot.Personality] = personality
-
--- Subscribe to events
-modApi.events.onModsLoaded:subscribe(onModsLoaded)
 
 Pilot_Luke_Ref = this
 return Pilot_Luke_Ref

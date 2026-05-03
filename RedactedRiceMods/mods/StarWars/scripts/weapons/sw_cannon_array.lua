@@ -1,6 +1,6 @@
 StarWars_CannonArray = Skill:new{
 	Name = "Cannon Array",
-	Description = "Move up to 2 spaces straight firing at all enemies on one side.",
+	Description = "Fly up to 2 spaces in a line firing laser cannons at all adjacent enemies on one side (Stops on each space).",
 	Class = "Brute",
 	Damage = 2,
 	PowerCost = 1,
@@ -26,7 +26,7 @@ StarWars_CannonArray = Skill:new{
 
 -- Weapon text definitions
 Weapon_Texts.StarWars_CannonArray_Upgrade1 = "+1 Move Range"
-Weapon_Texts.StarWars_CannonArray_A_UpgradeDescription = "Increases movement range to 3."
+Weapon_Texts.StarWars_CannonArray_A_UpgradeDescription = "Increases move range to 3."
 StarWars_CannonArray_A = StarWars_CannonArray:new{
 	MoveRange = 3,
 }
@@ -46,9 +46,14 @@ function StarWars_CannonArray:GetTargetArea(point)
 	local pawn = Board:GetPawn(point)
 	if not pawn then return ret end
 	
-	-- Temporarily set the pawn's move speed to our weapon range
-	local originalMoveSpeed = pawn:GetMoveSpeed()
-	pawn:SetMoveSpeed(self.MoveRange)
+	-- Temporarily overwrite getmovespeed of the global acting Pawn
+	-- so we can control the speed without having to change it on
+	-- the mech as this has been problematic
+	local origMoveSpeed = Pawn.GetMoveSpeed
+	local attackRange = self.MoveRange
+	function Pawn:GetMoveSpeed()
+		return attackRange
+	end
 	
 	-- Get all tiles reachable by the Move skill and fire the skill build manually
 	-- for things like nimble
@@ -59,11 +64,11 @@ function StarWars_CannonArray:GetTargetArea(point)
 	)
 	
 	-- Restore original move speed
-	pawn:SetMoveSpeed(originalMoveSpeed)
+	Pawn.GetMoveSpeed = origMoveSpeed
 	
 	-- Filter to only straight line moves in 4 directions
 	for dir = DIR_START, DIR_END do
-		for i = 1, self.MoveRange do
+		for i = 1, attackRange do
 			local target = point + DIR_VECTORS[dir] * i
 			if Board:IsValid(target) then
 				-- Check if this tile is reachable by the Move skill
@@ -184,6 +189,7 @@ function StarWars_CannonArray:GetFinalEffect(p1, p2, p3)
 	
 	-- Move through path one space at a time, firing at each position
 	local pawnId = pawn:GetId()
+	local lastPos = p1
 	for i = 1, path:size() do
 		local newPos = path:index(i)
 		
@@ -198,7 +204,6 @@ function StarWars_CannonArray:GetFinalEffect(p1, p2, p3)
 			ret:AddDelay(0.1)
 		end
 	end
-
 	return ret
 end
 
