@@ -28,7 +28,7 @@ function mod:init()
 	require(self.scriptPath .. "palettes")
 
 	-- Achievements
-	--require(self.scriptPath .. "achievements")
+	require(self.scriptPath .. "achievements")
 
 	-- Pawns
 	require(self.scriptPath .. "mechs/sw_mel_falcon")
@@ -89,7 +89,7 @@ function mod:load(options, version)
 		})
 	end]]
 
-	--WorldBuildersAchievements:addHooks()
+	StarWarsAchievements:addHooks()
 end
 
 return mod
