@@ -20,7 +20,7 @@ function this:load(options, version)
 	-- Load each pilot's custom load function if it exists
 	for id, name in pairs(pilotnames) do
 		if self[id] and self[id]["load"] ~= nil then
-			self[id]:load(modapiext, options, version)
+			self[id]:load(options, version)
 		end
 	end
 end

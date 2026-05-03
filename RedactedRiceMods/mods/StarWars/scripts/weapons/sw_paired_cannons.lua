@@ -1,13 +1,13 @@
 StarWars_PairedCannons = TankDefault:new{
 	Name = "Paired Cannons",
-	Description = "",
+	Description = "Fires two laser cannons at once, damaging and pushing the target",
 	Class = "Brute",
 	Damage = 1,
 	PowerCost = 0,
 	Upgrades = 2,
 	UpgradeCost = {1,1},
 
-	HitBehind = false,
+	ExtraHitSpaces = 0,
 	Push = true,
 
 	Icon = "weapons/brute_sw_paired_cannons.png",
@@ -26,20 +26,20 @@ StarWars_PairedCannons = TankDefault:new{
 	},
 }
 
-Weapon_Texts.StarWars_PairedCannons_Upgrade1 = "Hit Behind"
+Weapon_Texts.StarWars_PairedCannons_Upgrade1 = "+1 Space"
 StarWars_PairedCannons_A = StarWars_PairedCannons:new{
-	UpgradeDescription = "",
-	HitBehind = true,
+	UpgradeDescription = "Damages and pushes an additional space behind the target",
+	ExtraHitSpaces = 1,
 }
 
-Weapon_Texts.StarWars_PairedCannons_Upgrade2 = "Push"
+Weapon_Texts.StarWars_PairedCannons_Upgrade2 = "+1 Space"
 StarWars_PairedCannons_B = StarWars_PairedCannons:new{
-	UpgradeDescription = "",
-	Push = true,
+	UpgradeDescription = "Damages and pushes an additional space behind the target",
+	ExtraHitSpaces = 1,
 }
 
 StarWars_PairedCannons_AB = StarWars_PairedCannons_A:new{
-	Push = true,
+	ExtraHitSpaces = 2,
 }
 
 function StarWars_PairedCannons:MakeSpaceDamage(p, pushDir)
@@ -54,10 +54,13 @@ function StarWars_PairedCannons:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
 
 	local attackDir = GetDirection(p2 - p1)
-	if self.HitBehind then
-		local pBehind = p2 + DIR_VECTORS[attackDir]
-		ret:AddProjectile(self:MakeSpaceDamage(pBehind, attackDir), self.ProjectileArt, NO_DELAY)
-		ret:AddDelay(0.2)
+	for i = 1, self.ExtraHitSpaces do 
+		-- Start from furthest back and go forward
+		local pBehind = p2 + DIR_VECTORS[attackDir] * (self.ExtraHitSpaces + 1 - i)
+		if Board:IsValid(pBehind) then
+			ret:AddProjectile(self:MakeSpaceDamage(pBehind, attackDir), self.ProjectileArt, NO_DELAY)
+			ret:AddDelay(0.2)
+		end
 	end
 	ret:AddProjectile(self:MakeSpaceDamage(p2, attackDir), self.ProjectileArt)
 	return ret

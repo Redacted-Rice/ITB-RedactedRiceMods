@@ -1,6 +1,6 @@
 StarWars_CannonTurrets = TankDefault:new{
 	Name = "Cannon Turrets",
-	Description = "",
+	Description = "Quickly fires laser cannons at all enemies within the range",
 	Class = "Science",
 	Damage = 1,
 	PowerCost = 1,
@@ -33,13 +33,13 @@ StarWars_CannonTurrets = TankDefault:new{
 
 Weapon_Texts.StarWars_CannonTurrets_Upgrade1 = "+1 Range"
 StarWars_CannonTurrets_A = StarWars_CannonTurrets:new{
-	UpgradeDescription = "",
+	UpgradeDescription = "Increase range by 1",
 	Range = 3
 }
 
 Weapon_Texts.StarWars_CannonTurrets_Upgrade2 = "Focus Fire"
 StarWars_CannonTurrets_B = StarWars_CannonTurrets:new{
-	UpgradeDescription = "",
+	UpgradeDescription = "Select a space to hit (or hit twice) and a space to skip",
 	TwoClick = true,
 }
 
