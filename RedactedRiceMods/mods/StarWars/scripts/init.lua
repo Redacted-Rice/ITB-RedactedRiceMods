@@ -16,10 +16,10 @@ function mod:init()
 	for libId, lib in pairs(mod_loader.mods.redactedrice_libs.libs) do
 		self.libs[libId] = lib
 	end
-	
+
 	-- Load replace repair
 	require(self.scriptPath .. "replaceRepair/api")
-	
+
 	self.libs.pilotSkill_tooltip = require(self.scriptPath .. "libs/pilotSkill_tooltip")
 	self.libs.personality = require(self.scriptPath .. "libs/personality")
 
@@ -68,13 +68,13 @@ function mod:load(options, version)
 	modApi:addSquad(
 		{
 			id = "starwars_rebels",
-			"Rebels",
+			"Star Wars Rebels",
 			"StarWars_MelFalconMech",
 			"StarWars_XWingMech",
 			"StarWars_SnowSpeederMech",
 		},
-		"Rebels",
-		"",
+		"Star Wars Rebels",
+		"Brought from a long, long time ago in a galaxy far, far away, these Rebel starships are fighting back against the evil vek empire wherever it may be",
 		self.resourcePath .. "img/squad_icon.png"
 	)
 

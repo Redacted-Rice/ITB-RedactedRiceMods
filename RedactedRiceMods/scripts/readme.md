@@ -12,8 +12,21 @@ Please enjoy and contact us if you run into any issues!
 
 # Releases:
 
+## ArtilleryArc
+Current Release: 2.0.0
+
+### 2.0.0
+Released: 05/04/2026
+
+* Brought in from Lemonymous' repo and enhanced to support two click weapons and mutli shot effects
+
 ## BoardUtils
-Current Release: 1.4.0
+Current Release: 1.5.0
+
+### 1.5.0
+Released: 05/04/2026
+
+* Added functions for forcing a single move and canceling an attack
 
 ### 1.4.0
 Released: 05/01/2026
@@ -112,7 +125,7 @@ Copied from Lemonymous and updated to handle multiple traits by appending text t
 Current Release: 0.8.2
 
 ### 0.8.2
-Released: XX/XX/2026
+Released: 05/01/2026
 
 Optimizations to redraw less and recreate less to remove some cases where I was seeing noticable lag
 
@@ -125,6 +138,12 @@ Fixing some issues with timing when adding icons and displaying vanilla icons in
 Released: 03/28/2026
 
 Initial release. Works for massive but has some issue with exta UIs some icons like flying are use in
+
+## WeaponArmed
+Current Release: 2.1
+
+### 2.1
+Brough in from Lemonymous' repo in support of ArtilleryArc. No changes
 
 ## WeaponPreview
 Current Release: 4.0.1

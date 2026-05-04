@@ -28,17 +28,7 @@ Known Issues:
 ------------------------------------------------------------------------------
 
 Star Wars:
-
-Release todos:
-* redo luke art a bit
-* Achievments (and art)
-
-More+
-* Rally - moving an undoing rally will remove existing boost
-* Resilient - Undoing move from repair platforms causes shield
-* Seeing infinite loops warning sometimes
-* Create base list of enabled skills
-
+None
 
 ------------------------------------------------------------------------------
 
@@ -49,7 +39,18 @@ None
 ------------------------------------------------------------------------------
 
 MoreLvlUpSkills:
+
+For 2.1 Release:
 * Icons are a bit funky sometimes and show up on extra spaces during vek turn
+* Rally - moving an undoing rally will remove existing boost
+* Resilient - Undoing move from repair platforms causes shield
+* Escort - removes shields from shielded units on undo move
+	* Do a more general pass for skills like this
+* New skills
+	* Second Wind - first time mech dies, gain 1 hp at the end of the vek turn
+* Seeing infinite loops warning sometimes
+* Create base list of enabled skills
+* Create user and modder guides
 
 Known Issues:
 * Vigor on Harold will not show icon when using repair. Not sure why its not displaying. Seems to be something unique with how his repair skill works

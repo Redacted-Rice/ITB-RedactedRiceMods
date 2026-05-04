@@ -2,7 +2,7 @@
 local mod =  {
 	id = "redactedrice_libs",
 	name = "Redacted Rice Mods",
-	version = "1.5.0",
+	version = "1.6.0",
 	icon = "scripts/icon.png",
 	description = "A Collection of mods made by Redacted Rice",
 	submodFolders = {"mods/"},
@@ -20,6 +20,7 @@ local mod =  {
 }
 
 local libs = {
+	-- artilleryArc functions a bit differently and is intentionally excluded here
 	"weaponArmed",
 	"boardUtils",
 	"pawnTypeUtils",

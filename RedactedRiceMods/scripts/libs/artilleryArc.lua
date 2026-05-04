@@ -1,9 +1,11 @@
 
-local VERSION = "1.2.1"
+local VERSION = "2.0.0"
 ---------------------------------------------------
 -- Artillery Arc - code library
 --
 -- by Lemonymous
+-- Enhanced by Redacted Rice to support two click
+-- weapons and mutli shot effects
 ---------------------------------------------------
 -- When Artillery Arc has executed, skills can set
 -- the following fields to automatically adjust
@@ -71,7 +73,7 @@ if isNewestVersion then
 		if ArtilleryArc.activeWeapon ~= nil then
 			return
 		end
-		
+
 		local artilleryHeight
 		if type(skill.GetArtilleryHeight) == 'function' then
 			artilleryHeight = skill:GetArtilleryHeight()
@@ -116,7 +118,7 @@ if isNewestVersion then
 		if ArtilleryArc.activeWeapon == weaponId then
 			ArtilleryArc.activeWeapon = nil
 		end
-		
+
 		local hoveredSkill = modApi:getHoveredSkill()
 		if hoveredSkill then return end
 

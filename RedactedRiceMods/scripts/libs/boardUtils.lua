@@ -5,7 +5,7 @@ Author: Das Keifer of Redacted Rice
 Discord Server: https://discord.gg/CNjTVrpN4v
 ]]
 
-local VERSION = "1.4.0"
+local VERSION = "1.5.0"
 
 -- Version check
 local isNewestVersion = false
@@ -51,7 +51,7 @@ if isNewestVersion then
 		"fDelay",
 		"bHidePath",
 	}
-	
+
 	-- Override as needed per skills that allow this.
 	-- Make sure to call original
 	if not BoardUtils.CanMoveOnMountains then
@@ -59,7 +59,7 @@ if isNewestVersion then
 			return false
 		end
 	end
-	
+
 	-- Override as needed per skills that allow this.
 	-- Make sure to call original
 	if not BoardUtils.CanMoveOnBuildings then
@@ -106,7 +106,7 @@ if isNewestVersion then
 
 	function BoardUtils.addForcedMove(skillEffect, path, delay)
 		delay = delay or FULL_DELAY
-		
+
 		-- Preserve any existing damage effects. This ended up not being the issue
 		-- with boosted not working with momentum and maneuverable but it seems a
 		-- useful and good change so I'm leaving it though its largely untested
@@ -166,7 +166,7 @@ if isNewestVersion then
 			if pawnCheckType == "none" then
 				return true
 			end
-			
+
 			local otherPawn = Board:GetPawn(point)
 			if otherPawn then
 				if pawnCheckType == "any" then
@@ -334,19 +334,19 @@ if isNewestVersion then
 	function BoardUtils.unsetLastActed()
 		BoardUtils.lastActed = nil
 	end
-	
+
 	function BoardUtils.addCancelEffect(p, effect)
 		local smoked = Board:IsSmoke(p)
 		if not smoked then
 			local fireType = Board:GetFireType(p)
 			effect:AddScript([[Board:SetSmoke(]]..p:GetString()..[[, true, false)]])
-					
+
 			local damage = SpaceDamage(p, DAMAGE_ZERO)
 			damage.bHide = true
 			-- Needs a frame to cancel attack but not to cancel web interestingly
 			damage.fDelay = 0.00017 --force a one frame delay on the board
 			effect:AddDamage(damage)
-			
+
 			if fireType ~= FIRE_TYPE_NONE then
 				if fireType == FIRE_TYPE_FOREST_FIRE then
 					effect:AddScript([[Board:SetTerrain(]]..p:GetString()..[[, TERRAIN_FOREST)]])
