@@ -25,29 +25,34 @@ Known Issues:
 3. When you use mold with acid, damage on second effect will show base damage on the space but will show right damage on pawn itself. This seems to be just related to how ItB handles damage and acid and throws
 4. If you reset or reload with a shielded pawn on a shielded building, the building will lose its shield. This is a vanilla limitation that would be very complex to handle
 
+
 ------------------------------------------------------------------------------
 
 Star Wars:
 None
 
+
 ------------------------------------------------------------------------------
 
-Vanilla+:
-None
+RebalCore+:
+
+for 1.1 release:
+* New skill
+	* Second Wind - first time mech dies, gain 1 hp at the end of the vek turn
+* Exclusion
+	* Massochist & technician
 
 
 ------------------------------------------------------------------------------
 
 MoreLvlUpSkills:
 
-For 2.1 Release:
+For 2.0.1 Release:
 * Icons are a bit funky sometimes and show up on extra spaces during vek turn
 * Rally - moving an undoing rally will remove existing boost
 * Resilient - Undoing move from repair platforms causes shield
 * Escort - removes shields from shielded units on undo move
 	* Do a more general pass for skills like this
-* New skills
-	* Second Wind - first time mech dies, gain 1 hp at the end of the vek turn
 * Seeing infinite loops warning sometimes
 * Create base list of enabled skills
 * Create user and modder guides
@@ -59,19 +64,13 @@ Known Issues:
 ------------------------------------------------------------------------------
 
 LegendaryLvlUpSkills:
-Planned out. Waiting for more CPLUS+ Updates first
-
-
-------------------------------------------------------------------------------
-
-LegendaryLvlUpSkills:
-Planned out. Waiting for more CPLUS+ Updates first
+Planned out. To start work
 
 
 ------------------------------------------------------------------------------
 
 PilotStore:
-Planned out. To start work
+In progress
 
 
 ------------------------------------------------------------------------------
@@ -82,16 +81,6 @@ Mech upgrades (to start in earnest):
 		Can potentially be made a read only value
 	GetHealth() & GetMoveSpeed() are updated right away and can get target value
 	Can use SetMaxBaseHealth() and SetMoveSpeed() to undo changes (can set to negative values if needed)
-
-
-------------------------------------------------------------------------------
-
-Squad 3: Mini Expansion - Its still a secret ;)
-
-
-------------------------------------------------------------------------------
-
-Squad 4: Full on Expansion - Its also still a secret ;)
 
 
 ------------------------------------------------------------------------------

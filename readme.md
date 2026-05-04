@@ -23,7 +23,7 @@ Please enjoy and contact us if you run into any issues!
 
 # Libs
 * ArtilleryArc - v2.0.0 - Originally created by Lemonymous to customize aritllery height. Updated to handle multishot arcs and two click weapons
-* BoardUtils - v1.4.0 - Board related functions and pathing
+* BoardUtils - v1.5.0 - Board related functions and pathing
 * PassiveEffect - v1.4.0 - Helps with adding passive weapons to the game. This will handle automatically detecting if the weapon is powered and only call hooks when it is
 * PawnTypeUtils - v1.1.0 - Functions to allow determining more detailed pawn types (using EasyEdit)
 * PredictableRandom - v1.2.0 - Get random numbers in a way that is repeatable for when undoing moves or resetting turns
