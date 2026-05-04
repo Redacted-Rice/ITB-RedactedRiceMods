@@ -3,7 +3,6 @@ local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	name = "Escort",
 	description = "Shield adjacent allies when you move next to them or they move next to you.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
-	shieldedPawns = {},
 }
 
 customSkill.DEBUG = false
@@ -12,13 +11,44 @@ local SUBMODULE = logger.register("More+", "Escort", customSkill.DEBUG)
 
 more_plus:addCustomTraitIcon(customSkill)
 
+-- Initialize GAME save data structure
+local function initGameSaveData()
+	if GAME == nil then
+		GAME = {}
+	end
+
+	if GAME.more_plus == nil then
+		GAME.more_plus = {}
+	end
+
+	if GAME.more_plus.escort == nil then
+		GAME.more_plus.escort = {}
+	end
+
+	if GAME.more_plus.escort.shielded_by_effect == nil then
+		GAME.more_plus.escort.shielded_by_effect = {}
+	end
+end
+
+local function resetShieldTracking()
+	logger.logDebug(SUBMODULE, "Resetting shield tracking")
+	initGameSaveData()
+	GAME.more_plus.escort.shielded_by_effect = {}
+end
+
 function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onSkillBuild:subscribe(customSkill.moveSkillBuild))
 	table.insert(customSkill.events, modapiext.events.onPawnUndoMove:subscribe(customSkill.undoShield))
+
+	-- Reset tracking on mission start and each turn
+	table.insert(customSkill.events, modApi.events.onMissionStart:subscribe(resetShieldTracking))
+	table.insert(customSkill.events, modApi.events.onNextTurn:subscribe(resetShieldTracking))
 end
 
 function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect)
 	if weaponId == "Move" then
+		initGameSaveData()
+
 		-- Check if the moving pawn has Escort skill
 		local movingPilot = pawn:GetPilot()
 		if movingPilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, movingPilot) then
@@ -32,14 +62,14 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 
 			for _, adjacentLoc in ipairs(adjacentMechs) do
 				local adjacentPawn = Board:GetPawn(adjacentLoc)
+				local adjacentId = adjacentPawn:GetId()
 				logger.logDebug(SUBMODULE, "Escort pawn %d moving to %s, shielding adjacent ally %d at %s",
-						pawn:GetId(), p2:GetString(), adjacentPawn:GetId(), adjacentLoc:GetString())
+						pawn:GetId(), p2:GetString(), adjacentId, adjacentLoc:GetString())
 
 				local shieldDamage = SpaceDamage(adjacentLoc, 0)
 				shieldDamage.iShield = EFFECT_CREATE
-				shieldDamage.sScript = string.format([[
-						cplus_plus_ex.baseClasses.SkillActive.skills.RrEscort.shieldedPawns[%d] = true]],
-						adjacentPawn:GetId())
+				shieldDamage.sScript = [[
+						GAME.more_plus.escort.shielded_by_effect[]]..adjacentId..[[] = true]]
 				skillEffect:AddDamage(shieldDamage)
 			end
 		end
@@ -57,24 +87,29 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 
 		-- Shield the moving pawn if not already shielded and found an Escort pilot
 		if hasAdjacentEscort and not pawn:IsShield() then
+			local pawnId = pawn:GetId()
 			logger.logDebug(SUBMODULE, "Pawn %d moving adjacent to Escort pawn, shielding",
-					pawn:GetId())
+					pawnId)
 
 			local shieldDamage = SpaceDamage(p2, 0)
 			shieldDamage.iShield = EFFECT_CREATE
 			shieldDamage.sScript = string.format([[
-					cplus_plus_ex.baseClasses.SkillActive.skills.RrEscort.shieldedPawns[%d] = true]],
-					pawn:GetId())
+					GAME.more_plus.escort.shielded_by_effect[%d] = true]],
+					pawnId)
 			skillEffect:AddDamage(shieldDamage)
 		end
 	end
 end
 
 function customSkill.undoShield(mission, pawn, undonePosition)
-	if customSkill.shieldedPawns[pawn:GetId()] then
+	initGameSaveData()
+	local pawnId = pawn:GetId()
+
+	-- If we added shield, then remove it
+	if GAME.more_plus.escort.shielded_by_effect[pawnId] then
+		logger.logDebug(SUBMODULE, "Pawn %d was not shielded before Escort, removing shield on undo", pawnId)
 		pawn:SetShield(false)
-		customSkill.shieldedPawns[pawn:GetId()] = nil
-		logger.logDebug(SUBMODULE, "Removed shield from pawn %d (move undone)", pawn:GetId())
+		GAME.more_plus.escort.shielded_by_effect[pawnId] = nil
 	end
 end
 
