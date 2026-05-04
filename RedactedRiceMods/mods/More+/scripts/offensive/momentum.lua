@@ -5,7 +5,6 @@ local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	name = "Momentum",
 	description = "Gain boosted after moving at least 4 tiles.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
-	notPreBoosted = {},
 	reentrant = false,
 	constraints = {
 		groups = {more_plus.GROUPS.BOOST},
@@ -20,9 +19,38 @@ local SUBMODULE = logger.register("More+", "Momentum", customSkill.DEBUG)
 
 more_plus:addCustomTraitIcon(customSkill)
 
+-- Initialize GAME save data structure
+local function initGameSaveData()
+	if GAME == nil then
+		GAME = {}
+	end
+
+	if GAME.more_plus == nil then
+		GAME.more_plus = {}
+	end
+
+	if GAME.more_plus.momentum == nil then
+		GAME.more_plus.momentum = {}
+	end
+
+	if GAME.more_plus.momentum.boosted_by_effect == nil then
+		GAME.more_plus.momentum.boosted_by_effect = {}
+	end
+end
+
+local function resetBoostTracking()
+	logger.logDebug(SUBMODULE, "Resetting boost tracking")
+	initGameSaveData()
+	GAME.more_plus.momentum.boosted_by_effect = {}
+end
+
 function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onSkillBuild:subscribe(customSkill.checkMove))
 	table.insert(customSkill.events, modapiext.events.onPawnUndoMove:subscribe(customSkill.undoBoosted))
+
+	-- Reset tracking on mission start and each turn
+	table.insert(customSkill.events, modApi.events.onMissionStart:subscribe(resetBoostTracking))
+	table.insert(customSkill.events, modApi.events.onNextTurn:subscribe(resetBoostTracking))
 end
 
 function customSkill:momentumTriggered(pawnId, p1, p2, effect)
@@ -56,13 +84,15 @@ function customSkill:momentumTriggered(pawnId, p1, p2, effect)
 		pawn:GetId(), distance, p1:GetString(), p2:GetString(), pathSource)
 
 	if distance >= MIN_DISTANCE and not pawn:IsBoosted() then
+		initGameSaveData()
 		more_plus.libs.weaponPreview.ExecuteWithState(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
 			function()
 				more_plus.libs.weaponPreview:AddAnimation(p2,
 						more_plus.commonIcons.boost.key.."_1")
 			end)
-		effect:AddScript([[cplus_plus_ex.baseClasses.SkillActive.skills.RrMomentum.notPreBoosted[]]..pawnId..[[] = true
-						Board:GetPawn(]]..pawnId..[[):SetBoosted(true)]])
+		effect:AddScript([[
+				GAME.more_plus.momentum.boosted_by_effect[]].. pawnId ..[[] = true
+				Board:GetPawn(]].. pawnId ..[[):SetBoosted(true)]])
 		logger.logDebug(SUBMODULE, "Will apply boosted to pawn %d moving %d tiles", pawnId, distance)
 	end
 end
@@ -87,10 +117,17 @@ function customSkill.checkMove(mission, pawn, weaponId, p1, p2, skillEffect)
 end
 
 function customSkill.undoBoosted(mission, pawn, undonePosition)
-	if customSkill.notPreBoosted[pawn:GetId()] then
-		pawn:SetBoosted(false)
-		customSkill.notPreBoosted[pawn:GetId()] = nil
-		logger.logInfo(SUBMODULE, "Removed boosted from pawn " .. pawn:GetId())
+	initGameSaveData()
+	local pawnId = pawn:GetId()
+
+	local pilot = pawn:GetPilot()
+	if pilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot) then
+		-- If we added boosted, then remove it
+		if GAME.more_plus.momentum.boosted_by_effect[pawnId] then
+			logger.logDebug(SUBMODULE, "Pawn %d was not boost before Momentum, removing boost on undo", pawnId)
+			pawn:SetBoosted(false)
+			GAME.more_plus.momentum.boosted_by_effect[pawnId] = nil
+		end
 	end
 end
 
