@@ -16,15 +16,28 @@ Please enjoy and contact us if you run into any issues!
 3. Forest armor icon will sometimes appear when environment effects are occuring. I think this should be mostly fixed now but may show occasionally
 
 # Releases
-Latest release: 3.1.1
+Latest release: 3.1.2
 
-## 3.1.1
-Released: 04/10/2026 
+## 3.1.2
+Released: 05/04/2026
 
 compatible with:
 * ItB AE        1.2.93
 * ModLoader     2.9.4
-* ModLoaderExt  1.21 
+* ModLoaderExt  1.21
+* memedit       1.2.0
+* easyEdit      2.0.8
+
+### Notes
+* Minor update for moving some functionality to libs
+
+## 3.1.1
+Released: 04/10/2026
+
+compatible with:
+* ItB AE        1.2.93
+* ModLoader     2.9.4
+* ModLoaderExt  1.21
 * memedit       1.2.0
 * easyEdit      2.0.8
 
@@ -32,12 +45,12 @@ compatible with:
 * Added missed dependency
 
 ## 3.1.0
-Released: 03/28/2026 
+Released: 03/28/2026
 
 compatible with:
 * ItB AE        1.2.93
 * ModLoader     2.9.4
-* ModLoaderExt  1.21 
+* ModLoaderExt  1.21
 * memedit       1.2.0
 
 ### Notes
@@ -46,12 +59,12 @@ compatible with:
 * Floraformer will never damage teamates
 
 ## 3.0.1
-Released: 02/14/2026 
+Released: 02/14/2026
 
 compatible with:
 * ItB AE        1.2.93
 * ModLoader     2.9.4
-* ModLoaderExt  1.21 
+* ModLoaderExt  1.21
 * memedit       1.2.0
 
 ### Notes
@@ -59,12 +72,12 @@ compatible with:
 * Changed overgrowth base to be distinct and not just Archive
 
 ## 3.0.0
-Released: 01/21/2026 
+Released: 01/21/2026
 
 compatible with:
 * ItB AE        1.2.93
 * ModLoader     2.9.4
-* ModLoaderExt  1.21 
+* ModLoaderExt  1.21
 * memedit       1.2.0
 
 ### Notes
@@ -77,12 +90,12 @@ compatible with:
 * Other minor balance changes
 
 ## 2.0.0
-Released: 12/19/2025 
+Released: 12/19/2025
 
 compatible with:
 * ItB AE        1.2.93
 * ModLoader     2.9.4
-* ModLoaderExt  1.21 
+* ModLoaderExt  1.21
 * memedit       1.2.0
 
 ### Notes
@@ -91,17 +104,17 @@ compatible with:
 * Significant rebalancing and making the weapons more predictable
 
 ## 0.10.1
-Released: 5/30/2025 
+Released: 5/30/2025
 
 compatible with:
 * ItB AE 	1.2.93
 * ModLoader 	2.9.4
-* ModLoaderExt	1.21 
+* ModLoaderExt	1.21
 * memedit	1.2.0
 
 ### Notes
 Updated to AE and many changes to weapons to simplify and make them more understandable
 
-## 0.9.0 
+## 0.9.0
 Released: 1/4/19
 ItB pre-AE

@@ -2,7 +2,7 @@ local mod = {
 	id = "redactedrice_treeherders",
 	name = "Treeherders",
 	icon = "img/mod_icon.png",
-	version = "3.1.1",
+	version = "3.1.2",
 	modApiVersion = "2.9.4",
 	gameVersion = "1.2.93",
 	dependencies = {
@@ -46,7 +46,7 @@ function mod:init()
 
 	require(self.scriptPath .. "weapons/th_waketheforest")
 	modApi:addWeaponDrop("Treeherders_Passive_WakeTheForest")
-	
+
 	require(self.scriptPath .. "weapons/th_overgrowth")
 	modApi:addWeaponDrop("Treeherders_Overgrowth")
 end
