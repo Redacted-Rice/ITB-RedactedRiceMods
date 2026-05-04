@@ -15,7 +15,7 @@ local achievements = {
 		id = "realoriginal",
 		name = "Real Original...",
 		tooltip = "Use a tow cable on a boss and then kill it",
-		image = mod.resourcePath .. "img/achievements/utilitarian.png",
+		image = mod.resourcePath .. "img/achievements/realoriginal.png",
 		squad = squad,
 	},
 
@@ -23,7 +23,7 @@ local achievements = {
 		id = "kesselrun",
 		name = "Kessel Run",
 		tooltip = "Move from one side of the board to the other in a single turn",
-		image = mod.resourcePath .. "img/achievements/greatwall.png",
+		image = mod.resourcePath .. "img/achievements/kesselrun.png",
 		squad = squad,
 	},
 
@@ -31,7 +31,7 @@ local achievements = {
 		id = "almostmany",
 		name = "Almost as Impressive",
 		tooltip = "Get " .. StarWarsAchievements.protonTorpedoKillsThreshold .. " (enemy) kills from a single proton torpedo",
-		image = mod.resourcePath .. "img/achievements/spleef.png",
+		image = mod.resourcePath .. "img/achievements/almostasmany.png",
 		squad = squad,
 	},
 }
