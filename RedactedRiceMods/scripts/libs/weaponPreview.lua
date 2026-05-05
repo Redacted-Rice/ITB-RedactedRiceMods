@@ -865,6 +865,15 @@ local function onMissionUpdate()
 	end
 end
 
+local function onQueuedSkillEnd(pawn, state)
+	if pawn then
+		local pawnId = pawn:GetId()
+		if queuedPreviewMarks[state] and queuedPreviewMarks[state][pawnId] then
+			queuedPreviewMarks[state][pawnId] = nil
+		end
+	end
+end
+
 local function overrideAllSkillMethods()
 	local skills = {}
 	for skillId, skill in pairs(_G) do
@@ -1046,6 +1055,10 @@ if isNewestVersion then
 
 		modApi.events.onMissionChanged:subscribe(onMissionChanged)
 		modApi.events.onMissionUpdate:subscribe(onMissionUpdate)
+
+		-- Clear queued marks when queued actions execute
+		modapiext.events.onQueuedSkillEnd:subscribe(function(mission, pawn, weaponId) onQueuedSkillEnd(pawn, STATE_QUEUED_SKILL) end)
+		modapiext.events.onQueuedFinalEffectEnd:subscribe(function(mission, pawn, weaponId) onQueuedSkillEnd(pawn, STATE_QUEUED_FINAL_EFFECT) end)
 	end
 end
 

@@ -36,6 +36,18 @@ local function resetShieldTracking()
 	GAME.more_plus.escort.shielded_by_effect = {}
 end
 
+function customSkill.setShieldings(pawnId, setSelf, adjId)
+	logger.logDebug(SUBMODULE, "Resetting shield tracking")
+	
+	initGameSaveData()
+	if not GAME.more_plus.escort.shielded_by_effect[pawnId] then
+		GAME.more_plus.escort.shielded_by_effect[pawnId] = {adjPawns = {}, self = setSelf or false}
+	end
+	if adjId then
+		GAME.more_plus.escort.shielded_by_effect[pawnId].adjPawns[adjId] = true
+	end
+end
+
 function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onSkillBuild:subscribe(customSkill.moveSkillBuild))
 	table.insert(customSkill.events, modapiext.events.onPawnUndoMove:subscribe(customSkill.undoShield))
@@ -69,7 +81,7 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 				local shieldDamage = SpaceDamage(adjacentLoc, 0)
 				shieldDamage.iShield = EFFECT_CREATE
 				shieldDamage.sScript = [[
-						GAME.more_plus.escort.shielded_by_effect[]]..adjacentId..[[] = true]]
+						cplus_plus_ex.baseClasses.SkillActive.skills.RrEscort.setShieldings(]] .. pawn:GetId() .. [[, false, ]] .. adjacentId .. [[)]]
 				skillEffect:AddDamage(shieldDamage)
 			end
 		end
@@ -93,9 +105,8 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 
 			local shieldDamage = SpaceDamage(p2, 0)
 			shieldDamage.iShield = EFFECT_CREATE
-			shieldDamage.sScript = string.format([[
-					GAME.more_plus.escort.shielded_by_effect[%d] = true]],
-					pawnId)
+			shieldDamage.sScript = [[
+					cplus_plus_ex.baseClasses.SkillActive.skills.RrEscort.setShieldings(]]..pawn:GetId..[[, true)]]
 			skillEffect:AddDamage(shieldDamage)
 		end
 	end

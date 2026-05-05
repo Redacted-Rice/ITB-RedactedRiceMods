@@ -49,10 +49,6 @@ MoreLvlUpSkills:
 
 For 2.0.1 Release:
 * Icons are a bit funky sometimes and show up on extra spaces during vek turn
-* Rally - moving an undoing rally will remove existing boost
-* Resilient - Undoing move from repair platforms causes shield
-* Escort - removes shields from shielded units on undo move
-	* Do a more general pass for skills like this
 * Seeing infinite loops warning sometimes
 * Create base list of enabled skills
 * Create user and modder guides
