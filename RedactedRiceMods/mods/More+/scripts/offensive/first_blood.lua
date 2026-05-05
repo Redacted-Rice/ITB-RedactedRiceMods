@@ -20,7 +20,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 	if source == self.SOURCE_ATTACKER and targetPawn and
 			targetPawn:IsEnemy() then
 		local maxHealth = _G[targetPawn:GetType()].Health
-		if targetPawn:GetHealth() == maxHealth and maxHealth >= 4 and spaceDamage.iDamage > 0 and
+		if targetPawn:GetHealth() >= maxHealth and targetPawn:GetHealth() >= 4 and spaceDamage.iDamage > 0 and
 				spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
 			for _, idx in ipairs(indexes) do
 				logger.logDebug(SUBMODULE, "Adding icon for %s with idx %d", spaceDamage.loc:GetString(), idx)
