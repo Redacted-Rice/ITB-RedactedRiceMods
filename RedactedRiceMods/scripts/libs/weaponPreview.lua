@@ -533,10 +533,33 @@ local function getQueuedFinalEffectMarker()
 	return queuedFinalEffectMarker:unpack()
 end
 
-local function executeWithState(newPreviewState, fn)
+local function executeWithState(newPreviewState, fn, queuedPawnId)
+	Assert.Equals('number', type(duration), "Argument #1")
+	Assert.Equals('function', type(fn), "Argument #2")
+	Assert.Equals({'nil', 'number'}, type(duration), "Argument #3")
+
+	-- If its a queued state, we need the queued pawn id arg and we need to make sure the
+	-- queued preview marks are set up for the pawn
+	if newPreviewState == STATE_QUEUED_SKILL or newPreviewState == STATE_QUEUED_FINAL_EFFECT then
+		Assert.Equals('number', type(duration), "Argument #3 can't be nil if preview state is for queued skill")
+		-- Initialize queued marks structure if needed
+		if not queuedPreviewMarks[previewState] then
+			queuedPreviewMarks[previewState] = {}
+		end
+		if not queuedPreviewMarks[previewState][pawnId] then
+			queuedPreviewMarks[previewState][pawnId] = {}
+		end
+	end
+
+	-- Set the state and call the fn
 	local prevState = previewState
 	previewState = newPreviewState
 	fn()
+	-- If it was a queued skill, we need to reset the queued preview marks to match
+	if newPreviewState == STATE_QUEUED_SKILL or newPreviewState == STATE_QUEUED_FINAL_EFFECT then
+		queuedPreviewMarks[previewState][pawnId] = previewMarks[previewState]
+	end
+	-- Set the state back
 	previewState = prevState
 end
 
@@ -685,7 +708,7 @@ local function getFinalEffect(self, p1, p2, p3, ...)
 			queuedPreviewMarks[previewState][pawnId] = {}
 			previewMarks[previewState] = queuedPreviewMarks[previewState][pawnId]
 
-			result = oldGetFinalEffects[skillId](self, p1, p2, ...)
+			result = oldGetFinalEffects[skillId](self, p1, p2, p3, ...)
 			queuedPreviewMarks[previewState][pawnId] = previewMarks[previewState]
 			previewState = STATE_NONE
 		end
