@@ -31,17 +31,17 @@ local function initGameSaveData()
 end
 
 local function resetShieldTracking()
-	logger.logDebug(SUBMODULE, "Resetting shield tracking")
+	logger.logDebug(SUBMODULE, "Setting shield tracking")
 	initGameSaveData()
 	GAME.more_plus.escort.shielded_by_effect = {}
 end
 
 function customSkill.setShieldings(pawnId, setSelf, adjId)
 	logger.logDebug(SUBMODULE, "Resetting shield tracking")
-	
+
 	initGameSaveData()
 	if not GAME.more_plus.escort.shielded_by_effect[pawnId] then
-		GAME.more_plus.escort.shielded_by_effect[pawnId] = {adjPawns = {}, self = setSelf or false}
+		GAME.more_plus.escort.shielded_by_effect[pawnId] = {adjPawns = {}, selfPawn = setSelf or false}
 	end
 	if adjId then
 		GAME.more_plus.escort.shielded_by_effect[pawnId].adjPawns[adjId] = true
@@ -118,10 +118,16 @@ function customSkill.undoShield(mission, pawn, undonePosition)
 
 	-- If we added shield, then remove it
 	if GAME.more_plus.escort.shielded_by_effect[pawnId] then
-		logger.logDebug(SUBMODULE, "Pawn %d was not shielded before Escort, removing shield on undo", pawnId)
-		pawn:SetShield(false)
-		GAME.more_plus.escort.shielded_by_effect[pawnId] = nil
+		if GAME.more_plus.escort.shielded_by_effect[pawnId].selfPawn then
+			logger.logDebug(SUBMODULE, "Pawn %d (self) was not shielded before Escort, removing shield on undo", pawnId)
+			pawn:SetShield(false)
+		end
+		for adjPawnId, _ in pairs(GAME.more_plus.escort.shielded_by_effect[pawnId].adjPawns) do
+			logger.logDebug(SUBMODULE, "Pawn %d (adj) was not shielded before Escort, removing shield on undo", pawnId)
+			Board:GetPawn(adjPawnId):SetShield(false)
+		end
 	end
+	GAME.more_plus.escort.shielded_by_effect[pawnId] = nil
 end
 
 return customSkill
