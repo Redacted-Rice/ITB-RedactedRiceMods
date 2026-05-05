@@ -116,7 +116,7 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 
 			local boostDamage = SpaceDamage(p2, 0)
 			boostDamage.sScript = [[
-					cplus_plus_ex.baseClasses.SkillActive.skills.RrRally.setBoostings(]]..pawn:GetId..[[, true)
+					cplus_plus_ex.baseClasses.SkillActive.skills.RrRally.setBoostings(]]..pawnId..[[, true)
 					Board:GetPawn(]]..pawnId..[[):SetBoosted(true)]]
 			skillEffect:AddDamage(boostDamage)
 		end

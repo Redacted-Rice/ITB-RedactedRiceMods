@@ -534,20 +534,20 @@ local function getQueuedFinalEffectMarker()
 end
 
 local function executeWithState(newPreviewState, fn, queuedPawnId)
-	Assert.Equals('number', type(duration), "Argument #1")
+	Assert.Equals('number', type(newPreviewState), "Argument #1")
 	Assert.Equals('function', type(fn), "Argument #2")
-	Assert.Equals({'nil', 'number'}, type(duration), "Argument #3")
+	Assert.Equals({'nil', 'number'}, type(queuedPawnId), "Argument #3")
 
 	-- If its a queued state, we need the queued pawn id arg and we need to make sure the
 	-- queued preview marks are set up for the pawn
 	if newPreviewState == STATE_QUEUED_SKILL or newPreviewState == STATE_QUEUED_FINAL_EFFECT then
-		Assert.Equals('number', type(duration), "Argument #3 can't be nil if preview state is for queued skill")
+		Assert.NotEquals('nil', type(queuedPawnId), "Argument #3 can't be nil if preview state is for queued skill")
 		-- Initialize queued marks structure if needed
-		if not queuedPreviewMarks[previewState] then
-			queuedPreviewMarks[previewState] = {}
+		if not queuedPreviewMarks[newPreviewState] then
+			queuedPreviewMarks[newPreviewState] = {}
 		end
-		if not queuedPreviewMarks[previewState][pawnId] then
-			queuedPreviewMarks[previewState][pawnId] = {}
+		if not queuedPreviewMarks[newPreviewState][queuedPawnId] then
+			queuedPreviewMarks[newPreviewState][queuedPawnId] = {}
 		end
 	end
 
@@ -557,7 +557,7 @@ local function executeWithState(newPreviewState, fn, queuedPawnId)
 	fn()
 	-- If it was a queued skill, we need to reset the queued preview marks to match
 	if newPreviewState == STATE_QUEUED_SKILL or newPreviewState == STATE_QUEUED_FINAL_EFFECT then
-		queuedPreviewMarks[previewState][pawnId] = previewMarks[previewState]
+		queuedPreviewMarks[previewState][queuedPawnId] = previewMarks[previewState]
 	end
 	-- Set the state back
 	previewState = prevState

@@ -6,7 +6,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
 	priority = 180, -- go after kill shot
 }
 
-customSkill.DEBUG = false
+customSkill.DEBUG = true
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Reflect", customSkill.DEBUG)
 
@@ -69,7 +69,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 								more_plus.commonIcons.reflect.key.."_"..idx)
 						more_plus.libs.weaponPreview:AddAnimation(targetStartLoc,
 								more_plus.commonIcons.reflect.key.."_"..idx)
-					end)
+					end, attackerId)
 		end
 
 		logger.logDebug(SUBMODULE, "Tracked reflect to attacker %d (damage: %s)",

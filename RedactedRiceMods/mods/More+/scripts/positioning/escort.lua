@@ -106,7 +106,7 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 			local shieldDamage = SpaceDamage(p2, 0)
 			shieldDamage.iShield = EFFECT_CREATE
 			shieldDamage.sScript = [[
-					cplus_plus_ex.baseClasses.SkillActive.skills.RrEscort.setShieldings(]]..pawn:GetId..[[, true)]]
+					cplus_plus_ex.baseClasses.SkillActive.skills.RrEscort.setShieldings(]]..pawnId..[[, true)]]
 			skillEffect:AddDamage(shieldDamage)
 		end
 	end
