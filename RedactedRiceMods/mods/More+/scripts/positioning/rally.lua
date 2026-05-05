@@ -36,10 +36,22 @@ local function resetBoostTracking()
 	GAME.more_plus.rally.boosted_by_effect = {}
 end
 
+function customSkill.setBoostings(pawnId, setSelf, adjId)
+	logger.logDebug(SUBMODULE, "Setting boost tracking")
+
+	initGameSaveData()
+	if not GAME.more_plus.rally.boosted_by_effect[pawnId] then
+		GAME.more_plus.rally.boosted_by_effect[pawnId] = {adjPawns = {}, self = setSelf or false}
+	end
+	if adjId then
+		GAME.more_plus.rally.boosted_by_effect[pawnId].adjPawns[adjId] = true
+	end
+end
+
 function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onSkillBuild:subscribe(customSkill.moveSkillBuild))
 	table.insert(customSkill.events, modapiext.events.onPawnUndoMove:subscribe(customSkill.undoBoosted))
-	
+
 	-- Reset tracking on mission start and each turn
 	table.insert(customSkill.events, modApi.events.onMissionStart:subscribe(resetBoostTracking))
 	table.insert(customSkill.events, modApi.events.onNextTurn:subscribe(resetBoostTracking))
@@ -48,7 +60,7 @@ end
 function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect)
 	if weaponId == "Move" then
 		initGameSaveData()
-		
+
 		-- Check if the moving pawn has Rally skill
 		local movingPilot = pawn:GetPilot()
 		if movingPilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, movingPilot) then
@@ -72,10 +84,9 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 						end)
 
 				local boostDamage = SpaceDamage(adjacentLoc, 0)
-				boostDamage.sScript = string.format([[
-						GAME.more_plus.rally.boosted_by_effect[%d] = true
-						Board:GetPawn(%d):SetBoosted(true)]],
-						adjacentId, adjacentId)
+				boostDamage.sScript = [[
+						cplus_plus_ex.baseClasses.SkillActive.skills.RrRally.setBoostings(]] .. pawn:GetId() .. [[, false, ]] .. adjacentId .. [[)]
+						Board:GetPawn(]].. adjacentId ..[[):SetBoosted(true)]]
 				skillEffect:AddDamage(boostDamage)
 			end
 		end
@@ -104,10 +115,9 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 					end)
 
 			local boostDamage = SpaceDamage(p2, 0)
-			boostDamage.sScript = string.format([[
-					GAME.more_plus.rally.boosted_by_effect[%d] = true
-					Board:GetPawn(%d):SetBoosted(true)]],
-					pawnId, pawnId)
+			boostDamage.sScript = [[
+					cplus_plus_ex.baseClasses.SkillActive.skills.RrRally.setBoostings(]]..pawn:GetId..[[, true)
+					Board:GetPawn(]]..pawnId..[[):SetBoosted(true)]]
 			skillEffect:AddDamage(boostDamage)
 		end
 	end
@@ -116,13 +126,19 @@ end
 function customSkill.undoBoosted(mission, pawn, undonePosition)
 	initGameSaveData()
 	local pawnId = pawn:GetId()
-	
-	-- If we added boosted, then remove it
+
+	-- If we added shield, then remove it
 	if GAME.more_plus.rally.boosted_by_effect[pawnId] then
-		logger.logDebug(SUBMODULE, "Pawn %d was not boosted before Rally, removing boost on undo", pawnId)
-		pawn:SetBoosted(false)
-		GAME.more_plus.rally.boosted_by_effect[pawnId] = nil
+		if GAME.more_plus.rally.boosted_by_effect[pawnId].selfPawn then
+			logger.logDebug(SUBMODULE, "Pawn %d (self) was not boosted before Rally, removing boosted on undo", pawnId)
+			pawn:SetShield(false)
+		end
+		for adjPawnId, _ in pairs(GAME.more_plus.rally.boosted_by_effect[pawnId].adjPawns) do
+			logger.logDebug(SUBMODULE, "Pawn %d (adj) was not boosted before Rally, removing boosted on undo", pawnId)
+			Board:GetPawn(adjPawnId):SetShield(false)
+		end
 	end
+	GAME.more_plus.rally.boosted_by_effect[pawnId] = nil
 end
 
 return customSkill
