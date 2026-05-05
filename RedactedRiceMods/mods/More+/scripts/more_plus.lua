@@ -36,6 +36,42 @@ function more_plus.convertPhase(phase)
 	return weaponPreview.STATE_NONE
 end
 
+
+more_plus.DISABLED_BY_DEFAULT = {
+	-- Vanilla skills to disable
+	"Grid",
+	"Health",
+	"Move",
+	"Closer",
+	"Popular",
+	"Invulnerable",
+	"Adrenaline", -- Similar to hyper and accelerator
+	"Conservative", -- Pretty RNG/niche as you need a limited use
+
+	-- More+ to disable by default
+	-- Defensive
+	"RrCheapPlating",
+	"RrDefiant",
+	"RrFoolhardy",
+	"RrImpervious",
+	"RrStreetwise",
+	-- Movement
+	"RrGuarded",
+	"RrPontoons",
+	"RrSupporter",
+	-- Offensive
+	"RrCalculatedShot",
+	"RrFocusedStrike",
+	"RrKillShot",
+	-- Positioning
+	"RrMilitia",
+	"RrUrban",
+	-- Trade Offs
+	"RrReflect",
+	"RrShatterstep",
+	"RrVindictive",
+}
+
 -- Define group names as constants for easy reference
 more_plus.GROUPS = {
 	ADD_HEALTH = "Add Health",
@@ -264,10 +300,22 @@ function more_plus:init()
 	end
 end
 
+function more_plus:disableDefaultSkills()
+	logger.logDebug(SUBMODULE, "Disabling default disabled skills...")
+	for _, skillId in ipairs(self.DISABLED_BY_DEFAULT) do
+		logger.logDebug(SUBMODULE, "Disabling skill %s", skillId)
+		cplus_plus_ex:disableSkill(skillId)
+	end
+	logger.logDebug(SUBMODULE, "Disabled %d skills", #self.DISABLED_BY_DEFAULT)
+end
+
 function more_plus:load()
 	-- Add vanilla skills to groups after CPLUS+_Ex has registered them
 	logger.logDebug(SUBMODULE, "Adding vanilla skills to groups...")
 	self:addVanillaSkillsToGroups()
+
+	-- Disable skills that should be disabled by default
+	self:disableDefaultSkills()
 
 	logger.logDebug(SUBMODULE, "Loading all skills...")
 	for category, skills in pairs(more_plus.skillsByCategory) do
