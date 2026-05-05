@@ -49,7 +49,8 @@ MoreLvlUpSkills:
 
 For 2.0.1 Release:
 * Icons are a bit funky sometimes and show up on extra spaces during vek turn
-* Seeing infinite loops warning sometimes
+	* Better but still issues
+* Update rally to work like escort
 * Create base list of enabled skills
 * Create user and modder guides
 
