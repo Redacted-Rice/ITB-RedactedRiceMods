@@ -48,9 +48,10 @@ for 1.1 release:
 MoreLvlUpSkills:
 
 For 2.0.1 Release:
+* Test Rally and Escort more
+* Test focus strike and streetwise and calculated strike
 * Icons are a bit funky sometimes and show up on extra spaces during vek turn
 	* Better but still issues
-* Update rally to work like escort
 * Create base list of enabled skills
 * Create user and modder guides
 

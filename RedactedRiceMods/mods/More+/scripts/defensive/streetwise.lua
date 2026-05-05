@@ -14,6 +14,7 @@ more_plus:addCustomTraitIcon(customSkill)
 
 function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage, indexes, targetPawn)
 	if source ~= self.SOURCE_ATTACKER then
+		return
 	end
 
 	if Board:IsBuilding(spaceDamage.loc) and spaceDamage.iDamage > 0 and
