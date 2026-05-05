@@ -39,7 +39,7 @@ StarWars_CannonTurrets_A = StarWars_CannonTurrets:new{
 
 Weapon_Texts.StarWars_CannonTurrets_Upgrade2 = "Focus Fire"
 StarWars_CannonTurrets_B = StarWars_CannonTurrets:new{
-	UpgradeDescription = "Select a space to hit (or hit twice) and a space to skip",
+	UpgradeDescription = "Chose a space to target (or deal +1 damage if already targeted) and then a space to skip attacking",
 	TwoClick = true,
 }
 

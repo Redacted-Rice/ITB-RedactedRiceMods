@@ -18,11 +18,13 @@ more_plus:addCustomTraitIcon(customSkill)
 
 function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage, indexes, targetPawn)
 	if source ~= self.SOURCE_ATTACKER then
+		return
 	end
 
 	-- If the pawn has used its movement, then return
 	if attackingPawn:IsMovementSpent() then
 		logger.logDebug(SUBMODULE, "Pawn %d already moved, no bonus damage", attackingPawn:GetId())
+		return
 	end
 
 	if targetPawn and targetPawn:IsEnemy() and
