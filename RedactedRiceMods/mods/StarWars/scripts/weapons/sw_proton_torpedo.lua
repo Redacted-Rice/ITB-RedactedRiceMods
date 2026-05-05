@@ -1,6 +1,6 @@
 StarWars_ProtonTorpedo = TankDefault:new{
-	Name = "Proton Torpedos",
-	Description = "Fires a pair of proton torpedos exploding and doing damage in a plus-shaped area",
+	Name = "Proton Torpedoes",
+	Description = "Fires a pair of proton torpedos exploding and doing high damage in a plus-shaped area",
 	Class = "Brute",
 	Damage = 4,
 	PowerCost = 1,

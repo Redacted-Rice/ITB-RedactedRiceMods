@@ -6,7 +6,8 @@ local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	constraints = {
 		groups = {more_plus.GROUPS.SHIELD},
 		pilotExclusions = {"Pilot_Zoltan"},
-	}
+	},
+	isUndoingMove = false
 }
 
 -- Initialize logger
@@ -44,7 +45,7 @@ end
 function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onPawnDamaged:subscribe(
 		function(mission, pawn, damageTaken)
-			if pawn and pawn:IsMech() and damageTaken > 0 then
+			if not customSkill.isUndoingMove and pawn and pawn:IsMech() and damageTaken > 0 then
 				local pilot = pawn:GetPilot()
 				if pilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot) then
 					initGameSaveData()
@@ -70,6 +71,10 @@ function customSkill:setupEffect()
 end
 
 function customSkill.undoShield(mission, pawn, undonePosition)
+	customSkill.isUndoingMove = true
+	modApi:runLater(function() customSkill.isUndoingMove = false end)
+	logger.logDebug(SUBMODULE, "Undo hook", pawnId)
+
 	initGameSaveData()
 	local pawnId = pawn:GetId()
 	
