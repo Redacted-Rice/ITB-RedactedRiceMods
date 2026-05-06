@@ -74,14 +74,15 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 			for _, adjacentLoc in ipairs(adjacentMechs) do
 				local adjacentPawn = Board:GetPawn(adjacentLoc)
 				local adjacentId = adjacentPawn:GetId()
+				local movingPawnId = pawn:GetId()
 				logger.logDebug(SUBMODULE, "Rally pawn %d moving to %s, boosting adjacent ally %d at %s",
-						pawn:GetId(), p2:GetString(), adjacentId, adjacentLoc:GetString())
+						movingPawnId, p2:GetString(), adjacentId, adjacentLoc:GetString())
 
 				more_plus.libs.weaponPreview.ExecuteWithState(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
 						function()
 							more_plus.libs.weaponPreview:AddAnimation(adjacentLoc,
 									more_plus.commonIcons.boost.key.."_1")
-						end)
+						end, movingPawnId)
 
 				local boostDamage = SpaceDamage(adjacentLoc, 0)
 				boostDamage.sScript = [[
@@ -112,7 +113,7 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 					function()
 						more_plus.libs.weaponPreview:AddAnimation(p2,
 								more_plus.commonIcons.boost.key.."_1")
-					end)
+					end, pawnId)
 
 			local boostDamage = SpaceDamage(p2, 0)
 			boostDamage.sScript = [[

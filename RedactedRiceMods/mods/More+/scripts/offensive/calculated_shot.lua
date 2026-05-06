@@ -33,7 +33,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 					function()
 						more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc,
 								more_plus.commonIcons.extraDamage.key.."_"..idx)
-					end)
+					end, attackingPawn:GetId())
 			spaceDamage.iDamage = spaceDamage.iDamage + 1
 			logger.logDebug(SUBMODULE, "Added +1 damage to slow target at %s (enemy move: %d, mech move: %d, threshold: %d)",
 					spaceDamage.loc:GetString(), moveSpeed, mechMoveSpeed, moveThreshold)

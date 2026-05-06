@@ -84,7 +84,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 									more_plus.commonIcons.vampire.key.."_"..idx)
 							more_plus.libs.weaponPreview:AddAnimation(targetLoc,
 									more_plus.commonIcons.vampire.key.."_"..idx)
-						end)
+						end, pawnId)
 			end
 
 			logger.logDebug(SUBMODULE, "Tracked vampire heal #%d for pawn %d",

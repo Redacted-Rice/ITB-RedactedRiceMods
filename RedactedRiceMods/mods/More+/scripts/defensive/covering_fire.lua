@@ -21,7 +21,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 					function()
 						more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc,
 								more_plus.commonIcons.shackle.key.."_"..idx)
-					end)
+					end, attackingPawn:GetId())
 		end
 
 		local baseMoveSpeed = _G[targetPawn:GetType()].MoveSpeed

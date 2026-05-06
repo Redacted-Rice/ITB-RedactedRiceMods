@@ -48,6 +48,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 			end
 
 			-- Show damage reduction icon
+			local targetId = targetPawn:GetId()
 			for _, idx in ipairs(indexes) do
 				logger.logDebug(SUBMODULE, "Adding damage reduction icon for %s with idx %d",
 						spaceDamage.loc:GetString(), idx)
@@ -55,11 +56,11 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 						function()
 							more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc,
 									more_plus.commonIcons.armor1.key.."_"..idx)
-						end)
+						end, targetId)
 			end
 
 			logger.logDebug(SUBMODULE, "Alert reduced damage for pawn %d at %s from %d to %d (adjacent to vek)",
-					targetPawn:GetId(), targetLoc:GetString(), oldDamage, spaceDamage.iDamage)
+					targetId, targetLoc:GetString(), oldDamage, spaceDamage.iDamage)
 		end
 	end
 end
@@ -73,6 +74,7 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 
 			-- Show icon if will be adjacent to vek
 			if willBeAdjacentToVek then
+				local pawnId = pawn:GetId()
 				local indexes = cplus_plus_ex:getPilotSkillIndices(customSkill.id, pilot)
 				for _, idx in ipairs(indexes) do
 					logger.logDebug(SUBMODULE, "Adding damage reduction icon for %s with idx %d",
@@ -81,10 +83,10 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 							function()
 								more_plus.libs.weaponPreview:AddAnimation(p2,
 										more_plus.commonIcons.armor1.key.."_"..idx)
-							end)
+							end, pawnId)
 				end
 				logger.logDebug(SUBMODULE, "Pawn %d moving to %s adjacent to vek, showing damage reduction icon",
-						pawn:GetId(), p2:GetString())
+						pawnId, p2:GetString())
 			end
 		end
 	end
