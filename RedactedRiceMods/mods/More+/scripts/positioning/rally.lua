@@ -5,7 +5,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }
 
-customSkill.DEBUG = false
+customSkill.DEBUG = true
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Rally", customSkill.DEBUG)
 
@@ -85,7 +85,7 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 
 				local boostDamage = SpaceDamage(adjacentLoc, 0)
 				boostDamage.sScript = [[
-						cplus_plus_ex.baseClasses.SkillActive.skills.RrRally.setBoostings(]] .. pawn:GetId() .. [[, false, ]] .. adjacentId .. [[)]
+						cplus_plus_ex.baseClasses.SkillActive.skills.RrRally.setBoostings(]] .. pawn:GetId() .. [[, false, ]] .. adjacentId .. [[)
 						Board:GetPawn(]].. adjacentId ..[[):SetBoosted(true)]]
 				skillEffect:AddDamage(boostDamage)
 			end
