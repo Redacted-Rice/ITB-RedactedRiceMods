@@ -29,7 +29,9 @@ Known Issues:
 ------------------------------------------------------------------------------
 
 Star Wars:
-None
+Crashes with cualdren pilots?
+Issues with pilot potluck?
+Force focus x4?
 
 
 ------------------------------------------------------------------------------
@@ -51,6 +53,7 @@ For 2.0.1 Release:
 * Test queued icons (reflect, vampire)
 * Create base list of enabled skills
 * Create user and modder guides
+* First blood x2 on gardening tools?
 
 Known Issues:
 * Vigor on Harold will not show icon when using repair. Not sure why its not displaying. Seems to be something unique with how his repair skill works
