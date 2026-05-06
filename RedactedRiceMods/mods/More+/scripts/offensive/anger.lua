@@ -5,7 +5,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 	constraints = {
 		groups = {more_plus.GROUPS.BOOST},
-		pilotExclusions = {"Pilot_Arrogant", "Pilot_Chemical"},
+		pilotExclusions = {"Pilot_Arrogant", "Pilot_Chemical", "Pilot_Zoltan"},
 	},
 	priority = 200 -- go after any adjustments
 }

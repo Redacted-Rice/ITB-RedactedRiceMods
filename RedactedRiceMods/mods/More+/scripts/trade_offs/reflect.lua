@@ -4,6 +4,9 @@ local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
 	description = "If damaged by an enemy, deals half (rounded up) damage back to the attacker.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 	priority = 180, -- go after kill shot
+	constraints = {
+		pilotExclusions = {"Pilot_Zoltan"},
+	},
 }
 
 customSkill.DEBUG = true
@@ -23,7 +26,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 			spaceDamage.iDamage ~= DAMAGE_ZERO then
 		local attackerId = attackingPawn:GetId()
 		local reflectorId = targetPawn:GetId()
-		
+
 		-- Display icons at pawns starting position
 		local attackerStartLoc = attackingPawn:GetSpace()
 		local targetStartLoc = targetPawn:GetSpace()
@@ -38,7 +41,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 			logger.logDebug(SUBMODULE, "Reflecting %d damage back to attacker %d (original: %d)",
 					reflectDamage, attackerId, spaceDamage.iDamage)
 		end
-		
+
 		-- Track reflect damage by attacker ID
 		if not self.pendingReflects[attackerId] then
 			self.pendingReflects[attackerId] = {
@@ -47,14 +50,14 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 				hasInstakill = false
 			}
 		end
-		
+
 		if reflectDamage == DAMAGE_DEATH then
 			self.pendingReflects[attackerId].hasInstakill = true
 		else
-			self.pendingReflects[attackerId].totalDamage = 
+			self.pendingReflects[attackerId].totalDamage =
 					self.pendingReflects[attackerId].totalDamage + reflectDamage
 		end
-		
+
 		-- Track reflector pawns
 		self.reflectorPawns[reflectorId] = true
 
@@ -85,7 +88,7 @@ function customSkill:SkillEffectEvaluated(phase)
 	local pauseDamage = SpaceDamage()
 	pauseDamage.fDelay = 0.1
 	table.insert(results, pauseDamage)
-	
+
 	-- First loop: ping all reflector pawns at their current location
 	for reflectorId, _ in pairs(self.reflectorPawns) do
 		local reflector = Board:GetPawn(reflectorId)
@@ -98,34 +101,34 @@ function customSkill:SkillEffectEvaluated(phase)
 			-- Add a delay
 			pingDamage.fDelay = 0.3
 			table.insert(results, pingDamage)
-			logger.logDebug(SUBMODULE, "Added ping for reflector pawn %d at %s", 
+			logger.logDebug(SUBMODULE, "Added ping for reflector pawn %d at %s",
 					reflectorId, currentLoc:GetString())
 		end
 	end
-	
+
 	-- Second loop: deal damage to all attackers at their CURRENT location
 	for attackerId, reflectData in pairs(self.pendingReflects) do
 		local attacker = Board:GetPawn(attackerId)
 		if attacker then
 			local currentLoc = self:getPawnSpace(attacker)
-			
+
 			-- Create aggregated reflect damage
 			local finalDamage = reflectData.hasInstakill and DAMAGE_DEATH or reflectData.totalDamage
 			local reflectSd = SpaceDamage(currentLoc, finalDamage)
 			table.insert(results, reflectSd)
-			
+
 			logger.logDebug(SUBMODULE, "Created aggregated reflect damage to attacker %d at %s (damage: %s)",
-					attackerId, currentLoc:GetString(), 
+					attackerId, currentLoc:GetString(),
 					finalDamage == DAMAGE_DEATH and "DEATH" or tostring(finalDamage))
 		else
 			logger.logWarn(SUBMODULE, "Attacker pawn %d not found when applying reflect", attackerId)
 		end
 	end
-	
+
 	-- Clear for next evaluation
 	self.pendingReflects = {}
 	self.reflectorPawns = {}
-	
+
 	if #results > 0 then
 		return results
 	end
