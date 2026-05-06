@@ -807,10 +807,12 @@ local function onMissionUpdate()
 	local time_delta = time_now - time_prev
 	time_prev = time_now
 
-	-- Clean up queued preview marks for removed pawns
+	-- Clean up queued preview marks for removed pawns or pawns without queued weapons
 	for state, pawnMarks in pairs(queuedPreviewMarks) do
 		for pawnId, _ in pairs(pawnMarks) do
-			if not Board:GetPawn(pawnId) then
+			local pawn = Board:GetPawn(pawnId)
+			-- Clear marks if pawn doesn't exist, has no queued weapon, or queued weapon ID is invalid
+			if not pawn or not pawn:GetQueuedWeapon() or pawn:GetQueuedWeaponId() < 0 then
 				pawnMarks[pawnId] = nil
 			end
 		end
