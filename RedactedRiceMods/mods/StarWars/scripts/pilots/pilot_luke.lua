@@ -196,9 +196,24 @@ function this:init(mod)
 	ReplaceRepair:addSkill({
 		weapon = "Luke_ForceFocus_Repair",
 		icon = "img/weapons/luke_repair.png",
-		IsActive = function(pawn)
-			return pawn:IsAbility("Luke_ForceFocus")
-		end
+		pilotSkill = pilot.Skill
+	})
+
+	-- Add trait for force focused state
+	mod.libs.trait:add({
+		func = function(trait, pawn, loc)
+			if not pawn or not pawn:IsAbility(pilot.Skill) then
+				return false
+			end
+			Pilot_Luke_Ref:initGameSaveData()
+			return GAME.starwars.force_focused[pawn:GetId()] == true
+		end,
+		icon = "combat/icons/icon_doubleshot.png",
+		icon_glow = "combat/icons/icon_doubleshot_glow.png",
+		desc = {
+			title = "Force Focused",
+			text = "This unit's next attack will deal double damage (before boost)."
+		}
 	})
 end
 
@@ -212,7 +227,7 @@ function this:load(options, version)
 			Odds = 75,
 			{ main = "Luke_ForceFocus_Used" },
 	})
-	
+
 	-- Hook into mission start to reset force focus tracking
 	modApi:addMissionStartHook(function(mission)
 		self:initGameSaveData()
