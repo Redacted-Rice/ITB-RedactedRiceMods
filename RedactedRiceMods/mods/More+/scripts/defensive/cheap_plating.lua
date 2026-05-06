@@ -9,8 +9,6 @@ customSkill.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Cheap Plating", customSkill.DEBUG)
 
-more_plus:addCustomTraitIcon(customSkill)
-
 -- Initialize GAME save data structure
 local function initGameSaveData()
 	if GAME == nil then
@@ -29,6 +27,36 @@ local function initGameSaveData()
 		GAME.more_plus.cheap_plating.used = {}
 	end
 end
+
+-- Change icon based on if its been used or not
+more_plus.libs.traitReplace:addStateful{
+	targetTrait = "massive",
+	func = function(trait, pawn)
+		if not cplus_plus_ex:isSkillOnPawn(customSkill.id, pawn) then
+			return 0  -- Don't display
+		end
+
+		initGameSaveData()
+		local pawnId = pawn:GetId()
+		if GAME.more_plus.cheap_plating.used[pawnId] then
+			return 2  -- Used state
+		else
+			return 1  -- Active state
+		end
+	end,
+	states = {
+		{
+			icon = "img/combat/icons/icon_mp_RrCheapPlating.png",
+			desc_title = "Cheap Plating (Active)",
+			desc_text = "The next attack that would damage this mech does -3 damage.",
+		},
+		{
+			icon = "img/combat/icons/icon_mp_RrFirstBlood.png",
+			desc_title = "Cheap Plating (Used)",
+			desc_text = "The damage reduction has been used this mission.",
+		},
+	}
+}
 
 function customSkill:setupEffect()
 	-- Call parent setupEffect to subscribe to skill build events

@@ -14,7 +14,7 @@ icons on top of flying and Lemonymous for the trait library which was
 the inspiration/starting point for this
 ]]
 
-local VERSION = "0.8.2"
+local VERSION = "0.9.0"
 local DEBUG = false
 
 local mod_path = mod_loader.mods[modApi.currentMod]
@@ -43,6 +43,7 @@ if not TraitReplace then
 		initialized = false,
 		queuedRegistrations = {},
 		queuedTraits = {},
+		queuedStatefulTraits = {},
 		traitRegistry = {},
 		globalCycleTimer = 0,
 		globalCycleIndex = 0,
@@ -769,6 +770,50 @@ local function addTraitInternal(trait)
 
 end
 
+local function addStatefulTraitInternal(statefulTrait)
+	Assert.Equals('table', type(statefulTrait), "Argument #1")
+	Assert.Equals('table', type(statefulTrait.states), "Field 'states'")
+	Assert.True(#statefulTrait.states > 0, "Field 'states' must have at least one state")
+	Assert.Equals('function', type(statefulTrait.func), "Field 'func'")
+
+	local targetTrait = statefulTrait.targetTrait or "massive"
+	local userFunc = statefulTrait.func
+
+	-- Create a wrapper func for each state
+	for stateIndex, state in ipairs(statefulTrait.states) do
+		-- Parse desc if provided as table
+		if type(state.desc) == 'table' then
+			state.desc_title = state.desc.title or state.desc[1]
+			state.desc_text = state.desc.text or state.desc[2]
+		end
+
+		Assert.Equals('string', type(state.icon), "Field 'states["..stateIndex.."].icon'")
+		Assert.Equals('string', type(state.desc_title), "Field 'states["..stateIndex.."].desc_title'")
+		Assert.Equals('string', type(state.desc_text), "Field 'states["..stateIndex.."].desc_text'")
+
+		-- Create a trait for this state
+		local stateTrait = {
+			targetTrait = targetTrait,
+			icon = state.icon,
+			desc_title = state.desc_title,
+			desc_text = state.desc_text,
+		}
+
+		-- Wrap the user's function to check for this specific state
+		stateTrait.func = function(trait, pawn)
+			local returnedState = userFunc(trait, pawn)
+			return returnedState == stateIndex
+		end
+
+		-- Add this state as a regular trait
+		addTraitInternal(stateTrait)
+	end
+
+	if DEBUG then
+		LOG("Added stateful trait with " .. #statefulTrait.states .. " states to target trait '" .. targetTrait .. "'")
+	end
+end
+
 -- Shared initialization callback
 -- This is subscribed to onModsInitialized by the first version that loads.
 -- It calls TraitReplace:finalizeInit() which will use whatever version is stored
@@ -806,6 +851,13 @@ if isHighestVersion then
 		table.insert(self.queuedTraits, trait)
 	end
 
+	-- Public addStateful function queues stateful traits before initialization
+	function TraitReplace:addStateful(statefulTrait)
+		-- Reinitialize queue if it was cleared after finalization
+		self.queuedStatefulTraits = self.queuedStatefulTraits or {}
+		table.insert(self.queuedStatefulTraits, statefulTrait)
+	end
+
 	TraitReplace.finalizeInit = function(self)
 		LOG(string.format("*** TraitReplace.finalizeInit executing (version %s) ***", VERSION))
 
@@ -841,10 +893,22 @@ if isHighestVersion then
 		end
 		self.queuedTraits = {}
 
+		-- Process queued stateful traits (safe check for nil)
+		for _, statefulTrait in ipairs(self.queuedStatefulTraits or {}) do
+			addStatefulTraitInternal(statefulTrait)
+		end
+		self.queuedStatefulTraits = {}
+
 		-- Update add method to use internal function directly
 		-- No longer queue after initialization
 		self.add = function(trait)
 			addTraitInternal(trait)
+		end
+
+		-- Update addStateful method to use internal function directly
+		-- No longer queue after initialization
+		self.addStateful = function(statefulTrait)
+			addStatefulTraitInternal(statefulTrait)
 		end
 
 		-- Update registerTrait to call directly after init
