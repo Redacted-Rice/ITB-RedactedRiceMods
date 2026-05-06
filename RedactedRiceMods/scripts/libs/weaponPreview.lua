@@ -198,6 +198,7 @@ local oldGetTargetAreas = {}
 local oldGetSecondTargetAreas = {}
 local oldGetSkillEffects = {}
 local oldGetFinalEffects = {}
+local oldGetTargetScores = {}
 local armedTargetAreaTimer = 0
 local armedSkillEffectTimer = 0
 local queuedSkillEffectTimer = 0
@@ -207,6 +208,7 @@ local previewState = STATE_NONE
 local previewMarks = {}
 local queuedPreviewMarks = {}
 local events = {}
+local isScoring = false
 
 local function spaceEmitter(loc, emitter)
 	local fx = SkillEffect()
@@ -270,7 +272,7 @@ local function pointListContains(pointList, obj)
 end
 
 local function isPreviewerUnavailable()
-	return previewState == STATE_NONE or Board:IsTipImage()
+	return previewState == STATE_NONE or Board:IsTipImage() or isScoring
 end
 
 local function addAnimation(self, p, anim, delay)
@@ -538,6 +540,11 @@ local function executeWithState(newPreviewState, fn, queuedPawnId)
 	Assert.Equals('function', type(fn), "Argument #2")
 	Assert.Equals({'nil', 'number'}, type(queuedPawnId), "Argument #3")
 
+	-- Bail out early if we're in AI scoring mode
+	if isScoring then
+		return
+	end
+
 	-- If its a queued state, we need the queued pawn id arg and we need to make sure the
 	-- queued preview marks are set up for the pawn
 	if newPreviewState == STATE_QUEUED_SKILL or newPreviewState == STATE_QUEUED_FINAL_EFFECT then
@@ -568,7 +575,7 @@ local function getTargetArea(self, p1, ...)
 	local pawn = p1 and Board:GetPawn(p1) or Pawn
 	local result = nil
 
-	if pawn and previewState == STATE_NONE and not Board:IsTipImage() then
+	if pawn and previewState == STATE_NONE and not Board:IsTipImage() and not isScoring then
 
 		actingMarker:setArmed(pawn)
 
@@ -598,7 +605,7 @@ local function getSecondTargetArea(self, p1, p2, ...)
 	local pawn = p1 and Board:GetPawn(p1) or Pawn
 	local result = nil
 
-	if pawn and previewState == STATE_NONE and not Board:IsTipImage() then
+	if pawn and previewState == STATE_NONE and not Board:IsTipImage() and not isScoring then
 
 		actingMarker:setArmed(pawn)
 
@@ -628,7 +635,7 @@ local function getSkillEffect(self, p1, p2, ...)
 	local pawn = p1 and Board:GetPawn(p1) or Pawn
 	local result = nil
 
-	if pawn and previewState == STATE_NONE and not Board:IsTipImage() then
+	if pawn and previewState == STATE_NONE and not Board:IsTipImage() and not isScoring then
 
 		actingMarker:setArmed(pawn)
 
@@ -675,7 +682,7 @@ local function getFinalEffect(self, p1, p2, p3, ...)
 	local pawn = p1 and Board:GetPawn(p1) or Pawn
 	local result = nil
 
-	if pawn and previewState == STATE_NONE and not Board:IsTipImage() then
+	if pawn and previewState == STATE_NONE and not Board:IsTipImage() and not isScoring then
 
 		actingMarker:setArmed(pawn)
 
@@ -922,6 +929,10 @@ local function overrideAllSkillMethods()
 			oldGetFinalEffects[skillId] = skill.GetFinalEffect
 			skill.__Id = skillId
 		end
+		if type(skill.GetTargetScore) == 'function' then
+			oldGetTargetScores[skillId] = skill.GetTargetScore
+			skill.__Id = skillId
+		end
 	end
 
 	for skillId, _ in pairs(oldGetTargetAreas) do
@@ -976,6 +987,18 @@ local function overrideAllSkillMethods()
 
 			getFinalEffectCallers[#getFinalEffectCallers] = nil
 
+			return result
+		end
+	end
+
+	for skillId, _ in pairs(oldGetTargetScores) do
+		local skill = _G[skillId]
+		local oldGetTargetScore = oldGetTargetScores[skillId]
+
+		function skill.GetTargetScore(...)
+			isScoring = true
+			local result = oldGetTargetScore(...)
+			isScoring = false
 			return result
 		end
 	end

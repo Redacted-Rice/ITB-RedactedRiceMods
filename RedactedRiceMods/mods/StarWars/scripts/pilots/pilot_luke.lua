@@ -69,10 +69,11 @@ function Luke_ForceFocus_Repair:GetSkillEffect(p1, p2)
 	-- create it
 	local ret = SkillEffect()
 	local repairDamage = SpaceDamage(p2, -1)
-	if Board:IsAcid(p1) then
+	local pawn = Board:GetPawn(p1)
+	if pawn:IsFire() then
 		repairDamage.iFire = EFFECT_REMOVE
 	end
-	if Board:IsAcid(p1) then
+	if pawn:IsAcid() then
 		repairDamage.iAcid = EFFECT_REMOVE
 	end
 
