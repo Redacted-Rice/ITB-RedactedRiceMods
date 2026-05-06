@@ -22,6 +22,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 			spaceDamage.iDamage < 0 and spaceDamage.iDamage ~= DAMAGE_ZERO and
 			spaceDamage.iDamage ~= DAMAGE_DEATH then
 		if not targetPawn:IsBoosted() then
+			local targetId = targetPawn:GetId()
 			for _, idx in ipairs(indexes) do
 				logger.logDebug(SUBMODULE, "Adding boost icon for healed mech at %s with idx %d",
 						spaceDamage.loc:GetString(), idx)
@@ -29,13 +30,13 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 						function()
 							more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc,
 									more_plus.commonIcons.boost.key.."_"..idx)
-						end)
+						end, targetId)
 			end
 
 			spaceDamage.sScript = spaceDamage.sScript .. string.format(
-					"modApi:runLater(function() Board:GetPawn(%d):SetBoosted(true) end)", targetPawn:GetId())
+					"modApi:runLater(function() Board:GetPawn(%d):SetBoosted(true) end)", targetId)
 			logger.logDebug(SUBMODULE, "Will grant boosted to healed mech %d at %s (heal amount: %d)",
-					targetPawn:GetId(), spaceDamage.loc:GetString(), -spaceDamage.iDamage)
+					targetId, spaceDamage.loc:GetString(), -spaceDamage.iDamage)
 		else
 			logger.logDebug(SUBMODULE, "Mech %d at %s already boosted, skipping",
 					targetPawn:GetId(), spaceDamage.loc:GetString())

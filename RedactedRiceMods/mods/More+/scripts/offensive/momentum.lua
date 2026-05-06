@@ -89,7 +89,7 @@ function customSkill:momentumTriggered(pawnId, p1, p2, effect)
 			function()
 				more_plus.libs.weaponPreview:AddAnimation(p2,
 						more_plus.commonIcons.boost.key.."_1")
-			end)
+			end, pawnId)
 		effect:AddScript([[
 				GAME.more_plus.momentum.boosted_by_effect[]].. pawnId ..[[] = true
 				Board:GetPawn(]].. pawnId ..[[):SetBoosted(true)]])

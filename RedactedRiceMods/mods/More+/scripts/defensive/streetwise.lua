@@ -19,14 +19,13 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 
 	if Board:IsBuilding(spaceDamage.loc) and spaceDamage.iDamage > 0 and
 			spaceDamage.iDamage ~= DAMAGE_DEATH then
-
 		for _, idx in ipairs(indexes) do
 			logger.logDebug(SUBMODULE, "Adding icon for building at %s with idx %d", spaceDamage.loc:GetString(), idx)
 			more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
 					function()
 						more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc,
 								more_plus.commonIcons.noDamage.key.."_"..idx)
-					end)
+					end, attackingPawn:GetId())
 		end
 
 		spaceDamage.iDamage = DAMAGE_ZERO

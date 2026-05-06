@@ -17,14 +17,13 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 	if source == self.SOURCE_TARGET and attackingPawn and
 			attackingPawn:GetTeam() == TEAM_PLAYER and spaceDamage.iDamage > 0 and
 			spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
-
 		-- Show icon
 		for _, idx in ipairs(indexes) do
 			more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
 					function()
 						more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc,
 								more_plus.commonIcons.noDamage.key.."_"..idx)
-					end)
+					end, targetPawn:GetId())
 		end
 		local oldDamage = spaceDamage.iDamage
 		spaceDamage.iDamage = DAMAGE_ZERO

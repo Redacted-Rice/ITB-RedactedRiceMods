@@ -36,7 +36,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 					function()
 						more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc,
 								more_plus.commonIcons.crit.key.."_"..idx)
-					end)
+					end, attackingPawn:GetId())
 			local originalDamage = spaceDamage.iDamage
 			spaceDamage.iDamage = spaceDamage.iDamage * 2
 			logger.logDebug(SUBMODULE, "Doubled damage to enemy at %s from %d to %d (not moved yet)",

@@ -90,7 +90,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 						function()
 							more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc,
 									more_plus.commonIcons.armor3.key.."_"..idx)
-						end)
+						end, pawnId)
 			end
 
 			-- Reduce damage by 3 (minimum DAMAGE_ZERO)

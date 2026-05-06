@@ -55,6 +55,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 
 		-- Add damage for each adverse status
 		if statusCount > 0 then
+			local attackerId = attackingPawn:GetId()
 			for _, idx in ipairs(indexes) do
 				logger.logDebug(SUBMODULE, "Adding vindictive damage icon for %s with idx %d",
 						spaceDamage.loc:GetString(), idx)
@@ -62,7 +63,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 						function()
 							more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc,
 									more_plus.commonIcons.extraDamage.key.."_"..idx)
-						end)
+						end, attackerId)
 			end
 
 			spaceDamage.iDamage = spaceDamage.iDamage + statusCount
