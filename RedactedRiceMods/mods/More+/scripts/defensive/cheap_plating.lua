@@ -9,6 +9,10 @@ customSkill.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Cheap Plating", customSkill.DEBUG)
 
+-- Adds the icon for the UI
+-- Adding for trait replace handled lower
+customSkill.icon = "img/combat/icons/icon_mp_"..customSkill.id..".png"
+	
 -- Initialize GAME save data structure
 local function initGameSaveData()
 	if GAME == nil then
