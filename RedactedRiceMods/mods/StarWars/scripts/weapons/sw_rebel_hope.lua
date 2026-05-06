@@ -16,7 +16,69 @@ StarWars_RebelHope = PassiveSkill:new{
 	},
 }
 
+local mod = mod_loader.mods[modApi.currentMod]
 passiveEffect = mod_loader.mods[modApi.currentMod].libs.passiveEffect
+
+-- Initialize GAME save data structure
+local function initGameSaveData()
+	if GAME == nil then
+		GAME = {}
+	end
+
+	if GAME.starwars == nil then
+		GAME.starwars = {}
+	end
+
+	if GAME.starwars.rebel_hope == nil then
+		GAME.starwars.rebel_hope = {}
+	end
+
+	if GAME.starwars.rebel_hope.used == nil then
+		GAME.starwars.rebel_hope.used = false
+	end
+end
+
+-- Helper function to check if a pawn has Rebel Hope equipped
+local function pawnHasRebelHope(pawn)
+	if not pawn or not pawn:IsMech() then return false end
+
+	local weaponCount = pawn:GetWeaponCount()
+	for i = 1, weaponCount do
+		local weapon = pawn:GetWeaponBaseType(i)
+		if weapon and string.sub(weapon, 1, string.len("StarWars_RebelHope")) == "StarWars_RebelHope" then
+			return true
+		end
+	end
+	return false
+end
+
+-- Add stateful trait icon showing active vs used state
+mod.libs.traitReplace:addStateful{
+	targetTrait = "massive",
+	func = function(trait, pawn)
+		if not pawnHasRebelHope(pawn) then
+			return 0  -- Don't display
+		end
+		initGameSaveData()
+		if GAME.starwars.rebel_hope.used == true then
+			return 2  -- Used state
+		else
+			return 1  -- Active state
+		end
+	end,
+	states = {
+		{
+			icon = "img/combat/icons/icon_sw_rebel_hope_active.png",
+			desc_title = "Rebel Hope (Active)",
+			desc_text = "The next time a mech would die, it is revived with 1 HP.",
+		},
+		{
+			icon = "img/combat/icons/icon_sw_rebel_hope_used.png",
+			desc_title = "Rebel Hope (Used)",
+			desc_text = "A mech has already been revived this mission.",
+		},
+	}
+}
 
 -- Weapon text definitions
 Weapon_Texts.StarWars_RebelHope_Upgrade1 = "Boost Allies"
@@ -40,39 +102,25 @@ function StarWars_RebelHope:GetSkillEffect(p1, p2)
 	local healDamage = SpaceDamage(Point(2, 2), -1)
 	healDamage.bHide = true
 	ret:AddDamage(healDamage)
-	
+
 	ret:AddDelay(2)
 
 	return ret
 end
 
--- Persistent storage for single use tracking
-local function getRebelHopeUsedKey()
-	return "StarWars_RebelHope_Used"
-end
-
-local function isRebelHopeUsed()
-	local mission = GetCurrentMission()
-	if not mission then return false end
-	return mission[getRebelHopeUsedKey()] == true
-end
-
-local function markRebelHopeUsed()
-	local mission = GetCurrentMission()
-	if mission then
-		mission[getRebelHopeUsedKey()] = true
-	end
-end
-
 -- Mission start hook
 function StarWars_RebelHope:GetPassiveSkillEffect_MissionStartHook(mission)
-	mission[getRebelHopeUsedKey()] = false
+	logger.logDebug(SUBMODULE, "Mission start, resetting rebel hope tracking")
+	initGameSaveData()
+	GAME.starwars.rebel_hope.used = false
 end
 
 -- Pawn killed hook - triggers revive
 function StarWars_RebelHope:GetPassiveSkillEffect_PawnKilledHook(mission, pawn)
+	initGameSaveData()
+
 	-- Only trigger if not already used this mission and a player mech died
-	if isRebelHopeUsed() then
+	if GAME.starwars.rebel_hope.used then
 		return
 	end
 	if not pawn:IsMech() or pawn:GetTeam() ~= TEAM_PLAYER then
@@ -82,7 +130,7 @@ function StarWars_RebelHope:GetPassiveSkillEffect_PawnKilledHook(mission, pawn)
 	-- Check if any mech has Rebel Hope active
 	if passiveEffect:countAnyVersionOfPassiveActive("StarWars_RebelHope") > 0 then
 		-- Mark as used
-		markRebelHopeUsed()
+		GAME.starwars.rebel_hope.used = true
 
 		-- Revive the pawn to 1 HP using the repair skill effect
 		local pawnSpace = pawn:GetSpace()
