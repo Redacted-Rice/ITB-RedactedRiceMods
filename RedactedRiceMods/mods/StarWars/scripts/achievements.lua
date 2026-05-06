@@ -60,7 +60,12 @@ local function spacesOffset(mission, pawn)
 		LOG("NIL arg")
 		return 0
 	end
-	
+
+	if not Board:IsValid(startPos) then
+		LOG("Invalid starting position for pawn " .. pawn:GetId())
+		return 0
+	end
+
 	LOG("KESSEL CHECK ".. startPos:GetString() .. endPos:GetString())
 	return math.max(math.abs(startPos.x - endPos.x), math.abs(startPos.y - endPos.y))
 end
@@ -68,10 +73,10 @@ end
 local baseTooltip = achievements.almostmany.getTooltip
 achievements.almostmany.getTooltip = function(self)
 	local result = baseTooltip(self)
-	
+
 	if (not achievements.almostmany:isComplete()) and isInMission() and StarWarsAchievements.protonTorpedoActive then
-		result = result .. "\n\nProton Torpedo Kills: " .. 
-				StarWarsAchievements.protonTorpedoKills .. " / " .. 
+		result = result .. "\n\nProton Torpedo Kills: " ..
+				StarWarsAchievements.protonTorpedoKills .. " / " ..
 				StarWarsAchievements.protonTorpedoKillsThreshold
 	end
 
@@ -81,7 +86,7 @@ end
 local baseTooltip = achievements.kesselrun.getTooltip
 achievements.kesselrun.getTooltip = function(self)
 	local result = baseTooltip(self)
-	
+
 	if (not achievements.kesselrun:isComplete()) and isInMission() then
 		local mission = GetCurrentMission()
 		if mission and mission.starwars and mission.starwars.achiev_kesselRunStartPos then
@@ -101,24 +106,28 @@ end
 local baseTooltip = achievements.realoriginal.getTooltip
 achievements.realoriginal.getTooltip = function(self)
 	local result = baseTooltip(self)
-	
-	local foundBoss = false
+
+	local bossTangled = false
 	if (not achievements.realoriginal:isComplete()) and isInMission() then
 		if GAME and GAME.starwars and GAME.starwars.tow_cabled then
 			for _, pawnId in ipairs(GAME.starwars.tow_cabled) do
-				if Board:GetPawn(pawnId) and
+				if Board:GetPawn(pawnId) and Board:GetPawn(pawnId):IsEnemy() and
 						mod_loader.mods.redactedrice_libs.libs.pawnTypeUtils.isBoss(Board:GetPawn(pawnId)) then
-					result = result .. "\n\nBoss is grappled"
-					foundBoss = true
-					break
+					return result .. "\n\nBoss is tangled up in a tow cable - kill it before the mission ends!"
 				end
 			end
 		end
+
+		for _, pawnId in ipairs(extract_table(Board:GetPawns(TEAM_ANY))) do
+			if Board:GetPawn(pawnId) and Board:GetPawn(pawnId):IsEnemy() and
+					mod_loader.mods.redactedrice_libs.libs.pawnTypeUtils.isBoss(Board:GetPawn(pawnId)) then
+				return result .. "\n\nBoss is not tangled by a tow cable yet"
+			end
+		end
+
+		return result .. "\n\nNo boss in this mission"
 	end
 
-	if not foundBoss then
-		result = result .. "\n\nNo boss or its not grappled"
-	end
 	return result
 end
 
@@ -126,7 +135,7 @@ local function resetKessleRunSaveData(mission)
 	if mission.starwars == nil then
 		mission.starwars = {}
 	end
-	
+
 	mission.starwars.achiev_kesselRunStartPos = {}
 	for i = 0, 2 do
 		if Board:GetPawn(i) then
@@ -136,6 +145,14 @@ local function resetKessleRunSaveData(mission)
 end
 
 function StarWarsAchievements.onMissionStartHook(mission)
+	if isRightSquadInMission() then
+		StarWarsAchievements.protonTorpedoActive = false
+		resetKessleRunSaveData(mission)
+	end
+end
+
+-- Just to be sure it doesn't carry over
+function StarWarsAchievements.onMissionEndHook(mission)
 	if isRightSquadInMission() then
 		StarWarsAchievements.protonTorpedoActive = false
 		resetKessleRunSaveData(mission)
@@ -153,10 +170,10 @@ function StarWarsAchievements.onSkillStartHook(mission, pawn, weaponId, p1, p2)
 	if not isRightSquadInMission() then
 		return
 	end
-	
+
 	if not achievements.almostmany:isComplete() then
-		StarWarsAchievements.protonTorpedoActive = 
-				string.sub(weaponId, 1, string.len(StarWarsAchievements.protonTordepoName)) == 
+		StarWarsAchievements.protonTorpedoActive =
+				string.sub(weaponId, 1, string.len(StarWarsAchievements.protonTordepoName)) ==
 				StarWarsAchievements.protonTordepoName
 		if StarWarsAchievements.protonTorpedoActive then
 			StarWarsAchievements.protonTorpedoKills = 0
@@ -168,7 +185,7 @@ function StarWarsAchievements.onPawnKilledHook(mission, pawn)
 	if not isRightSquadInMission() then
 		return
 	end
-	
+
 	if not achievements.realoriginal:isComplete() then
 		if pawn:IsEnemy() and mod_loader.mods.redactedrice_libs.libs.pawnTypeUtils.isBoss(pawn) and
 				GAME and GAME.starwars and GAME.starwars.tow_cabled then
@@ -180,7 +197,7 @@ function StarWarsAchievements.onPawnKilledHook(mission, pawn)
 			end
 		end
 	end
-	
+
 	if not achievements.almostmany:isComplete() then
 		if pawn:IsEnemy() and StarWarsAchievements.protonTorpedoActive then
 			StarWarsAchievements.protonTorpedoKills = StarWarsAchievements.protonTorpedoKills + 1
@@ -190,12 +207,12 @@ function StarWarsAchievements.onPawnKilledHook(mission, pawn)
 		end
 	end
 end
-	
+
 function StarWarsAchievements.onPawnPositionChangedHook(mission, pawn, oldPos)
 	if not isRightSquadInMission() then
 		return
 	end
-	
+
 	if not achievements.kesselrun:isComplete() then
 		LOG("KESSEL CHECK")
 		if spacesOffset(mission, pawn) >= (StarWarsAchievements.kesselRunThreshold - 1) then
@@ -206,8 +223,9 @@ end
 
 function StarWarsAchievements:addHooks()
 	modApi.events.onMissionStart:subscribe(self.onMissionStartHook)
+	modApi.events.onMissionEnd:subscribe(self.onMissionEndHook)
 	modApi.events.onNextTurn:subscribe(self.onNextTurnHook)
-	
+
 	modapiext:addSkillStartHook(self.onSkillStartHook)
 	modapiext:addPawnKilledHook(self.onPawnKilledHook)
 	modapiext:addPawnPositionChangedHook(self.onPawnPositionChangedHook)
