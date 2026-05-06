@@ -208,8 +208,8 @@ function this:init(mod)
 			Pilot_Luke_Ref:initGameSaveData()
 			return GAME.starwars.force_focused[pawn:GetId()] == true
 		end,
-		icon = "combat/icons/icon_doubleshot.png",
-		icon_glow = "combat/icons/icon_doubleshot_glow.png",
+		icon = "img/combat/icons/icon_sw_force_focus.png",
+		icon_glow = "img/combat/icons/icon_sw_force_focus_glow.png",
 		desc = {
 			title = "Force Focused",
 			text = "This unit's next attack will deal double damage (before boost)."

@@ -43,15 +43,7 @@ end
 -- Helper function to check if a pawn has Rebel Hope equipped
 local function pawnHasRebelHope(pawn)
 	if not pawn or not pawn:IsMech() then return false end
-
-	local weaponCount = pawn:GetWeaponCount()
-	for i = 1, weaponCount do
-		local weapon = pawn:GetWeaponBaseType(i)
-		if weapon and string.sub(weapon, 1, string.len("StarWars_RebelHope")) == "StarWars_RebelHope" then
-			return true
-		end
-	end
-	return false
+	return mod.libs.passiveEffect:countAnyVersionOfPassiveActive("StarWars_RebelHope") > 0
 end
 
 -- Add stateful trait icon showing active vs used state
