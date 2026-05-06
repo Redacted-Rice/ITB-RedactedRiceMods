@@ -19,6 +19,8 @@ StarWars_RebelHope = PassiveSkill:new{
 local mod = mod_loader.mods[modApi.currentMod]
 passiveEffect = mod_loader.mods[modApi.currentMod].libs.passiveEffect
 
+local REBEL_HOPE_COLOR = GL_Color(255, 0, 0)
+
 -- Initialize GAME save data structure
 local function initGameSaveData()
 	if GAME == nil then
@@ -138,6 +140,8 @@ function StarWars_RebelHope:GetPassiveSkillEffect_PawnKilledHook(mission, pawn)
 		-- Use repair to bring back to 1 HP
 		local repair = repairSkill:GetSkillEffect(pawnSpace, pawnSpace)
 		Board:AddEffect(repair)
+		Board:AddAlert(pawn:GetSpace(), "REBEL HOPE")
+		Board:Ping(pawn:GetSpace(), REBEL_HOPE_COLOR)
 
 		-- Check if the upgrade is active and boost if so
 		if passiveEffect:isPassiveActive("StarWars_RebelHope_A") then
