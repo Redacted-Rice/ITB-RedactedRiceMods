@@ -62,7 +62,7 @@ mod.libs.traitReplace:addStateful{
 	end,
 	states = {
 		{
-			icon = "img/combat/icons/icon_sw_rebel_hope_active.png",
+			icon = "img/combat/icons/icon_sw_rebel_hope.png",
 			desc_title = "Rebel Hope (Active)",
 			desc_text = "The next time a mech would die, it is revived with 1 HP.",
 		},

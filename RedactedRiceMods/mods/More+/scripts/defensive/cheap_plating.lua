@@ -55,7 +55,7 @@ more_plus.libs.traitReplace:addStateful{
 			desc_text = "The next attack that would damage this mech does -3 damage.",
 		},
 		{
-			icon = "img/combat/icons/icon_mp_RrFirstBlood.png",
+			icon = "img/combat/icons/icon_mp_RrCheapPlating_used.png",
 			desc_title = "Cheap Plating (Used)",
 			desc_text = "The damage reduction has been used this mission.",
 		},
