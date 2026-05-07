@@ -2,7 +2,6 @@
 TraitReplace - Allows adding custom UI traits that cycle with vanilla traits
 
 Author: Das Keifer of Redacted Rice
-Version: 0.8.2
 Discord Server: https://discord.gg/CNjTVrpN4v
 
 Overrides target traits to allow custom traits to be displayed

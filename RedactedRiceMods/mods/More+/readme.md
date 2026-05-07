@@ -71,6 +71,29 @@ These are skills that have a stronger than typical positive effect but also incl
 * Vindictive - +1 damage to enemies for each negative status effect on piloted mech.
 
 # Releases
+Latest release: 2.1.0
+
+## 2.1.0
+Released: 05/07/2026
+
+compatible with:
+* ItB AE 	1.2.93
+* ModLoader 2.9.5
+* memhack	1.1.0
+* CPLUS+ Ex	1.1.0
+
+### Notes
+* Created a default enabled/disabled skills list
+* Updated for fixes in weapon preview mod
+* Fixed resiliant triggering on undoing heal mine moves
+* Fixed rally not working when moving the pawn with the skill
+* Fixed first blood not triggering on enemies with more than their typical max health
+* Fixed momentum, rally, urban, and escort removing boost/shield from other pawns on undo move
+* Added a number of additional exclusions for Zoltan/Mafan
+* Added broken stateful icon for cheap plating
+* Updated icon for streetwise
+
+
 Latest release: 2.0.0
 
 ## 2.0.0

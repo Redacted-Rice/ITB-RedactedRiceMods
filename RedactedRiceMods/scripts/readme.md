@@ -122,7 +122,12 @@ Released: 02/14/2026
 Copied from Lemonymous and updated to handle multiple traits by appending text together and cycling through images
 
 ## TraitReplace
-Current Release: 0.8.2
+Current Release: 0.9.0
+
+### 0.9.0
+Released: 05/07/2026
+
+Adding support for stateful icons - e.g. cheap plating - icons that change if the corresponding skill has been used or not
 
 ### 0.8.2
 Released: 05/01/2026
@@ -146,7 +151,12 @@ Current Release: 2.1
 Brough in from Lemonymous' repo in support of ArtilleryArc. No changes
 
 ## WeaponPreview
-Current Release: 4.0.1
+Current Release: 4.0.2
+
+### 4.0.2
+Released: 05/07/2026
+
+* Fixed issues with queued icons not getting cleared out on skill execution and being added without associated pawns
 
 ### 4.0.1
 Released: 03/30/2026

@@ -40,6 +40,7 @@ end
 more_plus.DISABLED_BY_DEFAULT = {
 	-- Vanilla skills to disable
 	"Grid",
+	"GridPlus", -- rebal core is enabled
 	"Health",
 	"Move",
 	"Closer",

@@ -57,16 +57,13 @@ local function spacesOffset(mission, pawn)
 	local startPos = mission.starwars.achiev_kesselRunStartPos[pawn:GetId()]
 	local endPos = pawn:GetSpace()
 	if not startPos or not endPos then
-		LOG("NIL arg")
 		return 0
 	end
 
 	if not Board:IsValid(startPos) then
-		LOG("Invalid starting position for pawn " .. pawn:GetId())
 		return 0
 	end
 
-	LOG("KESSEL CHECK ".. startPos:GetString() .. endPos:GetString())
 	return math.max(math.abs(startPos.x - endPos.x), math.abs(startPos.y - endPos.y))
 end
 
@@ -214,7 +211,6 @@ function StarWarsAchievements.onPawnPositionChangedHook(mission, pawn, oldPos)
 	end
 
 	if not achievements.kesselrun:isComplete() then
-		LOG("KESSEL CHECK")
 		if spacesOffset(mission, pawn) >= (StarWarsAchievements.kesselRunThreshold - 1) then
 			achievements.kesselrun:trigger()
 		end

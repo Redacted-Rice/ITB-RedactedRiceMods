@@ -49,10 +49,7 @@ for 1.1 release:
 
 MoreLvlUpSkills:
 
-For 2.0.1 Release:
-* Test queued icons (reflect, vampire)
-* Create base list of enabled skills
-* Create user and modder guides
+Potential 2.0.2 release:
 * First blood x2 on gardening tools?
 
 Known Issues:
