@@ -104,7 +104,6 @@ end
 
 -- Mission start hook
 function StarWars_RebelHope:GetPassiveSkillEffect_MissionStartHook(mission)
-	logger.logDebug(SUBMODULE, "Mission start, resetting rebel hope tracking")
 	initGameSaveData()
 	GAME.starwars.rebel_hope.used = false
 end
