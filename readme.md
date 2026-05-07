@@ -13,12 +13,12 @@ Please enjoy and contact us if you run into any issues!
 * Email: RedactedRice@gmail.com
 
 # Squads
-* Star Wars - v1.0.0 - Play as your favorite iconic rebel starships and Luke to fight back against the evil vek empire. This squad can hit hard but has less board control options at the start. Luke can focus on the force to deal massive damage the next turn.
+* Star Wars - v1.0.1 - Play as your favorite iconic rebel starships and Luke to fight back against the evil vek empire. This squad can hit hard but has less board control options at the start. Luke can focus on the force to deal massive damage the next turn.
 * Treeherders - v3.1.2 - Inspired by ents, this squad focuses on using forests tiles to increase their power. The flagship entborg mech gets stronger as the forests get destroyed
 * WorldBuilders - v1.3.2 - This squad focuses on terrain manipulation to block and avoid damage. It has some strong single target effects but you can easily get overwhelmed by numbers if not strategically manipulating the terrain
 
 # Other
-* More+ - v2.0.0 - 35 custom pilot level up skills across 5 categories with Status Library integration
+* More+ - v2.1.0 - 35 custom pilot level up skills across 5 categories with Status Library integration
 * RebalanceCore+ - v1.0.2 - Reblances the core vanilla level up skills (other than reactor) so they are not strictly worse than the AE ones
 
 # Libs
@@ -28,9 +28,9 @@ Please enjoy and contact us if you run into any issues!
 * PawnTypeUtils - v1.1.0 - Functions to allow determining more detailed pawn types (using EasyEdit)
 * PredictableRandom - v1.2.0 - Get random numbers in a way that is repeatable for when undoing moves or resetting turns
 * Trait - v3.0.1 - Add traits to pawns & the board. Originally created by Lemonymous and updated to v3.x.x to support multiple traits via appending text and cycling images as well as showing icons for move previews
-* TraitReplace - v0.8.2 - Allows adding custom UI traits that cycle with vanilla traits
+* TraitReplace - v0.9.0 - Allows adding custom UI traits that cycle with vanilla traits
 * WeaponArmed - v2.1.0 - Created by Lemonymous and incorporated due to dependencies. No changes made
-* WeaponPreview - v4.0.1 - Add icons to weapon previews. Originally created by Lemonymous and updated to v4.x.x to support use in skill build hooks and two click weapons
+* WeaponPreview - v4.0.2 - Add icons to weapon previews. Originally created by Lemonymous and updated to v4.x.x to support use in skill build hooks and two click weapons
 
 # Install
 - Unzip the release folder
@@ -40,7 +40,44 @@ Please enjoy and contact us if you run into any issues!
 To uninstall, delete the folder in mods
 
 # Releases
-Latest release: 1.6.0
+Latest release: 1.6.1
+
+## 1.6.1
+* Added some icons and minor bug fixes for Rebels
+* Several more+ significant bug fixes for various skills, mostly positional ones
+* Updates to trait replace to allow for stateful icons that can change based on conditions
+* Fixed some weapon preview issues with queued attacks
+
+Released: 05/07/2026
+
+Squads:
+* Star Wars     1.0.1
+* Treeherders   3.1.2
+* WorldBuilders 1.3.2
+
+Other Mods:
+* More+          2.1.0
+* RebalanceCore+ 1.0.2
+
+Libs:
+* ArtilleryArc      2.0.0
+* BoardUtils        1.5.0
+* PassiveEffect     1.4.0
+* PawnTypeUtils     1.1.0
+* PredictableRandom 1.2.0
+* Trait             3.0.1
+* TraitReplace      0.9.0
+* WeaponArmed       2.1.0
+* WeaponPreview     4.0.2
+
+Dependencies:
+* ItB AE        1.2.93
+* ModLoader     2.9.5
+* ModLoaderExt  1.24
+* Memedit       1.2.1
+* EasyEdit	    2.0.8
+* Memhack       1.1.0
+* CPLUS+ Ex     1.1.1
 
 ## 1.6.0
 Star Wars squad enters the breach!
