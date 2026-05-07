@@ -62,12 +62,13 @@ more_plus.DISABLED_BY_DEFAULT = {
 	"RrSupporter",
 	-- Offensive
 	"RrCalculatedShot",
-	"RrFocusedStrike",
+	"RrFocused",
 	"RrKillShot",
 	-- Positioning
 	"RrMilitia",
 	"RrUrban",
 	-- Trade Offs
+	"RrHyper",
 	"RrReflect",
 	"RrShatterstep",
 	"RrVindictive",
