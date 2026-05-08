@@ -13,7 +13,7 @@ Please enjoy and contact us if you run into any issues!
 * Email: RedactedRice@gmail.com
 
 # Squads
-* Star Wars - v1.0.1 - Play as your favorite iconic rebel starships and Luke to fight back against the evil vek empire. This squad can hit hard but has less board control options at the start. Luke can focus on the force to deal massive damage the next turn.
+* Star Wars - v1.0.2 - Play as your favorite iconic rebel starships and Luke to fight back against the evil vek empire. This squad can hit hard but has less board control options at the start. Luke can focus on the force to deal massive damage the next turn.
 * Treeherders - v3.1.2 - Inspired by ents, this squad focuses on using forests tiles to increase their power. The flagship entborg mech gets stronger as the forests get destroyed
 * WorldBuilders - v1.3.2 - This squad focuses on terrain manipulation to block and avoid damage. It has some strong single target effects but you can easily get overwhelmed by numbers if not strategically manipulating the terrain
 
@@ -40,7 +40,42 @@ Please enjoy and contact us if you run into any issues!
 To uninstall, delete the folder in mods
 
 # Releases
-Latest release: 1.6.1
+Latest release: 1.6.2
+
+## 1.6.2
+* Two click weapon preview fixes where it was not displaying icons
+* Fixing rebel hope visuals
+
+Released: XX/XX/2026
+
+Squads:
+* Star Wars     1.0.2
+* Treeherders   3.1.2
+* WorldBuilders 1.3.2
+
+Other Mods:
+* More+          2.1.0
+* RebalanceCore+ 1.0.2
+
+Libs:
+* ArtilleryArc      2.0.0
+* BoardUtils        1.5.0
+* PassiveEffect     1.4.0
+* PawnTypeUtils     1.1.0
+* PredictableRandom 1.2.0
+* Trait             3.0.1
+* TraitReplace      0.9.0
+* WeaponArmed       2.1.0
+* WeaponPreview     4.0.3
+
+Dependencies:
+* ItB AE        1.2.93
+* ModLoader     2.9.5
+* ModLoaderExt  1.24
+* Memedit       1.2.1
+* EasyEdit	    2.0.8
+* Memhack       1.1.0
+* CPLUS+ Ex     1.1.1
 
 ## 1.6.1
 * Added some icons and minor bug fixes for Rebels
