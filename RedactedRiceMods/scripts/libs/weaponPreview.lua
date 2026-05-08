@@ -596,8 +596,13 @@ local function getTargetArea(self, p1, ...)
 			previewState = STATE_NONE
 		end
 	end
-
-	return result or oldGetTargetAreas[skillId](self, p1, ...)
+	
+	if not result then
+		result = oldGetTargetAreas[skillId](self, p1, ...)
+		previewTargetArea = result
+	end
+	
+	return result
 end
 
 local function getSecondTargetArea(self, p1, p2, ...)
