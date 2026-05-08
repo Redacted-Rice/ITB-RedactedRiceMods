@@ -151,7 +151,12 @@ Current Release: 2.1
 Brough in from Lemonymous' repo in support of ArtilleryArc. No changes
 
 ## WeaponPreview
-Current Release: 4.0.2
+Current Release: 4.0.3
+
+### 4.0.3
+Released: XX/XX/2026
+
+* Fixed issues with dynamically changing target area skill effects
 
 ### 4.0.2
 Released: 05/07/2026
