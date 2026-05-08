@@ -11,7 +11,18 @@ Please enjoy and contact us if you run into any issues!
 * Email: RedactedRice@gmail.com
 
 # Releases
-Latest release: 1.0.1
+Latest release: 1.0.2
+
+## 1.0.2
+Released: XX/XX/2026
+
+compatible with:
+* ItB AE        1.2.93
+* ModLoader     2.9.5
+* ModLoaderExt  1.24
+
+### Notes
+* Fixed visuals for rebel hope
 
 ## 1.0.1
 Released: 05/07/2026
