@@ -183,17 +183,10 @@ function this:init(mod)
 	-- Create the pilot
 	CreatePilot(pilot)
 
-	-- Add skill tooltip if pilotSkill_tooltip library is available
-	mod.libs.pilotSkill_tooltip.Add(
-		pilot.Skill,
-		PilotSkill(
-			"Force Focus",
-			"When repairing, gain boosted and your next attack deals double damage (before boost)."
-		)
-	)
-
 	-- Add the modified repair skill
 	ReplaceRepair:addSkill({
+		name = "Force Focus",
+		description = "When repairing, gain boosted and your next attack deals double damage (before boost).",
 		weapon = "Luke_ForceFocus_Repair",
 		icon = "img/weapons/luke_repair.png",
 		pilotSkill = pilot.Skill
