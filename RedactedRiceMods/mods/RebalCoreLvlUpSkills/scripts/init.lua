@@ -42,7 +42,6 @@ function mod:init(options)
 		"img/combat/icons/icon_Pilot_Invulnerable_Plus_Used.png",
 	}
 	local resourcePath = mod_loader.mods[modApi.currentMod].resourcePath
-	LOG(resourcePath)
 	for _, iconPath in ipairs(morePlusIcons) do
 		modApi:appendAsset(iconPath, resourcePath..iconPath)
 	end
