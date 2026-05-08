@@ -10,7 +10,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
 	priority = 200 -- go after any adjustments
 }
 
-customSkill.DEBUG = true
+customSkill.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Anger", customSkill.DEBUG)
 

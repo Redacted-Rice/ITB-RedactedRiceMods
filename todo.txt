@@ -29,9 +29,7 @@ Known Issues:
 ------------------------------------------------------------------------------
 
 Star Wars:
-Crashes with cualdren pilots?
-Issues with pilot potluck?
-Force focus x4?
+None
 
 
 ------------------------------------------------------------------------------
@@ -48,9 +46,7 @@ for 1.1 release:
 ------------------------------------------------------------------------------
 
 MoreLvlUpSkills:
-
-Potential 2.0.2 release:
-* First blood x2 on gardening tools?
+None
 
 Known Issues:
 * Vigor on Harold will not show icon when using repair. Not sure why its not displaying. Seems to be something unique with how his repair skill works
