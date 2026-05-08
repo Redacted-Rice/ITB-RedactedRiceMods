@@ -2,20 +2,44 @@ local mod = {
 	id = "redactedrice_RebalCorePlus",
 	name = "Rebalanced Core Lvl Up Skills",
 	icon = "mod_icon.png",
-	version = "1.0.2",
+	version = "1.1.0",
 	modApiVersion = "2.9.5",
 	gameVersion = "1.2.93",
 	dependencies = {
-        redactedrice_cplus_plus = "1.1.0",
+        redactedrice_cplus_plus = "1.1.1",
+        redactedrice_memhack = "1.1.0",
     }
 }
 
+function mod:metadata()
+	local option_values = {
+		gridDef = {4, 5, 6, 7, 8, 9, 10, 11, 12},
+	}
+
+	modApi:addGenerationOption(
+		"rr_vplus_grid", "Grid+ Increase Amount",
+		"Changes the Grid DEF % increas for the Grid+ skill and the Move+ skill. Grid DEF will use this value. Move+ will use this value / 2 (round down).\nREQUIRES RESTART TO TAKE EFFECT!",
+		{
+			values = option_values.gridDef,
+			value = 8
+		}
+	)
+end
+
 function mod:init(options)
+	-- Get passiveEffect and other libs from the parent mod
+	self.libs = {}
+	for libId, lib in pairs(mod_loader.mods.redactedrice_libs.libs) do
+		self.libs[libId] = lib
+	end
+
 	-- Core skill icons since they don't have any
 	local morePlusIcons = {
 		"img/combat/icons/icon_Pilot_Health_Plus.png",
 		"img/combat/icons/icon_Pilot_Move_Plus.png",
 		"img/combat/icons/icon_Pilot_Grid_Plus.png",
+		"img/combat/icons/icon_Pilot_Invulnerable_Plus.png",
+		"img/combat/icons/icon_Pilot_Invulnerable_Plus_Used.png",
 	}
 	local resourcePath = mod_loader.mods[modApi.currentMod].resourcePath
 	LOG(resourcePath)
@@ -89,10 +113,14 @@ function mod:init(options)
 		}
 	}
 
+	-- Load the Invulnerable+ skill
+	local invulnerablePlus = require(self.scriptPath.."invulnerable_plus")
+
 	-- register on init (constraints are now defined in the skill tables)
 	cplus_plus_ex:registerSkill(cplusCategory, healthPlus)
 	cplus_plus_ex:registerSkill(cplusCategory, movePlus)
 	cplus_plus_ex:registerSkill(cplusCategory, gridPlus)
+	cplus_plus_ex:registerSkill(cplusCategory, invulnerablePlus)
 
 	-- Some additional vanilla groups
 	cplus_plus_ex:registerSkillToGroup("Health", "Add Health")
@@ -103,29 +131,20 @@ function mod:init(options)
 	cplus_plus_ex:registerSkillToGroup("Adrenaline", "Add Move")
 
 	cplus_plus_ex:registerSkillToGroup("Grid", "Add Grid Def")
+
+	-- These vanilla skills confict
+	cplus_plus_ex:registerSkillExclusion("Pain", "Regen")
 end
 
 function mod:load(options, version)
+	-- The passive effect system is loaded by the parent mod, no need to load it again
+
 	-- Do config changes on load
 	cplus_plus_ex:disableSkill("Health")
 	cplus_plus_ex:disableSkill("Move")
 	cplus_plus_ex:disableSkill("Grid")
+	cplus_plus_ex:disableSkill("Invulnerable")
 
-end
-
-function mod:metadata()
-	local option_values = {
-		gridDef = {4, 5, 6, 7, 8, 9, 10, 11, 12},
-	}
-
-	modApi:addGenerationOption(
-		"rr_vplus_grid", "Grid+ Increase Amount",
-		"Changes the Grid DEF % increas for the Grid+ skill and the Move+ skill. Grid DEF will use this value. Move+ will use this value / 2 (round down).\nREQUIRES RESTART TO TAKE EFFECT!",
-		{
-			values = option_values.gridDef,
-			value = 8
-		}
-	)
 end
 
 return mod
