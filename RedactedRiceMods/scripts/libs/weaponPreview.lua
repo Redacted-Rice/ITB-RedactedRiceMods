@@ -626,8 +626,13 @@ local function getSecondTargetArea(self, p1, p2, ...)
 			previewState = STATE_NONE
 		end
 	end
-
-	return result or oldGetSecondTargetAreas[skillId](self, p1, p2, ...)
+	
+	if not result then
+		result = oldGetSecondTargetAreas[skillId](self, p1, p2, ...)
+		previewSecondTargetArea = result
+	end
+	
+	return result
 end
 
 local function getSkillEffect(self, p1, p2, ...)
