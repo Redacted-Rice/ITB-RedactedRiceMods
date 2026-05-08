@@ -35,12 +35,7 @@ None
 ------------------------------------------------------------------------------
 
 RebalCore+:
-
-for 1.1 release:
-* New skill
-	* Second Wind - first time mech dies, gain 1 hp at the end of the vek turn
-* Exclusion
-	* Massochist & technician
+None
 
 
 ------------------------------------------------------------------------------

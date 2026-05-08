@@ -13,13 +13,27 @@ Please enjoy and contact us if you run into any issues.
 * Health -> Health+ (+3 Health)
 * Move -> Move+ (+1 Move, +4 Grid Defense)
 * Reactor -> Reactor (Don't get greedy, this one is already good)
+* Invulnerable -> Invulnerable+ (Once per mission per mech, the first time this mech dies, it is revived with 1 HP at the start of the next turn)
 
 ### Rationale
 * Grid defense has always felt lousy, even before AE
 * Skilled is just Health + Move so these feel like they need a boost to not just be objectively worse
+* Invulnerable is not very applicable in mission and easily forgotten. This makes it more in mission applicable
 
 # Releases
-Latest release: 1.0.2
+Latest release: 1.1.0
+
+## 1.1.0
+Released: XX/XX/2026
+
+compatible with:
+* ItB AE 	1.2.93
+* ModLoader 2.9.5
+* CPLUS+ Ex	1.1.1
+* memhack	1.1.0
+
+### Notes
+* Added skill groups for better compatibility with More+ mod
 
 ## 1.0.2
 Released: 05/01/2026
@@ -28,6 +42,7 @@ compatible with:
 * ItB AE 	1.2.93
 * ModLoader 2.9.5
 * CPLUS+ Ex	1.1.0
+* memhack	1.1.0
 
 ### Notes
 * Added skill groups for better compatibility with More+ mod
@@ -39,6 +54,7 @@ compatible with:
 * ItB AE 	1.2.93
 * ModLoader 2.9.5
 * CPLUS+ Ex	1.0.2
+* memhack	1.0.0
 
 ### Notes
 * Added exclusions with replaced vanilla skills in case someone wants to re-enable them
@@ -50,6 +66,7 @@ compatible with:
 * ItB AE 	1.2.93
 * ModLoader 2.9.5
 * CPLUS+ Ex	1.0.0
+* memhack	1.0.0
 
 ### Notes
 * Initial release! Replaces Grid DEF, Health, and Move with better versions
