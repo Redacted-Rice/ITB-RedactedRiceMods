@@ -23,6 +23,7 @@ compatible with:
 
 ### Notes
 * Fixed visuals for rebel hope
+* Added squad exclusions for Pontoons and Jump Jets
 
 ## 1.0.1
 Released: 05/07/2026
