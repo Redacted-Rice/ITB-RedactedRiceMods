@@ -45,6 +45,7 @@ Latest release: 1.6.2
 ## 1.6.2
 * Two click weapon preview fixes where it was not displaying icons
 * Fixing rebel hope visuals
+* Adding squad exclusion for rebels with pontoons and jump jets 
 
 Released: XX/XX/2026
 
