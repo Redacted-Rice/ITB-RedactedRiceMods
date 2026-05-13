@@ -77,12 +77,12 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 				local movingPawnId = pawn:GetId()
 				logger.logDebug(SUBMODULE, "Rally pawn %d moving to %s, boosting adjacent ally %d at %s",
 						movingPawnId, p2:GetString(), adjacentId, adjacentLoc:GetString())
-
 				more_plus.libs.weaponPreview.ExecuteWithState(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
-						function()
-							more_plus.libs.weaponPreview:AddAnimation(adjacentLoc,
-									more_plus.commonIcons.boost.key.."_1")
-						end, movingPawnId)
+					function()
+						more_plus.libs.weaponPreview:AddAnimation(adjacentLoc.loc, more_plus.commonIcons.boost.key, nil,  -- delay
+								more_plus.WEAPON_PREVIEW_GROUP_ID)
+					end, movingPawnId
+				)
 
 				local boostDamage = SpaceDamage(adjacentLoc, 0)
 				boostDamage.sScript = [[
@@ -106,14 +106,13 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 		-- Boost the moving pawn if not already boosted and found a Rally pilot
 		if hasAdjacentRally and not pawn:IsBoosted() then
 			local pawnId = pawn:GetId()
-			logger.logDebug(SUBMODULE, "Pawn %d moving adjacent to Rally pawn, boosting",
-				pawnId)
-
+			logger.logDebug(SUBMODULE, "Pawn %d moving adjacent to Rally pawn, boosting", pawnId)
 			more_plus.libs.weaponPreview.ExecuteWithState(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
-					function()
-						more_plus.libs.weaponPreview:AddAnimation(p2,
-								more_plus.commonIcons.boost.key.."_1")
-					end, pawnId)
+				function()
+					more_plus.libs.weaponPreview:AddAnimation(p2, more_plus.commonIcons.boost.key, nil,  -- delay
+						more_plus.WEAPON_PREVIEW_GROUP_ID)
+				end, pawnId
+			)
 
 			local boostDamage = SpaceDamage(p2, 0)
 			boostDamage.sScript = [[

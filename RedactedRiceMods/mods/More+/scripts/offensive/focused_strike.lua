@@ -30,18 +30,17 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 	if targetPawn and targetPawn:IsEnemy() and
 			spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and
 			spaceDamage.iDamage ~= DAMAGE_ZERO then
-		for _, idx in ipairs(indexes) do
-			logger.logDebug(SUBMODULE, "Adding icon for %s with idx %d", spaceDamage.loc:GetString(), idx)
-			more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
-					function()
-						more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc,
-								more_plus.commonIcons.crit.key.."_"..idx)
-					end, attackingPawn:GetId())
-			local originalDamage = spaceDamage.iDamage
-			spaceDamage.iDamage = spaceDamage.iDamage * 2
-			logger.logDebug(SUBMODULE, "Doubled damage to enemy at %s from %d to %d (not moved yet)",
-					spaceDamage.loc:GetString(), originalDamage, spaceDamage.iDamage)
-		end
+		logger.logDebug(SUBMODULE, "Adding icon for %s", spaceDamage.loc:GetString())
+		more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
+			function()
+				more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc, more_plus.commonIcons.crit.key, nil,  -- delay
+						more_plus.WEAPON_PREVIEW_GROUP_ID)
+			end, attackingPawn:GetId()
+		)
+		local originalDamage = spaceDamage.iDamage
+		spaceDamage.iDamage = spaceDamage.iDamage * 2
+		logger.logDebug(SUBMODULE, "Doubled damage to enemy at %s from %d to %d (not moved yet)",
+				spaceDamage.loc:GetString(), originalDamage, spaceDamage.iDamage)
 	end
 end
 

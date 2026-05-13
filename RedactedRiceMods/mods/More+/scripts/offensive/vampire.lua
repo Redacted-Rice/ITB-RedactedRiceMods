@@ -63,7 +63,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 			local pawnId = attackingPawn:GetId()
 			local targetLoc = self:getPawnSpace(targetPawn)
 			local attackerLoc = self:getPawnSpace(attackingPawn)
-			
+
 			-- Track this heal for aggregation (by pawn ID)
 			if not self.pendingHeals[pawnId] then
 				self.pendingHeals[pawnId] = {
@@ -73,21 +73,18 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 			end
 			self.pendingHeals[pawnId].count = self.pendingHeals[pawnId].count + 1
 
-			-- Add vampire animation icons at current location
-			for _, idx in ipairs(indexes) do
-				logger.logDebug(SUBMODULE, "Adding vampire damage icon from %s to attacker %s with idx %d",
-						targetLoc:GetString(), attackerLoc:GetString(), idx)
-				more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
-						function()
-							-- add to attacker and target
-							more_plus.libs.weaponPreview:AddAnimation(attackerLoc,
-									more_plus.commonIcons.vampire.key.."_"..idx)
-							more_plus.libs.weaponPreview:AddAnimation(targetLoc,
-									more_plus.commonIcons.vampire.key.."_"..idx)
-						end, pawnId)
-			end
+			-- Add vampire icons with group ID for automatic consolidation
+			more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
+				function()
+					more_plus.libs.weaponPreview:AddAnimation(attackerLoc, more_plus.commonIcons.vampire.key, nil,  -- delay
+							more_plus.WEAPON_PREVIEW_GROUP_ID)
+					more_plus.libs.weaponPreview:AddAnimation(targetLoc, more_plus.commonIcons.vampire.key, nil,  -- delay
+							more_plus.WEAPON_PREVIEW_GROUP_ID)
+				end, pawnId
+			)
 
-			logger.logDebug(SUBMODULE, "Tracked vampire heal #%d for pawn %d",
+			logger.logDebug(SUBMODULE, "Added vampire icons at attacker %s and target %s (heal #%d for pawn %d)",
+					attackerLoc:GetString(), targetLoc:GetString(),
 					self.pendingHeals[pawnId].count, pawnId)
 		end
 	end
@@ -98,41 +95,41 @@ function customSkill:SkillEffectEvaluated(phase)
 		return nil
 	end
 	local results = {}
-	
+
 	-- Add a delay before applying heals
 	local delayDamage = SpaceDamage(Point(0, 0), 0)
 	delayDamage.bHide = true
 	delayDamage.fDelay = 0.5
 	table.insert(results, delayDamage)
-	
-	-- Loop through all pawn IDs and apply the summed heal 
+
+	-- Loop through all pawn IDs and apply the summed heal
 	for pawnId, healData in pairs(self.pendingHeals) do
 		local pawn = Board:GetPawn(pawnId)
 		if pawn then
 			-- Get pawn's current location
 			local currentLoc = self:getPawnSpace(pawn)
-			
+
 			logger.logDebug(SUBMODULE, "Creating aggregated heal (%d kills) for pawn %d at current location %s",
 					healData.count, pawnId, currentLoc:GetString())
-			
+
 			-- Adding an alert doesn't work and seems to be overriden by
 			-- the repair alert
-			
+
 			-- Create a single aggregated heal for all kills
 			local repairDamage = SpaceDamage(currentLoc, -healData.count)
 			repairDamage.iFire = EFFECT_REMOVE
 			repairDamage.iAcid = EFFECT_REMOVE
 			table.insert(results, repairDamage)
-			logger.logDebug(SUBMODULE, "Added aggregated repair effect (x%d) at %s", 
+			logger.logDebug(SUBMODULE, "Added aggregated repair effect (x%d) at %s",
 					healData.count, currentLoc:GetString())
 		else
 			logger.logWarn(SUBMODULE, "Pawn %d not found when applying vampire heal", pawnId)
 		end
 	end
-	
+
 	-- Clear for next evaluation
 	self.pendingHeals = {}
-	
+
 	if #results > 0 then
 		return results
 	end
