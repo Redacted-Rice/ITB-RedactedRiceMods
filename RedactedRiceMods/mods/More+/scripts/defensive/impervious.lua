@@ -18,13 +18,12 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 			attackingPawn:GetTeam() == TEAM_PLAYER and spaceDamage.iDamage > 0 and
 			spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO then
 		-- Show icon
-		for _, idx in ipairs(indexes) do
-			more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
-					function()
-						more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc,
-								more_plus.commonIcons.noDamage.key.."_"..idx)
-					end, targetPawn:GetId())
-		end
+		more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
+			function()
+				more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc, more_plus.commonIcons.noDamage.key, nil,  -- delay
+						more_plus.WEAPON_PREVIEW_GROUP_ID)
+			end, targetPawn:GetId()
+		)
 		local oldDamage = spaceDamage.iDamage
 		spaceDamage.iDamage = DAMAGE_ZERO
 		logger.logDebug(SUBMODULE, "Blocked ally damage from pawn %d to pawn %d (damage: %d -> DAMAGE_ZERO)",

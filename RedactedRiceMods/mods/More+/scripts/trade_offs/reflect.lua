@@ -61,19 +61,17 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 		-- Track reflector pawns
 		self.reflectorPawns[reflectorId] = true
 
-		-- Add reflect icons at start locations
-		for _, idx in ipairs(indexes) do
-			logger.logDebug(SUBMODULE, "Adding reflect damage icon from %s to attacker %s with idx %d",
-					targetStartLoc:GetString(), attackerStartLoc:GetString(), idx)
-			more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
-					function()
-						-- add to attacker and target at their START positions
-						more_plus.libs.weaponPreview:AddAnimation(attackerStartLoc,
-								more_plus.commonIcons.reflect.key.."_"..idx)
-						more_plus.libs.weaponPreview:AddAnimation(targetStartLoc,
-								more_plus.commonIcons.reflect.key.."_"..idx)
-					end, attackerId)
-		end
+		-- Add reflect icons at start locations with group ID
+		logger.logDebug(SUBMODULE, "Adding reflect damage icon from %s to attacker %s",
+				targetStartLoc:GetString(), attackerStartLoc:GetString())
+		more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
+			function()
+				more_plus.libs.weaponPreview:AddAnimation(attackerStartLoc, more_plus.commonIcons.reflect.key, nil,  -- delay
+						more_plus.WEAPON_PREVIEW_GROUP_ID)
+				more_plus.libs.weaponPreview:AddAnimation(targetStartLoc, more_plus.commonIcons.reflect.key, nil,  -- delay
+						more_plus.WEAPON_PREVIEW_GROUP_ID)
+			end, attackerId
+		)
 
 		logger.logDebug(SUBMODULE, "Tracked reflect to attacker %d (damage: %s)",
 				attackerId, reflectDamage == DAMAGE_DEATH and "DEATH" or tostring(reflectDamage))

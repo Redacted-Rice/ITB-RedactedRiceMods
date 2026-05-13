@@ -108,6 +108,12 @@ local NULL_WEAPON = ""
 local NULL_WEAPID = -1
 local INT_MAX = 2147483647
 
+-- Group consolidation support
+local DEFAULT_MULTI_ICON = nil  -- Will be initialized during finalizeInit
+local DEFAULT_MULTI_ICON_MARK_DATA = nil  -- Will be initialized after createAnim is available
+local groupRegistry = {}  -- Maps groupId -> {offset = Point, multiIcon = string, multiIconMarkData = {duration, delay, loop}, groupMultiIconKey = string}
+local pendingGroupAnimations = {}  -- Tracks animations by group: [state][groupId][loc_hash] = {loc, anims = {{anim, duration, delay, loop}, ...}}
+
 local Marker = Class.new()
 local selfMetatable = setmetatable({}, Marker)
 selfMetatable.__index = Marker
@@ -275,12 +281,32 @@ local function isPreviewerUnavailable()
 	return previewState == STATE_NONE or Board:IsTipImage() or isScoring
 end
 
-local function addAnimation(self, p, anim, delay)
+local function addAnimation(self, p, anim, delay, groupId)
 	if isPreviewerUnavailable() then return end
 
 	Assert.TypePoint(p, "Argument #1")
 	Assert.Equals('string', type(anim), "Argument #2")
 	Assert.NotEquals('nil', type(ANIMS[anim]), "Argument #2")
+	Assert.Equals({'nil', 'string'}, type(groupId), "Argument #4 (groupId)")
+
+	-- If groupId provided, apply group offset to the animation
+	if groupId then
+		local groupData = getGroupData(groupId)
+		Assert.NotEquals('nil', type(groupData), "Group ID '"..tostring(groupId).."' not registered. Call RegisterGroup first.")
+		if groupData.offset then
+			-- base anims already asserted above
+			local baseAnim = ANIMS[anim]
+			-- Create a group specific variant with offset applied
+			local groupAnimKey = anim .. "_group_" .. groupId
+			if not ANIMS[groupAnimKey] then
+				ANIMS[groupAnimKey] = baseAnim:new{
+					PosX = groupData.offset.x,
+					PosY = groupData.offset.y
+				}
+			end
+			anim = groupAnimKey
+		end
+	end
 
 	createAnim(anim)
 
@@ -291,6 +317,35 @@ local function addAnimation(self, p, anim, delay)
 		delay = duration
 	else
 		delay = nil
+	end
+
+	-- Track grouped animations for consolidation
+	if groupId then
+		if not pendingGroupAnimations[previewState] then
+			pendingGroupAnimations[previewState] = {}
+		end
+		if not pendingGroupAnimations[previewState][groupId] then
+			pendingGroupAnimations[previewState][groupId] = {}
+		end
+
+		local locHash = p.x * 10 + p.y
+		if not pendingGroupAnimations[previewState][groupId][locHash] then
+			pendingGroupAnimations[previewState][groupId][locHash] = {
+				loc = Point(p),
+				anims = {}
+			}
+		end
+
+		-- Add animation to array with its mark data
+		table.insert(pendingGroupAnimations[previewState][groupId][locHash].anims, {
+			anim = anim,  -- Store the adjusted animation name with group offset
+			duration = duration,
+			delay = delay,
+			loop = base.Loop
+		})
+
+		-- Don't add grouped animations to marks yet - consolidation will handle it
+		return
 	end
 
 	table.insert(previewMarks[previewState], {
@@ -445,12 +500,112 @@ end
 local function clearMarks(state)
 	if state then
 		previewMarks[state] = {}
+		pendingGroupAnimations[state] = {}
 	else
 		for _, s in ipairs({STATE_TARGET_AREA, STATE_SECOND_TARGET_AREA, STATE_SKILL_EFFECT,
 				STATE_FINAL_EFFECT, STATE_QUEUED_SKILL, STATE_QUEUED_FINAL_EFFECT}) do
 			previewMarks[s] = {}
+			pendingGroupAnimations[s] = {}
 		end
 	end
+end
+
+-- Register a group with icon offset, optional multi-icon, and optional multi-icon mark data
+-- groupId: unique identifier for the group
+-- offset: Point - offset for all icons in this group
+-- multiIcon: optional string - animation key for multi-icon (uses default if not provided)
+-- multiIconMarkData: optional table - {duration, delay, loop} for the multi-icon (uses defaults if not provided)
+local function registerGroup(self, groupId, offset, multiIcon, multiIconMarkData)
+	Assert.Equals('string', type(groupId), "Argument #1 (groupId)")
+	Assert.TypePoint(offset, "Argument #2 (offset)")
+	Assert.Equals({'nil', 'string'}, type(multiIcon), "Argument #3 (multiIcon)")
+	Assert.Equals({'nil', 'table'}, type(multiIconMarkData), "Argument #4 (multiIconMarkData)")
+
+	if multiIcon then
+		Assert.NotEquals('nil', type(ANIMS[multiIcon]), "Animation '"..multiIcon.."' does not exist")
+	end
+
+	-- Only register if not already registered
+	if not groupRegistry[groupId] then
+		local finalMultiIcon = multiIcon or DEFAULT_MULTI_ICON
+
+		-- Create group specific multi-icon with offset applied
+		local groupMultiIconKey = finalMultiIcon .. "_group_" .. groupId
+		if ANIMS[finalMultiIcon] and not ANIMS[groupMultiIconKey] then
+			ANIMS[groupMultiIconKey] = ANIMS[finalMultiIcon]:new{
+				PosX = offset.x,
+				PosY = offset.y
+			}
+			createAnim(groupMultiIconKey)
+		end
+
+		groupRegistry[groupId] = {
+			offset = Point(offset.x, offset.y),
+			multiIcon = multiIcon,
+			multiIconMarkData = multiIconMarkData,
+			groupMultiIconKey = groupMultiIconKey
+		}
+	end
+end
+
+-- Get group data
+local function getGroupData(groupId)
+	return groupRegistry[groupId]
+end
+
+-- Get multi-icon for a group
+local function getGroupMultiIcon(groupId)
+	local groupData = groupRegistry[groupId]
+	if groupData and groupData.multiIcon then
+		return groupData.multiIcon
+	end
+	return DEFAULT_MULTI_ICON
+end
+
+-- Consolidate grouped animations - add individual or multi-icon marks as appropriate
+local function consolidateGroupedAnimations(marks, state)
+	if not pendingGroupAnimations[state] then
+		return
+	end
+
+	-- Process each group
+	for groupId, locations in pairs(pendingGroupAnimations[state]) do
+		for locHash, data in pairs(locations) do
+			-- Consolidate if there are multiple icons
+			if #data.anims > 1 then
+				local groupData = getGroupData(groupId)
+				local groupMultiIconKey = groupData.groupMultiIconKey
+
+				if groupMultiIconKey and ANIMS[groupMultiIconKey] then
+					-- Use mark data from group registration or fall back to defaults
+					local markData = groupData.multiIconMarkData or DEFAULT_MULTI_ICON_MARK_DATA
+
+					table.insert(marks, {
+						fn = 'AddAnimation',
+						anim = groupMultiIconKey,
+						data = {Point(data.loc), groupMultiIconKey, ANIM_NO_DELAY},
+						duration = markData.duration,
+						delay = markData.delay,
+						loop = markData.loop,
+					})
+				end
+			elseif #data.anims == 1 then
+				-- Single animation - add it normally
+				local animData = data.anims[1]
+				table.insert(marks, {
+					fn = 'AddAnimation',
+					anim = animData.anim,
+					data = {Point(data.loc), animData.anim, ANIM_NO_DELAY},
+					duration = animData.duration,
+					delay = animData.delay,
+					loop = animData.loop,
+				})
+			end
+		end
+	end
+	
+	-- Clear pending animations for this state after consolidation
+	pendingGroupAnimations[state] = nil
 end
 
 local function setLooping(self, flag)
@@ -562,6 +717,7 @@ local function executeWithState(newPreviewState, fn, queuedPawnId)
 	local prevState = previewState
 	previewState = newPreviewState
 	fn()
+
 	-- If it was a queued skill, we need to reset the queued preview marks to match
 	if newPreviewState == STATE_QUEUED_SKILL or newPreviewState == STATE_QUEUED_FINAL_EFFECT then
 		queuedPreviewMarks[previewState][queuedPawnId] = previewMarks[previewState]
@@ -596,12 +752,12 @@ local function getTargetArea(self, p1, ...)
 			previewState = STATE_NONE
 		end
 	end
-	
+
 	if not result then
 		result = oldGetTargetAreas[skillId](self, p1, ...)
 		previewTargetArea = result
 	end
-	
+
 	return result
 end
 
@@ -631,12 +787,12 @@ local function getSecondTargetArea(self, p1, p2, ...)
 			previewState = STATE_NONE
 		end
 	end
-	
+
 	if not result then
 		result = oldGetSecondTargetAreas[skillId](self, p1, p2, ...)
 		previewSecondTargetArea = result
 	end
-	
+
 	return result
 end
 
@@ -856,17 +1012,20 @@ local function onMissionUpdate()
 	end
 
 	if targetMarker:isActive() then
+		consolidateGroupedAnimations(previewMarks[STATE_TARGET_AREA], STATE_TARGET_AREA)
 		markSpaces(previewMarks[STATE_TARGET_AREA], targetMarker.ticker)
 		targetMarker.ticker = targetMarker.ticker + time_delta
 	end
 
 	if secondTargetMarker:isActive() then
+		consolidateGroupedAnimations(previewMarks[STATE_SECOND_TARGET_AREA], STATE_SECOND_TARGET_AREA)
 		markSpaces(previewMarks[STATE_SECOND_TARGET_AREA], secondTargetMarker.ticker)
 		secondTargetMarker.ticker = secondTargetMarker.ticker + time_delta
 	end
 
 	if effectMarker:isActive() then
 		if not boardIsBusy and pointListContains(previewTargetArea, highlighted) then
+			consolidateGroupedAnimations(previewMarks[STATE_SKILL_EFFECT], STATE_SKILL_EFFECT)
 			markSpaces(previewMarks[STATE_SKILL_EFFECT], effectMarker.ticker)
 			effectMarker.ticker = effectMarker.ticker + time_delta
 		else
@@ -877,6 +1036,7 @@ local function onMissionUpdate()
 
 	if finalEffectMarker:isActive() then
 		if not boardIsBusy and pointListContains(previewSecondTargetArea, highlighted) then
+			consolidateGroupedAnimations(previewMarks[STATE_FINAL_EFFECT], STATE_FINAL_EFFECT)
 			markSpaces(previewMarks[STATE_FINAL_EFFECT], finalEffectMarker.ticker)
 			finalEffectMarker.ticker = finalEffectMarker.ticker + time_delta
 		else
@@ -894,6 +1054,7 @@ local function onMissionUpdate()
 	-- Display all queued marks
 	if queuedPreviewMarks[STATE_QUEUED_SKILL] then
 		for pawnId, marks in pairs(queuedPreviewMarks[STATE_QUEUED_SKILL]) do
+			consolidateGroupedAnimations(marks, STATE_QUEUED_SKILL)
 			markSpaces(marks, queuedMarker.ticker)
 		end
 		queuedMarker.ticker = queuedMarker.ticker + time_delta
@@ -901,6 +1062,7 @@ local function onMissionUpdate()
 
 	if queuedPreviewMarks[STATE_QUEUED_FINAL_EFFECT] then
 		for pawnId, marks in pairs(queuedPreviewMarks[STATE_QUEUED_FINAL_EFFECT]) do
+			consolidateGroupedAnimations(marks, STATE_QUEUED_FINAL_EFFECT)
 			markSpaces(marks, queuedFinalEffectMarker.ticker)
 		end
 		queuedFinalEffectMarker.ticker = queuedFinalEffectMarker.ticker + time_delta
@@ -1070,6 +1232,21 @@ if isNewestVersion then
 		overrideAllSkillMethods()
 		initGlobals()
 
+		-- Initialize default multi-icon
+		DEFAULT_MULTI_ICON = "weaponPreview_icon_multihit"
+
+		-- Initialize default multi-icon mark data
+		if ANIMS[DEFAULT_MULTI_ICON] then
+			createAnim(DEFAULT_MULTI_ICON)
+			local base = ANIMS[DEFAULT_MULTI_ICON]
+			-- Use nil for delay to match more_plus animation behavior
+			DEFAULT_MULTI_ICON_MARK_DATA = {
+				duration = sum(ANIMS[PREFIX_ANIM..DEFAULT_MULTI_ICON].__Lengths),
+				delay = nil,
+				loop = base.Loop
+			}
+		end
+
 		WeaponPreview.AddAnimation = addAnimation
 		WeaponPreview.AddColor = addColor
 		WeaponPreview.AddDamage = addDamage
@@ -1081,6 +1258,7 @@ if isNewestVersion then
 		WeaponPreview.AddSimpleColor = addSimpleColor
 		WeaponPreview.AddFunction = addFunction
 		WeaponPreview.ClearMarks = clearMarks
+		WeaponPreview.RegisterGroup = registerGroup
 		WeaponPreview.GetQueuedSkillEffectMarker = getQueuedMarker
 		WeaponPreview.GetQueuedFinalEffectMarker = getQueuedFinalEffectMarker
 		WeaponPreview.GetSkillEffectMarker = getEffectMarker
@@ -1108,6 +1286,7 @@ if isNewestVersion then
 		WeaponPreview.STATE_SECOND_TARGET_AREA = STATE_SECOND_TARGET_AREA
 		WeaponPreview.STATE_FINAL_EFFECT = STATE_FINAL_EFFECT
 		WeaponPreview.STATE_QUEUED_FINAL_EFFECT = STATE_QUEUED_FINAL_EFFECT
+		WeaponPreview.DEFAULT_MULTI_ICON = DEFAULT_MULTI_ICON
 
 		WeaponPreview.events = events
 

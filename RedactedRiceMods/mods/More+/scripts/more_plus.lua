@@ -3,6 +3,9 @@ more_plus = more_plus or {}
 more_plus.skillsByCategory = {}
 more_plus.libs = {}
 
+-- Weapon preview group ID for all More+ level-up skills
+more_plus.WEAPON_PREVIEW_GROUP_ID = "more_plus_levelup_skills"
+
 local path = GetParentPath(...)
 
 -- Initialize logger
@@ -170,36 +173,25 @@ function more_plus:folderToDisplayName(str)
 end
 
 more_plus.commonIcons = {
-	extraDamage = {key = "rr_extra_damage", img =  "combat/icons/icon_mp_RrExtraDamage_glow.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
-	crit = {key = "rr_crit", img =  "combat/icons/icon_mp_RrCrit_glow.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
-	shackle = {key = "rr_shackle", img =  "combat/icons/icon_mp_RrShackle_glow.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
-	noDamage = {key = "rr_no_damage", img =  "combat/icons/icon_mp_RrNoDamage_glow.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
-	boost = {key = "rr_boosted", img = "advanced/combat/icons/icon_boosted_glow.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
-	-- Game seems to not like 1 and 3 in names or maybe I just messed something else up? either way this works
-	armor1 = {key = "rr_armor_one", img = "combat/icons/icon_mp_RrArmorOne_glow.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
-	armor3 = {key = "rr_armor_three", img = "combat/icons/icon_mp_RrArmorThree_glow.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
-	reflect = {key = "rr_Reflect", img = "combat/icons/icon_mp_RrReflect_glow.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
-	vampire = {key = "rr_vampire", img = "combat/icons/icon_mp_RrVampire_glow.png", pos1 = Point(-25,11), pos2 = Point(-18,-4)},
-
+	extraDamage = {key = "rr_extra_damage", img =  "combat/icons/icon_mp_RrExtraDamage_glow.png"},
+	crit = {key = "rr_crit", img =  "combat/icons/icon_mp_RrCrit_glow.png"},
+	shackle = {key = "rr_shackle", img =  "combat/icons/icon_mp_RrShackle_glow.png"},
+	noDamage = {key = "rr_no_damage", img =  "combat/icons/icon_mp_RrNoDamage_glow.png"},
+	boost = {key = "rr_boosted", img = "advanced/combat/icons/icon_boosted_glow.png"},
+	armor1 = {key = "rr_armor_one", img = "combat/icons/icon_mp_RrArmorOne_glow.png"},
+	armor3 = {key = "rr_armor_three", img = "combat/icons/icon_mp_RrArmorThree_glow.png"},
+	reflect = {key = "rr_Reflect", img = "combat/icons/icon_mp_RrReflect_glow.png"},
+	vampire = {key = "rr_vampire", img = "combat/icons/icon_mp_RrVampire_glow.png"},
 }
 
 function more_plus:addCommonCustomImages()
 	for _, iconData in pairs(self.commonIcons) do
-		ANIMS[iconData.key .. "_1"] = ANIMS.Animation:new{
+		-- Create base version without position since it comes from the group
+		ANIMS[iconData.key] = ANIMS.Animation:new{
 			Image = iconData.img,
 			NumFrames = 1,
 			Time = 1,
 			Loop = true,
-			PosX = iconData.pos1.x,
-			PosY = iconData.pos1.y
-		}
-		ANIMS[iconData.key .. "_2"] = ANIMS.Animation:new{
-			Image = iconData.img,
-			NumFrames = 1,
-			Time = 1,
-			Loop = true,
-			PosX = iconData.pos2.x,
-			PosY = iconData.pos2.y
 		}
 	end
 end
@@ -312,6 +304,10 @@ function more_plus:disableDefaultSkills()
 end
 
 function more_plus:load()
+	-- Register More+ weapon preview group with offset and multi-icon
+	WeaponPreview:RegisterGroup(self.WEAPON_PREVIEW_GROUP_ID,Point(-25, 11))
+	logger.logDebug(SUBMODULE, "Registered More+ weapon preview group with WeaponPreview")
+
 	-- Add vanilla skills to groups after CPLUS+_Ex has registered them
 	logger.logDebug(SUBMODULE, "Adding vanilla skills to groups...")
 	self:addVanillaSkillsToGroups()
