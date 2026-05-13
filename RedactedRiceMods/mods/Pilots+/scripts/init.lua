@@ -22,26 +22,20 @@ function mod:init()
 	LOG("Pilots+ initializing...")
 	LOG("CPLUS+ Extension found - virtual skills enabled")
 
-	-- Get mod paths
-	local scriptPath = self.scriptPath
-	local resourcePath = self.resourcePath
+	-- Load all pilot portrait images from the portraits/pilots directory
+	modApi:appendAssets(self.resourcePath .. "img/portraits/pilots/", "img/portraits/pilots/")
 
-	-- Load and initialize Warbot pilot
-	local pilot_warbot = require(scriptPath .. "pilots/pilot_warbot")
-	pilot_warbot:init(self)
+	-- Pilots
+	local pilots = require(self.scriptPath .. "pilots/init")
+	pilots:init()
+	self.pilots = pilots
 
 	LOG("Pilots+ initialized successfully")
 end
 
 function mod:load(options, version)
-	LOG("Pilots+ loading...")
-
-	-- Load pilot hooks
-	local scriptPath = self.scriptPath
-	local pilot_warbot = require(scriptPath .. "pilots/pilot_warbot")
-	pilot_warbot:load(options, version)
-
-	LOG("Pilots+ loaded successfully")
+	-- Load pilots
+	self.pilots:load(options, version)
 end
 
 return mod
