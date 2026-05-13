@@ -28,15 +28,13 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 		end)
 
 		if isAdjacentToBuilding then
-			for _, idx in ipairs(indexes) do
-				logger.logDebug(SUBMODULE, "Adding militia damage icon for %s with idx %d",
-					spaceDamage.loc:GetString(), idx)
-				more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
-						function()
-							more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc,
-									more_plus.commonIcons.extraDamage.key.."_"..idx)
-						end, attackingPawn:GetId())
-			end
+			logger.logDebug(SUBMODULE, "Adding militia damage icon for %s", spaceDamage.loc:GetString())
+			more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
+				function()
+					more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc, more_plus.commonIcons.extraDamage.key, nil,  -- delay
+							more_plus.WEAPON_PREVIEW_GROUP_ID)
+				end, attackingPawn:GetId()
+			)
 
 			spaceDamage.iDamage = spaceDamage.iDamage + 1
 			logger.logDebug(SUBMODULE, "Added +1 militia damage to enemy at %s (adjacent to building)",

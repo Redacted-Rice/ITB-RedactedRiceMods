@@ -12,7 +12,7 @@ local SUBMODULE = logger.register("More+", "Cheap Plating", customSkill.DEBUG)
 -- Adds the icon for the UI
 -- Adding for trait replace handled lower
 customSkill.icon = "img/combat/icons/icon_mp_"..customSkill.id..".png"
-	
+
 -- Initialize GAME save data structure
 local function initGameSaveData()
 	if GAME == nil then
@@ -85,13 +85,12 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 
 		-- Check if this pawn hasn't used their first attack reduction yet
 		if not GAME.more_plus.cheap_plating.used[pawnId] then
-			for _, idx in ipairs(indexes) do
-				more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
-						function()
-							more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc,
-									more_plus.commonIcons.armor3.key.."_"..idx)
-						end, pawnId)
-			end
+			more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
+				function()
+					more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc, more_plus.commonIcons.armor3.key, nil,  -- delay
+							more_plus.WEAPON_PREVIEW_GROUP_ID)
+				end, pawnId
+			)
 
 			-- Reduce damage by 3 (minimum DAMAGE_ZERO)
 			local oldDamage = spaceDamage.iDamage

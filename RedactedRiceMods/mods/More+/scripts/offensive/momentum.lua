@@ -87,9 +87,10 @@ function customSkill:momentumTriggered(pawnId, p1, p2, effect)
 		initGameSaveData()
 		more_plus.libs.weaponPreview.ExecuteWithState(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
 			function()
-				more_plus.libs.weaponPreview:AddAnimation(p2,
-						more_plus.commonIcons.boost.key.."_1")
-			end, pawnId)
+				more_plus.libs.weaponPreview:AddAnimation(p2, more_plus.commonIcons.boost.key, nil,  -- delay
+						more_plus.WEAPON_PREVIEW_GROUP_ID)
+			end, pawnId
+		)
 		effect:AddScript([[
 				GAME.more_plus.momentum.boosted_by_effect[]].. pawnId ..[[] = true
 				Board:GetPawn(]].. pawnId ..[[):SetBoosted(true)]])
