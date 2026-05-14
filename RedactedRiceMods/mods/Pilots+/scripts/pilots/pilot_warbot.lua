@@ -23,36 +23,33 @@ function this:addVirtualSkills(pilotStruct)
 	-- Warbot gains skills equal to their level
 	-- At level 1: 1 skill, level 2: 2 skills
 	local pilotLevel = pilotStruct:getLevel()
-	local targetSkillCount = pilotLevel
-
+	if pilotLevel < 1 then
+		return
+	end
+	local targetSkillCount = pilotLevel == 1 and 1 or 2
 	local virtualSkills = cplus_plus_ex:getVirtualSkills(pilotStruct)
 	local currentSkillCount = #virtualSkills
 
 	-- Check if we already have the right number of skills
 	if currentSkillCount >= targetSkillCount then
 		LOG("Warbot already has " .. currentSkillCount .. " virtual skills (target: " .. targetSkillCount .. ")")
-		return
-	end
+	else
+		-- Add the missing skills
+		local skillsToAdd = targetSkillCount - currentSkillCount
+		LOG("Warbot needs " .. skillsToAdd .. " more virtual skills (current: " .. currentSkillCount .. ", target: " .. targetSkillCount .. ")")
 
-	-- Add the missing skills
-	local skillsToAdd = targetSkillCount - currentSkillCount
-	LOG("Warbot needs " .. skillsToAdd .. " more virtual skills (current: " .. currentSkillCount .. ", target: " .. targetSkillCount .. ")")
-
-	local addedCount = cplus_plus_ex:addRandomVirtualSkillsToPilot(pilotStruct, skillsToAdd)
-	if addedCount > 0 then
+		local addedCount = cplus_plus_ex:addRandomVirtualSkillsToPilot(pilotStruct, skillsToAdd)
 		LOG("Added " .. addedCount .. " virtual skills to Warbot pilot (Level " .. pilotLevel .. ")")
-
-		virtualSkills = cplus_plus_ex:getVirtualSkills(pilotStruct)
-		for i, skillId in ipairs(virtualSkills) do
-			LOG("  Virtual Skill " .. i .. ": " .. skillId)
-		end
+	end
+	for i, skillId in ipairs(cplus_plus_ex:getVirtualSkills(pilotStruct)) do
+		LOG("  Virtual Skill " .. i .. ": " .. skillId)
 	end
 end
 
 -- Build skill description showing current virtual skills
 -- Uses skill ID to be generic across multiple pilots with this skill
 function this:buildSkillDescription()
-	local description = "Gains random skills equal to level on each level up."
+	local description = "Gains an extra level up skill at level 1 and two more at level 2."
 
 	-- Try to get any pilot with this skill to show their current virtual skills
 	if not Game then
@@ -67,20 +64,17 @@ function this:buildSkillDescription()
 			-- Get virtual skill objects by pilot ID
 			local pilotId = pilotStruct:getIdStr()
 			local virtualSkillObjs = cplus_plus_ex:getVirtualSkillObjects(pilotId)
-			local level = pilotStruct:getLevel()
-			description = description .. "\n\nLevel: " .. level
-
 			if #virtualSkillObjs > 0 then
 				local skillDetails = {}
 				for _, skillObj in ipairs(virtualSkillObjs) do
 					-- Get name and description from the skill object
 					local name = GetText(skillObj:getFullNameStr())
 					local desc = GetText(skillObj:getDescriptionStr())
-					table.insert(skillDetails, name .. ": " .. desc)
+					table.insert(skillDetails, name .. "\n" .. desc)
 				end
-				description = description .. "\nExtra Skills:\n  • " .. table.concat(skillDetails, "\n  • ")
+				description = description .. " Extra Skills:\n\n" .. table.concat(skillDetails, "\n\n")
 			else
-				description = description .. "\n(No extra skills yet)"
+				description = description .. " No extra skills earned yet."
 			end
 			break
 		end
