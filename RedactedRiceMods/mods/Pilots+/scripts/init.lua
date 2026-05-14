@@ -23,7 +23,7 @@ function mod:init()
 	LOG("CPLUS+ Extension found - virtual skills enabled")
 
 	-- Load all pilot portrait images from the portraits/pilots directory
-	modApi:appendAssets(self.resourcePath .. "img/portraits/pilots/", "img/portraits/pilots/")
+	modApi:appendAssets("img/portraits/pilots/", "img/portraits/pilots/")
 
 	-- Pilots
 	local pilots = require(self.scriptPath .. "pilots/init")
