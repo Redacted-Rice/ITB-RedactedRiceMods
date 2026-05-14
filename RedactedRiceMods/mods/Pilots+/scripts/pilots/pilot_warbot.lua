@@ -26,7 +26,7 @@ function this:addVirtualSkills(pilotStruct)
 	if pilotLevel < 1 then
 		return
 	end
-	local targetSkillCount = pilotLevel == 1 and 1 or 2
+	local targetSkillCount = pilotLevel == 1 and 1 or 3
 	local virtualSkills = cplus_plus_ex:getVirtualSkills(pilotStruct)
 	local currentSkillCount = #virtualSkills
 

@@ -281,6 +281,20 @@ local function isPreviewerUnavailable()
 	return previewState == STATE_NONE or Board:IsTipImage() or isScoring
 end
 
+-- Get group data
+local function getGroupData(groupId)
+	return groupRegistry[groupId]
+end
+
+-- Get multi-icon for a group
+local function getGroupMultiIcon(groupId)
+	local groupData = groupRegistry[groupId]
+	if groupData and groupData.multiIcon then
+		return groupData.multiIcon
+	end
+	return DEFAULT_MULTI_ICON
+end
+
 local function addAnimation(self, p, anim, delay, groupId)
 	if isPreviewerUnavailable() then return end
 
@@ -546,20 +560,6 @@ local function registerGroup(self, groupId, offset, multiIcon, multiIconMarkData
 			groupMultiIconKey = groupMultiIconKey
 		}
 	end
-end
-
--- Get group data
-local function getGroupData(groupId)
-	return groupRegistry[groupId]
-end
-
--- Get multi-icon for a group
-local function getGroupMultiIcon(groupId)
-	local groupData = groupRegistry[groupId]
-	if groupData and groupData.multiIcon then
-		return groupData.multiIcon
-	end
-	return DEFAULT_MULTI_ICON
 end
 
 -- Consolidate grouped animations - add individual or multi-icon marks as appropriate
@@ -1178,6 +1178,25 @@ local function overrideAllSkillMethods()
 	end
 end
 
+local path = GetParentPath(...)
+local initMultiIcon()
+	DEFAULT_MULTI_ICON = "weaponPreview_icon_multihit"
+	local DEFAULT_MULTI_ICON_IMG = DEFAULT_MULTI_ICON .. "_glow.png"
+	modApi:appendAsset("img/combat/icons/" .. DEFAULT_MULTI_ICON_IMG, path.."/"..DEFAULT_MULTI_ICON_IMG)
+	ANIMS[DEFAULT_MULTI_ICON] = ANIMS.Animation:new{
+		Image = "combat/icons/".. DEFAULT_MULTI_ICON .. "_glow.png",
+		NumFrames = 1,
+		Time = 1,
+		Loop = true,
+	}
+	createAnim(DEFAULT_MULTI_ICON)
+	DEFAULT_MULTI_ICON_MARK_DATA = {
+		duration = sum(ANIMS[PREFIX_ANIM..DEFAULT_MULTI_ICON].__Lengths),
+		delay = nil,
+		loop = true
+	}
+end
+
 local function initGlobals()
 	clearMarks()
 	queuedPreviewMarks = {}
@@ -1202,6 +1221,8 @@ local function initGlobals()
 	events.onQueuedSkillEffectHidden = Event()
 	events.onQueuedFinalEffectShown = Event()
 	events.onQueuedFinalEffectHidden = Event()
+
+	initMultiIcon()
 end
 
 local function onModsInitialized()
@@ -1232,21 +1253,6 @@ if isNewestVersion then
 		overrideAllSkillMethods()
 		initGlobals()
 
-		-- Initialize default multi-icon
-		DEFAULT_MULTI_ICON = "weaponPreview_icon_multihit"
-
-		-- Initialize default multi-icon mark data
-		if ANIMS[DEFAULT_MULTI_ICON] then
-			createAnim(DEFAULT_MULTI_ICON)
-			local base = ANIMS[DEFAULT_MULTI_ICON]
-			-- Use nil for delay to match more_plus animation behavior
-			DEFAULT_MULTI_ICON_MARK_DATA = {
-				duration = sum(ANIMS[PREFIX_ANIM..DEFAULT_MULTI_ICON].__Lengths),
-				delay = nil,
-				loop = base.Loop
-			}
-		end
-
 		WeaponPreview.AddAnimation = addAnimation
 		WeaponPreview.AddColor = addColor
 		WeaponPreview.AddDamage = addDamage
@@ -1259,6 +1265,7 @@ if isNewestVersion then
 		WeaponPreview.AddFunction = addFunction
 		WeaponPreview.ClearMarks = clearMarks
 		WeaponPreview.RegisterGroup = registerGroup
+		WeaponPreview.GetGroupData = getGroupData
 		WeaponPreview.GetQueuedSkillEffectMarker = getQueuedMarker
 		WeaponPreview.GetQueuedFinalEffectMarker = getQueuedFinalEffectMarker
 		WeaponPreview.GetSkillEffectMarker = getEffectMarker
