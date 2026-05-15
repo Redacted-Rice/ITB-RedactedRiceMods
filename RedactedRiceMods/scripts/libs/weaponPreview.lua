@@ -113,6 +113,7 @@ local DEFAULT_MULTI_ICON = nil  -- Will be initialized during finalizeInit
 local DEFAULT_MULTI_ICON_MARK_DATA = nil  -- Will be initialized after createAnim is available
 local groupRegistry = {}  -- Maps groupId -> {offset = Point, multiIcon = string, multiIconMarkData = {duration, delay, loop}, groupMultiIconKey = string}
 local pendingGroupAnimations = {}  -- Tracks animations by group: [state][groupId][loc_hash] = {loc, anims = {{anim, duration, delay, loop}, ...}}
+local animationDescriptions = {}  -- Maps anim name -> description string
 
 local Marker = Class.new()
 local selfMetatable = setmetatable({}, Marker)
@@ -266,6 +267,15 @@ local function sum(t)
 	return result
 end
 
+local function list_contains(list, value)
+	for _, v in ipairs(list) do
+		if v == value then
+			return true
+		end
+	end
+	return false
+end
+
 local function pointListContains(pointList, obj)
 	if not pointList then return false end
 	for i = 1, pointList:size() do
@@ -295,13 +305,22 @@ local function getGroupMultiIcon(groupId)
 	return DEFAULT_MULTI_ICON
 end
 
-local function addAnimation(self, p, anim, delay, groupId)
+local function addAnimation(self, p, anim, delay, groupId, description)
 	if isPreviewerUnavailable() then return end
 
 	Assert.TypePoint(p, "Argument #1")
 	Assert.Equals('string', type(anim), "Argument #2")
 	Assert.NotEquals('nil', type(ANIMS[anim]), "Argument #2")
 	Assert.Equals({'nil', 'string'}, type(groupId), "Argument #4 (groupId)")
+	Assert.Equals({'nil', 'string'}, type(description), "Argument #5 (description)")
+
+	-- Store the original animation name before any group modifications
+	local originalAnimName = anim
+
+	-- Store description if provided
+	if description then
+		animationDescriptions[originalAnimName] = description
+	end
 
 	-- If groupId provided, apply group offset to the animation
 	if groupId then
@@ -350,25 +369,28 @@ local function addAnimation(self, p, anim, delay, groupId)
 			}
 		end
 
-		-- Add animation to array with its mark data
+		-- Add animation to array with its mark data, storing the original animation name
 		table.insert(pendingGroupAnimations[previewState][groupId][locHash].anims, {
 			anim = anim,  -- Store the adjusted animation name with group offset
 			duration = duration,
 			delay = delay,
-			loop = base.Loop
+			loop = base.Loop,
+			originalAnim = originalAnimName  -- Store original anim name for description lookup
 		})
 
 		-- Don't add grouped animations to marks yet - consolidation will handle it
 		return
 	end
 
+	-- Normal (non-grouped) animations are added directly to marks
 	table.insert(previewMarks[previewState], {
 		fn = 'AddAnimation',
 		anim = anim,
 		data = {Point(p), anim, ANIM_NO_DELAY},
 		duration = duration,
 		delay = delay,
-		loop = base.Loop
+		loop = base.Loop,
+		originalAnim = originalAnimName  -- Store original anim name for description lookup
 	})
 end
 
@@ -563,6 +585,8 @@ local function registerGroup(self, groupId, offset, multiIcon, multiIconMarkData
 end
 
 -- Consolidate grouped animations - add individual or multi-icon marks as appropriate
+-- This function ONLY processes animations that were added with a groupId parameter.
+-- Normal animations (without groupId) are added directly to marks and bypass this entirely.
 local function consolidateGroupedAnimations(marks, state)
 	if not pendingGroupAnimations[state] then
 		return
@@ -580,6 +604,12 @@ local function consolidateGroupedAnimations(marks, state)
 					-- Use mark data from group registration or fall back to defaults
 					local markData = groupData.multiIconMarkData or DEFAULT_MULTI_ICON_MARK_DATA
 
+					-- Collect original animation names for tooltip support
+					local combinedAnims = {}
+					for _, animData in ipairs(data.anims) do
+						table.insert(combinedAnims, animData.originalAnim)
+					end
+
 					table.insert(marks, {
 						fn = 'AddAnimation',
 						anim = groupMultiIconKey,
@@ -587,6 +617,8 @@ local function consolidateGroupedAnimations(marks, state)
 						duration = markData.duration,
 						delay = markData.delay,
 						loop = markData.loop,
+						isMultiIcon = true,
+						combinedAnims = combinedAnims  -- Store list of original animations for tooltips
 					})
 				end
 			elseif #data.anims == 1 then
@@ -599,11 +631,12 @@ local function consolidateGroupedAnimations(marks, state)
 					duration = animData.duration,
 					delay = animData.delay,
 					loop = animData.loop,
+					originalAnim = animData.originalAnim
 				})
 			end
 		end
 	end
-	
+
 	-- Clear pending animations for this state after consolidation
 	pendingGroupAnimations[state] = nil
 end
@@ -1078,6 +1111,207 @@ local function onQueuedSkillEnd(pawn, state)
 	end
 end
 
+-- Check for features (descriptions/multi-icons) at a location and show first-time notifications
+local function checkAndShowFirstTimeNotifications(highlighted)
+	-- Initialize GAME notification tracking if needed
+	if GAME then
+		GAME.WeaponPreviewNotifications = GAME.WeaponPreviewNotifications or {}
+	end
+	
+	-- Check if we've already shown all notifications
+	local hasShownAll = GAME.WeaponPreviewNotifications.shownDescriptionTip 
+		and GAME.WeaponPreviewNotifications.shownMultiIconTip
+	if hasShownAll then return end
+	
+	-- Check if we need to show any first-time notifications
+	local hasDescriptions = false
+	local hasMultiIcon = false
+
+	-- Helper to check if there are any descriptions or multi-icons at highlighted location
+	local function checkForFeaturesInMarks(marks)
+		if not marks then return end
+		for _, mark in ipairs(marks) do
+			if mark.fn == 'AddAnimation' and mark.data and mark.data[1] == highlighted then
+				-- Check if this is a multi-icon
+				if mark.isMultiIcon then
+					hasMultiIcon = true
+					-- Multi-icons with descriptions
+					if mark.combinedAnims then
+						for _, originalAnim in ipairs(mark.combinedAnims) do
+							if animationDescriptions[originalAnim] then
+								hasDescriptions = true
+							end
+						end
+					end
+				else
+					-- Regular animation with description
+					local originalAnim = mark.originalAnim or mark.anim
+					if animationDescriptions[originalAnim] then
+						hasDescriptions = true
+					end
+				end
+			end
+		end
+	end
+
+	-- Check all active states for descriptions and multi-icons
+	if targetMarker:isActive() then
+		checkForFeaturesInMarks(previewMarks[STATE_TARGET_AREA])
+	end
+	if secondTargetMarker:isActive() then
+		checkForFeaturesInMarks(previewMarks[STATE_SECOND_TARGET_AREA])
+	end
+	if effectMarker:isActive() then
+		checkForFeaturesInMarks(previewMarks[STATE_SKILL_EFFECT])
+	end
+	if finalEffectMarker:isActive() then
+		checkForFeaturesInMarks(previewMarks[STATE_FINAL_EFFECT])
+	end
+	if queuedPreviewMarks[STATE_QUEUED_SKILL] then
+		for pawnId, marks in pairs(queuedPreviewMarks[STATE_QUEUED_SKILL]) do
+			checkForFeaturesInMarks(marks)
+		end
+	end
+	if queuedPreviewMarks[STATE_QUEUED_FINAL_EFFECT] then
+		for pawnId, marks in pairs(queuedPreviewMarks[STATE_QUEUED_FINAL_EFFECT]) do
+			checkForFeaturesInMarks(marks)
+		end
+	end
+
+	-- Show first-time notification for descriptions if needed
+	if hasDescriptions and GAME and not GAME.WeaponPreviewNotifications.shownDescriptionTip then
+		GAME.WeaponPreviewNotifications.shownDescriptionTip = true
+		Global_Texts["WeaponPreview_DescriptionNotification_Title"] = "Weapon Preview Tips"
+		Global_Texts["WeaponPreview_DescriptionNotification_Text"] = "Hold Shift while hovering to see detailed information (if available) about the effects."
+		Game:AddTip("WeaponPreview_DescriptionNotification", highlighted)
+		Global_Texts["WeaponPreview_DescriptionNotification_Title"] = nil
+		Global_Texts["WeaponPreview_DescriptionNotification_Text"] = nil
+	end
+
+	-- Show first-time notification for multi-icon if needed
+	if hasMultiIcon and GAME and not GAME.WeaponPreviewNotifications.shownMultiIconTip then
+		GAME.WeaponPreviewNotifications.shownMultiIconTip = true
+		Global_Texts["WeaponPreview_MultiIconNotification_Title"] = "Multi-Icon Indicator"
+		Global_Texts["WeaponPreview_MultiIconNotification_Text"] = "This icon indicates multiple effects are active on this tile."
+		Game:AddTip("WeaponPreview_MultiIconNotification", highlighted)
+		Global_Texts["WeaponPreview_MultiIconNotification_Title"] = nil
+		Global_Texts["WeaponPreview_MultiIconNotification_Text"] = nil
+	end
+end
+
+-- Collect and show tooltip with descriptions when shift is pressed
+local function showDescriptionTooltip(highlighted)
+	local descriptions = {}
+
+	-- Helper function to collect descriptions from marks at highlighted location
+	local function collectDescriptions(marks)
+		if not marks then return end
+
+		for _, mark in ipairs(marks) do
+			if mark.fn == 'AddAnimation' and mark.data and mark.data[1] == highlighted then
+				-- Check if this is a multi-icon mark
+				if mark.isMultiIcon and mark.combinedAnims then
+					-- Multi-icon: collect descriptions from all combined animations
+					for _, originalAnim in ipairs(mark.combinedAnims) do
+						local desc = animationDescriptions[originalAnim]
+						if desc and not list_contains(descriptions, desc) then
+							table.insert(descriptions, desc)
+						end
+					end
+				else
+					-- Regular animation: collect its description
+					local originalAnim = mark.originalAnim or mark.anim
+					local desc = animationDescriptions[originalAnim]
+					if desc and not list_contains(descriptions, desc) then
+						table.insert(descriptions, desc)
+					end
+				end
+			end
+		end
+	end
+
+	-- Collect from all active preview states
+	if targetMarker:isActive() then
+		collectDescriptions(previewMarks[STATE_TARGET_AREA])
+	end
+
+	if secondTargetMarker:isActive() then
+		collectDescriptions(previewMarks[STATE_SECOND_TARGET_AREA])
+	end
+
+	if effectMarker:isActive() then
+		collectDescriptions(previewMarks[STATE_SKILL_EFFECT])
+	end
+
+	if finalEffectMarker:isActive() then
+		collectDescriptions(previewMarks[STATE_FINAL_EFFECT])
+	end
+
+	-- Collect from queued marks
+	if queuedPreviewMarks[STATE_QUEUED_SKILL] then
+		for pawnId, marks in pairs(queuedPreviewMarks[STATE_QUEUED_SKILL]) do
+			collectDescriptions(marks)
+		end
+	end
+
+	if queuedPreviewMarks[STATE_QUEUED_FINAL_EFFECT] then
+		for pawnId, marks in pairs(queuedPreviewMarks[STATE_QUEUED_FINAL_EFFECT]) do
+			collectDescriptions(marks)
+		end
+	end
+
+	-- Show tooltip if we have any descriptions
+	if #descriptions > 0 then
+		local desc = ""
+		for i, text in ipairs(descriptions) do
+			if i > 1 then
+				desc = desc .. "\n"
+			end
+			desc = desc .. text
+		end
+
+		Global_Texts["WeaponPreview_TempExplanation_Title"] = "Weapon Effects"
+		Global_Texts["WeaponPreview_TempExplanation_Text"] = desc
+		Game:AddTip("WeaponPreview_TempExplanation", highlighted)
+		Global_Texts["WeaponPreview_TempExplanation_Title"] = nil
+		Global_Texts["WeaponPreview_TempExplanation_Text"] = nil
+	end
+end
+
+-- Main tooltip handler
+local function handleTooltips(mission, pawn)
+	local highlighted = Board:GetHighlighted()
+	if not highlighted or highlighted == OUT_OF_BOUNDS then return end
+
+	-- Initialize GAME notification tracking if needed
+	if GAME then
+		GAME.WeaponPreviewNotifications = GAME.WeaponPreviewNotifications or {}
+	end
+
+	-- See if we potentially need to show anything
+	local hasShownAll = GAME.WeaponPreviewNotifications.shownDescriptionTip 
+		and GAME.WeaponPreviewNotifications.shownMultiIconTip
+	
+	-- Early exit if shift not down and we've shown all notifications
+	if not sdlext.isShiftDown() and hasShownAll then return end
+
+	-- Check and show first-time notifications if needed
+	if not hasShownAll then
+		checkAndShowFirstTimeNotifications(highlighted)
+	end
+
+	-- Show description tooltip if shift is pressed
+	if sdlext.isShiftDown() then
+		showDescriptionTooltip(highlighted)
+	end
+end
+
+-- Show tooltip with animation descriptions when hovering with shift pressed
+local function showAnimationTooltips()
+	if not modapiext then return end
+	modapiext:addPawnSelectedHook(handleTooltips)
+end
+
 local function overrideAllSkillMethods()
 	local skills = {}
 	for skillId, skill in pairs(_G) do
@@ -1303,6 +1537,9 @@ if isNewestVersion then
 		-- Clear queued marks when queued actions execute
 		modapiext.events.onQueuedSkillEnd:subscribe(function(mission, pawn, weaponId) onQueuedSkillEnd(pawn, STATE_QUEUED_SKILL) end)
 		modapiext.events.onQueuedFinalEffectEnd:subscribe(function(mission, pawn, weaponId) onQueuedSkillEnd(pawn, STATE_QUEUED_FINAL_EFFECT) end)
+
+		-- Initialize tooltip support
+		showAnimationTooltips()
 	end
 end
 

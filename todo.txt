@@ -29,7 +29,7 @@ Known Issues:
 ------------------------------------------------------------------------------
 
 Star Wars:
-None
+Start work on the empire >:)
 
 
 ------------------------------------------------------------------------------
@@ -41,7 +41,7 @@ None
 ------------------------------------------------------------------------------
 
 MoreLvlUpSkills:
-None
+Test working with multi-icon changes and virtual skills
 
 Known Issues:
 * Vigor on Harold will not show icon when using repair. Not sure why its not displaying. Seems to be something unique with how his repair skill works
@@ -50,13 +50,13 @@ Known Issues:
 ------------------------------------------------------------------------------
 
 LegendaryLvlUpSkills:
-Planned out. To start work
+Planned out. To start work later
 
 
 ------------------------------------------------------------------------------
 
 PilotStore:
-In progress
+In progress. May end up scraping. It will get complicated especially if I want to handle virtual skills now
 
 
 ------------------------------------------------------------------------------
