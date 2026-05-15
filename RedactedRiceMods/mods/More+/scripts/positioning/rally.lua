@@ -77,12 +77,12 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 				local movingPawnId = pawn:GetId()
 				logger.logDebug(SUBMODULE, "Rally pawn %d moving to %s, boosting adjacent ally %d at %s",
 						movingPawnId, p2:GetString(), adjacentId, adjacentLoc:GetString())
-				more_plus.libs.weaponPreview.ExecuteWithState(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
-					function()
-						more_plus.libs.weaponPreview:AddAnimation(adjacentLoc.loc, more_plus.commonIcons.boost.key, nil,  -- delay
-								more_plus.WEAPON_PREVIEW_GROUP_ID)
-					end, movingPawnId
-				)
+			more_plus.libs.weaponPreview.ExecuteWithState(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
+				function()
+					more_plus.libs.weaponPreview:AddAnimation(adjacentLoc.loc, more_plus.commonIcons.boost.key, nil,  -- delay
+							more_plus.WEAPON_PREVIEW_GROUP_ID, customSkill.name .. ": " .. customSkill.description)
+				end, movingPawnId
+			)
 
 				local boostDamage = SpaceDamage(adjacentLoc, 0)
 				boostDamage.sScript = [[
@@ -110,7 +110,7 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 			more_plus.libs.weaponPreview.ExecuteWithState(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
 				function()
 					more_plus.libs.weaponPreview:AddAnimation(p2, more_plus.commonIcons.boost.key, nil,  -- delay
-						more_plus.WEAPON_PREVIEW_GROUP_ID)
+						more_plus.WEAPON_PREVIEW_GROUP_ID, customSkill.name .. ": " .. customSkill.description)
 				end, pawnId
 			)
 
