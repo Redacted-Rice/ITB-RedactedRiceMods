@@ -234,6 +234,8 @@ end
 
 -- Get pawn highlighted in UI
 local function getUIEnabledPawn()
+	if not Board then return nil end
+
 	local pawn = Board:GetSelectedPawn()
 
 	if not pawn then
