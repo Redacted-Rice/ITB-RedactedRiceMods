@@ -108,12 +108,24 @@ local NULL_WEAPON = ""
 local NULL_WEAPID = -1
 local INT_MAX = 2147483647
 
+-- Tooltip key configuration
+local TOOLTIP_KEY = SDLKeycodes.h
+
 -- Group consolidation support
 local DEFAULT_MULTI_ICON = nil  -- Will be initialized during finalizeInit
 local DEFAULT_MULTI_ICON_MARK_DATA = nil  -- Will be initialized after createAnim is available
 local groupRegistry = {}  -- Maps groupId -> {offset = Point, multiIcon = string, multiIconMarkData = {duration, delay, loop}, groupMultiIconKey = string}
 local pendingGroupAnimations = {}  -- Tracks animations by group: [state][groupId][loc_hash] = {loc, anims = {{anim, duration, delay, loop}, ...}}
 local animationDescriptions = {}  -- Maps anim name -> description string
+
+-- Track state for tooltip key display
+local isTooltipKeyHeld = false
+local lastTooltipKeyState = false
+local lastHighlightedTile = nil
+
+-- Track notification state in memory (loaded from profile once on mission start)
+local hasShownDescriptionTip = false
+local hasShownMultiIconTip = false
 
 local Marker = Class.new()
 local selfMetatable = setmetatable({}, Marker)
@@ -998,12 +1010,46 @@ end
 
 local function onMissionChanged(mission, missionOld)
 	time_prev = os.clock()
+
+	-- Load notification state from profile once when mission starts
+	-- This avoids constant file I/O during gameplay
+	hasShownDescriptionTip = modApi:readProfileData("WeaponPreview_ShownDescriptionTip") or false
+	hasShownMultiIconTip = modApi:readProfileData("WeaponPreview_ShownMultiIconTip") or false
 end
 
--- Collect and show tooltip with descriptions when Alt is pressed for highlighted tile
-local function checkAndShowAltTooltip(highlighted)
-	if not sdlext.isAltDown() then return end
+-- Collect and show tooltip with descriptions when tooltip key is pressed for highlighted tile
+-- Also clear tooltips when key is released or tile changes
+local function checkAndShowTooltipKey(highlighted)
 	if not highlighted or highlighted == OUT_OF_BOUNDS then return end
+
+	-- Check if the key state or highlighted tile changed
+	local currentTooltipKeyState = isTooltipKeyHeld
+	local tileChanged = lastHighlightedTile ~= highlighted
+	local tooltipKeyPressed = currentTooltipKeyState and not lastTooltipKeyState
+	local tooltipKeyReleased = not currentTooltipKeyState and lastTooltipKeyState
+
+	-- Update tracking
+	lastTooltipKeyState = currentTooltipKeyState
+	lastHighlightedTile = highlighted
+
+	-- Clear tips if key was released or if tile changed while the key is not held
+	if tooltipKeyReleased or (tileChanged and not currentTooltipKeyState) then
+		Game:ClearTips()
+		return
+	end
+
+	-- Only show tooltip if key was just pressed or if tile changed while the key is held
+	if not (tooltipKeyPressed or (tileChanged and currentTooltipKeyState)) then
+		return
+	end
+
+	-- Don't show if the key is not currently down
+	if not currentTooltipKeyState then return end
+
+	-- If tile changed while the key is held, clear the old tooltip first to avoid stacking
+	if tileChanged and currentTooltipKeyState then
+		Game:ClearTips()
+	end
 
 	local descriptions = {}
 
@@ -1070,7 +1116,7 @@ local function checkAndShowAltTooltip(highlighted)
 			desc = desc .. text
 		end
 
-		Global_Texts["WeaponPreview_TempExplanation_Title"] = "Weapon Effects"
+		Global_Texts["WeaponPreview_TempExplanation_Title"] = "Space Effects Details"
 		Global_Texts["WeaponPreview_TempExplanation_Text"] = desc
 		Game:AddTip("WeaponPreview_TempExplanation", highlighted)
 		Global_Texts["WeaponPreview_TempExplanation_Title"] = nil
@@ -1081,17 +1127,11 @@ end
 -- Check for features in marks and show first time notifications
 local function checkAndShowFirstTimeNotifications(marks, loc)
 	if not marks or not loc then return end
-	if not GAME then return end
 
-	-- Initialize GAME notification tracking if needed
-	GAME.WeaponPreviewNotifications = GAME.WeaponPreviewNotifications or {}
+	-- Check if we've already shown all notifications (using in-memory cache)
+	if hasShownDescriptionTip and hasShownMultiIconTip then return end
 
-	-- Check if we've already shown all notifications
-	local hasShownAll = GAME.WeaponPreviewNotifications.shownDescriptionTip
-		and GAME.WeaponPreviewNotifications.shownMultiIconTip
-	if hasShownAll then return end
-
-	-- Check if we need to show any first time notifications
+	-- Check if we need to show any first-time notifications
 	local hasDescriptions = false
 	local hasMultiIcon = false
 
@@ -1117,25 +1157,32 @@ local function checkAndShowFirstTimeNotifications(marks, loc)
 			end
 		end
 	end
+	-- Show multi-icon notification first if needed
+	if hasMultiIcon and not hasShownMultiIconTip then
+		-- Update in-memory cache first
+		hasShownMultiIconTip = true
+		-- Then persist to profile (only once)
+		modApi:writeProfileData("WeaponPreview_ShownMultiIconTip", true)
 
-	-- Show first time notification for descriptions if needed
-	if hasDescriptions and not GAME.WeaponPreviewNotifications.shownDescriptionTip then
-		GAME.WeaponPreviewNotifications.shownDescriptionTip = true
-		Global_Texts["WeaponPreview_DescriptionNotification_Title"] = "Extra Effects Preview Tips"
-		Global_Texts["WeaponPreview_DescriptionNotification_Text"] = "Hold Alt while hovering to see detailed information (if available) about the effects."
-		Game:AddTip("WeaponPreview_DescriptionNotification", loc)
-		Global_Texts["WeaponPreview_DescriptionNotification_Title"] = nil
-		Global_Texts["WeaponPreview_DescriptionNotification_Text"] = nil
-	end
-
-	-- Show first time notification for multiicon if needed
-	if hasMultiIcon and not GAME.WeaponPreviewNotifications.shownMultiIconTip then
-		GAME.WeaponPreviewNotifications.shownMultiIconTip = true
 		Global_Texts["WeaponPreview_MultiIconNotification_Title"] = "Multi-Icon Indicator"
 		Global_Texts["WeaponPreview_MultiIconNotification_Text"] = "This icon indicates multiple effects are active on this tile."
 		Game:AddTip("WeaponPreview_MultiIconNotification", loc)
 		Global_Texts["WeaponPreview_MultiIconNotification_Title"] = nil
 		Global_Texts["WeaponPreview_MultiIconNotification_Text"] = nil
+	end
+
+	-- Then show first-time notification for descriptions if needed
+	if hasDescriptions and not hasShownDescriptionTip then
+		-- Update in-memory cache first
+		hasShownDescriptionTip = true
+		-- Then persist to profile (only once)
+		modApi:writeProfileData("WeaponPreview_ShownDescriptionTip", true)
+
+		Global_Texts["WeaponPreview_DescriptionNotification_Title"] = "Extra Effects Preview Tips"
+		Global_Texts["WeaponPreview_DescriptionNotification_Text"] = "Hold H while hovering to see detailed information (if available) about the effects."
+		Game:AddTip("WeaponPreview_DescriptionNotification", loc)
+		Global_Texts["WeaponPreview_DescriptionNotification_Title"] = nil
+		Global_Texts["WeaponPreview_DescriptionNotification_Text"] = nil
 	end
 end
 
@@ -1251,9 +1298,8 @@ local function onMissionUpdate()
 		end
 		queuedFinalEffectMarker.ticker = queuedFinalEffectMarker.ticker + time_delta
 	end
-
-	-- Check every frame if Alt is pressed and show tooltip for highlighted tile
-	checkAndShowAltTooltip(highlighted)
+	-- Check every frame if the key is pressed and show tooltip for highlighted tile
+	checkAndShowTooltipKey(highlighted)
 end
 
 local function onQueuedSkillEnd(pawn, state)
@@ -1490,6 +1536,19 @@ if isNewestVersion then
 		-- Clear queued marks when queued actions execute
 		modapiext.events.onQueuedSkillEnd:subscribe(function(mission, pawn, weaponId) onQueuedSkillEnd(pawn, STATE_QUEUED_SKILL) end)
 		modapiext.events.onQueuedFinalEffectEnd:subscribe(function(mission, pawn, weaponId) onQueuedSkillEnd(pawn, STATE_QUEUED_FINAL_EFFECT) end)
+
+		-- Track the key state for tooltip display
+		modApi.events.onKeyPressed:subscribe(function(keycode)
+			if keycode == TOOLTIP_KEY then
+				isTooltipKeyHeld = true
+			end
+		end)
+
+		modApi.events.onKeyReleased:subscribe(function(keycode)
+			if keycode == TOOLTIP_KEY then
+				isTooltipKeyHeld = false
+			end
+		end)
 	end
 end
 
