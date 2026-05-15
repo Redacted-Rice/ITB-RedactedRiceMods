@@ -1179,7 +1179,7 @@ local function overrideAllSkillMethods()
 end
 
 local path = GetParentPath(...)
-local initMultiIcon()
+local function initMultiIcon()
 	DEFAULT_MULTI_ICON = "weaponPreview_icon_multihit"
 	local DEFAULT_MULTI_ICON_IMG = DEFAULT_MULTI_ICON .. "_glow.png"
 	modApi:appendAsset("img/combat/icons/" .. DEFAULT_MULTI_ICON_IMG, path.."/"..DEFAULT_MULTI_ICON_IMG)
