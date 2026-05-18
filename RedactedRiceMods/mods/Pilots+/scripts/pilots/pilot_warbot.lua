@@ -26,8 +26,10 @@ function this:addVirtualSkills(pilotStruct)
 	if pilotLevel < 1 then
 		return
 	end
+
+	local pilotId = pilotStruct:getIdStr()
 	local targetSkillCount = pilotLevel == 1 and 1 or 3
-	local virtualSkills = cplus_plus_ex:getVirtualSkills(pilotStruct)
+	local virtualSkills = cplus_plus_ex:getVirtualSkills(pilotId)
 	local currentSkillCount = #virtualSkills
 
 	-- Check if we already have the right number of skills
@@ -41,7 +43,7 @@ function this:addVirtualSkills(pilotStruct)
 		local addedCount = cplus_plus_ex:addRandomVirtualSkillsToPilot(pilotStruct, skillsToAdd)
 		LOG("Added " .. addedCount .. " virtual skills to Warbot pilot (Level " .. pilotLevel .. ")")
 	end
-	for i, skillId in ipairs(cplus_plus_ex:getVirtualSkills(pilotStruct)) do
+	for i, skillId in ipairs(cplus_plus_ex:getVirtualSkills(pilotId)) do
 		LOG("  Virtual Skill " .. i .. ": " .. skillId)
 	end
 end
@@ -53,7 +55,6 @@ function this:buildSkillDescription()
 
 	-- First, try to get virtual skills from active game pilots
 	if Game then
-		LOG("GAME")
 		local pilots = Game:GetAvailablePilots()
 		for _, pilotStruct in ipairs(pilots) do
 			-- Check if this pilot has the Combat Protocols skill (more generic than pilot ID)
@@ -80,7 +81,6 @@ function this:buildSkillDescription()
 	-- If not found in Game, check time traveler persistent data (for time traveler selection screen)
 	-- This handles the case when viewing a time traveler pilot before starting a new timeline
 	if Profile and modApi:isProfilePath() then
-		LOG("PRFILE")
 		-- Get the pilot ID we're looking for (either from Profile.pilot or just check all Warbots)
 		local targetPilotId = (Profile.pilot and Profile.pilot.id) or pilot.Id
 
@@ -100,7 +100,6 @@ function this:buildSkillDescription()
 			-- Check if this is the pilot we're looking for AND it has virtual skills
 			if (pilotId == targetPilotId or pilotId == pilot.Id) and
 					pilotData.virtualSkills and #pilotData.virtualSkills > 0 then
-				LOG("FOUND")
 				local skillDetails = {}
 				for _, skillId in ipairs(pilotData.virtualSkills) do
 					LOG(skillId)
@@ -119,7 +118,6 @@ function this:buildSkillDescription()
 			end
 		end
 	end
-	LOG("end")
 
 	-- No virtual skills found
 	description = description .. " No extra skills earned yet."
