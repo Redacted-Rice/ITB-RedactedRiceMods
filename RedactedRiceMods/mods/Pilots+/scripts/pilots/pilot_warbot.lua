@@ -53,6 +53,7 @@ function this:buildSkillDescription()
 
 	-- First, try to get virtual skills from active game pilots
 	if Game then
+		LOG("GAME")
 		local pilots = Game:GetAvailablePilots()
 		for _, pilotStruct in ipairs(pilots) do
 			-- Check if this pilot has the Combat Protocols skill (more generic than pilot ID)
@@ -79,6 +80,7 @@ function this:buildSkillDescription()
 	-- If not found in Game, check time traveler persistent data (for time traveler selection screen)
 	-- This handles the case when viewing a time traveler pilot before starting a new timeline
 	if Profile and modApi:isProfilePath() then
+		LOG("PRFILE")
 		-- Get the pilot ID we're looking for (either from Profile.pilot or just check all Warbots)
 		local targetPilotId = (Profile.pilot and Profile.pilot.id) or pilot.Id
 
@@ -94,16 +96,19 @@ function this:buildSkillDescription()
 
 		-- Look through saved pilots for matching ID with virtual skills
 		for pilotId, pilotData in pairs(savedData) do
+			LOG(pilotId)
 			-- Check if this is the pilot we're looking for AND it has virtual skills
 			if (pilotId == targetPilotId or pilotId == pilot.Id) and
-			   pilotData.virtualSkills and #pilotData.virtualSkills > 0 then
+					pilotData.virtualSkills and #pilotData.virtualSkills > 0 then
+				LOG("FOUND")
 				local skillDetails = {}
 				for _, skillId in ipairs(pilotData.virtualSkills) do
+					LOG(skillId)
 					-- Get the skill object to show name and description
-					local skillObj = cplus_plus_ex:getSkillById(skillId)
-					if skillObj then
-						local name = GetText(skillObj:getFullNameStr())
-						local desc = GetText(skillObj:getDescriptionStr())
+					local skillData = cplus_plus_ex:getRegisteredSkillInfo(skillId)
+					if skillData then
+						local name = GetText(skillData.fullName)
+						local desc = GetText(skillData.description)
 						table.insert(skillDetails, name .. "\n" .. desc)
 					end
 				end
@@ -114,6 +119,7 @@ function this:buildSkillDescription()
 			end
 		end
 	end
+	LOG("end")
 
 	-- No virtual skills found
 	description = description .. " No extra skills earned yet."
