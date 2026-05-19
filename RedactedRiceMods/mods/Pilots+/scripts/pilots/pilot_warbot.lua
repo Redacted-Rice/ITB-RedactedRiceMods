@@ -4,6 +4,11 @@ local mod = mod_loader.mods[modApi.currentMod]
 local path = mod.resourcePath
 local scriptPath = mod.scriptPath
 
+-- Register with logging system
+local DEBUG = true
+local logger = memhack.logger
+local SUBMODULE = logger.register("Pilots+", "Warbot", DEBUG)
+
 local pilot = {
 	Id = "Pilot_Warbot",
 	Personality = "Warbot_Personality",
@@ -34,17 +39,17 @@ function this:addVirtualSkills(pilotStruct)
 
 	-- Check if we already have the right number of skills
 	if currentSkillCount >= targetSkillCount then
-		LOG("Warbot already has " .. currentSkillCount .. " virtual skills (target: " .. targetSkillCount .. ")")
-	else
 		-- Add the missing skills
 		local skillsToAdd = targetSkillCount - currentSkillCount
-		LOG("Warbot needs " .. skillsToAdd .. " more virtual skills (current: " .. currentSkillCount .. ", target: " .. targetSkillCount .. ")")
-
-		local addedCount = cplus_plus_ex:addRandomVirtualSkillsToPilot(pilotStruct, skillsToAdd)
-		LOG("Added " .. addedCount .. " virtual skills to Warbot pilot (Level " .. pilotLevel .. ")")
+		logger.logDebug(SUBMODULE, "Warbot %s needs %d more virtual skills (current: %d, target: %d)",
+				pilotId, skillsToAdd, currentSkillCount, targetSkillCount)
+		cplus_plus_ex:addRandomVirtualSkillsToPilot(pilotStruct, skillsToAdd)
+	else
+		logger.logDebug(SUBMODULE, "Warbot %s already has %d/%d virtual skills",
+				pilotId, currentSkillCount, targetSkillCount)
 	end
 	for i, skillId in ipairs(cplus_plus_ex:getVirtualSkills(pilotId)) do
-		LOG("  Virtual Skill " .. i .. ": " .. skillId)
+		logger.logDebug(SUBMODULE, "  Virtual Skill %d: %s", i, skillId)
 	end
 end
 
@@ -96,23 +101,29 @@ function this:buildSkillDescription()
 
 		-- Look through saved pilots for matching ID with virtual skills
 		for pilotId, pilotData in pairs(savedData) do
-			LOG(pilotId)
 			-- Check if this is the pilot we're looking for AND it has virtual skills
 			if (pilotId == targetPilotId or pilotId == pilot.Id) and
 					pilotData.virtualSkills and #pilotData.virtualSkills > 0 then
-				local skillDetails = {}
-				for _, skillId in ipairs(pilotData.virtualSkills) do
-					LOG(skillId)
-					-- Get the skill object to show name and description
-					local skillData = cplus_plus_ex:getRegisteredSkillInfo(skillId)
-					if skillData then
-						local name = GetText(skillData.fullName)
-						local desc = GetText(skillData.description)
-						table.insert(skillDetails, name .. "\n" .. desc)
+				-- Determine display format based on location
+				local inHangar = sdlext.isHangar()
+
+				if inHangar then
+					-- In hangar: show skill names only
+					local skillNames = {}
+					for _, skillId in ipairs(pilotData.virtualSkills) do
+						local skillData = cplus_plus_ex:getRegisteredSkillInfo(skillId)
+						if skillData then
+							local name = GetText(skillData.fullName)
+							table.insert(skillNames, name)
+						end
 					end
-				end
-				if #skillDetails > 0 then
-					description = description .. " Extra Skills:\n\n" .. table.concat(skillDetails, "\n\n")
+					if #skillNames > 0 then
+						description = description .. " Extra Skills: " .. table.concat(skillNames, ", ")
+						return description
+					end
+				else
+					-- Not in hangar show test mode message
+					description = description .. " (Enter test mode to see skills earned)"
 					return description
 				end
 			end
@@ -125,6 +136,8 @@ function this:buildSkillDescription()
 end
 
 function this:init(mod)
+	logger.logDebug(SUBMODULE, "Initializing Warbot pilot")
+
 	-- Create the pilot
 	CreatePilot(pilot)
 
@@ -136,6 +149,8 @@ function this:init(mod)
 		end
 		return originalGetSkillInfo(skill)
 	end
+
+	logger.logDebug(SUBMODULE, "Warbot pilot initialized")
 end
 
 -- Handle pilot level changes to add virtual skills
@@ -147,6 +162,7 @@ function this:onPilotLevelChanged(pilotStruct, changes)
 	-- Check by skill ID to be more generic
 	local pilotSkill = pilotStruct:getSkill():get()
 	if pilotSkill == pilot.Skill then
+		logger.logDebug(SUBMODULE, "Warbot level changed to %d, checking virtual skills", pilotStruct:getLevel())
 		self:addVirtualSkills(pilotStruct)
 	end
 end
@@ -161,12 +177,15 @@ function this:onSkillsAssigned()
 		-- Check by skill ID to be more generic
 		local pilotSkill = pilotStruct:getSkill():get()
 		if pilotSkill == pilot.Skill then
+			logger.logDebug(SUBMODULE, "Skills assigned event, checking Warbot virtual skills")
 			self:addVirtualSkills(pilotStruct)
 		end
 	end
 end
 
 function this:load(options, version)
+	logger.logDebug(SUBMODULE, "Loading Warbot pilot module")
+
 	-- Use memhack's onPilotChanged event which fires when pilot properties change
 	memhack.events.onPilotChanged:subscribe(function(pilotStruct, changes)
 		self:onPilotLevelChanged(pilotStruct, changes)
