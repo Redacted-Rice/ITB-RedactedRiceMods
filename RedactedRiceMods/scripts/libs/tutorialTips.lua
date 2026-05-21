@@ -1,29 +1,37 @@
 
 ---------------------------------------------------------------------
--- Tutorial Tips v1.1 - code library
+-- Tutorial Tips v1.2 - code library
 ---------------------------------------------------------------------
 -- small helper lib to manage tutorial tips that will only display once per profile.
 -- can be reset, and would likely be done via a mod option.
 
-local mod = mod_loader.mods[modApi.currentMod]
 local this = {}
 local cachedTips
+local rootId = nil
 
-sdlext.config(
-	"modcontent.lua",
-	function(obj)
-		obj.tutorialTips = obj.tutorialTips or {}
-		obj.tutorialTips[mod.id] = obj.tutorialTips[mod.id] or {}
-		cachedTips = obj.tutorialTips
+-- Initialize the library with a root ID
+-- If not provided, defaults to the current mod's ID
+function this:Init(customRootId)
+	if customRootId then
+		assert(type(customRootId) == 'string', "rootId must be a string")
+		rootId = customRootId
+	else
+		local mod = mod_loader.mods[modApi.currentMod]
+		rootId = mod and mod.id or nil
+		assert(rootId, "Could not determine mod ID and no customRootId provided")
 	end
-)
+	
+	return self
+end
 
 -- writes tutorial tips data.
 local function writeData(id, obj)
 	sdlext.config(
 		"modcontent.lua",
 		function(readObj)
-			readObj.tutorialTips[mod.id][id] = obj
+			readObj.tutorialTips = readObj.tutorialTips or {}
+			readObj.tutorialTips[rootId] = readObj.tutorialTips[rootId] or {}
+			readObj.tutorialTips[rootId][id] = obj
 			cachedTips = readObj.tutorialTips
 		end
 	)
@@ -34,13 +42,14 @@ local function readData(id)
 	local result = nil
 	
 	if cachedTips then
-		result = cachedTips[mod.id][id]
+		result = cachedTips[rootId] and cachedTips[rootId][id]
 	else
 		sdlext.config(
 			"modcontent.lua",
 			function(readObj)
+				readObj.tutorialTips = readObj.tutorialTips or {}
 				cachedTips = readObj.tutorialTips
-				result = cachedTips[mod.id][id]
+				result = cachedTips[rootId] and cachedTips[rootId][id]
 			end
 		)
 	end
@@ -53,7 +62,7 @@ function this:ResetAll()
 		"modcontent.lua",
 		function(obj)
 			obj.tutorialTips = obj.tutorialTips or {}
-			obj.tutorialTips[mod.id] = {}
+			obj.tutorialTips[rootId] = {}
 			cachedTips = obj.tutorialTips
 		end
 	)
@@ -70,8 +79,8 @@ function this:Add(tip)
 	assert(type(tip.title) == 'string')
 	assert(type(tip.text) == 'string')
 	
-	Global_Texts[mod.id .. tip.id .."_Title"] = tip.title
-	Global_Texts[mod.id .. tip.id .."_Text"] = tip.text
+	Global_Texts[rootId .. tip.id .."_Title"] = tip.title
+	Global_Texts[rootId .. tip.id .."_Text"] = tip.text
 end
 
 function this:Trigger(id, loc)
@@ -81,7 +90,7 @@ function this:Trigger(id, loc)
 	assert(type(loc.y) == 'number')
 	
 	if not readData(id) then
-		Game:AddTip(mod.id .. id, loc)
+		Game:AddTip(rootId .. id, loc)
 		writeData(id, true)
 	end
 end

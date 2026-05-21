@@ -150,14 +150,17 @@ Released: 03/28/2026
 Initial release. Works for massive but has some issue with exta UIs some icons like flying are use in
 
 ## TutorialTips
-Current Release: 1.1
+Current Release: 1.2.0
 
-* Included to support WeaponPreview. No changes
+### 1.2.0
+Released: XX/XX/2026
+
+* Included to support WeaponPreview and updated to allow specifying a rootId instead of always using mod.id to support weaponPreview using it
 
 ## WeaponArmed
-Current Release: 2.1
+Current Release: 2.1.0
 
-### 2.1
+### 2.1.0
 Brough in from Lemonymous' repo in support of ArtilleryArc. No changes
 
 ## WeaponPreview

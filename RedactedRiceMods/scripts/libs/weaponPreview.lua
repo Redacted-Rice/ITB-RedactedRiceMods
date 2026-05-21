@@ -1390,6 +1390,9 @@ local path = GetParentPath(...)
 
 local function initTutorialTips()
 	tutorialTips = require(path .. "tutorialTips")
+	
+	-- Initialize with a specific root ID so it can be shared/reset by other mods
+	tutorialTips:Init("WeaponPreviewLib")
 
 	-- Add tutorial tips
 	tutorialTips:Add{
