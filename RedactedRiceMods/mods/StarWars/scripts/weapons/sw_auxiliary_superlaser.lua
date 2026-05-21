@@ -50,11 +50,25 @@ function StarWars_AuxiliarySuperlaser:GetPassiveSkillEffect_NextTurnHook(mission
 	if not Game or not Board or Board:IsTipImage() then return end
 	if Game:GetTeamTurn() ~= TEAM_PLAYER then return end
 
-	initGameSaveData()
-
-	-- TODO: Determine if even or odd makes more sense
-	if Board:GetTurn() % 2 == 0 then
-		-- TODO: Add charges
+	LOG("NEXT TURN " .. Board:GetTurn())
+	if Board:GetTurn() > 0 and Board:GetTurn() % 2 == 1 then
+		local weaponName = "StarWars_AuxiliarySuperlaser"
+		for pawnId = 0, 2 do
+			LOG("CEHCKING PAWN  "..pawnId)
+			local pawn = Board:GetPawn(pawnId)
+			local weapons = pawn:GetBaseWeaponTypes() 
+			for wIdx = 1, 2 do
+				LOG("CEHCKING weapon  "..wIdx)
+				local weaponId = weapons[wIdx] 
+				if weaponId and string.sub(weaponId, 1, string.len(weaponName)) == weaponName then
+					local newUses = pawn:GetWeaponLimitedRemaining(wIdx) + 1
+					LOG("ADDING REFILL ".. newUses .. " "..self.MaxCharges)
+					if newUses <= self.MaxCharges then
+						pawn:SetWeaponLimitedRemaining(wIdx, newUses)
+					end
+				end
+			end
+		end
 	end
 end
 
