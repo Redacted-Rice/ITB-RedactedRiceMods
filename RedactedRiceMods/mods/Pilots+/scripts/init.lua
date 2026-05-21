@@ -11,7 +11,7 @@ local mod = {
 	icon = "img/icon.png",
 	dependencies = {
 		redactedrice_cplus_plus = "1.2.0",
-		redactedrice_memhack = "1.1.0",
+		redactedrice_memhack = "1.1.1",
 	}
 }
 

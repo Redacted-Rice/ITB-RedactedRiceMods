@@ -187,7 +187,7 @@ function this:load(options, version)
 	logger.logDebug(SUBMODULE, "Loading Warbot pilot module")
 
 	-- Use memhack's onPilotChanged event which fires when pilot properties change
-	cplus_plus_ex:addPilotChangedHook(function(pilotStruct, changes)
+	memhack:addPilotChangedHook(function(pilotStruct, changes)
 		self:onPilotLevelChanged(pilotStruct, changes)
 	end)
 

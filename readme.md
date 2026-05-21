@@ -29,6 +29,7 @@ Please enjoy and contact us if you run into any issues!
 * PredictableRandom - v1.2.0 - Get random numbers in a way that is repeatable for when undoing moves or resetting turns
 * Trait - v3.0.1 - Add traits to pawns & the board. Originally created by Lemonymous and updated to v3.x.x to support multiple traits via appending text and cycling images as well as showing icons for move previews
 * TraitReplace - v0.9.0 - Allows adding custom UI traits that cycle with vanilla traits
+* TutorialTips - v1.1.0 - Added for WeaponPreview to support tool tips for the group and more details tips. No changes made
 * WeaponArmed - v2.1.0 - Created by Lemonymous and incorporated due to dependencies. No changes made
 * WeaponPreview - v4.0.2 - Add icons to weapon previews. Originally created by Lemonymous and updated to v4.x.x to support use in skill build hooks and two click weapons
 
@@ -40,12 +41,14 @@ Please enjoy and contact us if you run into any issues!
 To uninstall, delete the folder in mods
 
 # Releases
-Latest release: 1.6.2
+Latest release: 1.7.0
 
-## 1.6.2
+## 1.7.0
+* Added Pilots+ adding some pilots centered around custom level up skills and ext
+* Weapon preview grouping of icons and tooltips and updating more+ to use it
 * Two click weapon preview fixes where it was not displaying icons
 * Fixing rebel hope visuals
-* Adding squad exclusion for rebels with pontoons and jump jets 
+* Adding squad exclusion for rebels with pontoons and jump jets
 
 Released: XX/XX/2026
 
@@ -57,6 +60,7 @@ Squads:
 Other Mods:
 * More+          2.1.0
 * RebalanceCore+ 1.0.2
+* Pilots+        1.0.0
 
 Libs:
 * ArtilleryArc      2.0.0
@@ -66,6 +70,7 @@ Libs:
 * PredictableRandom 1.2.0
 * Trait             3.0.1
 * TraitReplace      0.9.0
+* TutorialTips      1.1.0
 * WeaponArmed       2.1.0
 * WeaponPreview     4.0.3
 
@@ -75,8 +80,8 @@ Dependencies:
 * ModLoaderExt  1.24
 * Memedit       1.2.1
 * EasyEdit	    2.0.8
-* Memhack       1.1.0
-* CPLUS+ Ex     1.1.1
+* Memhack       1.1.1
+* CPLUS+ Ex     1.2.0
 
 ## 1.6.1
 * Added some icons and minor bug fixes for Rebels
