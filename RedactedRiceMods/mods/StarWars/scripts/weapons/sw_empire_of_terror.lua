@@ -101,19 +101,20 @@ mod.libs.traitReplace:addStateful{
 }
 
 -- Weapon text definitions
-Weapon_Texts.StarWars_EmpireOfTerror_Upgrade1 = "Propaganda"
-Weapon_Texts.StarWars_EmpireOfTerror_A_UpgradeDescription = "Buildings destroyed by this squad only lose half their population as long as there is at least one building remaining at the end of the mission"
+Weapon_Texts.StarWars_EmpireOfTerror_Upgrade1 = "Show of Force"
+Weapon_Texts.StarWars_EmpireOfTerror_A_UpgradeDescription = "Up to 5 grid can be restored without loss"
 StarWars_EmpireOfTerror_A = StarWars_EmpireOfTerror:new{
+	MaxGridRestored = 5,
+}
+
+Weapon_Texts.StarWars_EmpireOfTerror_Upgrade2 = "Propaganda"
+Weapon_Texts.StarWars_EmpireOfTerror_B_UpgradeDescription = "Buildings destroyed by this squad only lose half their population"
+StarWars_EmpireOfTerror_B = StarWars_EmpireOfTerror:new{
 	HalvePopulation = true,
 }
 
-Weapon_Texts.StarWars_EmpireOfTerror_Upgrade2 = "Show of Force"
-Weapon_Texts.StarWars_EmpireOfTerror_B_UpgradeDescription = "Up to 5 grid can be restored without loss"
-StarWars_EmpireOfTerror_B = StarWars_EmpireOfTerror:new{
-	MaxGridRestored = 5,
-}
 StarWars_EmpireOfTerror_AB = StarWars_EmpireOfTerror_A:new{
-	MaxGridRestored = 5,
+	HalvePopulation = true,
 }
 
 -- Function just for showing in the tool tip
@@ -214,7 +215,7 @@ end
 
 local function skillStartBoostGrid(weaponId)
 	if weaponId == "Move" then return end
-	
+
 	initGameSaveData()
 	if not GAME.starwars.empire_of_terror.player_acting then return end
 
@@ -232,7 +233,7 @@ local function skillStartBoostGrid(weaponId)
 
 		fxOnAllAliveBuildings(StarWars_EmpireOfTerror.GridBoostParticle, "GridBoostColor")
 	else
-		LOG("Skipping start hook (remaining: ".. GAME.starwars.empire_of_terror.uses_remaining .. 
+		LOG("Skipping start hook (remaining: ".. GAME.starwars.empire_of_terror.uses_remaining ..
 				", prevGrid: "..GAME.starwars.empire_of_terror.prev_grid .. ")")
 	end
 end
@@ -279,7 +280,7 @@ local function skillEndRevertGrid(weaponId)
 
 		fxOnAllAliveBuildings(StarWars_EmpireOfTerror.GridReturnParticle, "GridReturnColor")
 	else
-		LOG("Skipping end hook (remaining: ".. GAME.starwars.empire_of_terror.uses_remaining .. 
+		LOG("Skipping end hook (remaining: ".. GAME.starwars.empire_of_terror.uses_remaining ..
 				", prevGrid: "..GAME.starwars.empire_of_terror.prev_grid .. ")")
 	end
 end
@@ -308,7 +309,7 @@ function StarWars_EmpireOfTerror:GetPassiveSkillEffect_NextTurnHook()
 
 	if Game:GetTeamTurn() == TEAM_PLAYER then
 		GAME.starwars.empire_of_terror.player_acting = true
-		
+
 		if not self.HalvePopulation then
 			return
 		end

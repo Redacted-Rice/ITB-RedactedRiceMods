@@ -1,5 +1,5 @@
 local MOVE_BONUS = 2
-StarWars_TIEEngineOverdrive = PassiveSkill:new{
+StarWars_TieOverdrive = PassiveSkill:new{
 	Name = "TIE Overdrive",
 	Description = "Increased move by "..MOVE_BONUS.." for the rest of the mission.",
 	Class = "Ranged",
@@ -19,23 +19,23 @@ StarWars_TIEEngineOverdrive = PassiveSkill:new{
 
 local mod = mod_loader.mods[modApi.currentMod]
 
-Weapon_Texts.StarWars_TIEEngineOverdrive_Upgrade1 = "Evasive"
-Weapon_Texts.StarWars_TIEEngineOverdrive_A_UpgradeDescription = "Mech also becomes web immune"
-StarWars_TIEEngineOverdrive_A = StarWars_TIEEngineOverdrive:new{
+Weapon_Texts.StarWars_TieOverdrive_Upgrade1 = "Evasive"
+Weapon_Texts.StarWars_TieOverdrive_A_UpgradeDescription = "Mech also becomes web immune"
+StarWars_TieOverdrive_A = StarWars_TieOverdrive:new{
 	WebImmune = true,
 }
 
-Weapon_Texts.StarWars_TIEEngineOverdrive_Upgrade2 = "Combat Maneuvers"
-Weapon_Texts.StarWars_TIEEngineOverdrive_B_UpgradeDescription = "Mech also gains a " .. MOVE_BONUS .. " range bonus move after each attack"
-StarWars_TIEEngineOverdrive_B = StarWars_TIEEngineOverdrive:new{
+Weapon_Texts.StarWars_TieOverdrive_Upgrade2 = "Combat Maneuvers"
+Weapon_Texts.StarWars_TieOverdrive_B_UpgradeDescription = "Mech also gains a " .. MOVE_BONUS .. " range bonus move after each attack"
+StarWars_TieOverdrive_B = StarWars_TieOverdrive:new{
 	BonusMoveAfterAttack = true,
 }
 
-StarWars_TIEEngineOverdrive_AB = StarWars_TIEEngineOverdrive_A:new{
+StarWars_TieOverdrive_AB = StarWars_TieOverdrive_A:new{
 	BonusMoveAfterAttack = true,
 }
 
--- TODO: Add icons via trait replace (Maybe flying one this time?)
+-- TODO: Add icons via trait replace. Use acclerator as placholder (copy it)
 
 -- Initialize GAME save data structure
 local function initGameSaveData()
@@ -56,13 +56,13 @@ local function initGameSaveData()
 	end
 end
 
-function StarWars_TIEEngineOverdrive:GetTargetArea(point)
+function StarWars_TieOverdrive:GetTargetArea(point)
 	local ret = PointList()
 	ret:push_back(point)
 	return ret
 end
 
-function StarWars_TIEEngineOverdrive:GetSkillEffect(p1, p2)
+function StarWars_TieOverdrive:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
 
 	local damage = SpaceDamage(p1, 0)
@@ -102,7 +102,7 @@ end
 
 
 -- Bonus move after attack if upgraded
-function StarWars_TIEEngineOverdrive:maybeApplyExtraBonuses(pawn, weaponId)
+function StarWars_TieOverdrive:maybeApplyExtraBonuses(pawn, weaponId)
 	if not pawn then return end
 	if not Game or not Board or Board:IsTipImage() then return end
 	if not self.BonusMoveAfterAttack then return end
@@ -123,7 +123,7 @@ function StarWars_TIEEngineOverdrive:maybeApplyExtraBonuses(pawn, weaponId)
 	end
 end
 
-function StarWars_TIEEngineOverdrive:maybeApplyBaseSpeedBoosts()
+function StarWars_TieOverdrive:maybeApplyBaseSpeedBoosts()
 	if not Game or not Board or Board:IsTipImage() then return end
 
 	initGameSaveData()
@@ -139,21 +139,21 @@ function StarWars_TIEEngineOverdrive:maybeApplyBaseSpeedBoosts()
 	end
 end
 
-function StarWars_TIEEngineOverdrive:GetPassiveSkillEffect_SkillEndHook(mission, pawn, weaponId)
+function StarWars_TieOverdrive:GetPassiveSkillEffect_SkillEndHook(mission, pawn, weaponId)
 	self:maybeApplyExtraBonuses(pawn, weaponId)
 end
 
-function StarWars_TIEEngineOverdrive:GetPassiveSkillEffect_FinalEffectEndHook(mission, pawn, weaponId)
+function StarWars_TieOverdrive:GetPassiveSkillEffect_FinalEffectEndHook(mission, pawn, weaponId)
 	self:maybeApplyExtraBonuses(pawn, weaponId)
 end
 
-function StarWars_TIEEngineOverdrive:GetPassiveSkillEffect_NextTurnHook(mission)
+function StarWars_TieOverdrive:GetPassiveSkillEffect_NextTurnHook(mission)
 	if Game:GetTeamTurn() == TEAM_PLAYER then
 		self:maybeApplyBaseSpeedBoosts()
 	end
 end
 
-function StarWars_TIEEngineOverdrive:GetPassiveSkillEffect_OnPawnIsGrappled(mission, pawn, isGrappled)
+function StarWars_TieOverdrive:GetPassiveSkillEffect_OnPawnIsGrappled(mission, pawn, isGrappled)
 	if not Game or not Board or Board:IsTipImage() then return end
 	initGameSaveData()
 	if isGrappled and GAME.starwars.tie_overdrive.web_immune_applied[pawn:GetId()] then
@@ -165,14 +165,14 @@ function StarWars_TIEEngineOverdrive:GetPassiveSkillEffect_OnPawnIsGrappled(miss
             pawn:SetSpace(Point(-1,-1)) --Move the pawn to Point(-1,-1)
             modApi:runLater(function() --This runs a function one frame later so things get updated
                 pawn:SetSpace(space) --Move the pawn back, after that one frame. The web will be gone
-				Board:AddAlert(space, "OVERDRIVE") 
+				Board:AddAlert(space, "OVERDRIVE")
 				Board:Ping(space, GL_Color(0, 0, 255))
             end)
         end)
 	end
 end
 
-function StarWars_TIEEngineOverdrive:GetPassiveSkillEffect_MissionStartHook(mission)
+function StarWars_TieOverdrive:GetPassiveSkillEffect_MissionStartHook(mission)
 	GAME.starwars.tie_overdrive = nil
 	initGameSaveData()
 end
@@ -180,10 +180,10 @@ end
 -- Register the passive effect
 local passiveEffect = mod.libs.passiveEffect
 passiveEffect:addPassiveEffect(
-	"StarWars_TIEEngineOverdrive",
+	"StarWars_TieOverdrive",
 	{
 		"missionStartHook",
-		"skillEndHook", "finalEffectEndHook", 
+		"skillEndHook", "finalEffectEndHook",
 		"nextTurnHook", "onPawnIsGrappled"
 	},
 	true  -- Not passive only

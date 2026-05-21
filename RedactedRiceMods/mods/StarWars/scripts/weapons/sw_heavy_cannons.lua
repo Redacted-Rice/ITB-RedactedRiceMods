@@ -1,4 +1,4 @@
-StarWars_HeavyTurbocannons = Skill:new{
+StarWars_HeavyCannons = Skill:new{
 	Name = "Heavy Cannons",
 	Description = "Artillery shot dealing 2 damage to center, 1 splash damage in T-shape around target.",
 	Class = "Brute",
@@ -25,28 +25,28 @@ StarWars_HeavyTurbocannons = Skill:new{
 
 	ArtilleryHeight = 0,
 	ArtilleryHeightLock = true,
-	Projectile1 = "effects/shot_sw_dual_turbo_red_split_1",
-	Projectile2 = "effects/shot_sw_dual_turbo_red_split_2",
+	Projectile1 = "effects/shot_sw_dual_heavy_red_split_1",
+	Projectile2 = "effects/shot_sw_dual_heavy_red_split_2",
 	Shots = 2,
 	ShotsDelay = 0.15,
 }
 
-Weapon_Texts.StarWars_HeavyTurbocannons_Upgrade1 = "Quality Gas"
-Weapon_Texts.StarWars_HeavyTurbocannons_A_UpgradeDescription = "+1 damage to center and far tile"
-StarWars_HeavyTurbocannons_A = StarWars_HeavyTurbocannons:new{
+Weapon_Texts.StarWars_HeavyCannons_Upgrade1 = "Quality Gas"
+Weapon_Texts.StarWars_HeavyCannons_A_UpgradeDescription = "+1 damage to center and far tile"
+StarWars_HeavyCannons_A = StarWars_HeavyCannons:new{
 	Damage = 3,
 	BehindSplashDamage = 2,
-	Projectile1 = "effects/shot_sw_dual_turbo_green_split_1",
-	Projectile2 = "effects/shot_sw_dual_turbo_green_split_2",
+	Projectile1 = "effects/shot_sw_dual_heavy_green_split_1",
+	Projectile2 = "effects/shot_sw_dual_heavy_green_split_2",
 }
 
-Weapon_Texts.StarWars_HeavyTurbocannons_Upgrade2 = "Extra Range"
-Weapon_Texts.StarWars_HeavyTurbocannons_B_UpgradeDescription = "Can fire in a 180 degree arc"
-StarWars_HeavyTurbocannons_B = StarWars_HeavyTurbocannons:new{
+Weapon_Texts.StarWars_HeavyCannons_Upgrade2 = "Extra Range"
+Weapon_Texts.StarWars_HeavyCannons_B_UpgradeDescription = "Can fire in a 180 degree arc"
+StarWars_HeavyCannons_B = StarWars_HeavyCannons:new{
 	ExtraRange = true,
 }
 
-StarWars_HeavyTurbocannons_AB = StarWars_HeavyTurbocannons_A:new{
+StarWars_HeavyCannons_AB = StarWars_HeavyCannons_A:new{
 	ExtraRange = true,
 }
 
@@ -83,7 +83,7 @@ local function createCone(origin, direction, startWidth)
 	return ret
 end
 
-function StarWars_HeavyTurbocannons:GetTargetArea(point)
+function StarWars_HeavyCannons:GetTargetArea(point)
 	local ret = PointList()
 
 	-- Get the mech's facing direction
@@ -93,7 +93,7 @@ function StarWars_HeavyTurbocannons:GetTargetArea(point)
 	return createCone(point, direction, self.ExtraRange and math.max(Board:GetSize().x, Board:GetSize().y) or 1)
 end
 
-function StarWars_HeavyTurbocannons:GetSkillEffect(p1, p2)
+function StarWars_HeavyCannons:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
 	local pDiff = p2 - p1
 	-- Get direction but make diagonals go forward
