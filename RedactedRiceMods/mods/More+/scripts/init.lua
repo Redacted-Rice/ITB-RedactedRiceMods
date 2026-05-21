@@ -34,8 +34,9 @@ function mod:load(options, version)
 
 	-- Reset weapon preview tooltips if requested
 	if options.resetWeaponPreviewTooltips and options.resetWeaponPreviewTooltips.enabled then
-		-- Load tutorialTips from the main scripts/libs folder
+		-- Load tutorialTips from the main scripts/libs folder and initialize with WeaponPreviewLib
 		local tutorialTips = require(self.scriptPath .. "../../scripts/libs/tutorialTips")
+		tutorialTips:Init("WeaponPreviewLib")
 		tutorialTips:Reset("WeaponPreview_MultiIconNotification")
 		tutorialTips:Reset("WeaponPreview_DescriptionNotification")
 		options.resetWeaponPreviewTooltips.enabled = false
