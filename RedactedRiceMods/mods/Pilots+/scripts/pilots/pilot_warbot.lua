@@ -187,12 +187,12 @@ function this:load(options, version)
 	logger.logDebug(SUBMODULE, "Loading Warbot pilot module")
 
 	-- Use memhack's onPilotChanged event which fires when pilot properties change
-	memhack.events.onPilotChanged:subscribe(function(pilotStruct, changes)
+	cplus_plus_ex:addPilotChangedHook(function(pilotStruct, changes)
 		self:onPilotLevelChanged(pilotStruct, changes)
 	end)
 
 	-- After skills are assigned, ensure warbot has the correct number of virtual skills
-	cplus_plus_ex.events.onPostAssigningLvlUpSkills:subscribe(function()
+	cplus_plus_ex:addPostAssigningLvlUpSkillsHook(function()
 		self:onSkillsAssigned()
 	end)
 end
