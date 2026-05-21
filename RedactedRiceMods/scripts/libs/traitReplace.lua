@@ -13,7 +13,7 @@ icons on top of flying and Lemonymous for the trait library which was
 the inspiration/starting point for this
 ]]
 
-local VERSION = "0.9.0"
+local VERSION = "0.9.1"
 local DEBUG = false
 
 local mod_path = mod_loader.mods[modApi.currentMod]
