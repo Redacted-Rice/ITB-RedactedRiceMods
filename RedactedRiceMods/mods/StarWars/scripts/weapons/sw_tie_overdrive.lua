@@ -173,6 +173,7 @@ function StarWars_TieOverdrive:GetPassiveSkillEffect_OnPawnIsGrappled(mission, p
 end
 
 function StarWars_TieOverdrive:GetPassiveSkillEffect_MissionStartHook(mission)
+	initGameSaveData()
 	GAME.starwars.tie_overdrive = nil
 	initGameSaveData()
 end
