@@ -25,6 +25,16 @@ a.sw_deathstar_broken =  a.MechUnit:new{Image = "units/player/sw_melfalcon_broke
 a.sw_deathstarw_broken = a.MechUnit:new{Image = "units/player/sw_melfalcon_w_broken.png", PosX = -18, PosY = 4 }
 a.sw_deathstar_ns =      a.MechIcon:new{Image = "units/player/sw_melfalcon_ns.png" }
 
+-- Add orbital launch animation (reuse timetravel effect)
+a.StarWars_DeathStarLaunch = Animation:new{
+	Image = "effects/timetravel.png",
+	NumFrames = 19,
+	Loop = false,
+	PosX = -32,
+	Time = 0.02,
+	PosY = -145,
+}
+
 
 StarWars_DeathStarMech = Pawn:new{
 	Name = "Death Star",
@@ -37,6 +47,11 @@ StarWars_DeathStarMech = Pawn:new{
 	SoundLocation = "/mech/distance/artillery/",
 	DefaultTeam = TEAM_PLAYER,
 	ImpactMaterial = IMPACT_METAL,
+	SpaceColor = false,
 	Massive = true,
 	Flying = true,
+	Orbital = true,
+	OrbitalAnim = "StarWars_DeathStarLaunch",
+	OrbitalSound = "/weapons/enhanced_tractor",
+	OrbitalIcon = true,
 }

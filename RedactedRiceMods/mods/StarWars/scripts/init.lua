@@ -23,6 +23,10 @@ function mod:init()
 	self.libs.pilotSkill_tooltip = require(self.scriptPath .. "libs/pilotSkill_tooltip")
 	self.libs.personality = require(self.scriptPath .. "libs/personality")
 
+	-- Load orbital libraries (local copies)
+	self.libs.orbitalPawn = require(self.scriptPath .. "libs/orbitalPawn")
+	self.libs.orbitalIcon = require(self.scriptPath .. "libs/orbitalIcon")
+
 	-- Assets
 	require(self.scriptPath .. "images")
 	require(self.scriptPath .. "palettes")
