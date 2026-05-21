@@ -1,5 +1,5 @@
-# ITB Star Wars Squad Mod
-The Star Wars squad and Luke Pilot mod for Into the Breach by Redacted Rice
+# ITB Star Wars Squads Mod
+The Star Wars Rebels and Empire squads and Luke Pilot mod for Into the Breach by Redacted Rice
 
 Created by Das Keifer
 
@@ -9,6 +9,17 @@ Please enjoy and contact us if you run into any issues!
 * RedactedRice Discord Server: https://discord.gg/CNjTVrpN4v
 * ItB Discord: Das Keifer
 * Email: RedactedRice@gmail.com
+
+## Squads
+
+### Star Wars Rebels
+TODO
+
+#### Luke Skywalker Pilot
+TODO
+
+### Star Wars Empire
+TODO
 
 # Releases
 Latest release: 1.0.2

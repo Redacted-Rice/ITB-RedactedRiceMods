@@ -338,14 +338,22 @@ local function tryGetTraitsFromSelectedPawn(targetId)
 	return nil
 end
 
-local function combineTraitsDescriptions(traits)
+-- Helper to resolve desc_title/desc_text (supports functions)
+local function resolveDesc(desc, pawn)
+	if type(desc) == "function" then
+		return desc(pawn)
+	end
+	return desc
+end
+
+local function combineTraitsDescriptions(traits, pawn)
 	local combinedText = ""
 
 	for i, trait in ipairs(traits) do
 		if i > 1 then
 			combinedText = combinedText .. "\n\n"
 		end
-		combinedText = combinedText .. trait.desc_title .. "\n" .. trait.desc_text
+		combinedText = combinedText .. resolveDesc(trait.desc_title, pawn) .. "\n" .. resolveDesc(trait.desc_text, pawn)
 	end
 
 	return {
@@ -370,14 +378,15 @@ local function overrideGetStatusTooltip()
 			return oldGetStatusTooltip(id)
 		end
 
+		local pawn = Board and Board:GetSelectedPawn()
 		local activeTraits = tryGetTraitsFromSelectedPawn(id)
 		if activeTraits and #activeTraits > 1 then
-			return combineTraitsDescriptions(activeTraits)
+			return combineTraitsDescriptions(activeTraits, pawn)
 		end
 
 		return {
-			managedTrait.desc_title,
-			managedTrait.desc_text
+			resolveDesc(managedTrait.desc_title, pawn),
+			resolveDesc(managedTrait.desc_text, pawn)
 		}
 	end
 end
@@ -399,8 +408,8 @@ local function add(self, trait)
 	end
 
 	Assert.TypePoint(trait.icon_offset, "Field 'icon_offset'")
-	Assert.Equals('string', type(trait.desc_title), "Field 'desc_title'")
-	Assert.Equals('string', type(trait.desc_text), "Field 'desc_text'")
+	Assert.Equals({'string', 'function'}, type(trait.desc_title), "Field 'desc_title'")
+	Assert.Equals({'string', 'function'}, type(trait.desc_text), "Field 'desc_text'")
 
 	local func = trait.func
 	local pilotSkill = trait.pilotSkill

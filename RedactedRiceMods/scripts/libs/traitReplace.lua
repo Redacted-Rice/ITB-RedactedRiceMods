@@ -605,6 +605,14 @@ local function createUIWidgets(uiRoot)
 	end
 end
 
+-- Helper to resolve desc_title/desc_text (supports functions)
+local function resolveDesc(desc, pawn)
+	if type(desc) == "function" then
+		return desc(pawn)
+	end
+	return desc
+end
+
 -- Override GetStatusTooltip to provide custom descriptions for all registered traits
 local function overrideGetStatusTooltip()
 	local oldGetStatusTooltip = GetStatusTooltip
@@ -625,8 +633,8 @@ local function overrideGetStatusTooltip()
 				elseif #activeTraits == 1 then
 					-- Just the single vanilla trait
 					return {
-						GetText(activeTraits[1].desc_title),
-						GetText(activeTraits[1].desc_text)
+						GetText(resolveDesc(activeTraits[1].desc_title, pawn)),
+						GetText(resolveDesc(activeTraits[1].desc_text, pawn))
 					}
 				else
 					-- Multiple traits, combine descriptions
@@ -635,7 +643,7 @@ local function overrideGetStatusTooltip()
 						if i > 1 then
 							combinedText = combinedText .. "\n\n"
 						end
-						combinedText = combinedText .. GetText(trait.desc_title) .. "\n" .. GetText(trait.desc_text)
+						combinedText = combinedText .. GetText(resolveDesc(trait.desc_title, pawn)) .. "\n" .. GetText(resolveDesc(trait.desc_text, pawn))
 					end
 					return {
 						"Extra Pawn Traits",
@@ -690,8 +698,14 @@ local function addTraitInternal(trait)
 	end
 
 	Assert.Equals('string', type(trait.icon), "Field 'icon'")
-	Assert.Equals('string', type(trait.desc_title), "Field 'desc_title'")
-	Assert.Equals('string', type(trait.desc_text), "Field 'desc_text'")
+	Assert.True(
+		type(trait.desc_title) == 'string' or type(trait.desc_title) == 'function',
+		"Field 'desc_title' must be string or function"
+	)
+	Assert.True(
+		type(trait.desc_text) == 'string' or type(trait.desc_text) == 'function',
+		"Field 'desc_text' must be string or function"
+	)
 
 	local func = trait.func
 	local pilotSkill = trait.pilotSkill
@@ -788,9 +802,15 @@ local function addStatefulTraitInternal(statefulTrait)
 			state.desc_text = state.desc.text or state.desc[2]
 		end
 
-		Assert.Equals('string', type(state.icon), "Field 'states["..stateIndex.."].icon'")
-		Assert.Equals('string', type(state.desc_title), "Field 'states["..stateIndex.."].desc_title'")
-		Assert.Equals('string', type(state.desc_text), "Field 'states["..stateIndex.."].desc_text'")
+	Assert.Equals('string', type(state.icon), "Field 'states["..stateIndex.."].icon'")
+	Assert.True(
+		type(state.desc_title) == 'string' or type(state.desc_title) == 'function',
+		"Field 'states["..stateIndex.."].desc_title' must be string or function"
+	)
+	Assert.True(
+		type(state.desc_text) == 'string' or type(state.desc_text) == 'function',
+		"Field 'states["..stateIndex.."].desc_text' must be string or function"
+	)
 
 		-- Create a trait for this state
 		local stateTrait = {

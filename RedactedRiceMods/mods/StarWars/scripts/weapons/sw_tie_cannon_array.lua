@@ -1,0 +1,227 @@
+StarWars_TIECannonArray = Skill:new{
+	Name = "TIE Cannons",
+	Description = "Fly up to 2 spaces in a line firing laser cannons at ALL adjacent spaces on one side (fires at empty spaces too).",
+	Class = "Ranged",
+	Damage = 1,
+	PowerCost = 0,
+	Upgrades = 2,
+	UpgradeCost = {2, 2},
+	Icon = "weapons/ranged_sw_tie_cannons.png",
+	TwoClick = true,
+	MoveRange = 2,
+	TargetRange = 1,
+	LaunchSound = "/weapons/ricochet",
+	ImpactSound = "/impact/generic/ricochet",
+	TipImage = {
+		CustomPawn = "StarWars_TIEFighterMech",
+		Unit = Point(2,3),
+		Enemy = Point(3,2),
+		Building = Point(2,2),
+		Target = Point(2,1),
+		Second_Click = Point(3,1),
+	},
+
+	Projectile1 = "effects/shot_sw_dual_red_split_1",
+	Projectile2 = "effects/shot_sw_dual_red_split_2",
+	Shots = 2,
+	ShotsDelay = 0.05,
+}
+
+-- Weapon text definitions
+Weapon_Texts.StarWars_TIECannonArray_Upgrade1 = "Fast Targeting"
+Weapon_Texts.StarWars_TIECannonArray_A_UpgradeDescription = "Increases move range to 3."
+StarWars_TIECannonArray_A = StarWars_TIECannonArray:new{
+	MoveRange = 3,
+}
+
+Weapon_Texts.StarWars_TIECannonArray_Upgrade2 = "Quality Gas"
+Weapon_Texts.StarWars_TIECannonArray_B_UpgradeDescription = "Increases damage to 2."
+StarWars_TIECannonArray_B = StarWars_TIECannonArray:new{
+	Damage = 2,
+	Projectile1 = "effects/shot_sw_dual_green_split_1",
+	Projectile2 = "effects/shot_sw_dual_green_split_2",
+}
+
+StarWars_TIECannonArray_AB = StarWars_TIECannonArray_B:new{
+	MoveRange = 3,
+}
+
+function StarWars_TIECannonArray:GetTargetArea(point)
+	local ret = PointList()
+	local pawn = Board:GetPawn(point)
+	if not pawn then return ret end
+
+	-- Temporarily overwrite getmovespeed
+	local origMoveSpeed = Pawn.GetMoveSpeed
+	local attackRange = self.MoveRange
+	function Pawn:GetMoveSpeed()
+		return attackRange
+	end
+
+	-- Get all tiles reachable by the Move skill
+	local moveTargets = Move:GetTargetArea(point)
+	modApiExt_internal.fireTargetAreaBuildHooks(
+		modApiExt_internal.mission,
+		pawn, "Move", point, moveTargets
+	)
+
+	-- Restore original move speed
+	Pawn.GetMoveSpeed = origMoveSpeed
+
+	-- Filter to only straight line moves in 4 directions
+	for dir = DIR_START, DIR_END do
+		for i = 1, attackRange do
+			local target = point + DIR_VECTORS[dir] * i
+			if Board:IsValid(target) then
+				-- Check if this tile is reachable
+				for j = 1, moveTargets:size() do
+					if moveTargets:index(j) == target then
+						ret:push_back(target)
+						break
+					end
+				end
+			end
+		end
+	end
+
+	return ret
+end
+
+function StarWars_TIECannonArray:GetSecondTargetArea(p1, p2)
+	local ret = PointList()
+	local moveDir = GetDirection(p2 - p1)
+
+	-- Get perpendicular directions
+	local perpDir1 = (moveDir + 1) % 4
+	local perpDir2 = (moveDir + 3) % 4
+
+	-- Show the line of targets on each side along the entire move path
+	local current = p1
+	while true do
+		-- Add targets on both sides of current position
+		local side1 = current
+		local side2 = current
+		for i = 1, self.TargetRange do
+			side1 = side1 + DIR_VECTORS[perpDir1]
+			side2 = side2 + DIR_VECTORS[perpDir2]
+			if Board:IsValid(side1) then
+				ret:push_back(side1)
+			end
+			if Board:IsValid(side2) then
+				ret:push_back(side2)
+			end
+		end
+
+		-- Move to next position along path
+		if current == p2 then
+			break
+		end
+		current = current + DIR_VECTORS[moveDir]
+	end
+
+	return ret
+end
+
+function StarWars_TIECannonArray:GetSkillEffect(p1, p2)
+	local pawn = Board:GetPawn(p1)
+	if not pawn then return SkillEffect() end
+
+	local ret = SkillEffect()
+
+	-- Build straight line path from p1 to p2
+	local path = PointList()
+	local moveDir = GetDirection(p2 - p1)
+	local current = p1
+	path:push_back(current)
+	while current ~= p2 do
+		current = current + DIR_VECTORS[moveDir]
+		path:push_back(current)
+	end
+
+	-- Show the path
+	BoardUtils.addForcedMove(ret, path, NO_DELAY)
+
+	return ret
+end
+
+function StarWars_TIECannonArray:GetFinalEffect(p1, p2, p3)
+	local pawn = Board:GetPawn(p1)
+	if not pawn then return SkillEffect() end
+
+	local ret = SkillEffect()
+
+	-- Determine which side to fire based on p3
+	local moveDir = GetDirection(p2 - p1)
+	local perpDir1 = (moveDir + 1) % 4
+	local perpDir2 = (moveDir + 3) % 4
+	local fireDir = perpDir1
+
+	-- Build path and check which side p3 is on
+	local path = PointList()
+	local current = p1
+	path:push_back(current)
+
+	local testSide = current
+	for i = 1, self.TargetRange do
+		testSide = testSide + DIR_VECTORS[perpDir2]
+		if p3 == testSide then
+			fireDir = perpDir2
+		end
+	end
+
+	while current ~= p2 do
+		current = current + DIR_VECTORS[moveDir]
+		path:push_back(current)
+
+		testSide = current
+		for i = 1, self.TargetRange do
+			testSide = testSide + DIR_VECTORS[perpDir2]
+			if p3 == testSide then
+				fireDir = perpDir2
+			end
+		end
+	end
+
+	-- Show the path
+	BoardUtils.addForcedMove(ret, path, NO_DELAY)
+
+	-- Move through path, firing at each position (ALWAYS fires, not just at enemies)
+	local pawnId = pawn:GetId()
+	for i = 1, path:size() do
+		local newPos = path:index(i)
+
+		-- Move to this position
+		BoardUtils.addForcedSigleMove(ret, pawnId, newPos)
+
+		-- Fire from current position at ALL adjacent spaces
+		self:FireFromPositionInDirection(ret, newPos, fireDir)
+
+		-- Add small delay between positions
+		if i < path:size() then
+			ret:AddDelay(0.1)
+		end
+	end
+	return ret
+end
+
+-- Helper function to fire in a specific direction (ALWAYS fires, even at empty spaces)
+function StarWars_TIECannonArray:FireFromPositionInDirection(ret, fromPos, fireDir)
+	-- Fire along the specified direction up to TargetRange
+	for distance = 1, self.TargetRange do
+		local target = fromPos + DIR_VECTORS[fireDir] * distance
+
+		if not Board:IsValid(target) then
+			break
+		end
+
+		-- ALWAYS fire, regardless of whether there's an enemy
+		-- Fire 2 lasers alternating between projectile images
+		for shot = 1, self.Shots do
+			local projectile = (shot % 2 == 1) and self.Projectile1 or self.Projectile2
+			local damage = shot == self.Shots and self.Damage or 0
+			local delay = shot == self.Shots and FULL_DELAY or self.ShotsDelay
+			local sd = SpaceDamage(target, damage)
+			ret:AddProjectile(fromPos, sd, projectile, delay)
+		end
+	end
+end
