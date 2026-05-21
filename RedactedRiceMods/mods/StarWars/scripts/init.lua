@@ -30,12 +30,17 @@ function mod:init()
 	-- Achievements
 	require(self.scriptPath .. "achievements")
 
-	-- Pawns
+	-- Rebel Pawns
 	require(self.scriptPath .. "mechs/sw_mel_falcon")
 	require(self.scriptPath .. "mechs/sw_snow_speeder")
 	require(self.scriptPath .. "mechs/sw_x_wing")
 
-	-- Weapons
+	-- Empire Pawns
+	require(self.scriptPath .. "mechs/sw_death_star")
+	require(self.scriptPath .. "mechs/sw_atat")
+	require(self.scriptPath .. "mechs/sw_tie_fighter")
+
+	-- Rebel Weapons
 	require(self.scriptPath .. "weapons/sw_cannon_turrets")
 	modApi:addWeaponDrop("StarWars_CannonTurrets")
 
@@ -54,6 +59,25 @@ function mod:init()
 	require(self.scriptPath .. "weapons/sw_tow_cable")
 	modApi:addWeaponDrop("StarWars_TowCable")
 
+	-- Empire Weapons
+	require(self.scriptPath .. "weapons/sw_empire_of_terror")
+	modApi:addWeaponDrop("StarWars_EmpireOfTerror")
+
+	require(self.scriptPath .. "weapons/sw_auxiliary_laser")
+	modApi:addWeaponDrop("StarWars_AuxiliaryLaser")
+
+	require(self.scriptPath .. "weapons/sw_heavy_turbocannons")
+	modApi:addWeaponDrop("StarWars_HeavyTurbocannons")
+
+	require(self.scriptPath .. "weapons/sw_stomp")
+	modApi:addWeaponDrop("StarWars_Stomp")
+
+	require(self.scriptPath .. "weapons/sw_tie_cannon_array")
+	modApi:addWeaponDrop("StarWars_TIECannonArray")
+
+	require(self.scriptPath .. "weapons/sw_tie_engine_overdrive")
+	modApi:addWeaponDrop("StarWars_TIEEngineOverdrive")
+
 	-- Pilots
 	local pilots = require(self.scriptPath .. "pilots/init")
 	pilots:init()
@@ -64,6 +88,9 @@ function mod:load(options, version)
 	-- Load as needed
 	self.pilots:load(options, version)
 	StarWars_TowCable:load(options, version)
+	
+	-- Load passive effects
+	self.libs.passiveEffect:load()
 
 	modApi:addSquad(
 		{
@@ -84,7 +111,29 @@ function mod:load(options, version)
 		-- Prevent Jump Jets and Pontoons for the Rebels squad
 		-- These flying mechs already have built-in movement advantages
 		cplus_plus_ex:registerSquadSkillExclusions("starwars_rebels", {
-			"RrJumpJets", 
+			"RrJumpJets",
+			"RrPontoons"
+		})
+	end
+
+	modApi:addSquad(
+		{
+			id = "starwars_empire",
+			"Star Wars Empire",
+			"StarWars_DeathStarMech",
+			"StarWars_TIEFighterMech",
+			"StarWars_ATATMech",
+		},
+		"Star Wars Empire",
+		"Rule the galaxy with fear and overwhelming power. The Empire's advanced war machines crush all resistance under their iron grip.",
+		self.resourcePath .. "img/squad_icon.png"
+	)
+
+	-- Register squad skill exclusions if CPLUS+ is available
+	if cplus_plus_ex then
+		-- Prevent Jump Jets for the Empire squad (2 out of 3 are flying)
+		cplus_plus_ex:registerSquadSkillExclusions("starwars_empire", {
+			"RrJumpJets",
 			"RrPontoons"
 		})
 	end
