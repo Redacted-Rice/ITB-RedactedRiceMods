@@ -6,8 +6,8 @@ local mod = {
 	modApiVersion = "2.9.5",
 	gameVersion = "1.2.93",
 	dependencies = {
-        redactedrice_memhack = "1.1.0",
-        redactedrice_cplus_plus = "1.1.1",
+        redactedrice_memhack = "1.1.1",
+        redactedrice_cplus_plus = "1.2.0",
     }
 }
 
@@ -19,7 +19,7 @@ function mod:init()
 	end
 
 	more_plus:init()
-	
+
 	-- Add config option to reset weapon preview tooltips
 	modApi:addGenerationOption(
 		"resetWeaponPreviewTooltips",

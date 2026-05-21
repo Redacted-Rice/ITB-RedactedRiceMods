@@ -1,5 +1,5 @@
 
-local VERSION = "4.0.3"
+local VERSION = "4.1.0"
 ----------------------------------------------------------------------
 -- Weapon Preview - code library
 -- https://github.com/Lemonymous/ITB-LemonymousMods/wiki/weaponPreview

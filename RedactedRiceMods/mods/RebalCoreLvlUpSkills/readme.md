@@ -29,11 +29,12 @@ Released: XX/XX/2026
 compatible with:
 * ItB AE 	1.2.93
 * ModLoader 2.9.5
-* CPLUS+ Ex	1.1.1
-* memhack	1.1.0
+* memhack	1.1.1
+* CPLUS+ Ex	1.2.0
 
 ### Notes
-* Added skill groups for better compatibility with More+ mod
+* Adding Invulnerable+ skill
+* Adding default skill - skill exclusion for Technician and Massochist
 
 ## 1.0.2
 Released: 05/01/2026

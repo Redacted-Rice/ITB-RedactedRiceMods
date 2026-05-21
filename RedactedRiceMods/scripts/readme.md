@@ -122,7 +122,12 @@ Released: 02/14/2026
 Copied from Lemonymous and updated to handle multiple traits by appending text together and cycling through images
 
 ## TraitReplace
-Current Release: 0.9.0
+Current Release: 0.9.1
+
+### 0.9.1
+Released: XX/XX/2026
+
+Fixing case where Board could be nil causing a failure
 
 ### 0.9.0
 Released: 05/07/2026
@@ -144,6 +149,11 @@ Released: 03/28/2026
 
 Initial release. Works for massive but has some issue with exta UIs some icons like flying are use in
 
+## TutorialTips
+Current Release: 1.1
+
+* Included to support WeaponPreview. No changes
+
 ## WeaponArmed
 Current Release: 2.1
 
@@ -151,11 +161,12 @@ Current Release: 2.1
 Brough in from Lemonymous' repo in support of ArtilleryArc. No changes
 
 ## WeaponPreview
-Current Release: 4.0.3
+Current Release: 4.1.0
 
-### 4.0.3
+### 4.1.0
 Released: XX/XX/2026
 
+* Switched to using tutortialtips lib for group icons and tool tips for weapon preview
 * Fixed issues with dynamically changing target area skill effects
 
 ### 4.0.2
