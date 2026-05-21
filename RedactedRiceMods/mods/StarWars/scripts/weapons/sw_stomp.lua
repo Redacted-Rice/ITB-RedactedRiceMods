@@ -59,9 +59,10 @@ function StarWars_Stomp:GetSkillEffect(p1, p2)
 			local damage = SpaceDamage(target, self.Damage)
 			damage.sAnimation = "ExploAir1"
 
-			-- Crack the tile
-			-- TODO Also not liquid tile
-			if self.Crack and not Board:IsTerrain(target, TERRAIN_HOLE) then
+			-- Crack the tile (not on holes, liquid, or lava)
+			if self.Crack and not Board:IsTerrain(target, TERRAIN_HOLE) 
+				and not Board:IsTerrain(target, TERRAIN_WATER) 
+				and not Board:IsTerrain(target, TERRAIN_LAVA) then
 				damage.iCrack = EFFECT_CREATE
 			end
 

@@ -63,20 +63,20 @@ function mod:init()
 	require(self.scriptPath .. "weapons/sw_empire_of_terror")
 	modApi:addWeaponDrop("StarWars_EmpireOfTerror")
 
-	require(self.scriptPath .. "weapons/sw_auxiliary_laser")
-	modApi:addWeaponDrop("StarWars_AuxiliaryLaser")
+	require(self.scriptPath .. "weapons/sw_auxiliary_superlaser")
+	modApi:addWeaponDrop("StarWars_AuxiliarySuperlaser")
 
-	require(self.scriptPath .. "weapons/sw_heavy_turbocannons")
-	modApi:addWeaponDrop("StarWars_HeavyTurbocannons")
+	require(self.scriptPath .. "weapons/sw_heavy_cannons")
+	modApi:addWeaponDrop("StarWars_HeavyCannons")
 
 	require(self.scriptPath .. "weapons/sw_stomp")
 	modApi:addWeaponDrop("StarWars_Stomp")
 
-	require(self.scriptPath .. "weapons/sw_tie_cannon_array")
-	modApi:addWeaponDrop("StarWars_TIECannonArray")
+	require(self.scriptPath .. "weapons/sw_dual_cannons")
+	modApi:addWeaponDrop("StarWars_DualCannons")
 
-	require(self.scriptPath .. "weapons/sw_tie_engine_overdrive")
-	modApi:addWeaponDrop("StarWars_TIEEngineOverdrive")
+	require(self.scriptPath .. "weapons/sw_tie_overdrive")
+	modApi:addWeaponDrop("StarWars_TieOverdrive")
 
 	-- Pilots
 	local pilots = require(self.scriptPath .. "pilots/init")

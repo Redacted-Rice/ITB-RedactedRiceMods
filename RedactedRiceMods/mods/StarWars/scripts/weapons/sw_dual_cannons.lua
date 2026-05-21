@@ -1,5 +1,5 @@
-StarWars_TIECannonArray = Skill:new{
-	Name = "TIE Cannons",
+StarWars_DualCannons = Skill:new{
+	Name = "Dual Cannons",
 	Description = "Fly up to 2 spaces in a line firing laser cannons at ALL adjacent spaces on one side (fires at empty spaces too).",
 	Class = "Ranged",
 	Damage = 1,
@@ -28,25 +28,25 @@ StarWars_TIECannonArray = Skill:new{
 }
 
 -- Weapon text definitions
-Weapon_Texts.StarWars_TIECannonArray_Upgrade1 = "Fast Targeting"
-Weapon_Texts.StarWars_TIECannonArray_A_UpgradeDescription = "Increases move range to 3."
-StarWars_TIECannonArray_A = StarWars_TIECannonArray:new{
+Weapon_Texts.StarWars_DualCannons_Upgrade1 = "Fast Targeting"
+Weapon_Texts.StarWars_DualCannons_A_UpgradeDescription = "Increases move range to 3."
+StarWars_DualCannons_A = StarWars_DualCannons:new{
 	MoveRange = 3,
 }
 
-Weapon_Texts.StarWars_TIECannonArray_Upgrade2 = "Quality Gas"
-Weapon_Texts.StarWars_TIECannonArray_B_UpgradeDescription = "Increases damage to 2."
-StarWars_TIECannonArray_B = StarWars_TIECannonArray:new{
+Weapon_Texts.StarWars_DualCannons_Upgrade2 = "Quality Gas"
+Weapon_Texts.StarWars_DualCannons_B_UpgradeDescription = "Increases damage to 2."
+StarWars_DualCannons_B = StarWars_DualCannons:new{
 	Damage = 2,
 	Projectile1 = "effects/shot_sw_dual_green_split_1",
 	Projectile2 = "effects/shot_sw_dual_green_split_2",
 }
 
-StarWars_TIECannonArray_AB = StarWars_TIECannonArray_B:new{
+StarWars_DualCannons_AB = StarWars_DualCannons_B:new{
 	MoveRange = 3,
 }
 
-function StarWars_TIECannonArray:GetTargetArea(point)
+function StarWars_DualCannons:GetTargetArea(point)
 	local ret = PointList()
 	local pawn = Board:GetPawn(point)
 	if not pawn then return ret end
@@ -87,7 +87,7 @@ function StarWars_TIECannonArray:GetTargetArea(point)
 	return ret
 end
 
-function StarWars_TIECannonArray:GetSecondTargetArea(p1, p2)
+function StarWars_DualCannons:GetSecondTargetArea(p1, p2)
 	local ret = PointList()
 	local moveDir = GetDirection(p2 - p1)
 
@@ -122,7 +122,7 @@ function StarWars_TIECannonArray:GetSecondTargetArea(p1, p2)
 	return ret
 end
 
-function StarWars_TIECannonArray:GetSkillEffect(p1, p2)
+function StarWars_DualCannons:GetSkillEffect(p1, p2)
 	local pawn = Board:GetPawn(p1)
 	if not pawn then return SkillEffect() end
 
@@ -144,7 +144,7 @@ function StarWars_TIECannonArray:GetSkillEffect(p1, p2)
 	return ret
 end
 
-function StarWars_TIECannonArray:GetFinalEffect(p1, p2, p3)
+function StarWars_DualCannons:GetFinalEffect(p1, p2, p3)
 	local pawn = Board:GetPawn(p1)
 	if not pawn then return SkillEffect() end
 
@@ -205,7 +205,7 @@ function StarWars_TIECannonArray:GetFinalEffect(p1, p2, p3)
 end
 
 -- Helper function to fire in a specific direction (ALWAYS fires, even at empty spaces)
-function StarWars_TIECannonArray:FireFromPositionInDirection(ret, fromPos, fireDir)
+function StarWars_DualCannons:FireFromPositionInDirection(ret, fromPos, fireDir)
 	-- Fire along the specified direction up to TargetRange
 	for distance = 1, self.TargetRange do
 		local target = fromPos + DIR_VECTORS[fireDir] * distance
