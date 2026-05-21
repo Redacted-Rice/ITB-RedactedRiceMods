@@ -19,11 +19,27 @@ function mod:init()
 	end
 
 	more_plus:init()
+	
+	-- Add config option to reset weapon preview tooltips
+	modApi:addGenerationOption(
+		"resetWeaponPreviewTooltips",
+		"Reset Weapon Preview Tips",
+		"Check to reset the tutorial tips for weapon preview effects (multi-icon and description tooltips).",
+		{ enabled = false }
+	)
 end
 
 function mod:load(options, version)
 	more_plus:load()
 
+	-- Reset weapon preview tooltips if requested
+	if options.resetWeaponPreviewTooltips and options.resetWeaponPreviewTooltips.enabled then
+		-- Load tutorialTips from the main scripts/libs folder
+		local tutorialTips = require(self.scriptPath .. "../../scripts/libs/tutorialTips")
+		tutorialTips:Reset("WeaponPreview_MultiIconNotification")
+		tutorialTips:Reset("WeaponPreview_DescriptionNotification")
+		options.resetWeaponPreviewTooltips.enabled = false
+	end
 end
 
 return mod
