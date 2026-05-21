@@ -110,6 +110,7 @@ local INT_MAX = 2147483647
 
 -- Tooltip key configuration
 local TOOLTIP_KEY = SDLKeycodes.h
+local TOOLTIP_KEY_TEXT = "H"
 
 -- Group consolidation support
 local DEFAULT_MULTI_ICON = nil  -- Will be initialized during finalizeInit
@@ -123,9 +124,8 @@ local isTooltipKeyHeld = false
 local lastTooltipKeyState = false
 local lastHighlightedTile = nil
 
--- Track notification state in memory (loaded from profile once on mission start)
-local hasShownDescriptionTip = false
-local hasShownMultiIconTip = false
+-- TutorialTips library
+local tutorialTips
 
 local Marker = Class.new()
 local selfMetatable = setmetatable({}, Marker)
@@ -1010,11 +1010,6 @@ end
 
 local function onMissionChanged(mission, missionOld)
 	time_prev = os.clock()
-
-	-- Load notification state from profile once when mission starts
-	-- This avoids constant file I/O during gameplay
-	hasShownDescriptionTip = modApi:readProfileData("WeaponPreview_ShownDescriptionTip") or false
-	hasShownMultiIconTip = modApi:readProfileData("WeaponPreview_ShownMultiIconTip") or false
 end
 
 -- Collect and show tooltip with descriptions when tooltip key is pressed for highlighted tile
@@ -1124,12 +1119,9 @@ local function checkAndShowTooltipKey(highlighted)
 	end
 end
 
--- Check for features in marks and show first time notifications
+-- Check for features in marks and show first time notifications using tutorialTips
 local function checkAndShowFirstTimeNotifications(marks, loc)
-	if not marks or not loc then return end
-
-	-- Check if we've already shown all notifications (using in-memory cache)
-	if hasShownDescriptionTip and hasShownMultiIconTip then return end
+	if not marks or not loc or not tutorialTips then return end
 
 	-- Check if we need to show any first-time notifications
 	local hasDescriptions = false
@@ -1157,32 +1149,15 @@ local function checkAndShowFirstTimeNotifications(marks, loc)
 			end
 		end
 	end
-	-- Show multi-icon notification first if needed
-	if hasMultiIcon and not hasShownMultiIconTip then
-		-- Update in-memory cache first
-		hasShownMultiIconTip = true
-		-- Then persist to profile (only once)
-		modApi:writeProfileData("WeaponPreview_ShownMultiIconTip", true)
 
-		Global_Texts["WeaponPreview_MultiIconNotification_Title"] = "Multi-Icon Indicator"
-		Global_Texts["WeaponPreview_MultiIconNotification_Text"] = "This icon indicates multiple effects are active on this tile."
-		Game:AddTip("WeaponPreview_MultiIconNotification", loc)
-		Global_Texts["WeaponPreview_MultiIconNotification_Title"] = nil
-		Global_Texts["WeaponPreview_MultiIconNotification_Text"] = nil
+	-- Show multi-icon notification first if needed
+	if hasMultiIcon then
+		tutorialTips:Trigger("WeaponPreview_MultiIconNotification", loc)
 	end
 
 	-- Then show first-time notification for descriptions if needed
-	if hasDescriptions and not hasShownDescriptionTip then
-		-- Update in-memory cache first
-		hasShownDescriptionTip = true
-		-- Then persist to profile (only once)
-		modApi:writeProfileData("WeaponPreview_ShownDescriptionTip", true)
-
-		Global_Texts["WeaponPreview_DescriptionNotification_Title"] = "Extra Effects Preview Tips"
-		Global_Texts["WeaponPreview_DescriptionNotification_Text"] = "Hold H while hovering to see detailed information (if available) about the effects."
-		Game:AddTip("WeaponPreview_DescriptionNotification", loc)
-		Global_Texts["WeaponPreview_DescriptionNotification_Title"] = nil
-		Global_Texts["WeaponPreview_DescriptionNotification_Text"] = nil
+	if hasDescriptions then
+		tutorialTips:Trigger("WeaponPreview_DescriptionNotification", loc)
 	end
 end
 
@@ -1412,6 +1387,24 @@ local function overrideAllSkillMethods()
 end
 
 local path = GetParentPath(...)
+
+local function initTutorialTips()
+	tutorialTips = require(path .. "tutorialTips")
+
+	-- Add tutorial tips
+	tutorialTips:Add{
+		id = "WeaponPreview_MultiIconNotification",
+		title = "Multi-Icon Indicator",
+		text = "This icon indicates multiple effects are active on this tile.",
+	}
+
+	tutorialTips:Add{
+		id = "WeaponPreview_DescriptionNotification",
+		title = "Extra Effects Preview Tips",
+		text = "Hold " .. TOOLTIP_KEY_TEXT .. " while hovering to see detailed information (if available) about the effects.",
+	}
+end
+
 local function initMultiIcon()
 	DEFAULT_MULTI_ICON = "weaponPreview_icon_multihit"
 	local DEFAULT_MULTI_ICON_IMG = DEFAULT_MULTI_ICON .. "_glow.png"
@@ -1485,6 +1478,7 @@ if isNewestVersion then
 	function WeaponPreview:finalizeInit()
 		overrideAllSkillMethods()
 		initGlobals()
+		initTutorialTips()
 
 		WeaponPreview.AddAnimation = addAnimation
 		WeaponPreview.AddColor = addColor
