@@ -5,6 +5,7 @@ StarWars_AuxiliarySuperlaser = Skill:new{
 	PowerCost = 2,
 	Upgrades = 2,
 	UpgradeCost = {3, 2},
+	Orbital = true,
 	Limited = 1,
 	MaxCharges = 1,
 	SplashDamage = 3,
