@@ -62,7 +62,7 @@ function StarWars_DeathStarRepair:GetTargetArea(point)
 	for x = 0, size.x - 1 do
 		for y = 0, size.y - 1 do
 			local p = Point(x, y)
-			if Board:IsValid(p) and p ~= point then
+			if Board:IsValid(p) then
 				ret:push_back(p)
 			end
 		end
@@ -73,35 +73,28 @@ end
 
 function StarWars_DeathStarRepair:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
-	local pawn = Board:GetPawn(p1)
-	
-	if not pawn then
-		return ret
-	end
 	
 	-- Deal 1 damage to the target
 	local damage = SpaceDamage(p2, 1)
-	ret:AddArtillery(damage, self.Projectile, FULL_DELAY)
+	ret:AddDamage(damage)
 	ret:AddBounce(p2, 2)
 	
 	-- Recharge the Auxiliary Superlaser
-	local weapons = pawn:GetBaseWeaponTypes()
-	for wIdx = 1, 2 do
-		local weaponId = weapons[wIdx]
-		if weaponId and weaponId:find("StarWars_AuxiliarySuperlaser") then
-			local maxUses = _G[weaponId].Limited or 1
-			ret:AddScript(string.format([[
-				local pawn = Board:GetPawn(%s)
-				if pawn then
-					pawn:SetWeaponLimitedRemaining(%d, %d)
-					Board:AddAlert(%s, "RECHARGED")
-					Board:Ping(%s, GL_Color(0, 255, 255))
-				end
-			]], p1:GetString(), wIdx, maxUses, p1:GetString(), p1:GetString()))
-			break
+	for pId = 0, 2 do
+		local pawn = Board:GetPawn(pId)
+		local weapons = pawn:GetBaseWeaponTypes()
+		for wIdx = 1, 2 do
+			local weaponId = weapons[wIdx]
+			if weaponId and weaponId:find("StarWars_AuxiliarySuperlaser") then
+				ret:AddScript(string.format([[
+					local pawn = Board:GetPawn(%d)
+					local wIdx = %d
+					pawn:SetWeaponLimitedRemaining(wIdx, pawn:GetWeaponLimitedRemaining(wIdx) + 1)
+				]], pId, wIdx))
+				break
+			end
 		end
 	end
-	
 	return ret
 end
 
