@@ -221,21 +221,17 @@ function StarWars_EmpireOfTerror:skillStartBoostGrid(weaponId, self)
 
 	-- Check if we should apply the effect based on turn phase and MitigateVek flag
 	if not (GAME.starwars.empire_of_terror.player_acting or
-			(self.MitigateVek and Game:GetTeamTurn() == TEAM_PLAYER))
+			(self.MitigateVek and Game:GetTeamTurn() == TEAM_PLAYER)) then
 		return
 	end
 
 	if GAME.starwars.empire_of_terror.uses_remaining > 0 and
 			GAME.starwars.empire_of_terror.prev_grid <= 0 then
-		local currPower = Game:GetPower():GetValue()
-		local diff = StarWars_EmpireOfTerror.GridBoostTo - currPower
+		local currPower = Game:GetGridPower()
 		GAME.starwars.empire_of_terror.prev_grid = currPower
 		LOG("Skill start boosting grid from " .. currPower .. " to " .. StarWars_EmpireOfTerror.GridBoostTo)
 		-- Increment one by one to ensure it works as expected for unfair difficulty
-		while diff > 0 do
-			diff = diff - 1
-			Game:ModifyPowerGrid(SERIOUSLY_JUST_ONE)
-		end
+		Game:SetGridPower(StarWars_EmpireOfTerror.GridBoostTo)
 
 		fxOnAllAliveBuildings(StarWars_EmpireOfTerror.GridBoostParticle, "GridBoostColor")
 	else
@@ -251,7 +247,7 @@ function StarWars_EmpireOfTerror:skillEndRevertGrid(weaponId, self)
 
 	-- Check if we should apply the effect based on MitigateVek flag
 	if not (GAME.starwars.empire_of_terror.player_acting or
-			(self.MitigateVek and Game:GetTeamTurn() == TEAM_PLAYER))
+			(self.MitigateVek and Game:GetTeamTurn() == TEAM_PLAYER)) then
 		return
 	end
 
@@ -284,10 +280,9 @@ function StarWars_EmpireOfTerror:skillEndRevertGrid(weaponId, self)
 		end
 
 		local targetGrid = prevPower - gridLostAdj
-		local diff = targetGrid - currPower
 		LOG("current grid is " .. currPower .. ", original grid was " .. prevPower .. ", adjusted lost grid is " ..
-				gridLostAdj .. ", target grid is " .. targetGrid .. ", diff is " .. diff)
-		Game:ModifyPowerGrid(diff)
+				gridLostAdj .. ", target grid is " .. targetGrid)
+		Game:SetGridPower(targetGrid)
 
 		fxOnAllAliveBuildings(StarWars_EmpireOfTerror.GridReturnParticle, "GridReturnColor")
 	else
