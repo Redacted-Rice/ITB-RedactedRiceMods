@@ -11,8 +11,8 @@ StarWars_AuxiliarySuperlaser = Skill:new{
 	SplashDamage = 3,
 	SplashFurtherDamage = 1,
 	ShakeBaseVal = 0.4,
-	BounceBaseVal = 6,
-	BounceDecay = 0.75,
+	BounceBaseVal = 20,
+	BounceDecay = 0.80,
 	ShockwaveDelay = 0.1,
 	Icon = "weapons/science_sw_auxiliary_laser.png",
 	LaunchSound = "/weapons/laser_burst",
@@ -166,23 +166,17 @@ function StarWars_AuxiliarySuperlaser:GetSkillEffect(p1, p2)
 	ret:AddDelay(self.ShockwaveDelay)
 
 	-- Continue the shockwave out to end of board
-	local maxDistance = math.max(Board:GetSize().x, Board:GetSize().y)
+	local maxDistance = Board:GetSize().x + Board:GetSize().y
 	for distance = 3, maxDistance do
 		local hasValidTile = false
-		-- Straight lines
-		for dir = DIR_START, DIR_END do
-			local pos = p2 + DIR_VECTORS[dir] * distance
-			if Board:IsValid(pos) then
-				hasValidTile = true
-				ret:AddBounce(pos, bounce)
-			end
-		end
 		-- Diagonals
 		for dir = DIR_START, DIR_END do
-			local diagonalPos = p2 + DIR_VECTORS[dir] * distance + DIR_VECTORS[(dir + 1) % 4] * distance
-			if Board:IsValid(diagonalPos) then
-				hasValidTile = true
-				ret:AddBounce(diagonalPos, bounce)
+			for diagIdx = 0, (distance - 1) do
+				local diagonalPos = p2 + DIR_VECTORS[dir] * (distance - diagIdx) + DIR_VECTORS[(dir + 1) % 4] * diagIdx
+				if Board:IsValid(diagonalPos) then
+					hasValidTile = true
+					ret:AddBounce(diagonalPos, bounce)
+				end
 			end
 		end
 		if hasValidTile then
