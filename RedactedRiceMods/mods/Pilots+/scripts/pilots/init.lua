@@ -6,6 +6,7 @@ local pilotPath = scriptPath .. "pilots/"
 -- List of available pilots
 local pilotnames = {
 	["Pilot_Warbot"] = "Warbot",
+	["Pilot_Sgt_Drake"] = "Sgt. Drake",
 }
 
 function this:init()
