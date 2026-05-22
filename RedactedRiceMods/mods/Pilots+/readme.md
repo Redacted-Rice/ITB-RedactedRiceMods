@@ -14,9 +14,15 @@ Please enjoy and contact us if you run into any issues!
 
 ### Warbot
 
-An robot signularly designed to destroy the vek threat. Its specialized learning protocols allow for it to achieve higher levels of capabilities than other pilots.
+A robot singularly designed to destroy the vek threat. Its specialized learning protocols allow for it to achieve higher levels of capabilities than other pilots.
 
 Skill: Combat Protocols - Gains random skills equal to level on each level up. (2 level ups skills at level 1, 5 level up skills at level 2)
+
+### Sergeant Drake
+
+A grizzled combat veteran who's seen more battles than he can count. After each mission, he takes time to teach the squad hard-won survival tricks and tactics he's learned over the years. These combat lessons stick with pilots during the run but fade when the timeline ends.
+
+Skill: Combat Veteran - After completing each mission, teaches the squad combat tricks from years of experience, granting them one random level up skill. These lessons are temporary and lost at the end of the run (game over or victory).
 
 
 # Releases
