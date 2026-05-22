@@ -1027,8 +1027,8 @@ local function checkAndShowTooltipKey(highlighted)
 	lastTooltipKeyState = currentTooltipKeyState
 	lastHighlightedTile = highlighted
 
-	-- Clear tips if key was released or if tile changed while the key is not held
-	if tooltipKeyReleased or (tileChanged and not currentTooltipKeyState) then
+	-- Clear tips if key was released
+	if tooltipKeyReleased then
 		Game:ClearTips()
 		return
 	end
@@ -1041,8 +1041,8 @@ local function checkAndShowTooltipKey(highlighted)
 	-- Don't show if the key is not currently down
 	if not currentTooltipKeyState then return end
 
-	-- If tile changed while the key is held, clear the old tooltip first to avoid stacking
-	if tileChanged and currentTooltipKeyState then
+	-- If tile changed clear the old tooltip first to avoid stacking
+	if tileChanged then
 		Game:ClearTips()
 	end
 
