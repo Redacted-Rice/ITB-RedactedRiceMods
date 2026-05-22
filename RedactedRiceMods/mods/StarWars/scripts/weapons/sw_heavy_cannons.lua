@@ -22,6 +22,8 @@ StarWars_HeavyCannons = Skill:new{
 	},
 	BouncePerDamage = 1,
 	ExtraRange = false,
+	MinRange = 1,
+	MaxRange = 16,
 
 	ArtilleryHeight = 0,
 	ArtilleryHeightLock = true,
@@ -50,8 +52,18 @@ StarWars_HeavyCannons_AB = StarWars_HeavyCannons_A:new{
 	ExtraRange = true,
 }
 
-local function createCone(origin, direction, startWidth)
-	local ret = PointList()
+-- Calculate manhattan distance between two points
+local function manhattanDistance(p1, p2)
+	return math.abs(p1.x - p2.x) + math.abs(p1.y - p2.y)
+end
+
+-- Check if a point is within range constraints
+local function isInRange(origin, target, minRange, maxRange)
+	local distance = manhattanDistance(origin, target)
+	return distance >= minRange and distance <= maxRange
+end
+
+local function addConeToList(pointsList, origin, direction, startWidth, minRange, maxRange)
 	local basePoint = origin + DIR_VECTORS[direction]
 	local currDepth = startWidth or 1
 
@@ -65,21 +77,64 @@ local function createCone(origin, direction, startWidth)
 	-- Check if the target can be reached by going forward, forward-left, or forward-right
 	-- We allow any combination of forward movement with left or right diagonal movement
 	while Board:IsValid(basePoint) do
-		ret:push_back(basePoint)
+		local baseDistance = manhattanDistance(origin, basePoint)
+		if baseDistance > maxRange then
+			-- Stop if we've exceeded max range even on the main axis as this will be the "furthest" point
+			-- in our algorithm
+			break
+		elseif baseDistance >= minRange then
+			-- Otherwise add this point as long as its in range
+			pointsList:push_back(basePoint)
+		end
+
 		for i = 1, currDepth do
 			local leftTarget = basePoint + leftVec * i
 			local rightTarget = basePoint + rightVec * i
-			if Board:IsValid(leftTarget) then
-				ret:push_back(leftTarget)
-			end
-			if Board:IsValid(rightTarget) then 
-				ret:push_back(rightTarget)
+			local sidewaysDistance = manhattanDistance(origin, leftTarget)
+			-- Only try to add if this point is above our min range
+			if sidewaysDistance >= minRange then
+				if sidewaysDistance > maxRange then
+					-- Stop if we've exceeded max range even on the main axis as this will be the "furthest" point
+					-- in our algorithm
+					break
+				end
+				if Board:IsValid(leftTarget) then
+					pointsList:push_back(leftTarget)
+				end
+				if Board:IsValid(rightTarget) then
+					break
+				end
+				if Board:IsValid(leftTarget) then
+					pointsList:push_back(leftTarget)
+				end
+				if Board:IsValid(rightTarget) then
+					pointsList:push_back(rightTarget)
+				end
 			end
 		end
 
 		basePoint = basePoint + DIR_VECTORS[direction]
 		currDepth = currDepth + 1
 	end
+end
+
+local function create3QuartersArc(origin, direction, minRange, maxRange)
+	local ret = PointList()
+	local basePoint = origin + DIR_VECTORS[direction]
+
+	-- A 3/4 arc includes the main direction and both diagonal directions adjacent to it
+	local leftDir = (direction + 1) % 4
+	local rightDir = (direction + 3) % 4
+
+	addConeToList(ret, basePoint, leftDir, 3, minRange, maxRange)
+	addConeToList(ret, basePoint, rightDir, 3, minRange, maxRange)
+	addConeToList(ret, basePoint, direction, 1, minRange, maxRange)
+	return ret
+end
+
+local function createCone(origin, direction, startWidth, minRange, maxRange)
+	local ret = PointList()
+	addConeToList(ret, origin, direction, startWidth, minRange, maxRange)
 	return ret
 end
 
@@ -90,7 +145,11 @@ function StarWars_HeavyCannons:GetTargetArea(point)
 	local pawn = Board:GetPawn(point)
 	local direction = DIR_RIGHT
 
-	return createCone(point, direction, self.ExtraRange and math.max(Board:GetSize().x, Board:GetSize().y) or 1)
+	if not self.ExtraRange then
+		return createCone(point, direction, math.max(Board:GetSize().x, Board:GetSize().y), self.MinRange, self.MaxRange)
+	else
+		return create3QuartersArc(point, direction, self.MinRange, self.MaxRange)
+	end
 end
 
 function StarWars_HeavyCannons:GetSkillEffect(p1, p2)
@@ -98,9 +157,9 @@ function StarWars_HeavyCannons:GetSkillEffect(p1, p2)
 	local pDiff = p2 - p1
 	-- Get direction but make diagonals go forward
 	local attackDir = GetDirection(pDiff)
-	if math.abs(pDiff.x) == math.abs(pDiff.y) then
-		attackDir = DIR_RIGHT
-	end
+	--if math.abs(pDiff.x) == math.abs(pDiff.y) then
+	--	attackDir = DIR_RIGHT
+	--end
 
 	-- Center tile damage - Fire 2 shots alternating projectiles, only second does damage
 	for shot = 1, self.Shots do

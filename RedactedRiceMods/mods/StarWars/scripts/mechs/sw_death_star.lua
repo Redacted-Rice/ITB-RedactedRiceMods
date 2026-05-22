@@ -35,6 +35,84 @@ a.StarWars_DeathStarLaunch = Animation:new{
 	PosY = -145,
 }
 
+-- Death Star custom repair: Orbital Strike that recharges weapons
+StarWars_DeathStarRepair = Skill:new{
+	Name = "Orbital Strike",
+	Description = "Deal 1 damage to any tile on the board and recharge the Auxiliary Superlaser.",
+	Icon = "weapons/repair.png",
+	Class = "Science",
+	PowerCost = 0,
+	Upgrades = 0,
+	TipImage = {
+		CustomPawn = "StarWars_DeathStarMech",
+		Unit = Point(2, 2),
+		Enemy = Point(2, 1),
+		Target = Point(2, 1),
+	},
+	LaunchSound = "/weapons/artillery_volley",
+	ImpactSound = "/impact/generic/explosion",
+	Projectile = "effects/shot_sw_superlaser",
+}
+
+function StarWars_DeathStarRepair:GetTargetArea(point)
+	local ret = PointList()
+	
+	-- Can target any valid space on the board
+	local size = Board:GetSize()
+	for x = 0, size.x - 1 do
+		for y = 0, size.y - 1 do
+			local p = Point(x, y)
+			if Board:IsValid(p) and p ~= point then
+				ret:push_back(p)
+			end
+		end
+	end
+	
+	return ret
+end
+
+function StarWars_DeathStarRepair:GetSkillEffect(p1, p2)
+	local ret = SkillEffect()
+	local pawn = Board:GetPawn(p1)
+	
+	if not pawn then
+		return ret
+	end
+	
+	-- Deal 1 damage to the target
+	local damage = SpaceDamage(p2, 1)
+	ret:AddArtillery(damage, self.Projectile, FULL_DELAY)
+	ret:AddBounce(p2, 2)
+	
+	-- Recharge the Auxiliary Superlaser
+	local weapons = pawn:GetBaseWeaponTypes()
+	for wIdx = 1, 2 do
+		local weaponId = weapons[wIdx]
+		if weaponId and weaponId:find("StarWars_AuxiliarySuperlaser") then
+			local maxUses = _G[weaponId].Limited or 1
+			ret:AddScript(string.format([[
+				local pawn = Board:GetPawn(%s)
+				if pawn then
+					pawn:SetWeaponLimitedRemaining(%d, %d)
+					Board:AddAlert(%s, "RECHARGED")
+					Board:Ping(%s, GL_Color(0, 255, 255))
+				end
+			]], p1:GetString(), wIdx, maxUses, p1:GetString(), p1:GetString()))
+			break
+		end
+	end
+	
+	return ret
+end
+
+-- Register the custom repair skill for Death Star
+ReplaceRepair:addSkill{
+	name = "Orbital Strike",
+	description = "Deal 1 damage to any tile and recharge weapons.",
+	weapon = "StarWars_DeathStarRepair",
+	icon = "weapons/repair",
+	mechType = "StarWars_DeathStarMech",
+}
 
 StarWars_DeathStarMech = Pawn:new{
 	Name = "Death Star",

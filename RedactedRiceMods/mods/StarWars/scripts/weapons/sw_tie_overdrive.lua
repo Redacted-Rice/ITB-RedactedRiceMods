@@ -35,7 +35,45 @@ StarWars_TieOverdrive_AB = StarWars_TieOverdrive_A:new{
 	BonusMoveAfterAttack = true,
 }
 
--- TODO: Add icons via trait replace. Use acclerator as placholder (copy it)
+-- Helper function to check if a pawn has TIE Overdrive active
+local function pawnHasTieOverdrive(pawn)
+	if not pawn or not pawn:IsMech() then return false end
+	if not Game or not Board or Board:IsTipImage() then return false end
+	
+	initGameSaveData()
+	local pawnId = pawn:GetId()
+	return GAME.starwars.tie_overdrive.active_pawns[pawnId] == true
+end
+
+-- Add stateful trait icon showing active vs inactive state
+mod.libs.traitReplace:addStateful{
+	targetTrait = "massive",
+	func = function(trait, pawn)
+		if not pawnHasTieOverdrive(pawn) then
+			return 0  -- Don't display
+		end
+		return 1  -- Active state
+	end,
+	states = {
+		{
+			icon = "img/combat/icons/icon_accelerator.png",
+			desc_title = "TIE Overdrive (Active)",
+			desc_text = function(pawn)
+				local text = "Move +" .. MOVE_BONUS .. " for the rest of the mission."
+				
+				initGameSaveData()
+				local pawnId = pawn:GetId()
+				
+				-- Check for web immunity
+				if GAME.starwars.tie_overdrive.web_immune_applied[pawnId] then
+					text = text .. " Web immune."
+				end
+				
+				return text
+			end,
+		},
+	}
+}
 
 -- Initialize GAME save data structure
 local function initGameSaveData()
@@ -98,8 +136,6 @@ function StarWars_TieOverdrive:GetSkillEffect(p1, p2)
 	ret:AddDamage(damage)
 	return ret
 end
-
-
 
 -- Bonus move after attack if upgraded
 function StarWars_TieOverdrive:maybeApplyExtraBonuses(pawn, weaponId)

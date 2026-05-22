@@ -1,12 +1,13 @@
 StarWars_EmpireOfTerror = PassiveSkill:new{
 	Name = "Empire of Terror",
-	Description = "The first 3 grid lost from buildings will be restored. Building populations are halved during player turns.",
+	Description = "The first 4 grid lost from buildings will be restored. Building populations are halved during player turns.",
 	Class = "Science",
 	PowerCost = 3,
 	Upgrades = 2,
 	UpgradeCost = {2, 1},
-	MaxGridRestored = 3,
+	MaxGridRestored = 4,
 	HalvePopulation = false,
+	MitigateVek = false, -- not upgrade changeable ATM
 	Icon = "weapons/science_sw_empire_of_terror.png",
 	TipImage = {
 		CustomPawn = "StarWars_DeathStarMech",
@@ -102,12 +103,12 @@ mod.libs.traitReplace:addStateful{
 
 -- Weapon text definitions
 Weapon_Texts.StarWars_EmpireOfTerror_Upgrade1 = "Show of Force"
-Weapon_Texts.StarWars_EmpireOfTerror_A_UpgradeDescription = "Up to 5 grid can be restored without loss"
+Weapon_Texts.StarWars_EmpireOfTerror_A_UpgradeDescription = "Up to 6 grid can be restored without loss"
 StarWars_EmpireOfTerror_A = StarWars_EmpireOfTerror:new{
-	MaxGridRestored = 5,
+	MaxGridRestored = 6,
 }
 
-Weapon_Texts.StarWars_EmpireOfTerror_Upgrade2 = "Propaganda"
+Weapon_Texts.StarWars_EmpireOfTerror_Upgrade2 = "Early Warning"
 Weapon_Texts.StarWars_EmpireOfTerror_B_UpgradeDescription = "Buildings destroyed by this squad only lose half their population"
 StarWars_EmpireOfTerror_B = StarWars_EmpireOfTerror:new{
 	HalvePopulation = true,
@@ -213,11 +214,16 @@ function StarWars_EmpireOfTerror:GetPassiveSkillEffect_MissionStartHook(mission)
 	end
 end
 
-local function skillStartBoostGrid(weaponId)
+function StarWars_EmpireOfTerror:skillStartBoostGrid(weaponId, self)
 	if weaponId == "Move" then return end
 
 	initGameSaveData()
-	if not GAME.starwars.empire_of_terror.player_acting then return end
+
+	-- Check if we should apply the effect based on turn phase and MitigateVek flag
+	if not (GAME.starwars.empire_of_terror.player_acting or
+			(self.MitigateVek and Game:GetTeamTurn() == TEAM_PLAYER))
+		return
+	end
 
 	if GAME.starwars.empire_of_terror.uses_remaining > 0 and
 			GAME.starwars.empire_of_terror.prev_grid <= 0 then
@@ -238,11 +244,16 @@ local function skillStartBoostGrid(weaponId)
 	end
 end
 
-local function skillEndRevertGrid(weaponId)
+function StarWars_EmpireOfTerror:skillEndRevertGrid(weaponId, self)
 	if weaponId == "Move" then return end
 
 	initGameSaveData()
-	if not GAME.starwars.empire_of_terror.player_acting then return end
+
+	-- Check if we should apply the effect based on MitigateVek flag
+	if not (GAME.starwars.empire_of_terror.player_acting or
+			(self.MitigateVek and Game:GetTeamTurn() == TEAM_PLAYER))
+		return
+	end
 
 	if GAME.starwars.empire_of_terror.uses_remaining > 0 and
 			GAME.starwars.empire_of_terror.prev_grid > 0 then
@@ -285,20 +296,38 @@ local function skillEndRevertGrid(weaponId)
 	end
 end
 
+-- Regular skill hooks
 function StarWars_EmpireOfTerror:GetPassiveSkillEffect_SkillStartHook(mission, pawn, weaponId)
-	skillStartBoostGrid(weaponId)
+	self:skillStartBoostGrid(weaponId)
 end
 
 function StarWars_EmpireOfTerror:GetPassiveSkillEffect_FinalEffectStartHook(mission, pawn, weaponId)
-	skillStartBoostGrid(weaponId)
+	self:skillStartBoostGrid(weaponId)
 end
 
 function StarWars_EmpireOfTerror:GetPassiveSkillEffect_SkillEndHook(mission, pawn, weaponId)
-	skillEndRevertGrid(weaponId)
+	self:skillEndRevertGrid(weaponId)
 end
 
 function StarWars_EmpireOfTerror:GetPassiveSkillEffect_FinalEffectEndHook(mission, pawn, weaponId)
-	skillEndRevertGrid(weaponId)
+	self:skillEndRevertGrid(weaponId)
+end
+
+-- Queued skill hooks
+function StarWars_EmpireOfTerror:GetPassiveSkillEffect_QueuedSkillStartHook(mission, pawn, weaponId)
+	self:skillStartBoostGrid(weaponId)
+end
+
+function StarWars_EmpireOfTerror:GetPassiveSkillEffect_QueuedFinalEffectStartHook(mission, pawn, weaponId)
+	self:skillStartBoostGrid(weaponId)
+end
+
+function StarWars_EmpireOfTerror:GetPassiveSkillEffect_QueuedSkillEndHook(mission, pawn, weaponId)
+	self:skillEndRevertGrid(weaponId)
+end
+
+function StarWars_EmpireOfTerror:GetPassiveSkillEffect_QueuedFinalEffectEndHook(mission, pawn, weaponId)
+	self:skillEndRevertGrid(weaponId)
 end
 
 -- Use to detect start of players turn
@@ -371,12 +400,17 @@ end
 
 
 -- Register the passive effect
-passiveEffect:addPassiveEffect(
-	"StarWars_EmpireOfTerror",
-	{
-		"missionStartHook",
-		-- Next turn hook doesn't really behave as expected... Vek attacking is part of the player turn
-		"nextTurnHook", "preEnvironmentHook",
-		"skillStartHook", "skillEndHook", "finalEffectStartHook", "finalEffectEndHook",
-	}
-)
+local passiveEffects = 	{
+	"missionStartHook",
+	-- Next turn hook doesn't really behave as expected... Vek attacking is part of the player turn
+	"nextTurnHook", "preEnvironmentHook",
+	"skillStartHook", "skillEndHook", "finalEffectStartHook", "finalEffectEndHook",
+}
+if StarWars_EmpireOfTerror.MitigateVek then
+	table.insert(passiveEffects, "queuedSkillStartHook")
+	table.insert(passiveEffects, "queuedSkillEndHook")
+	table.insert(passiveEffects, "queuedFinalEffectStartHook")
+	table.insert(passiveEffects, "queuedFinalEffectEndHook")
+end
+
+passiveEffect:addPassiveEffect("StarWars_EmpireOfTerror", passiveEffects)
