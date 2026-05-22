@@ -53,12 +53,9 @@ function StarWars_AuxiliarySuperlaser:GetTargetArea(point)
 	for x = 0, size.x - 1 do
 		for y = 0, size.y - 1 do
 			local p = Point(x, y)
-			if Board:IsValid(p) and p ~= point then
-				ret:push_back(p)
-			end
+			ret:push_back(p)
 		end
 	end
-
 	return ret
 end
 

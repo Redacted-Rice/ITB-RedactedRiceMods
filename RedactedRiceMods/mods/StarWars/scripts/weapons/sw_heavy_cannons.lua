@@ -22,8 +22,8 @@ StarWars_HeavyCannons = Skill:new{
 	},
 	BouncePerDamage = 1,
 	ExtraRange = false,
-	MinRange = 1,
-	MaxRange = 16,
+	MinRange = 2,
+	MaxRange = 5,
 
 	ArtilleryHeight = 0,
 	ArtilleryHeightLock = true,
@@ -57,15 +57,9 @@ local function manhattanDistance(p1, p2)
 	return math.abs(p1.x - p2.x) + math.abs(p1.y - p2.y)
 end
 
--- Check if a point is within range constraints
-local function isInRange(origin, target, minRange, maxRange)
-	local distance = manhattanDistance(origin, target)
-	return distance >= minRange and distance <= maxRange
-end
-
-local function addConeToList(pointsList, origin, direction, startWidth, minRange, maxRange)
+local function addConeToList(pointsList, origin, direction, startRadius, minRange, maxRange)
 	local basePoint = origin + DIR_VECTORS[direction]
-	local currDepth = startWidth or 1
+	local currRadius = startRadius or 1
 
 	-- A cone includes the main direction and both diagonal directions adjacent to it
 	local leftDir = (direction + 1) % 4
@@ -74,8 +68,6 @@ local function addConeToList(pointsList, origin, direction, startWidth, minRange
 	local leftVec = DIR_VECTORS[leftDir]
 	local rightVec = DIR_VECTORS[rightDir]
 
-	-- Check if the target can be reached by going forward, forward-left, or forward-right
-	-- We allow any combination of forward movement with left or right diagonal movement
 	while Board:IsValid(basePoint) do
 		local baseDistance = manhattanDistance(origin, basePoint)
 		if baseDistance > maxRange then
@@ -87,7 +79,7 @@ local function addConeToList(pointsList, origin, direction, startWidth, minRange
 			pointsList:push_back(basePoint)
 		end
 
-		for i = 1, currDepth do
+		for i = 1, currRadius do
 			local leftTarget = basePoint + leftVec * i
 			local rightTarget = basePoint + rightVec * i
 			local sidewaysDistance = manhattanDistance(origin, leftTarget)
@@ -102,19 +94,13 @@ local function addConeToList(pointsList, origin, direction, startWidth, minRange
 					pointsList:push_back(leftTarget)
 				end
 				if Board:IsValid(rightTarget) then
-					break
-				end
-				if Board:IsValid(leftTarget) then
-					pointsList:push_back(leftTarget)
-				end
-				if Board:IsValid(rightTarget) then
 					pointsList:push_back(rightTarget)
 				end
 			end
 		end
 
 		basePoint = basePoint + DIR_VECTORS[direction]
-		currDepth = currDepth + 1
+		currRadius = currRadius + 1
 	end
 end
 
@@ -126,15 +112,15 @@ local function create3QuartersArc(origin, direction, minRange, maxRange)
 	local leftDir = (direction + 1) % 4
 	local rightDir = (direction + 3) % 4
 
-	addConeToList(ret, basePoint, leftDir, 3, minRange, maxRange)
-	addConeToList(ret, basePoint, rightDir, 3, minRange, maxRange)
+	addConeToList(ret, basePoint, leftDir, 2, minRange, maxRange)
+	addConeToList(ret, basePoint, rightDir, 2, minRange, maxRange)
 	addConeToList(ret, basePoint, direction, 1, minRange, maxRange)
 	return ret
 end
 
-local function createCone(origin, direction, startWidth, minRange, maxRange)
+local function createCone(origin, direction, startRadius, minRange, maxRange)
 	local ret = PointList()
-	addConeToList(ret, origin, direction, startWidth, minRange, maxRange)
+	addConeToList(ret, origin, direction, startRadius, minRange, maxRange)
 	return ret
 end
 
