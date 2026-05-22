@@ -37,8 +37,8 @@ a.StarWars_DeathStarLaunch = Animation:new{
 
 -- Death Star custom repair: Orbital Strike that recharges weapons
 StarWars_DeathStarRepair = Skill:new{
-	Name = "Orbital Strike",
-	Description = "Deal 1 damage to any tile on the board and recharge the Auxiliary Superlaser.",
+	Name = "Priming Laser",
+	Description = "Deal 1 damage to any tile on the board and gain a charge for the Auxiliary Superlaser.",
 	Icon = "weapons/repair.png",
 	Class = "Science",
 	PowerCost = 0,
@@ -56,7 +56,7 @@ StarWars_DeathStarRepair = Skill:new{
 
 function StarWars_DeathStarRepair:GetTargetArea(point)
 	local ret = PointList()
-	
+
 	-- Can target any valid space on the board
 	local size = Board:GetSize()
 	for x = 0, size.x - 1 do
@@ -67,29 +67,32 @@ function StarWars_DeathStarRepair:GetTargetArea(point)
 			end
 		end
 	end
-	
 	return ret
 end
 
 function StarWars_DeathStarRepair:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
-	
+
 	-- Deal 1 damage to the target
 	local damage = SpaceDamage(p2, 1)
 	ret:AddDamage(damage)
 	ret:AddBounce(p2, 2)
-	
+
 	-- Recharge the Auxiliary Superlaser
 	for pId = 0, 2 do
 		local pawn = Board:GetPawn(pId)
+		-- for some reason this is nil sometimes in a mission?
+		LOG("PID "..pId .. ", pawn " .. tostring(pawn))
 		local weapons = pawn:GetBaseWeaponTypes()
 		for wIdx = 1, 2 do
 			local weaponId = weapons[wIdx]
 			if weaponId and weaponId:find("StarWars_AuxiliarySuperlaser") then
+				LOG("FOUND WEAPOIN ID " .. weaponId .. " for pawn " .. pId)
 				ret:AddScript(string.format([[
 					local pawn = Board:GetPawn(%d)
 					local wIdx = %d
 					pawn:SetWeaponLimitedRemaining(wIdx, pawn:GetWeaponLimitedRemaining(wIdx) + 1)
+					LOG("SET WEAPON LIMITED REMAINING TO " .. pawn:GetWeaponLimitedRemaining(wIdx) .. " for pawn " .. pId)
 				]], pId, wIdx))
 				break
 			end
@@ -100,7 +103,7 @@ end
 
 -- Register the custom repair skill for Death Star
 ReplaceRepair:addSkill{
-	name = "Orbital Strike",
+	name = "Priming Laser",
 	description = "Deal 1 damage to any tile and recharge weapons.",
 	weapon = "StarWars_DeathStarRepair",
 	icon = "weapons/repair",
