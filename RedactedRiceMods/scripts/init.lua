@@ -28,6 +28,7 @@ local libs = {
 	"predictableRandom",
 	"trait",
 	"traitReplace",
+	-- tutorialTips functions a bit differently and is intentionally excluded here
 	"weaponPreview",
 }
 
@@ -42,8 +43,9 @@ function mod:init(options)
 		end
 	end
 
-	-- ArtilleryArc behaves a bit differentluyy
+	-- ArtilleryArc and TutorialTip behave a bit differently
 	require(path.."libs/artilleryArc")
+	self.libs["tutorialTips"] = require(path.."libs/tutorialTips")
 
     -- add modApiExt as well
 	self.libs.modApiExt = modapiext
