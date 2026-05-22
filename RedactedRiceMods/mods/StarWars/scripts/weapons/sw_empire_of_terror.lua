@@ -1,14 +1,14 @@
 StarWars_EmpireOfTerror = PassiveSkill:new{
 	Name = "Empire of Terror",
 	Description = "The first 4 grid lost from buildings will be restored. Building populations are halved during player turns.",
-	Class = "Science",
+	Class = "Any",
 	PowerCost = 3,
 	Upgrades = 2,
 	UpgradeCost = {2, 1},
 	MaxGridRestored = 4,
 	HalvePopulation = false,
 	MitigateVek = false, -- not upgrade changeable ATM
-	Icon = "weapons/science_sw_empire_of_terror.png",
+	Icon = "weapons/any_sw_empire_of_terror.png",
 	TipImage = {
 		CustomPawn = "StarWars_DeathStarMech",
 		Unit = Point(2, 2),

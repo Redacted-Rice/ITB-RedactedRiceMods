@@ -1,12 +1,13 @@
 StarWars_Stomp = Skill:new{
 	Name = "Stomp",
-	Description = "Cracks all adjacent tiles, dealing 1 damage and reducing terrain stability.",
-	Class = "Brute",
+	Description = "Damages and pushes all adjacent tiles.",
+	Class = "Artillery",
 	Damage = 1,
-	PowerCost = 0,
+	Push = true,
+	PowerCost = 1,
 	Upgrades = 2,
 	UpgradeCost = {2, 1},
-	Icon = "weapons/brute_sw_stomp.png",
+	Icon = "weapons/artillery_sw_stomp.png",
 	LaunchSound = "/impact/generic/mech",
 	ImpactSound = "/impact/generic/explosion",
 	TipImage = {
@@ -18,7 +19,7 @@ StarWars_Stomp = Skill:new{
 	Crack = false
 }
 
-Weapon_Texts.StarWars_Stomp_Upgrade1 = "+ Damage"
+Weapon_Texts.StarWars_Stomp_Upgrade1 = "Spikes"
 Weapon_Texts.StarWars_Stomp_A_UpgradeDescription = "+1 damage"
 StarWars_Stomp_A = StarWars_Stomp:new{
 	Damage = 2,
@@ -60,10 +61,14 @@ function StarWars_Stomp:GetSkillEffect(p1, p2)
 			damage.sAnimation = "ExploAir1"
 
 			-- Crack the tile (not on holes, liquid, or lava)
-			if self.Crack and not Board:IsTerrain(target, TERRAIN_HOLE) 
-				and not Board:IsTerrain(target, TERRAIN_WATER) 
+			if self.Crack and not Board:IsTerrain(target, TERRAIN_HOLE)
+				and not Board:IsTerrain(target, TERRAIN_WATER)
 				and not Board:IsTerrain(target, TERRAIN_LAVA) then
 				damage.iCrack = EFFECT_CREATE
+			end
+
+			if self.Push then
+				damage.iPush = dir
 			end
 
 			ret:AddDamage(damage)
