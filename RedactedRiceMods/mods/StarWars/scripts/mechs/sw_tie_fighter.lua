@@ -28,7 +28,7 @@ a.sw_tiefighter_ns =      a.MechIcon:new{Image = "units/player/sw_xwing_ns.png" 
 
 StarWars_TIEFighterMech = Pawn:new{
 	Name = "TIE Fighter",
-	Class = "Ranged",
+	Class = "Brute",
 	Health = 1,
 	MoveSpeed = 3,
 	Image = "sw_tiefighter",

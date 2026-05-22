@@ -2,12 +2,12 @@ local MOVE_BONUS = 2
 StarWars_TieOverdrive = PassiveSkill:new{
 	Name = "TIE Overdrive",
 	Description = "Increased move by "..MOVE_BONUS.." for the rest of the mission.",
-	Class = "Ranged",
+	Class = "Brute",
 	PowerCost = 0,
 	Upgrades = 2,
 	UpgradeCost = {1, 1},
 	Limited = 1,
-	Icon = "weapons/ranged_sw_tie_engine.png",
+	Icon = "weapons/brute_sw_tie_engine.png",
 	WebImmune = false,
 	BonusMoveAfterAttack = false,
 	TipImage = {
@@ -39,7 +39,7 @@ StarWars_TieOverdrive_AB = StarWars_TieOverdrive_A:new{
 local function pawnHasTieOverdrive(pawn)
 	if not pawn or not pawn:IsMech() then return false end
 	if not Game or not Board or Board:IsTipImage() then return false end
-	
+
 	initGameSaveData()
 	local pawnId = pawn:GetId()
 	return GAME.starwars.tie_overdrive.active_pawns[pawnId] == true
@@ -60,15 +60,15 @@ mod.libs.traitReplace:addStateful{
 			desc_title = "TIE Overdrive (Active)",
 			desc_text = function(pawn)
 				local text = "Move +" .. MOVE_BONUS .. " for the rest of the mission."
-				
+
 				initGameSaveData()
 				local pawnId = pawn:GetId()
-				
+
 				-- Check for web immunity
 				if GAME.starwars.tie_overdrive.web_immune_applied[pawnId] then
 					text = text .. " Web immune."
 				end
-				
+
 				return text
 			end,
 		},

@@ -1,14 +1,14 @@
 StarWars_HeavyCannons = Skill:new{
 	Name = "Heavy Cannons",
 	Description = "Artillery shot dealing 2 damage to center, 1 splash damage in T-shape around target.",
-	Class = "Brute",
+	Class = "Artillery",
 	Damage = 2,
 	SideSplashDamage = 1,
 	BehindSplashDamage = 1,
 	PowerCost = 1,
 	Upgrades = 2,
 	UpgradeCost = {2, 2},
-	Icon = "weapons/brute_sw_heavy_turbocannons.png",
+	Icon = "weapons/artillery_sw_heavy_turbocannons.png",
 	LaunchSound = "/weapons/cannon_volley",
 	ImpactSound = "/impact/generic/explosion",
 	TipImage = {

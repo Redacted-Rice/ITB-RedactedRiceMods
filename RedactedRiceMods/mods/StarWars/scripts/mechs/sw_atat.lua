@@ -28,7 +28,7 @@ a.sw_atat_ns =      a.MechIcon:new{Image = "units/player/sw_snowspeeder_ns.png" 
 
 StarWars_ATATMech = Pawn:new{
 	Name = "AT-AT Walker",
-	Class = "Brute",
+	Class = "Artillery",
 	Health = 3,
 	MoveSpeed = 2,
 	Image = "sw_atat",
