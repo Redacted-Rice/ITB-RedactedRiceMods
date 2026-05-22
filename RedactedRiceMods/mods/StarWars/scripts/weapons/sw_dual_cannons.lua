@@ -1,6 +1,6 @@
 StarWars_DualCannons = Skill:new{
 	Name = "Dual Cannons",
-	Description = "Fly up to 2 spaces in a line firing laser cannons at ALL adjacent spaces on one side (fires at empty spaces too).",
+	Description = "Fly up to 3 spaces in a line firing laser cannons at ALL adjacent spaces on one side (fires at empty spaces too).",
 	Class = "Ranged",
 	Damage = 1,
 	PowerCost = 0,
@@ -8,7 +8,7 @@ StarWars_DualCannons = Skill:new{
 	UpgradeCost = {2, 2},
 	Icon = "weapons/ranged_sw_tie_cannons.png",
 	TwoClick = true,
-	MoveRange = 2,
+	MoveRange = 3,
 	TargetRange = 1,
 	LaunchSound = "/weapons/ricochet",
 	ImpactSound = "/impact/generic/ricochet",
@@ -29,9 +29,9 @@ StarWars_DualCannons = Skill:new{
 
 -- Weapon text definitions
 Weapon_Texts.StarWars_DualCannons_Upgrade1 = "Fast Targeting"
-Weapon_Texts.StarWars_DualCannons_A_UpgradeDescription = "Increases move range to 3."
+Weapon_Texts.StarWars_DualCannons_A_UpgradeDescription = "Increases move range to mech's move speed (min 3)."
 StarWars_DualCannons_A = StarWars_DualCannons:new{
-	MoveRange = 3,
+	MoveRange = -1,
 }
 
 Weapon_Texts.StarWars_DualCannons_Upgrade2 = "Quality Gas"
@@ -43,7 +43,7 @@ StarWars_DualCannons_B = StarWars_DualCannons:new{
 }
 
 StarWars_DualCannons_AB = StarWars_DualCannons_B:new{
-	MoveRange = 3,
+	MoveRange = -1,
 }
 
 function StarWars_DualCannons:GetTargetArea(point)
@@ -51,14 +51,24 @@ function StarWars_DualCannons:GetTargetArea(point)
 	local pawn = Board:GetPawn(point)
 	if not pawn then return ret end
 
-	-- Temporarily overwrite getmovespeed
-	local origMoveSpeed = Pawn.GetMoveSpeed
+	-- If MoveRange < 0, use the mech's actual move speed
+	local usingMoveSpeed = false
 	local attackRange = self.MoveRange
-	function Pawn:GetMoveSpeed()
-		return attackRange
+	if attackRange < 0 and pawn:GetMoveSpeed() >= 3 then
+		usingMoveSpeed = true
+		attackRange = pawn:GetMoveSpeed()
+	end
+
+	-- Temporarily overwrite getmovespeed
+	if not usingMoveSpeed then
+		local origMoveSpeed = Pawn.GetMoveSpeed
+		function Pawn:GetMoveSpeed()
+			return attackRange
+		end
 	end
 
 	-- Get all tiles reachable by the Move skill
+	-- Note this assumes the mech is flying...
 	local moveTargets = Move:GetTargetArea(point)
 	modApiExt_internal.fireTargetAreaBuildHooks(
 		modApiExt_internal.mission,
@@ -66,7 +76,9 @@ function StarWars_DualCannons:GetTargetArea(point)
 	)
 
 	-- Restore original move speed
-	Pawn.GetMoveSpeed = origMoveSpeed
+	if not usingMoveSpeed then
+		Pawn.GetMoveSpeed = origMoveSpeed
+	end
 
 	-- Filter to only straight line moves in 4 directions
 	for dir = DIR_START, DIR_END do

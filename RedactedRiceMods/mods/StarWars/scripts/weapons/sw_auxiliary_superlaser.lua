@@ -1,13 +1,12 @@
 StarWars_AuxiliarySuperlaser = Skill:new{
 	Name = "Aux. Superlaser",
-	Description = "Instakills center tile and turns it to lava. Deals 3 damage adjacent, 1 damage beyond. Gains 1 charge every other turn.",
+	Description = "Instakills center tile and turns it to lava. Deals 3 damage adjacent, 1 damage beyond. Recharged by repair.",
 	Class = "Science",
 	PowerCost = 2,
 	Upgrades = 2,
 	UpgradeCost = {3, 2},
 	Orbital = true,
 	Limited = 1,
-	MaxCharges = 1,
 	SplashDamage = 3,
 	SplashFurtherDamage = 1,
 	ShakeBaseVal = 0.4,
@@ -35,52 +34,16 @@ StarWars_AuxiliarySuperlaser_A = StarWars_AuxiliarySuperlaser:new{
 }
 
 Weapon_Texts.StarWars_AuxiliarySuperlaser_Upgrade2 = "Extra Capacitors"
-Weapon_Texts.StarWars_AuxiliarySuperlaser_B_UpgradeDescription = "Starts with and can store up to two charges"
+Weapon_Texts.StarWars_AuxiliarySuperlaser_B_UpgradeDescription = "Starts with two charges"
 StarWars_AuxiliarySuperlaser_B = StarWars_AuxiliarySuperlaser:new{
 	Limited = 2,
-	MaxCharges = 2,
 }
 
 StarWars_AuxiliarySuperlaser_AB = StarWars_AuxiliarySuperlaser_A:new{
 	Limited = 2,
-	MaxCharges = 2,
 }
 
-function StarWars_AuxiliarySuperlaser:GetPassiveSkillEffect_NextTurnHook(mission)
-	if not Game or not Board or Board:IsTipImage() then return end
-	if Game:GetTeamTurn() ~= TEAM_PLAYER then return end
-
-	LOG("NEXT TURN " .. Board:GetTurn())
-	if Board:GetTurn() > 0 and Board:GetTurn() % 2 == 1 then
-		local weaponName = "StarWars_AuxiliarySuperlaser"
-		for pawnId = 0, 2 do
-			LOG("CEHCKING PAWN  "..pawnId)
-			local pawn = Board:GetPawn(pawnId)
-			local weapons = pawn:GetBaseWeaponTypes() 
-			for wIdx = 1, 2 do
-				LOG("CEHCKING weapon  "..wIdx)
-				local weaponId = weapons[wIdx] 
-				if weaponId and string.sub(weaponId, 1, string.len(weaponName)) == weaponName then
-					local newUses = pawn:GetWeaponLimitedRemaining(wIdx) + 1
-					LOG("ADDING REFILL ".. newUses .. " "..self.MaxCharges)
-					if newUses <= self.MaxCharges then
-						pawn:SetWeaponLimitedRemaining(wIdx, newUses)
-					end
-				end
-			end
-		end
-	end
-end
-
--- Register the passive effect
-local passiveEffect = mod.libs.passiveEffect
-passiveEffect:addPassiveEffect(
-	"StarWars_AuxiliarySuperlaser",
-	{
-		"nextTurnHook"
-	},
-	true  -- Not passive only
-)
+-- No longer auto-charges - recharge now happens via Death Star's repair action
 
 function StarWars_AuxiliarySuperlaser:GetTargetArea(point)
 	local ret = PointList()
