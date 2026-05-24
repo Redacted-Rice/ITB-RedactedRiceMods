@@ -85,9 +85,7 @@ end
 
 -- Drops
 function MoonStridersAchievements.onMissionStartHook(mission)
-	LOG("onMissionStartHook")
 	if isRightSquad() and not achievements.grave:isComplete() then
-		LOG("CLEARING DROPS")
 		MoonStridersAchievements.drops = 0
 	end
 	
@@ -98,7 +96,6 @@ end
 
 -- Swing
 function MoonStridersAchievements.onSkillStartHook(mission, pawn, weaponId, p1, p2)
-	LOG("onSkillStartHook")
 	if isRightSquad() and not achievements.swing:isComplete()then
 		MoonStridersAchievements.lastAttacked = nil
 		
@@ -110,17 +107,14 @@ function MoonStridersAchievements.onSkillStartHook(mission, pawn, weaponId, p1, 
 		if string.sub(weaponId, 1 , string.len("MoonStriders_ColossusHook")) == "MoonStriders_ColossusHook" and
 				p1:Manhattan(p2) >= 5 then
 			MoonStridersAchievements.lastAttacked = Board:GetPawn(p2)
-			LOG("PAWN QUALIOFIES")
 		end
 	end
 end
 
 -- Swing and drops
 function MoonStridersAchievements.onPawnKilledHook(mission, pawn)
-	LOG("PAWN KILLED")
 	if isRightSquad() then
 		if not achievements.swing:isComplete()then
-			LOG("PAWN KILLED SWING")
 			if MoonStridersAchievements.lastAttacked then
 				achievements.swing:trigger()
 			end
@@ -129,10 +123,9 @@ function MoonStridersAchievements.onPawnKilledHook(mission, pawn)
 			if Board:GetTerrain(pawn:GetSpace()) == TERRAIN_HOLE then
 				MoonStridersAchievements.drops = MoonStridersAchievements.drops + 1
 				if MoonStridersAchievements.drops >= 3 then
-					achievements.drops:trigger()
+					achievements.grave:trigger()
 				end
 			end
-			LOG("PAWN KILLED drops " .. MoonStridersAchievements.drops)
 		end
 	end
 end
