@@ -13,7 +13,8 @@ function mod:init()
 	require(self.scriptPath .. "palettes")
 
 	-- Achievements
-	--require(self.scriptPath .. "achievements")
+	require(self.scriptPath .. "achievements")
+	MoonStridersAchievements:subscribe()
 
 	-- Pawns
 	require(self.scriptPath .. "mechs/ms_fighter")
@@ -36,16 +37,16 @@ function mod:load(options, version)
 		{
 			id = "moonstriders",
 			"Moon Striders",
-			"MoonStriders_FighterMech",
-			"MoonStriders_FalconetMech",
 			"MoonStriders_MortarMech",
+			"MoonStriders_FalconetMech",
+			"MoonStriders_FighterMech",
 		},
 		"Moon Striders",
 		"They seem so familiar... but backwards",
 		self.resourcePath .. "img/squad_icon.png"
 	)
 
-	--WorldBuildersAchievements:addHooks()
+	MoonStridersAchievements:addHooks()
 end
 
 return mod
