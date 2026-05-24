@@ -28,7 +28,7 @@ MoonStriders_ColossusHook = Skill:new{
 			
 Weapon_Texts.MoonStriders_ColossusHook_Upgrade1 = "Lasso"
 MoonStriders_ColossusHook_A = MoonStriders_ColossusHook:new{
-	UpgradeDescription = "Pull target any distance before hitting and pulling the target.",
+	UpgradeDescription = "Pull target any distance before hitting and pulling the target. Will pull over water and holes.",
 	PathSize = INT_MAX, 
 	Dash = true,
 	ZoneTargeting = ZONE_DIR,
@@ -66,7 +66,7 @@ function MoonStriders_ColossusHook:GetTargetArea(point)
 			
 			ret:push_back(curr)
 			
-			if Board:IsBlocked(curr,PATH_GROUND) then
+			if Board:GetTerrain(curr) == TERRAIN_BUILDING or Board:GetTerrain(curr) == TERRAIN_MOUNTAIN or Board:GetPawn(curr) then
 				break
 			end
 		end
@@ -82,9 +82,6 @@ function MoonStriders_ColossusHook:GetSkillEffect(p1, p2)
 	local doDamage = true
 	local target = GetProjectileEnd(p1,p2,PATH_PROJECTILE)
 	local push_damage = self.Flip and DIR_FLIP or (direction + 2) % 4
-	local damage = SpaceDamage(target, self.Damage, push_damage)
-	damage.sAnimation = "explopunch1_"..direction
-	if self.Flip then damage.sAnimation = "SwipeClaw2" end  -- Change the animation if it's a flip
     
 	if self.Shield then
 		local shield = SpaceDamage(p1,0)
@@ -93,11 +90,15 @@ function MoonStriders_ColossusHook:GetSkillEffect(p1, p2)
 	end
 	
     if self.Dash and p1:Manhattan(p2) > 2 then
-    	ret:AddCharge(Board:GetSimplePath(p2, p1 + (DIR_VECTORS[direction] * 2)), FULL_DELAY)
+		target = p1 + (DIR_VECTORS[direction] * 2)
+    	ret:AddCharge(Board:GetSimplePath(p2, target), FULL_DELAY)
 	else
 		target = p2
 	end
 
+	local damage = SpaceDamage(target, self.Damage, push_damage)
+	damage.sAnimation = "explopunch1_"..direction
+	if self.Flip then damage.sAnimation = "SwipeClaw2" end  -- Change the animation if it's a flip
 	
 	if doDamage then
 		damage.loc = target
