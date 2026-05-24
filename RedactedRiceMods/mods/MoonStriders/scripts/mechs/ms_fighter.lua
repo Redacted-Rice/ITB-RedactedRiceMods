@@ -9,6 +9,7 @@ local squadColors = modApi:getPaletteImageOffset("moonstriders_color")
 local files = {
 	"mech_fighter.png",
 	"mech_fighter_a.png",
+	"mech_fighter_w.png",
 	"mech_fighter_w_broken.png",
 	"mech_fighter_broken.png",
 	"mech_fighter_ns.png",
@@ -22,10 +23,11 @@ end
 -- -x = left, +x = right
 -- -y = up, +y - down
 local a = ANIMS
-a.mech_fighter =         a.MechUnit:new{Image = "units/player/mech_fighter.png",          PosX = -21, PosY = -10 }
-a.mech_fightera =        a.MechUnit:new{Image = "units/player/mech_fighter_a.png",        PosX = -21, PosY = -10, NumFrames = 5 }
-a.mech_fighter_broken =  a.MechUnit:new{Image = "units/player/mech_fighter_broken.png",   PosX = -22, PosY = -13 }
-a.mech_fighterw_broken = a.MechUnit:new{Image = "units/player/mech_fighter_w_broken.png", PosX = -22, PosY = -5 }
+a.mech_fighter =         a.MechUnit:new{Image = "units/player/mech_fighter.png",          PosX = -15, PosY = -5 }
+a.mech_fightera =        a.MechUnit:new{Image = "units/player/mech_fighter_a.png",        PosX = -17, PosY = -5, NumFrames = 4 }
+a.mech_fighterw =        a.MechUnit:new{Image = "units/player/mech_fighter_w.png",        PosX = -17, PosY = 8 }
+a.mech_fighter_broken =  a.MechUnit:new{Image = "units/player/mech_fighter_broken.png",   PosX = -16, PosY = -5 }
+a.mech_fighterw_broken = a.MechUnit:new{Image = "units/player/mech_fighter_w_broken.png", PosX = -12, PosY = 12 }
 a.mech_fighter_ns =      a.MechIcon:new{Image = "units/player/mech_fighter_ns.png" }
 
 
@@ -35,7 +37,7 @@ MoonStriders_FighterMech = Pawn:new{
 	Health = 3,
 	MoveSpeed = 3,
 	Image = "mech_fighter",
-	ImageOffset = 0,
+	ImageOffset = squadColors,
 	SkillList = { "MoonStriders_ColossusHook" }, --Prime_Punchmech
 	SoundLocation = "/mech/prime/punch_mech/",
 	DefaultTeam = TEAM_PLAYER,

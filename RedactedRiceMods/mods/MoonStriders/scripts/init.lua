@@ -34,11 +34,11 @@ end
 function mod:load(options, version)
 	modApi:addSquad(
 		{
-			id = "worldbuilders",
-			"World Builders",
-			"WorldBuilders_FighterMech",
-			"WorldBuilders_FalconetMech",
-			"WorldBuilders_MortarMech",
+			id = "moonstriders",
+			"Moon Striders",
+			"MoonStriders_FighterMech",
+			"MoonStriders_FalconetMech",
+			"MoonStriders_MortarMech",
 		},
 		"Moon Striders",
 		"They seem so familiar... but backwards",

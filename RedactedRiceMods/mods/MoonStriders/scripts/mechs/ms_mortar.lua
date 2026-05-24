@@ -23,11 +23,11 @@ end
 -- -x = left, +x = right
 -- -y = up, +y - down
 local a = ANIMS
-a.mech_mortar =         a.MechUnit:new{Image = "units/player/mech_mortar.png",          PosX = -22, PosY = -9 }
-a.mech_mortara =        a.MechUnit:new{Image = "units/player/mech_mortar_a.png",        PosX = -22, PosY = -9, NumFrames = 6 }
-a.mech_mortarw =        a.MechUnit:new{Image = "units/player/mech_mortar_w.png",        PosX = -22, PosY = -3 }
-a.mech_mortar_broken =  a.MechUnit:new{Image = "units/player/mech_mortar_broken.png",   PosX = -21, PosY =  -9 }
-a.mech_mortarw_broken = a.MechUnit:new{Image = "units/player/mech_mortar_w_broken.png", PosX = -26, PosY =  -3 }
+a.mech_mortar =         a.MechUnit:new{Image = "units/player/mech_mortar.png",          PosX = 0, PosY = 0 }
+a.mech_mortara =        a.MechUnit:new{Image = "units/player/mech_mortar_a.png",        PosX = -16, PosY = -4, NumFrames = 4 }
+a.mech_mortarw =        a.MechUnit:new{Image = "units/player/mech_mortar_w.png",        PosX = -17, PosY = 7 }
+a.mech_mortar_broken =  a.MechUnit:new{Image = "units/player/mech_mortar_broken.png",   PosX = -25, PosY = -4 }
+a.mech_mortarw_broken = a.MechUnit:new{Image = "units/player/mech_mortar_w_broken.png", PosX = -15, PosY = 11 }
 a.mech_mortar_ns =      a.MechIcon:new{Image = "units/player/mech_mortar_ns.png" }
 
 

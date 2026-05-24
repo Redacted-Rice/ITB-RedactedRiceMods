@@ -1,4 +1,6 @@
-MoonStriders_ScoprioFalconet = TankDefault:new	{
+MoonStriders_ScorpioFalconet = TankDefault:new	{
+	Name = "Scorpio Falconet",
+	Description = "Fires a powerful projectile that damages and pulls its target.", 
 	Class = "Brute",
 	Damage = 1,
 	Icon = "weapons/brute_falconet.png",
@@ -14,21 +16,27 @@ MoonStriders_ScoprioFalconet = TankDefault:new	{
 	TipImage = StandardTips.Ranged,
 	ZoneTargeting = ZONE_DIR,
 }
-			
-MoonStriders_ScoprioFalconet_A = MoonStriders_ScoprioFalconet:new{
+
+Weapon_Texts.MoonStriders_ScorpioFalconet_Upgrade1 = "+1 Damage"
+MoonStriders_ScorpioFalconet_A = MoonStriders_ScorpioFalconet:new{
+	UpgradeDescription = "Increases damage by 1.",
 	Damage = 2,
 }
 
-MoonStriders_ScoprioFalconet_B = MoonStriders_ScoprioFalconet:new{
+Weapon_Texts.MoonStriders_ScorpioFalconet_Upgrade2 = "+1 Damage"
+MoonStriders_ScorpioFalconet_B = MoonStriders_ScorpioFalconet:new{
+	UpgradeDescription = "Increases damage by 1.",
 	Damage = 2,
 }
 
-MoonStriders_ScoprioFalconet_AB = MoonStriders_ScoprioFalconet:new{
+MoonStriders_ScorpioFalconet_AB = MoonStriders_ScorpioFalconet:new{
+	UpgradeDescription = "Increases damage by 1.",
 	Damage = 3,
 	Explo = "explopush2_",
 }
 
-function TankDefault:GetSkillEffect(p1,p2)
+--
+function MoonStriders_ScorpioFalconet:GetSkillEffect(p1,p2)
 	local ret = SkillEffect()
 	local direction = GetDirection(p2 - p1)
 
