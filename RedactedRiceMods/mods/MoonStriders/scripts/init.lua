@@ -42,7 +42,7 @@ function mod:load(options, version)
 			"MoonStriders_FighterMech",
 		},
 		"Moon Striders",
-		"They seem so familiar... but backwards",
+		"They seem so familiar... but backwards. Yin and Yang, push and pull, Rift Walkers and Moon Striders",
 		self.resourcePath .. "img/squad_icon.png"
 	)
 

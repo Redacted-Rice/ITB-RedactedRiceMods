@@ -13,6 +13,7 @@ Please enjoy and contact us if you run into any issues!
 * Email: RedactedRice@gmail.com
 
 # Squads
+* Moon Striders - v1.0.0 - They seem so familiar... but backwards. Yin and Yang, push and pull, Rift Walkers and Moon Striders. A somewhat joke squad build on the idea of Rift Walkers but backwards.
 * Star Wars - v1.0.2 - Play as your favorite iconic rebel starships and Luke to fight back against the evil vek empire. This squad can hit hard but has less board control options at the start. Luke can focus on the force to deal massive damage the next turn.
 * Treeherders - v3.1.2 - Inspired by ents, this squad focuses on using forests tiles to increase their power. The flagship entborg mech gets stronger as the forests get destroyed
 * WorldBuilders - v1.3.2 - This squad focuses on terrain manipulation to block and avoid damage. It has some strong single target effects but you can easily get overwhelmed by numbers if not strategically manipulating the terrain
@@ -44,6 +45,7 @@ To uninstall, delete the folder in mods
 Latest release: 1.7.0
 
 ## 1.7.0
+* Added Moon Striders
 * Added Pilots+ adding some pilots centered around custom level up skills and ext
 * Weapon preview grouping of icons and tooltips and updating more+ to use it
 * Two click weapon preview fixes where it was not displaying icons
@@ -53,6 +55,7 @@ Latest release: 1.7.0
 Released: XX/XX/2026
 
 Squads:
+* Moon Striders 1.0.0
 * Star Wars     1.0.2
 * Treeherders   3.1.2
 * WorldBuilders 1.3.2
