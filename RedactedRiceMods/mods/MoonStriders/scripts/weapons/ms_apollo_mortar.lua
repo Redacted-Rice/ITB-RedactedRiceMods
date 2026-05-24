@@ -1,4 +1,6 @@
 MoonStriders_ApolloMortar = ArtilleryDefault:new{
+	Name = "Apollo Mortar",
+	Description = "Powerful artillery strike, damaging a single tile and pulling adjacent tiles.", 
 	Class = "Ranged",
 	Icon = "weapons/ranged_mortar.png",
 	Rarity = 3,
@@ -30,7 +32,9 @@ MoonStriders_ApolloMortar = ArtilleryDefault:new{
 	}
 }
 		
+Weapon_Texts.MoonStriders_ApolloMortar_Upgrade1 = "Buildings Immune"
 MoonStriders_ApolloMortar_A = MoonStriders_ApolloMortar:new{
+	UpgradeDescription = "This attack will no longer damage Grid Buildings. Not that it will help much...",
 	--DamageCenter = 2,
 	--Damage = 2,---USED FOR TOOLTIPS
 	ExplosionCenter = "ExploArt2",
@@ -46,7 +50,9 @@ MoonStriders_ApolloMortar_A = MoonStriders_ApolloMortar:new{
 	}
 }
 	
+Weapon_Texts.MoonStriders_ApolloMortar_Upgrade2 = "+2 Damage"
 MoonStriders_ApolloMortar_B = MoonStriders_ApolloMortar:new{
+	UpgradeDescription = "Increases damage by 2.",
 	DamageCenter = 3,
 	Damage = 3,---USED FOR TOOLTIPS
 	ExplosionCenter = "ExploArt2",
