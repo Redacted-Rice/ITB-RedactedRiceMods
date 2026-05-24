@@ -1,6 +1,6 @@
 MoonStriders_ApolloMortar = ArtilleryDefault:new{
 	Name = "Apollo Mortar",
-	Description = "Powerful artillery strike, damaging a single tile and pulling adjacent tiles.", 
+	Description = "Powerful artillery strike, damaging a single tile and pulling adjacent tiles. If multiple pawns are targetted, the first in attack order will be pulled in.", 
 	Class = "Ranged",
 	Icon = "weapons/ranged_mortar.png",
 	Rarity = 3,
@@ -9,6 +9,7 @@ MoonStriders_ApolloMortar = ArtilleryDefault:new{
 	ArtillerySize = 8,
 	BuildingDamage = true,
 	Push = 1,
+	ShieldBuildings = false,
 	DamageOuter = 0,
 	DamageCenter = 1,
 	PowerCost = 0, --AE Change
@@ -18,7 +19,7 @@ MoonStriders_ApolloMortar = ArtilleryDefault:new{
 	ExplosionCenter = "ExploArt1",
 	ExplosionOuter = "",
 	Upgrades = 2,
-	UpgradeCost = {1,3},
+	UpgradeCost = {2,3},
 	--UpgradeList = { "+1 Damage", "+1 Damage"  },
 	LaunchSound = "/weapons/artillery_volley",
 	ImpactSound = "/impact/generic/explosion",
@@ -32,11 +33,12 @@ MoonStriders_ApolloMortar = ArtilleryDefault:new{
 	}
 }
 		
-Weapon_Texts.MoonStriders_ApolloMortar_Upgrade1 = "Buildings Immune"
+Weapon_Texts.MoonStriders_ApolloMortar_Upgrade1 = "Shield Buildings"
 MoonStriders_ApolloMortar_A = MoonStriders_ApolloMortar:new{
-	UpgradeDescription = "This attack will no longer damage Grid Buildings. Not that it will help much...",
+	UpgradeDescription = "This attack will shield Grid Buildings (both primary target and adjacent spaces)",
 	--DamageCenter = 2,
 	--Damage = 2,---USED FOR TOOLTIPS
+	ShieldBuildings = true,
 	ExplosionCenter = "ExploArt2",
 	BounceAmount = 2.5,
 	BuildingDamage = false,
@@ -71,8 +73,11 @@ MoonStriders_ApolloMortar_AB = MoonStriders_ApolloMortar:new{
 function MoonStriders_ApolloMortar:GetSkillEffect(p1, p2)	
 	local ret = SkillEffect()
 	
-	local damage = SpaceDamage(p2,self.DamageCenter)
+	
+	local sDamage = (self.ShieldBuildings and Board:GetTerrain(p2) == TERRAIN_BUILDING and 0) or self.DamageCenter
+	local damage = SpaceDamage(p2, sDamage)
 	damage.sAnimation = self.ExplosionCenter
+	if self.ShieldBuildings and Board:GetTerrain(p2) == TERRAIN_BUILDING then damage.iShield = EFFECT_CREATE end
 	
 	if not self.BuildingDamage and Board:IsBuilding(p2) then		-- Target Buildings - 
 		damage.iDamage = DAMAGE_ZERO
@@ -85,6 +90,7 @@ function MoonStriders_ApolloMortar:GetSkillEffect(p1, p2)
 	
 	for dir = 0, 3 do
 		damage = SpaceDamage(p2 + DIR_VECTORS[dir],  self.DamageOuter)
+		if self.ShieldBuildings and Board:GetTerrain(p2 + DIR_VECTORS[dir]) == TERRAIN_BUILDING then damage.iShield = EFFECT_CREATE end
 		
 		if self.Push == 1 then
 			damage.iPush = (dir + 2) % 4
