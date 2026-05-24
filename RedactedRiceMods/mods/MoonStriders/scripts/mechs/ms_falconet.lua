@@ -23,11 +23,11 @@ end
 -- -x = left, +x = right
 -- -y = up, +y - down
 local a = ANIMS
-a.mech_falconet =         a.MechUnit:new{Image = "units/player/mech_falconet.png",          PosX = -18, PosY = -12 }
-a.mech_falconeta =        a.MechUnit:new{Image = "units/player/mech_falconet_a.png",        PosX = -18, PosY = -12, NumFrames = 4 }
-a.mech_falconetw =        a.MechUnit:new{Image = "units/player/mech_falconet_w.png",        PosX = -20, PosY = -6 }
-a.mech_falconet_broken =  a.MechUnit:new{Image = "units/player/mech_falconet_broken.png",   PosX = -18, PosY = -14 }
-a.mech_falconetw_broken = a.MechUnit:new{Image = "units/player/mech_falconet_w_broken.png", PosX = -21, PosY = -7 }
+a.mech_falconet =         a.MechUnit:new{Image = "units/player/mech_falconet.png",          PosX = -18, PosY = 5 }
+a.mech_falconeta =        a.MechUnit:new{Image = "units/player/mech_falconet_a.png",        PosX = -15, PosY = 6, NumFrames = 3 }
+a.mech_falconetw =        a.MechUnit:new{Image = "units/player/mech_falconet_w.png",        PosX = -18, PosY = 11 }
+a.mech_falconet_broken =  a.MechUnit:new{Image = "units/player/mech_falconet_broken.png",   PosX = -18, PosY = 6 }
+a.mech_falconetw_broken = a.MechUnit:new{Image = "units/player/mech_falconet_w_broken.png", PosX = -25, PosY = 10 }
 a.mech_falconet_ns =      a.MechIcon:new{Image = "units/player/mech_falconet_ns.png" }
 
 
@@ -36,7 +36,7 @@ MoonStriders_FalconetMech = Pawn:new{
 	Class = "Brute",
 	Health = 3,
 	Image = "mech_falconet",
-	ImageOffset = 0,
+	ImageOffset = squadColors,
 	MoveSpeed = 3,
 	SkillList = { "MoonStriders_ScorpioFalconet" },
 	SoundLocation = "/mech/brute/tank/",
