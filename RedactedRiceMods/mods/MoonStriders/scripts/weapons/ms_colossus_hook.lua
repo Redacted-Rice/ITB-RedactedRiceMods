@@ -102,7 +102,11 @@ function MoonStriders_ColossusHook:GetSkillEffect(p1, p2)
 	
 	if doDamage then
 		damage.loc = target
-		ret:AddMelee(p2 - (DIR_VECTORS[direction] * 2), damage)
+		local origin = p1
+		if p1:Manhattan(p2) ~= 1 then
+			origin = p2 - (DIR_VECTORS[direction] * 2)
+		end
+		ret:AddMelee(origin, damage)
 	end
 	
 	if self.PushBack then
