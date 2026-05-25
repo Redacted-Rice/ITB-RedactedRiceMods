@@ -52,7 +52,7 @@ achievements.secure.getTooltip = function(self)
 	if (not achievements.secure:isComplete()) and isGame() then
 		local islandsSecured = 0
 		for i = 0, 3 do
-			if RegionData["island"..i].secured then
+			if RegionData and RegionData["island"..i] and RegionData["island"..i].secured then
 				islandsSecured = islandsSecured + 1
 			end
 		end

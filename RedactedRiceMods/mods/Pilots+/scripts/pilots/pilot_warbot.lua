@@ -38,7 +38,7 @@ function this:addVirtualSkills(pilotStruct)
 	local currentSkillCount = #virtualSkills
 
 	-- Check if we already have the right number of skills
-	if currentSkillCount >= targetSkillCount then
+	if currentSkillCount < targetSkillCount then
 		-- Add the missing skills
 		local skillsToAdd = targetSkillCount - currentSkillCount
 		logger.logDebug(SUBMODULE, "Warbot %s needs %d more virtual skills (current: %d, target: %d)",

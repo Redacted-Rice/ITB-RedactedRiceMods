@@ -72,7 +72,7 @@ MoonStriders_ApolloMortar_AB = MoonStriders_ApolloMortar:new{
 -- DefaultArtillery overrident to pull instead of push
 function MoonStriders_ApolloMortar:GetSkillEffect(p1, p2)	
 	local ret = SkillEffect()
-	
+	local direction = GetDirection(p2 - p1)
 	
 	local sDamage = (self.ShieldBuildings and Board:GetTerrain(p2) == TERRAIN_BUILDING and 0) or self.DamageCenter
 	local damage = SpaceDamage(p2, sDamage)
@@ -88,8 +88,12 @@ function MoonStriders_ApolloMortar:GetSkillEffect(p1, p2)
 	
 	if self.BounceAmount ~= 0 then	ret:AddBounce(p2, self.BounceAmount) end
 	
-	for dir = 0, 3 do
-		damage = SpaceDamage(p2 + DIR_VECTORS[dir],  self.DamageOuter)
+	-- far, left, right, close
+	local potentiallyNeedsDelay = Board:GetPawn(p2) ~= nil
+	for _, relDir in ipairs({0,1,3,2}) do
+		local dir = (direction + relDir) % 4
+		local space = p2 + DIR_VECTORS[dir]
+		damage = SpaceDamage(space,  self.DamageOuter)
 		if self.ShieldBuildings and Board:GetTerrain(p2 + DIR_VECTORS[dir]) == TERRAIN_BUILDING then damage.iShield = EFFECT_CREATE end
 		
 		if self.Push == 1 then
@@ -101,6 +105,11 @@ function MoonStriders_ApolloMortar:GetSkillEffect(p1, p2)
 			damage.iDamage = 0
 			damage.sAnimation = "airpush_"..dir
 		end
+		-- See if we need to add in delay
+		if potentiallyNeedsDelay and Board:GetPawn(space) ~= nil then
+			ret:AddDelay(1.25)
+		end
+		damage.fDelay = 0.05
 		
 		ret:AddDamage(damage)
 		if self.BounceOuterAmount ~= 0 then	ret:AddBounce(p2 + DIR_VECTORS[dir], self.BounceOuterAmount) end  
