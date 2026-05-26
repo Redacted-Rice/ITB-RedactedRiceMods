@@ -89,7 +89,7 @@ function MoonStriders_ApolloMortar:GetSkillEffect(p1, p2)
 	if self.BounceAmount ~= 0 then	ret:AddBounce(p2, self.BounceAmount) end
 	
 	-- far, left, right, close
-	local potentiallyNeedsDelay = Board:GetPawn(p2) ~= nil
+	local hasFoundPawn = Board:GetPawn(p2) ~= nil
 	for _, relDir in ipairs({0,1,3,2}) do
 		local dir = (direction + relDir) % 4
 		local space = p2 + DIR_VECTORS[dir]
@@ -106,8 +106,11 @@ function MoonStriders_ApolloMortar:GetSkillEffect(p1, p2)
 			damage.sAnimation = "airpush_"..dir
 		end
 		-- See if we need to add in delay
-		if potentiallyNeedsDelay and Board:GetPawn(space) ~= nil then
-			ret:AddDelay(1.25)
+		if Board:GetPawn(space) ~= nil and not Board:GetPawn(space):IsGuarding() then
+			if hasFoundPawn then
+				ret:AddDelay(1.25)
+			end
+			hasFoundPawn = true
 		end
 		damage.fDelay = 0.05
 		
