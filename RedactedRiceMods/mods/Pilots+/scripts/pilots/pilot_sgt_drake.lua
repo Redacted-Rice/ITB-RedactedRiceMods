@@ -9,6 +9,9 @@ local DEBUG = true
 local logger = memhack.logger
 local SUBMODULE = logger.register("Pilots+", "SgtDrake", DEBUG)
 
+-- Require the pilotSkill_tooltip library
+local pilotSkill_tooltip = require(scriptPath .. "libs/pilotSkill_tooltip")
+
 local pilot = {
 	Id = "Pilot_Sgt_Drake",
 	Personality = "Sgt_Drake_Personality",
@@ -34,12 +37,20 @@ function this:initGameSaveData()
 		GAME.pilots_plus = {}
 	end
 
-	if GAME.pilots_plus.veteran_skills == nil then
-		GAME.pilots_plus.veteran_skills = {}
+	if GAME.pilots_plus.sgt_drake == nil then
+		GAME.pilots_plus.sgt_drake = {}
+	end
+
+	if GAME.pilots_plus.sgt_drake.trained_skills == nil then
+		GAME.pilots_plus.sgt_drake.trained_skills = {}
+	end
+
+	if GAME.pilots_plus.sgt_drake.mission_count == nil then
+		GAME.pilots_plus.sgt_drake.mission_count = {}
 	end
 end
 
--- Give a random virtual skill to each other pilot after mission completion
+-- Give a random virtual skill to each other pilot after 3 missions with Sgt. Drake. Limited to 1 per pilot
 function this:onMissionEnd(mission)
 	if not Game then return end
 
@@ -64,129 +75,56 @@ function this:onMissionEnd(mission)
 		return
 	end
 
-	-- Give each other pilot a virtual skill (teaching them combat tricks)
+	-- Track missions and grant skills for each other pilot
 	for _, pilotStruct in ipairs(pilots) do
 		local pilotId = pilotStruct:getIdStr()
 		local pilotSkill = pilotStruct:getSkill():get()
 
-		-- Skip the veteran themselves
+		-- Skip Sgt. Drake themselves
 		if pilotSkill ~= pilot.Skill then
-			logger.logInfo(SUBMODULE, "Teaching combat tricks to pilot %s", pilotId)
-
-			-- Track that this pilot received veteran training
-			if not GAME.pilots_plus.veteran_skills[pilotId] then
-				GAME.pilots_plus.veteran_skills[pilotId] = {}
+			-- Initialize tracking structures
+			if not GAME.pilots_plus.sgt_drake.trained_skills[pilotId] then
+				GAME.pilots_plus.sgt_drake.trained_skills[pilotId] = {}
+			end
+			if not GAME.pilots_plus.sgt_drake.mission_count[pilotId] then
+				GAME.pilots_plus.sgt_drake.mission_count[pilotId] = 0
 			end
 
-			-- Get current virtual skills to see what was added
-			local beforeSkills = cplus_plus_ex:getVirtualSkills(pilotId)
+			-- Check if pilot already has a skill from Sgt. Drake
+			local alreadyHasSkill = #GAME.pilots_plus.sgt_drake.trained_skills[pilotId] > 0
 
-			-- Add one random virtual skill
-			cplus_plus_ex:addRandomVirtualSkillsToPilot(pilotStruct, 1)
+			if not alreadyHasSkill then
+				-- Increment mission count
+				GAME.pilots_plus.sgt_drake.mission_count[pilotId] = GAME.pilots_plus.sgt_drake.mission_count[pilotId] + 1
+				local missionCount = GAME.pilots_plus.sgt_drake.mission_count[pilotId]
 
-			-- Get new virtual skills to see what was added
-			local afterSkills = cplus_plus_ex:getVirtualSkills(pilotId)
+				logger.logInfo(SUBMODULE, "Pilot %s trained with Sgt. Drake (%d/3 missions)", pilotId, missionCount)
 
-			-- Find the newly added skill
-			for _, skillId in ipairs(afterSkills) do
-				local isNew = true
-				for _, oldSkillId in ipairs(beforeSkills) do
-					if skillId == oldSkillId then
-						isNew = false
-						break
-					end
-				end
-				if isNew then
-					table.insert(GAME.pilots_plus.veteran_skills[pilotId], skillId)
-					logger.logInfo(SUBMODULE, "Pilot %s learned combat trick %s from Sgt. Drake", pilotId, skillId)
-				end
-			end
-		end
-	end
-end
+				-- Grant skill after 3 missions
+				if missionCount >= 3 then
+					logger.logInfo(SUBMODULE, "Pilot %s completed training, teaching combat trick", pilotId)
 
--- Clear all veteran-granted virtual skills at the end of a run
-function this:clearVeteranSkills()
-	if not Game then return end
+					-- Add one random virtual skill and get the selected skills
+					local successCount, selectedSkills = cplus_plus_ex:addRandomVirtualSkillsToPilot(pilotStruct, 1)
 
-	self:initGameSaveData()
-
-	local pilots = Game:GetAvailablePilots()
-
-	-- Clear virtual skills from all pilots who received veteran training
-	for pilotId, veteranSkills in pairs(GAME.pilots_plus.veteran_skills) do
-		-- Find the pilot struct
-		local pilotStruct = nil
-		for _, p in ipairs(pilots) do
-			if p:getIdStr() == pilotId then
-				pilotStruct = p
-				break
-			end
-		end
-
-		if pilotStruct then
-			logger.logInfo(SUBMODULE, "Clearing %d veteran skills from pilot %s", #veteranSkills, pilotId)
-
-			-- Remove each veteran-granted skill
-			for _, skillId in ipairs(veteranSkills) do
-				cplus_plus_ex:removeVirtualSkillFromPilot(pilotStruct, skillId)
-				logger.logDebug(SUBMODULE, "Removed veteran skill %s from pilot %s", skillId, pilotId)
-			end
-		end
-	end
-
-	-- Clear the tracking data
-	GAME.pilots_plus.veteran_skills = {}
-	logger.logDebug(SUBMODULE, "Veteran combat tricks cleared at end of run")
-end
-
--- Build skill description showing current state
-function this:buildSkillDescription()
-	local description = "After each mission, teaches the squad combat tricks learned from years of experience, granting them one random level up skill. These lessons fade at the end of the run."
-
-	-- Try to get virtual skills info from current game
-	if Game then
-		local pilots = Game:GetAvailablePilots()
-		local hasVeteranSkills = false
-		local squadInfo = {}
-
-		self:initGameSaveData()
-
-		-- Check if any pilots have veteran training
-		for _, pilotStruct in ipairs(pilots) do
-			local pilotId = pilotStruct:getIdStr()
-			local pilotSkill = pilotStruct:getSkill():get()
-
-			-- Skip Sgt. Drake themselves
-			if pilotSkill ~= pilot.Skill then
-				local veteranSkills = GAME.pilots_plus.veteran_skills[pilotId]
-
-				if veteranSkills and #veteranSkills > 0 then
-					hasVeteranSkills = true
-					local pilotName = pilotStruct:getName():get()
-					local skillNames = {}
-
-					for _, skillId in ipairs(veteranSkills) do
-						local skillData = cplus_plus_ex:getRegisteredSkillInfo(skillId)
-						if skillData then
-							local name = GetText(skillData.fullName)
-							table.insert(skillNames, name)
+					-- Track the granted skills
+					if successCount > 0 and #selectedSkills > 0 then
+						for _, skillId in ipairs(selectedSkills) do
+							table.insert(GAME.pilots_plus.sgt_drake.trained_skills[pilotId], skillId)
+							logger.logInfo(SUBMODULE, "Pilot %s learned combat trick %s from Sgt. Drake", pilotId, skillId)
 						end
 					end
-
-					if #skillNames > 0 then
-						table.insert(squadInfo, pilotName .. ": " .. table.concat(skillNames, ", "))
-					end
 				end
+			else
+				logger.logDebug(SUBMODULE, "Pilot %s already has a skill from Sgt. Drake, skipping", pilotId)
 			end
 		end
-
-		if hasVeteranSkills then
-			description = description .. "\n\nLessons taught:\n" .. table.concat(squadInfo, "\n")
-		end
 	end
+end
 
-	return description
+-- Build static skill description
+function this:getSkillDescription()
+	return "After completing 3 missions with a pilot, the pilot will gain one random level up skill. Training progress and completion is shown in the Extra Info panel."
 end
 
 function this:init(mod)
@@ -195,16 +133,62 @@ function this:init(mod)
 	-- Create the pilot
 	CreatePilot(pilot)
 
-	-- Override GetSkillInfo to dynamically show veteran training
-	local originalGetSkillInfo = GetSkillInfo
-	function GetSkillInfo(skill)
-		if skill == pilot.Skill then
-			return PilotSkill(pilot.Skill, self:buildSkillDescription())
-		end
-		return originalGetSkillInfo(skill)
-	end
+	-- Register skill tooltip using the pilotSkill_tooltip library
+	pilotSkill_tooltip.Add(pilot.Skill, PilotSkill(pilot.Skill, self:getSkillDescription()))
 
 	logger.logDebug(SUBMODULE, "Sgt. Drake pilot initialized")
+end
+
+-- Handler for extra info UI hook
+function this:onExtraInfoSelectedChanged(ui, pawn, pilotStruct)
+	if not pilotStruct or not GAME or not GAME.pilots_plus then
+		return
+	end
+
+	local pilotId = pilotStruct:getIdStr()
+	local pilotSkill = pilotStruct:getSkill():get()
+
+	-- Don't show for Sgt. Drake himself
+	if pilotSkill == pilot.Skill then
+		return
+	end
+
+	self:initGameSaveData()
+
+	local missionCount = GAME.pilots_plus.sgt_drake.mission_count[pilotId] or 0
+	local hasSkill = GAME.pilots_plus.sgt_drake.trained_skills[pilotId] and #GAME.pilots_plus.sgt_drake.trained_skills[pilotId] > 0
+
+	-- Check if Sgt. Drake is in the squad
+	local drakePresent = false
+	if Game then
+		local pilots = Game:GetAvailablePilots()
+		for _, p in ipairs(pilots) do
+			local skill = p:getSkill():get()
+			if skill == pilot.Skill then
+				drakePresent = true
+				break
+			end
+		end
+	end
+
+	-- Only show if Drake is present OR pilot has completed training
+	if not drakePresent and not hasSkill then
+		return
+	end
+
+	-- Build status text
+	local statusText = ""
+	if hasSkill then
+		statusText = "Training Complete"
+	elseif drakePresent then
+		statusText = string.format("Progress: %d/3 missions", missionCount)
+		if missionCount < 3 then
+			statusText = statusText .. string.format(" (%d more needed)", 3 - missionCount)
+		end
+	end
+
+	-- Add section to UI
+	ui:addAdditionalSection("Sgt. Drake Training", statusText)
 end
 
 function this:load(options, version)
@@ -215,23 +199,12 @@ function this:load(options, version)
 		self:onMissionEnd(mission)
 	end)
 
-	-- Subscribe to game exit to clear veteran skills
-	modApi.events.onGameExited:subscribe(function()
-		logger.logDebug(SUBMODULE, "Game exited, clearing veteran combat tricks")
-		self:clearVeteranSkills()
+	-- Subscribe to extraInfoSelectedChanged hook to show training status
+	cplus_plus_ex.extraInfoSelectedChangedHooks:subscribe(function(ui, pawn, pilotStruct)
+		self:onExtraInfoSelectedChanged(ui, pawn, pilotStruct)
 	end)
 
-	-- Subscribe to game victory to clear veteran skills
-	modApi.events.onGameVictory:subscribe(function()
-		logger.logDebug(SUBMODULE, "Game victory, clearing veteran combat tricks")
-		self:clearVeteranSkills()
-	end)
-
-	-- Initialize at mission start (in case of save/load issues)
-	modApi:addMissionStartHook(function(mission)
-		self:initGameSaveData()
-		-- Don't clear here, just initialize
-	end)
+	logger.logDebug(SUBMODULE, "Sgt. Drake training status hooked to Extra Info UI")
 end
 
 -- Register personality with dialog
