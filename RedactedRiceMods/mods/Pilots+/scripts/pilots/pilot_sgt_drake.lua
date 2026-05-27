@@ -122,26 +122,27 @@ function this:onMissionEnd(mission)
 	end
 end
 
--- Build static skill description
-function this:getSkillDescription()
-	return "After completing 3 missions with a pilot, the pilot will gain one random level up skill. Training progress and completion is shown in the Extra Info panel."
-end
-
 function this:init(mod)
 	logger.logDebug(SUBMODULE, "Initializing Sgt. Drake pilot")
 
 	-- Create the pilot
 	CreatePilot(pilot)
-
-	-- Register skill tooltip using the pilotSkill_tooltip library
-	pilotSkill_tooltip.Add(pilot.Skill, PilotSkill(pilot.Skill, self:getSkillDescription()))
+	pilotSkill_tooltip.Add(pilot.Skill, PilotSkill(pilot.Skill, 
+			"After completing 3 missions with a pilot, the pilot will gain one random level up skill"))
 
 	logger.logDebug(SUBMODULE, "Sgt. Drake pilot initialized")
 end
 
 -- Handler for extra info UI hook
-function this:onExtraInfoSelectedChanged(ui, pawn, pilotStruct)
-	if not pilotStruct or not GAME or not GAME.pilots_plus then
+function this:onExtraInfoSelectedChanged(uiObj, pawn, pilotStruct)
+	-- Add nil checks for all parameters
+	if not uiObj or not pawn or not pilotStruct then
+		logger.logDebug(SUBMODULE, "onExtraInfoSelectedChanged called with nil parameter (uiObj=%s, pawn=%s, pilot=%s)",
+			tostring(uiObj ~= nil), tostring(pawn ~= nil), tostring(pilotStruct ~= nil))
+		return
+	end
+	
+	if not GAME or not GAME.pilots_plus then
 		return
 	end
 
@@ -177,18 +178,21 @@ function this:onExtraInfoSelectedChanged(ui, pawn, pilotStruct)
 	end
 
 	-- Build status text
-	local statusText = ""
+	local title = "Sgt. Drake Training"
+	local description = ""
 	if hasSkill then
-		statusText = "Training Complete"
+		description = "Training Complete"
 	elseif drakePresent then
-		statusText = string.format("Progress: %d/3 missions", missionCount)
+		description = string.format("Progress: %d/3 missions", missionCount)
 		if missionCount < 3 then
-			statusText = statusText .. string.format(" (%d more needed)", 3 - missionCount)
+			description = description .. string.format(" (%d more needed)", 3 - missionCount)
 		end
 	end
 
-	-- Add section to UI
-	ui:addAdditionalSection("Sgt. Drake Training", statusText)
+	-- Add icon to UI
+	local iconPath = mod.resourcePath .. "img/combat/icons/icon_sgt_drake_training.png"
+	uiObj:addIcon(iconPath, title, description)
+	logger.logDebug(SUBMODULE, "Added training status icon for pilot %s: %s", pilotId, description)
 end
 
 function this:load(options, version)
