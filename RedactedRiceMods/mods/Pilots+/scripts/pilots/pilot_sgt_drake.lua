@@ -195,12 +195,12 @@ function this:load(options, version)
 	logger.logDebug(SUBMODULE, "Loading Sgt. Drake pilot module")
 
 	-- Subscribe to mission end to grant skills
-	modApi.events.onMissionEnd:subscribe(function(mission)
+	modApi:addMissionEndHook(function(mission)
 		self:onMissionEnd(mission)
 	end)
 
 	-- Subscribe to extraInfoSelectedChanged hook to show training status
-	cplus_plus_ex.extraInfoSelectedChangedHooks:subscribe(function(ui, pawn, pilotStruct)
+	cplus_plus_ex:addExtraInfoSelectedChangedHook(function(ui, pawn, pilotStruct)
 		self:onExtraInfoSelectedChanged(ui, pawn, pilotStruct)
 	end)
 
