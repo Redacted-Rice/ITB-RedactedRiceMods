@@ -56,11 +56,6 @@ function this:addVirtualSkills(pilotStruct)
 	end
 end
 
--- Get the base skill description
-function this:getSkillDescription()
-	return
-end
-
 function this:init(mod)
 	logger.logDebug(SUBMODULE, "Initializing Warbot pilot")
 
