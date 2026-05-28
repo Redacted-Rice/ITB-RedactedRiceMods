@@ -7,7 +7,7 @@ local mod = {
 	gameVersion = "1.2.93",
 	dependencies = {
         redactedrice_cplus_plus = "1.2.0",
-        redactedrice_memhack = "1.1.1",
+        redactedrice_memhack = "1.2.0",
     }
 }
 

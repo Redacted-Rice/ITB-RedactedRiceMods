@@ -169,7 +169,9 @@ Current Release: 4.1.0
 ### 4.1.0
 Released: XX/XX/2026
 
-* Switched to using tutortialtips lib for group icons and tool tips for weapon preview
+* Added support for grouping of icons so we can show when a bunch of icons would be displayed
+* Added tool tips via H key for showing details for preview with details (mainly for the above grouped icons case)
+* Added tutortialtips lib for group icons and tool tips for weapon preview
 * Fixed issues with dynamically changing target area skill effects
 
 ### 4.0.2

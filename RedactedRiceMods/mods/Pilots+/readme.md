@@ -20,9 +20,9 @@ Skill: Combat Protocols - Gains random skills equal to level on each level up. (
 
 ### Sergeant Drake
 
-A grizzled combat veteran who's seen more battles than he can count. After each mission, he takes time to teach the squad hard-won survival tricks and tactics he's learned over the years. These combat lessons stick with pilots during the run but fade when the timeline ends.
+A grizzled combat veteran who's seen more battles than he can count turned combat trainer. While fighting alongside other pilots he takes time to teach the squad hard-won survival tricks and tactics he's learned over the years.
 
-Skill: Combat Veteran - After completing each mission, teaches the squad combat tricks from years of experience, granting them one random level up skill. These lessons are temporary and lost at the end of the run (game over or victory).
+Skill: Combat Mentor - After completing 3 missions with a pilot, the pilot will gain one random level up skill
 
 
 # Releases
@@ -34,8 +34,8 @@ Released: XX/XX/2026
 compatible with:
 * ItB AE        1.2.93
 * ModLoader     2.9.5
-* memhack       1.1.1
+* memhack       1.2.0
 * CPLUS+        1.2.0
 
 ### Notes
-* Initial release! Happy Star Wars day!
+* Initial release!

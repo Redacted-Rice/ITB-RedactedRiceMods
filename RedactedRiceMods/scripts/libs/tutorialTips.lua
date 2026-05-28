@@ -1,6 +1,9 @@
 
 ---------------------------------------------------------------------
 -- Tutorial Tips v1.2 - code library
+-- Not sure who originially created this but I modified it to work a bit
+-- easier between mods and other libs by allowing a custom identitifier to
+-- be passed instead of just always using the current mod's ID.
 ---------------------------------------------------------------------
 -- small helper lib to manage tutorial tips that will only display once per profile.
 -- can be reset, and would likely be done via a mod option.
@@ -20,7 +23,7 @@ function this:Init(customRootId)
 		rootId = mod and mod.id or nil
 		assert(rootId, "Could not determine mod ID and no customRootId provided")
 	end
-	
+
 	return self
 end
 
@@ -40,7 +43,7 @@ end
 -- reads tutorial tips data.
 local function readData(id)
 	local result = nil
-	
+
 	if cachedTips then
 		result = cachedTips[rootId] and cachedTips[rootId][id]
 	else
@@ -53,7 +56,7 @@ local function readData(id)
 			end
 		)
 	end
-	
+
 	return result
 end
 
@@ -78,7 +81,7 @@ function this:Add(tip)
 	assert(type(tip.id) == 'string')
 	assert(type(tip.title) == 'string')
 	assert(type(tip.text) == 'string')
-	
+
 	Global_Texts[rootId .. tip.id .."_Title"] = tip.title
 	Global_Texts[rootId .. tip.id .."_Text"] = tip.text
 end
@@ -88,7 +91,7 @@ function this:Trigger(id, loc)
 	assert(type(loc) == 'userdata')
 	assert(type(loc.x) == 'number')
 	assert(type(loc.y) == 'number')
-	
+
 	if not readData(id) then
 		Game:AddTip(rootId .. id, loc)
 		writeData(id, true)
