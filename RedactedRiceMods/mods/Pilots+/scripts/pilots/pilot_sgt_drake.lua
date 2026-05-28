@@ -56,7 +56,7 @@ function this:onMissionEnd(mission)
 
 	self:initGameSaveData()
 
-	local pilots = Game:GetAvailablePilots()
+	local pilots = Game:GetSquadPilots()
 	local veteranPresent = false
 	local veteranPilotId = nil
 
@@ -162,7 +162,7 @@ function this:onExtraInfoSelectedChanged(uiObj, pawn, pilotStruct)
 	-- Check if Sgt. Drake is in the squad
 	local drakePresent = false
 	if Game then
-		local pilots = Game:GetAvailablePilots()
+		local pilots = Game:GetSquadPilots()
 		for _, p in ipairs(pilots) do
 			local skill = p:getSkill():get()
 			if skill == pilot.Skill then
