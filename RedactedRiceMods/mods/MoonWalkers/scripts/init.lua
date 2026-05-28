@@ -1,6 +1,6 @@
 local mod = {
 	id = "redactedrice_moonstriders",
-	name = "Moon Striders",
+	name = "Moon Walkers",
 	icon = "img/mod_icon.png",
 	version = "1.0.0",
 	modApiVersion = "2.9.5",
@@ -36,13 +36,13 @@ function mod:load(options, version)
 	modApi:addSquad(
 		{
 			id = "moonstriders",
-			"Moon Striders",
+			"Moon Walkers",
 			"MoonStriders_MortarMech",
 			"MoonStriders_FalconetMech",
 			"MoonStriders_FighterMech",
 		},
-		"Moon Striders",
-		"They seem so familiar... but backwards. Yin and Yang, push and pull, Rift Walkers and Moon Striders",
+		"Moon Walkers",
+		"They seem so familiar... but backwards. Yin and Yang, push and pull, Rift Walkers and Moon Walkers",
 		self.resourcePath .. "img/squad_icon.png"
 	)
 

@@ -13,7 +13,7 @@ Please enjoy and contact us if you run into any issues!
 * Email: RedactedRice@gmail.com
 
 # Squads
-* Moon Striders - v1.0.0 - They seem so familiar... but backwards. Yin and Yang, push and pull, Rift Walkers and Moon Striders. A somewhat joke squad build on the idea of Rift Walkers but backwards.
+* Moon Walkers - v1.0.0 - They seem so familiar... but backwards. Yin and Yang, push and pull, Rift Walkers and Moon Walkers. A somewhat joke squad build on the idea of Rift Walkers but backwards.
 * Star Wars - v1.0.2 - Play as your favorite iconic rebel starships and Luke to fight back against the evil vek empire. This squad can hit hard but has less board control options at the start. Luke can focus on the force to deal massive damage the next turn.
 * Treeherders - v3.1.2 - Inspired by ents, this squad focuses on using forests tiles to increase their power. The flagship entborg mech gets stronger as the forests get destroyed
 * WorldBuilders - v1.3.2 - This squad focuses on terrain manipulation to block and avoid damage. It has some strong single target effects but you can easily get overwhelmed by numbers if not strategically manipulating the terrain
@@ -21,6 +21,8 @@ Please enjoy and contact us if you run into any issues!
 # Other
 * More+ - v2.1.0 - 35 custom pilot level up skills across 5 categories with Status Library integration
 * RebalanceCore+ - v1.0.2 - Reblances the core vanilla level up skills (other than reactor) so they are not strictly worse than the AE ones
+* Pilots+ - v1.0.0 - A few pilots focused around adding bonus level up skills beyond the standard two per pilot on level up
+
 
 # Libs
 * ArtilleryArc - v2.0.0 - Originally created by Lemonymous to customize aritllery height. Updated to handle multishot arcs and two click weapons
@@ -29,10 +31,10 @@ Please enjoy and contact us if you run into any issues!
 * PawnTypeUtils - v1.1.0 - Functions to allow determining more detailed pawn types (using EasyEdit)
 * PredictableRandom - v1.2.0 - Get random numbers in a way that is repeatable for when undoing moves or resetting turns
 * Trait - v3.0.1 - Add traits to pawns & the board. Originally created by Lemonymous and updated to v3.x.x to support multiple traits via appending text and cycling images as well as showing icons for move previews
-* TraitReplace - v0.9.0 - Allows adding custom UI traits that cycle with vanilla traits
+* TraitReplace - v0.9.1 - Allows adding custom UI traits that cycle with vanilla traits
 * TutorialTips - v1.2.0 - Added for WeaponPreview to support tool tips for the group and more details tips and modified slighlty to allow specifying the mod.id for weaponPreview/other lib usage
 * WeaponArmed - v2.1.0 - Created by Lemonymous and incorporated due to dependencies. No changes made
-* WeaponPreview - v4.0.2 - Add icons to weapon previews. Originally created by Lemonymous and updated to v4.x.x to support use in skill build hooks and two click weapons
+* WeaponPreview - v4.1.0 - Add icons to weapon previews. Originally created by Lemonymous and updated to v4.x.x to support use in skill build hooks and two click weapons and group icons and display tool tips for icons with descriptions
 
 # Install
 - Unzip the release folder
@@ -45,17 +47,19 @@ To uninstall, delete the folder in mods
 Latest release: 1.7.0
 
 ## 1.7.0
-* Added Moon Striders
+* Added Moon Walkers
 * Added Pilots+ adding some pilots centered around custom level up skills and ext
 * Weapon preview grouping of icons and tooltips and updating more+ to use it
 * Two click weapon preview fixes where it was not displaying icons
 * Fixing rebel hope visuals
 * Adding squad exclusion for rebels with pontoons and jump jets
+* Adding Invulnerable+ skill
+* Various other minor fixes
 
 Released: XX/XX/2026
 
 Squads:
-* Moon Striders 1.0.0
+* Moon Walkers 1.0.0
 * Star Wars     1.0.2
 * Treeherders   3.1.2
 * WorldBuilders 1.3.2
@@ -72,10 +76,10 @@ Libs:
 * PawnTypeUtils     1.1.0
 * PredictableRandom 1.2.0
 * Trait             3.0.1
-* TraitReplace      0.9.0
+* TraitReplace      0.9.1
 * TutorialTips      1.2.0
 * WeaponArmed       2.1.0
-* WeaponPreview     4.0.3
+* WeaponPreview     4.1.0
 
 Dependencies:
 * ItB AE        1.2.93
@@ -83,7 +87,7 @@ Dependencies:
 * ModLoaderExt  1.24
 * Memedit       1.2.1
 * EasyEdit	    2.0.8
-* Memhack       1.1.1
+* Memhack       1.2.0
 * CPLUS+ Ex     1.2.0
 
 ## 1.6.1

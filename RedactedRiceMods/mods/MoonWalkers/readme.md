@@ -1,5 +1,5 @@
-# ITB Moon Striders Squad Mod
-The Moon Striders squad mod for Into the Breach by Redacted Rice
+# ITB Moon Walkers Squad Mod
+The Moon Walkers squad mod for Into the Breach by Redacted Rice
 
 Created by Das Keifer on behalf of Jefepato
 

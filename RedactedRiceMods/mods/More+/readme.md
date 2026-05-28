@@ -79,8 +79,13 @@ Released: XX/XX/2026
 compatible with:
 * ItB AE 	1.2.93
 * ModLoader 2.9.5
-* memhack	1.1.1
+* memhack	1.2.0
 * CPLUS+ Ex	1.2.0
+
+### Notes
+* Reworked for new weapon preview groups concepts
+* Added option to reset the weapon preview tool tips
+* Updating working on ambusher from road to ground to be consistent with vanilla displayed text
 
 ## 2.1.0
 Released: 05/07/2026
