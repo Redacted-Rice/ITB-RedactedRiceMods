@@ -27,6 +27,25 @@ function this:GetPilot()
 	return pilot
 end
 
+-- Initialize GAME save data structure
+function this:initGameSaveData()
+	if GAME == nil then
+		GAME = {}
+	end
+
+	if GAME.pilots_plus == nil then
+		GAME.pilots_plus = {}
+	end
+
+	if GAME.pilots_plus.warbot == nil then
+		GAME.pilots_plus.warbot = {}
+	end
+
+	if GAME.pilots_plus.warbot.added_count == nil then
+		GAME.pilots_plus.warbot.added_count = 0
+	end
+end
+
 function this:addVirtualSkills(pilotStruct)
 	-- Warbot gains skills equal to their level
 	-- At level 1: 1 skill, level 2: 3 skills (2 more)
@@ -35,10 +54,11 @@ function this:addVirtualSkills(pilotStruct)
 		return
 	end
 
+	self:initGameSaveData()
+
 	local pilotId = pilotStruct:getIdStr()
 	local targetSkillCount = pilotLevel == 1 and 1 or 3
-	local virtualSkills = cplus_plus_ex:getVirtualSkills(pilotId)
-	local currentSkillCount = #virtualSkills
+	local currentSkillCount = GAME.pilots_plus.warbot.added_count
 
 	-- Check if we already have the right number of skills
 	if currentSkillCount < targetSkillCount then
@@ -46,7 +66,8 @@ function this:addVirtualSkills(pilotStruct)
 		local skillsToAdd = targetSkillCount - currentSkillCount
 		logger.logDebug(SUBMODULE, "Warbot %s needs %d more virtual skills (current: %d, target: %d)",
 				pilotId, skillsToAdd, currentSkillCount, targetSkillCount)
-		cplus_plus_ex:addRandomVirtualSkillsToPilot(pilotStruct, skillsToAdd)
+		local addedCount, _ = cplus_plus_ex:addRandomVirtualSkillsToPilot(pilotStruct, skillsToAdd)
+		GAME.pilots_plus.warbot.added_count = GAME.pilots_plus.warbot.added_count + addedCount
 	else
 		logger.logDebug(SUBMODULE, "Warbot %s already has %d/%d virtual skills",
 				pilotId, currentSkillCount, targetSkillCount)
