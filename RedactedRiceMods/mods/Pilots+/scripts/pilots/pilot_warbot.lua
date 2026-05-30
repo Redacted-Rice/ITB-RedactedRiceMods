@@ -85,7 +85,7 @@ function this:init(mod)
 
 	-- Use pilotSkill_tooltip for the base registration, then override for dynamic behavior
 	pilotSkill_tooltip.Add(pilot.Skill, PilotSkill(pilot.Skill,
-			"Gains an extra level up skill at level 1 and two more at level 2."))
+			"Gets two level up skills at level 1 and five at level 2."))
 
 	logger.logDebug(SUBMODULE, "Warbot pilot initialized")
 end
