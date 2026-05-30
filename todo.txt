@@ -41,10 +41,17 @@ None
 ------------------------------------------------------------------------------
 
 MoreLvlUpSkills:
-Test working with multi-icon changes and virtual skills
+None
 
 Known Issues:
 * Vigor on Harold will not show icon when using repair. Not sure why its not displaying. Seems to be something unique with how his repair skill works
+
+
+------------------------------------------------------------------------------
+
+Pilots+:
+1. Persist warbot and sgt drake data across timelines correctly
+2. More testing
 
 
 ------------------------------------------------------------------------------
@@ -56,7 +63,8 @@ Planned out. To start work later
 ------------------------------------------------------------------------------
 
 PilotStore:
-In progress. May end up scraping. It will get complicated especially if I want to handle virtual skills now
+In progress. May end up scraping. It will get complicated especially if I want to handle virtual skills now.
+May instead make mod to allow choosing between x skills on level up
 
 
 ------------------------------------------------------------------------------
