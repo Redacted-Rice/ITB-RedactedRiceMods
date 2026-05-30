@@ -127,8 +127,8 @@ function this:init(mod)
 
 	-- Create the pilot
 	CreatePilot(pilot)
-	pilotSkill_tooltip.Add(pilot.Skill, PilotSkill(pilot.Skill, 
-			"After completing 3 missions with a pilot, the pilot will gain one random level up skill"))
+	pilotSkill_tooltip.Add(pilot.Skill, PilotSkill(pilot.Skill,
+			"A pilot completing 3 missions with Sgt. Drake gains a level up skill"))
 
 	logger.logDebug(SUBMODULE, "Sgt. Drake pilot initialized")
 end
