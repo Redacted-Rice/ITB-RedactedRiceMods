@@ -184,9 +184,6 @@ function this:onExtraInfoSelectedChanged(uiObj, pawn, pilotStruct)
 		description = "Training Complete"
 	elseif drakePresent then
 		description = string.format("Progress: %d/3 missions", missionCount)
-		if missionCount < 3 then
-			description = description .. string.format(" (%d more needed)", 3 - missionCount)
-		end
 	end
 
 	-- Add icon to UI
