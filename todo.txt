@@ -50,7 +50,9 @@ Known Issues:
 ------------------------------------------------------------------------------
 
 Pilots+:
-1. Persist warbot and sgt drake data across timelines correctly
+1. Handle reassignment of skills - need to handle if there is an exclusion. Right now I think it will just be removed and not re-rolled
+	Maybe auto-reroll random skills add but not specifically added skills? MAYbe track source of skills and see how to handle or auto roll
+	call a callback?
 2. More testing
 
 
