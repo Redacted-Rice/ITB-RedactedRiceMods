@@ -132,6 +132,30 @@ function this:load(options, version)
 	cplus_plus_ex:addPostAssigningLvlUpSkillsHook(function()
 		self:onSkillsAssigned()
 	end)
+	
+	-- Register warbot's added_count data to persist across time travel
+	cplus_plus_ex:registerTimeTravelerData(
+		"pilots_plus",
+		"warbot_added_count",
+		function(pilotId) 
+			-- Only save for Warbot pilot
+			if pilotId == pilot.Id then
+				-- We only need to store the count as virtual skills are handled by basic virtual logic
+				local count = (GAME and GAME.pilots_plus and GAME.pilots_plus.warbot and GAME.pilots_plus.warbot.added_count) or 0
+				logger.logDebug(SUBMODULE, "Saving warbot added_count for time traveler: %d", count)
+				return count
+			end
+			return nil
+		end,
+		function(pilotId, value)
+			-- Only restore for Warbot pilot
+			if pilotId == pilot.Id and value ~= nil then
+				self:initGameSaveData()
+				GAME.pilots_plus.warbot.added_count = value
+				logger.logInfo(SUBMODULE, "Restored warbot added_count from time travel: %d", value)
+			end
+		end
+	)
 end
 
 -- Register personality with dialog

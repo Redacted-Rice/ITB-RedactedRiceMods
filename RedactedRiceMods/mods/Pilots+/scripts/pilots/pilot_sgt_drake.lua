@@ -141,7 +141,7 @@ function this:onExtraInfoSelectedChanged(uiObj, pawn, pilotStruct)
 			tostring(uiObj ~= nil), tostring(pawn ~= nil), tostring(pilotStruct ~= nil))
 		return
 	end
-	
+
 	if not GAME or not GAME.pilots_plus then
 		return
 	end
@@ -205,7 +205,36 @@ function this:load(options, version)
 		self:onExtraInfoSelectedChanged(ui, pawn, pilotStruct)
 	end)
 
-	logger.logDebug(SUBMODULE, "Sgt. Drake training status hooked to Extra Info UI")
+	-- Register Sgt Drake's training data to persist across time travel
+	cplus_plus_ex:registerTimeTravelerData(
+		"pilots_plus",
+		"sgt_drake_training",
+		function(pilotId)
+			-- Save any training data for the pilots
+			local trainingData = nil
+			if GAME and GAME.pilots_plus and GAME.pilots_plus.sgt_drake and
+					GAME.pilots_plus.sgt_drake.mission_count[pilotId] then
+				-- Save both trained_skills and mission_count for all pilots
+				trainingData = {
+					trained_skills = GAME.pilots_plus.sgt_drake.trained_skills[pilotId],
+					mission_count = GAME.pilots_plus.sgt_drake.mission_count[pilotId]
+				}
+			end
+			logger.logDebug(SUBMODULE, "Saving Sgt Drake training data for %d pilots",
+				(function() local n = 0 for _ in pairs(trainingData) do n = n + 1 end return n end)())
+			return trainingData
+		end,
+		function(pilotId, value)
+			-- Restore training data for the specified pilot
+			if value ~= nil and type(value) == "table" then
+				self:initGameSaveData()
+				GAME.pilots_plus.sgt_drake.trained_skills[pilotId] = value.trained_skills
+				GAME.pilots_plus.sgt_drake.mission_count[pilotId] = value.mission_count
+				logger.logInfo(SUBMODULE, "Restored Sgt Drake training data for pilot %s: %d missions, %d skills",
+						pilotId, value.mission_count, #value.trained_skills)
+			end
+		end
+	)
 end
 
 -- Register personality with dialog
