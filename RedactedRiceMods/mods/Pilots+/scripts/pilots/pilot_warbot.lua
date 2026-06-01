@@ -66,7 +66,7 @@ function this:addVirtualSkills(pilotStruct)
 		local skillsToAdd = targetSkillCount - currentSkillCount
 		logger.logDebug(SUBMODULE, "Warbot %s needs %d more virtual skills (current: %d, target: %d)",
 				pilotId, skillsToAdd, currentSkillCount, targetSkillCount)
-		local addedCount, _ = cplus_plus_ex:addRandomVirtualSkillsToPilot(pilotStruct, skillsToAdd)
+		local addedCount, _ = cplus_plus_ex:addRandomVirtualSkillsToPilot(pilotStruct, skillsToAdd, "warbot")
 		GAME.pilots_plus.warbot.added_count = GAME.pilots_plus.warbot.added_count + addedCount
 	else
 		logger.logDebug(SUBMODULE, "Warbot %s already has %d/%d virtual skills",
@@ -86,6 +86,9 @@ function this:init(mod)
 	-- Use pilotSkill_tooltip for the base registration, then override for dynamic behavior
 	pilotSkill_tooltip.Add(pilot.Skill, PilotSkill(pilot.Skill,
 			"Gets two level up skills at level 1 and five at level 2."))
+
+	-- Register as a virtual skill source. Not strictly needed since we re-roll anyways
+	cplus_plus_ex:registerVirtualSkillSource("warbot")
 
 	logger.logDebug(SUBMODULE, "Warbot pilot initialized")
 end
@@ -132,12 +135,12 @@ function this:load(options, version)
 	cplus_plus_ex:addPostAssigningLvlUpSkillsHook(function()
 		self:onSkillsAssigned()
 	end)
-	
+
 	-- Register warbot's added_count data to persist across time travel
 	cplus_plus_ex:registerTimeTravelerData(
 		"pilots_plus",
 		"warbot_added_count",
-		function(pilotId) 
+		function(pilotId)
 			-- Only save for Warbot pilot
 			if pilotId == pilot.Id then
 				-- We only need to store the count as virtual skills are handled by basic virtual logic

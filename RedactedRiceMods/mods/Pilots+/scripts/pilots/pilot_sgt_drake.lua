@@ -104,8 +104,8 @@ function this:onMissionEnd(mission)
 				if missionCount >= 3 then
 					logger.logInfo(SUBMODULE, "Pilot %s completed training, teaching combat trick", pilotId)
 
-					-- Add one random virtual skill and get the selected skills
-					local successCount, selectedSkills = cplus_plus_ex:addRandomVirtualSkillsToPilot(pilotStruct, 1)
+					-- Add one random virtual skill with sgt_drake source and get the selected skills
+					local successCount, selectedSkills = cplus_plus_ex:addRandomVirtualSkillsToPilot(pilotStruct, 1, "sgt_drake")
 
 					-- Track the granted skills
 					if successCount > 0 and #selectedSkills > 0 then
@@ -129,6 +129,9 @@ function this:init(mod)
 	CreatePilot(pilot)
 	pilotSkill_tooltip.Add(pilot.Skill, PilotSkill(pilot.Skill,
 			"A pilot completing 3 missions with Sgt. Drake gains a level up skill"))
+
+	-- Register Sgt Drake as a virtual skill source. Not strictly needed since we re-roll anyways
+	cplus_plus_ex:registerVirtualSkillSource("sgt_drake")
 
 	logger.logDebug(SUBMODULE, "Sgt. Drake pilot initialized")
 end
@@ -221,17 +224,17 @@ function this:load(options, version)
 				}
 			end
 			logger.logDebug(SUBMODULE, "Saving Sgt Drake training data for %d pilots",
-				(function() local n = 0 for _ in pairs(trainingData) do n = n + 1 end return n end)())
+				(function() local n = 0 for _ in pairs(trainingData or {}) do n = n + 1 end return n end)())
 			return trainingData
 		end,
 		function(pilotId, value)
 			-- Restore training data for the specified pilot
 			if value ~= nil and type(value) == "table" then
 				self:initGameSaveData()
-				GAME.pilots_plus.sgt_drake.trained_skills[pilotId] = value.trained_skills
-				GAME.pilots_plus.sgt_drake.mission_count[pilotId] = value.mission_count
+				GAME.pilots_plus.sgt_drake.trained_skills[pilotId] = value.trained_skills or {}
+				GAME.pilots_plus.sgt_drake.mission_count[pilotId] = value.mission_count or 0
 				logger.logInfo(SUBMODULE, "Restored Sgt Drake training data for pilot %s: %d missions, %d skills",
-						pilotId, value.mission_count, #value.trained_skills)
+						pilotId, value.mission_count or 0, (value.trained_skills and #value.trained_skills) or 0)
 			end
 		end
 	)
