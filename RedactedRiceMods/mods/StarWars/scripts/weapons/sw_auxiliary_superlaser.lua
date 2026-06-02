@@ -24,6 +24,16 @@ StarWars_AuxiliarySuperlaser = Skill:new{
 	}
 }
 
+-- Add orbital launch animation (reuse timetravel effect)
+ANIMS.StarWars_AuxSuperlaser_Anim = Animation:new{
+	Image = "effects/superlaser.png",
+	NumFrames = 1,
+	Loop = false,
+	PosX = 0,
+	Time = 0.5,
+	PosY = 0,
+}
+
 local mod = mod_loader.mods[modApi.currentMod]
 
 Weapon_Texts.StarWars_AuxiliarySuperlaser_Upgrade1 = "+1 Damage"
@@ -77,6 +87,13 @@ end
 
 function StarWars_AuxiliarySuperlaser:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
+
+	local animDamage = SpaceDamage(p2)
+	animDamage.sScript = [[
+		Board:AddAnimation(]] .. p2:GetString().. [[, "StarWars_AuxSuperlaser_Anim", 1)
+	]]
+	animDamage.fDelay = 0.1
+	ret:AddDamage(animDamage)
 
 	-- Center tile - instant kill and turn to lava
 	local centerDamage = SpaceDamage(p2, DAMAGE_DEATH)
