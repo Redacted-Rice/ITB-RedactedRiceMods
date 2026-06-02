@@ -1,7 +1,7 @@
 StarWars_HeavyCannons = Skill:new{
 	Name = "Heavy Cannons",
 	Description = "Artillery shot dealing 2 damage to center, 1 splash damage in T-shape around target.",
-	Class = "Artillery",
+	Class = "Ranged",
 	Damage = 2,
 	SideSplashDamage = 1,
 	BehindSplashDamage = 1,
@@ -27,8 +27,8 @@ StarWars_HeavyCannons = Skill:new{
 
 	ArtilleryHeight = 0,
 	ArtilleryHeightLock = true,
-	Projectile1 = "effects/shot_sw_dual_heavy_red_split_1",
-	Projectile2 = "effects/shot_sw_dual_heavy_red_split_2",
+	Projectile1 = "effects/shot_sw_dual_heavy_red_split_1.png",
+	Projectile2 = "effects/shot_sw_dual_heavy_red_split_2.png",
 	Shots = 2,
 	ShotsDelay = 0.15,
 }
@@ -38,8 +38,8 @@ Weapon_Texts.StarWars_HeavyCannons_A_UpgradeDescription = "+1 damage to center a
 StarWars_HeavyCannons_A = StarWars_HeavyCannons:new{
 	Damage = 3,
 	BehindSplashDamage = 2,
-	Projectile1 = "effects/shot_sw_dual_heavy_green_split_1",
-	Projectile2 = "effects/shot_sw_dual_heavy_green_split_2",
+	Projectile1 = "effects/shot_sw_dual_heavy_green_split_1.png",
+	Projectile2 = "effects/shot_sw_dual_heavy_green_split_2.png",
 }
 
 Weapon_Texts.StarWars_HeavyCannons_Upgrade2 = "Extra Range"
