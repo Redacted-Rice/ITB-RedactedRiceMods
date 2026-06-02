@@ -1,7 +1,7 @@
 StarWars_Stomp = Skill:new{
 	Name = "Stomp",
 	Description = "Damages and pushes all adjacent tiles.",
-	Class = "Artillery",
+	Class = "Ranged",
 	Damage = 1,
 	Push = true,
 	PowerCost = 1,
