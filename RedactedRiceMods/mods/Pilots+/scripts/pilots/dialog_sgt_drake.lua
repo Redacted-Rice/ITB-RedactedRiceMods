@@ -3,7 +3,7 @@
 
 return {
 	-- Game States
-	Gamestart = {"Alright squad, stay sharp. I've got your backs.", "Listen up. Do what I say and you'll make it home.", "Been through this before. Stick with me."},
+	Gamestart = {"Alright squad, stay sharp. I've got your backs.", "Listen to ol' Solomon. Do what I say and we'll all make it home.", "Been through this before. Stick with me."},
 	FTL_Found = {"Time device. Seen a few of these. Still don't trust 'em.", "Another time capsule. Let's grab it and move."},
 	FTL_Start = {"Here we go again. Different timeline, same mission."},
 	Gamestart_PostVictory = {"Last run went well. Keep it up and we'll make it through this one too.", "Good work last time. Let's do it again."},
@@ -21,7 +21,7 @@ return {
 	Upgrade_PowerGeneric = {"Good upgrade. Every advantage counts.", "That'll help. Keep improving."},
 
 	-- Mid-Battle
-	MissionStart = {"Here we go. Watch your sectors and call out targets.", "Watch their attack vectors.", "Listen up - stay together, watch each other's backs.", "Alright squad, remember your training!"},
+MissionStart = {"Here we go. Watch your sectors and call out targets.", "Sergeant Solomon Drake reporting for duty!", "Listen up - stay together, watch each other's backs.", "Alright squad, remember your training!"},
 	Mission_ResetTurn = {"Second chance. Don't waste it. Learn from what just happened.", "Take two. Let me show you how it's done."},
 	MissionEnd_Dead = {"Clean sweep! That's how it's done, people!", "Got 'em all. Solid work, squad.", "Good kill. Every Vek down is one less to worry about."},
 	MissionEnd_Retreat = {"They're running. Good. Let 'em tell the others what happens.", "Vek are pulling back. We held the line."},
@@ -62,7 +62,7 @@ return {
 	-- Damage Done
 	Vek_Drown = {"Water kill. Use your environment."},
 	Vek_Fall = {"Long way down. Target eliminated."},
-	Vek_Smoke = {"Smoke out. Use it."},
+	Vek_Smoke = {"Smoke out. Take advantage of it."},
 	Vek_Frozen = {"Frozen solid. One less hostile for now."},
 	VekKilled_Self = {"Target down. Moving on.", "Got it.", "Vek eliminated.", "One less bug.", "Kill confirmed. Next target."},
 	VekKilled_Obs = {"Good kill, #main_second! That's the way!", "Nice work, #main_second! Good shot.", "#main_second one more down! Keep it up!"},
@@ -126,6 +126,6 @@ return {
 
 	-- Additional mission triggers
 	Mission_Airstrike_Arrival = {"Air support's here! Make room!"},
-	Mission_Snowstorm_FrozenVek = {"Storm's doing our job for us!"},
+	Mission_Snowstorm_FrozenVek = {"Ha! Even mother nature hates 'em"},
 	Mission_Shields_Down = {"Their shields are down! Hit 'em now!"},
 }

@@ -18,9 +18,9 @@ A robot singularly designed to destroy the vek threat. Its specialized learning 
 
 Skill: Combat Protocols - Gains random skills equal to level on each level up. (2 level ups skills at level 1, 5 level up skills at level 2)
 
-### Sergeant Drake
+### Sgt Drake
 
-A grizzled combat veteran who's seen more battles than he can count turned combat trainer. While fighting alongside other pilots he takes time to teach the squad hard-won survival tricks and tactics he's learned over the years.
+Sergent Solomon Drake is a grizzled combat veteran who's seen more battles than he can count turned combat trainer. While fighting alongside other pilots he takes time to teach the squad hard-won survival tricks and tactics he's learned over the years.
 
 Skill: Combat Mentor - After completing 3 missions with a pilot, the pilot will gain one random level up skill
 
