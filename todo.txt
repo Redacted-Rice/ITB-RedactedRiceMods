@@ -52,7 +52,8 @@ Known Issues:
 Pilots+:
 1. Add extra skills to corp skill names
 2. Test out moonstrider achievements again
-3. More testing
+3. Remove extra data storage in sgt drake
+4. More testing
 
 
 ------------------------------------------------------------------------------
