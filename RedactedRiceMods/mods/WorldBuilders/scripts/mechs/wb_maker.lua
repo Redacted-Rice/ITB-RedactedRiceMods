@@ -31,8 +31,8 @@ a.wb_makerw_broken = a.MechUnit:new{Image = "units/player/wb_maker_w_broken.png"
 a.wb_maker_ns =      a.MechIcon:new{Image = "units/player/wb_maker_ns.png" }
 
 
-WorldBuilders_MakerMech = Pawn:new{	
-	Name = "Maker",
+WorldBuilders_MakerMech = Pawn:new{
+	Name = "Maker Mech",
 	Class = "Prime",
 	Health = 3,
 	MoveSpeed = 3,
