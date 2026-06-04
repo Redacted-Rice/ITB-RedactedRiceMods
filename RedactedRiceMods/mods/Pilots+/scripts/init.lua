@@ -3,7 +3,7 @@
 -- Contains pilots with more than 2 level-up skills using virtual skills
 
 local mod = {
-	id = "PilotsPlus",
+	id = "redactedrice_Pilots+",
 	name = "Pilots+",
 	version = "1.0.0",
 	modApiVersion = "2.9.5",

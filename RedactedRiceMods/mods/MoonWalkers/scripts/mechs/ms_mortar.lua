@@ -32,7 +32,7 @@ a.mech_mortar_ns =      a.MechIcon:new{Image = "units/player/mech_mortar_ns.png"
 
 
 MoonStriders_MortarMech = Pawn:new{
-	Name = "Mortar",
+	Name = "Mortar Mech",
 	Class = "Ranged",
 	Health = 2,
 	ImageOffset = 0,

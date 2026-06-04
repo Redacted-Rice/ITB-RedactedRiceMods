@@ -31,8 +31,8 @@ a.mech_fighterw_broken = a.MechUnit:new{Image = "units/player/mech_fighter_w_bro
 a.mech_fighter_ns =      a.MechIcon:new{Image = "units/player/mech_fighter_ns.png" }
 
 
-MoonStriders_FighterMech = Pawn:new{	
-	Name = "Fighter",
+MoonStriders_FighterMech = Pawn:new{
+	Name = "Fighter Mech",
 	Class = "Prime",
 	Health = 3,
 	MoveSpeed = 3,
