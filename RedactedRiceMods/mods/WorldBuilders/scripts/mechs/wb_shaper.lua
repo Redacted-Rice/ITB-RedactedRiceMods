@@ -32,7 +32,7 @@ a.wb_shaper_ns =      a.MechIcon:new{Image = "units/player/wb_shaper_ns.png" }
 
 
 WorldBuilders_ShaperMech = Pawn:new{
-	Name = "Shaper",
+	Name = "Shaper Mech",
 	Class = "Science",
 	Health = 2,
 	MoveSpeed = 4,

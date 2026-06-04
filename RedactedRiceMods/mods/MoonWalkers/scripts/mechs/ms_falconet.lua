@@ -31,8 +31,8 @@ a.mech_falconetw_broken = a.MechUnit:new{Image = "units/player/mech_falconet_w_b
 a.mech_falconet_ns =      a.MechIcon:new{Image = "units/player/mech_falconet_ns.png" }
 
 
-MoonStriders_FalconetMech = Pawn:new{	
-	Name = "Falconet",
+MoonStriders_FalconetMech = Pawn:new{
+	Name = "Falconet Mech",
 	Class = "Brute",
 	Health = 3,
 	Image = "mech_falconet",

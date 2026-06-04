@@ -29,8 +29,8 @@ a.th_forestfirerw_broken = a.MechUnit:new{Image = "units/player/th_forestfirer_w
 a.th_forestfirer_ns =      a.MechIcon:new{Image = "units/player/th_forestfirer_ns.png" }
 
 
-Treeherders_ForestFirerMech = Pawn:new{	
-	Name = "Forest Firer",
+Treeherders_ForestFirerMech = Pawn:new{
+	Name = "Forest Firer Mech",
 	Class = "Ranged",
 	Health = 3,
 	MoveSpeed = 3,

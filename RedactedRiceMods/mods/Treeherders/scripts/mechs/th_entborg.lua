@@ -21,7 +21,7 @@ if cyborg == 1 then
 		Blacklist = {"Invulnerable", "Popular"},
 	}
 end
-	
+
 -- Borrowed from Meta's Pokemon mod
 -- Needs to be in global space so just define it anyways. Won't
 -- cause issues if Entborg is not a cyborg
@@ -33,7 +33,7 @@ function GetSkillInfo(skill)
 	end
 	return oldGetSkillInfo(skill)
 end
-	
+
 local files = {
 	"th_entborg.png",
 	"th_entborg_a.png",
@@ -61,8 +61,8 @@ if cyborg == 0 then
 	class = "Prime"
 end
 
-Treeherders_EntborgMech = Pawn:new{	
-	Name = "Entborg",
+Treeherders_EntborgMech = Pawn:new{
+	Name = "Entborg Mech",
 	Class = class,
 	Health = 3,
 	MoveSpeed = 4,

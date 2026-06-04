@@ -30,7 +30,7 @@ a.th_arbiformer_ns =      a.MechIcon:new{Image = "units/player/th_arbiformer_ns.
 
 
 Treeherders_ArbiformerMech = Pawn:new{
-	Name = "Arbiformer",
+	Name = "Arbiformer Mech",
 	Class = "Science",
 	Health = 2,
 	MoveSpeed = 3,
