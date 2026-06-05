@@ -5,18 +5,12 @@ local skill_choice_ui = {}
 
 local SUBMODULE = "SkillChoices"
 
-local mod = modApi:getCurrentMod()
-
 local pendingQueue = {}
 local dialogOpen = false
 
 local ROW_HEIGHT = 45
-local BUTTON_MIN_WIDTH = 220
 local GRID_GAP = 8
 local GRID_PADDING = 4
-
--- TODO: Just remove now that I have a scroll panel its not needed
-local LIST_MAX_ITEMS = 100
 
 -- TODO: Consider what I want these to actually be
 local DIALOG_MIN_WIDTH = 540
@@ -34,13 +28,6 @@ local PROMPT_CHAR_WRAP = 100
 local SKILL_ICON_SCALE = 2
 local SKILL_ICON_OUTLINE = 1
 local SKILL_ICON_SPACING = 3
-
-local ADVANCED_PILOTS = {
-	"Pilot_Arrogant",
-	"Pilot_Caretaker",
-	"Pilot_Chemical",
-	"Pilot_Delusional",
-}
 
 local surfaceCache = {}
 
@@ -80,20 +67,18 @@ local function addChoiceAndRemoveFromPool(choices, value, pool)
 end
 
 -- Returns up to `count` distinct valid choices, or fewer when not enough skills exist.
--- First choice is always the pre-assigned skill for this slot
+-- First choice is always the pre-assigned skill for this slot.
 function skill_choice_ui:generateChoices(pilot, slotIndex, count)
 	local selectedSkills = self:buildConstraintContext(pilot, slotIndex)
-	local availableSkills = self:buildAvailableSkills()
-	local pool = availableSkills
+	local pool = self:buildAvailableSkills()
 	local choices = {}
-	local chosenSet = {}
 
 	local preAssigned = pilot:getLvlUpSkill(slotIndex):getIdStr()
 	addChoiceAndRemoveFromPool(choices, preAssigned, pool)
 
-	local maxChoices = math.min(count, #availableSkills)
-	while #choices < maxChoices do
+	while #choices < count do
 		local skillId = cplus_plus_ex:selectRandomSkill(pool, pilot, nil, selectedSkills)
+		-- Not enough where valid choices or we grabbed them all so we are done
 		if not skillId then
 			break
 		end
@@ -102,27 +87,11 @@ function skill_choice_ui:generateChoices(pilot, slotIndex, count)
 	return choices
 end
 
-function skill_choice_ui:getLayoutColumnCount(itemCount)
-	if itemCount <= LIST_MAX_ITEMS then
-		return 1
-	end
-	return 2
-end
-
 function skill_choice_ui:getCachedSurface(path)
 	if not surfaceCache[path] then
 		surfaceCache[path] = sdlext.getSurface({ path = path })
 	end
 	return surfaceCache[path]
-end
-
-function skill_choice_ui:getIconDisplayWidth(iconPath)
-	local surface = self:getCachedSurface(iconPath)
-	if not surface then
-		return 0
-	end
-
-	return surface:w() * SKILL_ICON_SCALE + (SKILL_ICON_OUTLINE * 2 * SKILL_ICON_SCALE)
 end
 
 function skill_choice_ui:hasDisplayableIcon(iconPath)
@@ -186,7 +155,7 @@ function skill_choice_ui:buildSkillRowDecorations(style, skillInfo, decoText)
 		table.insert(decorations, DecoSolid(deco.colors.buttonhl))
 	elseif style == "display" then
 		table.insert(decorations, DecoFrame())
-	else -- default
+	else
 		table.insert(decorations, DecoButton())
 	end
 
@@ -212,86 +181,8 @@ function skill_choice_ui:buildSkillRowDecorations(style, skillInfo, decoText)
 	return decorations
 end
 
-function skill_choice_ui:calcSkillRowWidth(skillInfo, decoText, buttonWidth, fullWidth)
-	if fullWidth then
-		return nil
-	end
-
-	local textWidth = sdlext.totalWidth(decoText.surface)
-	local iconWidth = 0
-
-	if self:hasDisplayableIcon(skillInfo.icon) then
-		iconWidth = SKILL_ICON_SPACING * 2 + self:getIconDisplayWidth(skillInfo.icon)
-	end
-
-	local contentWidth = textWidth + 40 + iconWidth
-	return math.max(buttonWidth, contentWidth)
-end
-
 function skill_choice_ui:buildSkillRowText(skillInfo)
 	return DecoText(skillInfo.shortName)
-end
-
--- TODO: Consider having CPLUS+ fn for this
-function skill_choice_ui:getPilotDisplayName(pilot)
-	local nameKey = pilot:getName():get()
-	return GetText(nameKey) or nameKey or pilot:getIdStr()
-end
-
--- TODO: Consider having CPLUS+ fn for this
-function skill_choice_ui:getPilotPortraitPath(pilotId)
-	local pilotDef = _G[pilotId]
-	if not pilotDef then
-		return nil
-	end
-
-	local portrait = pilotDef.Portrait
-	if portrait and portrait ~= "" then
-		return "img/portraits/" .. portrait .. ".png"
-	end
-
-	local advanced = list_contains(ADVANCED_PILOTS, pilotId)
-	local prefix = advanced and "img/advanced/portraits/pilots/" or "img/portraits/pilots/"
-	return prefix .. pilotId .. ".png"
-end
-
--- TODO: Consider having CPLUS+ fn for this
-function skill_choice_ui:getPilotPortraitSurface(pilot)
-	local path = self:getPilotPortraitPath(pilot:getIdStr())
-	if not path then
-		return nil
-	end
-
-	return sdlext.getSurface({
-		path = path,
-		scale = 2,
-	})
-end
-
--- TODO: Consider having CPLUS+ fn for this
-function skill_choice_ui:getPilotEarnedSkillIds(pilot, excludeSlotIndex)
-	local skillIds = {}
-	local pilotLevel = pilot:getLevel()
-
-	for skillIndex = 1, pilotLevel do
-		if skillIndex ~= excludeSlotIndex then
-			local skill = pilot:getLvlUpSkill(skillIndex)
-			if skill then
-				local skillId = skill:getIdStr()
-				if skillId and skillId ~= "" then
-					table.insert(skillIds, skillId)
-				end
-			end
-		end
-	end
-
-	for _, skillId in ipairs(cplus_plus_ex:getVirtualSkills(pilot:getIdStr())) do
-		if skillId and skillId ~= "" then
-			table.insert(skillIds, skillId)
-		end
-	end
-
-	return skillIds
 end
 
 function skill_choice_ui:calcHeaderHeight(earnedSkillCount)
@@ -301,9 +192,9 @@ function skill_choice_ui:calcHeaderHeight(earnedSkillCount)
 		return math.max(portraitHeight, 20 + ROW_HEIGHT)
 	end
 
-	local columnCount = self:getLayoutColumnCount(earnedSkillCount)
-	local rows = math.ceil(earnedSkillCount / columnCount)
-	local skillsHeight = 20 + GRID_PADDING * 2 + rows * ROW_HEIGHT + math.max(0, rows - 1) * GRID_GAP
+	local skillsHeight = 20 + GRID_PADDING * 2
+		+ earnedSkillCount * ROW_HEIGHT
+		+ math.max(0, earnedSkillCount - 1) * GRID_GAP
 
 	return math.max(portraitHeight, skillsHeight) + 8
 end
@@ -332,53 +223,28 @@ function skill_choice_ui:buildSkillRowsLayout(parent, skillIds, itemBuilder)
 		return nil
 	end
 
-	local columnCount = self:getLayoutColumnCount(#skillIds)
 	local container = UiBoxLayout()
 		:width(1)
 		:vgap(GRID_GAP)
 		:padding(GRID_PADDING)
 		:addTo(parent)
 
-	if columnCount == 1 then
-		for _, skillId in ipairs(skillIds) do
-			itemBuilder(container, nil, skillId, true)
-		end
-		return container
-	end
-
-	local col = 0
-	local row = nil
 	for _, skillId in ipairs(skillIds) do
-		if col == 0 then
-			row = UiWeightLayout()
-				:width(1)
-				:hgap(GRID_GAP)
-				:addTo(container)
-		end
-		itemBuilder(container, row, skillId, true)
-		col = col + 1
-		if col >= columnCount then
-			col = 0
-		end
+		itemBuilder(container, skillId)
 	end
 
 	return container
 end
 
-function skill_choice_ui:buildSkillUi(parent, rowParent, skillId, fullWidth)
+function skill_choice_ui:buildSkillUi(parent, skillId)
 	local skillInfo = self:getSkillDisplayInfo(skillId)
 	local decoText = self:buildSkillRowText(skillInfo)
-	local target = rowParent or parent
 
 	local skill = Ui()
-	if fullWidth then
-		skill:width(1)
-	else
-		skill:widthpx(self:calcSkillRowWidth(skillInfo, decoText, BUTTON_MIN_WIDTH, fullWidth) or BUTTON_MIN_WIDTH)
-	end
-	skill:heightpx(ROW_HEIGHT)
+		:width(1)
+		:heightpx(ROW_HEIGHT)
 		:decorate(self:buildSkillRowDecorations("display", skillInfo, decoText))
-		:addTo(target)
+		:addTo(parent)
 
 	self:enableSkillHover(skill, skillInfo)
 	return skill
@@ -395,13 +261,13 @@ function skill_choice_ui:buildSkillDisplayLayout(parent, skillIds)
 		return nil
 	end
 
-	return self:buildSkillRowsLayout(parent, skillIds, function(container, row, skillId, fullWidth)
-		self:buildSkillUi(container, row, skillId, fullWidth)
+	return self:buildSkillRowsLayout(parent, skillIds, function(container, skillId)
+		self:buildSkillUi(container, skillId)
 	end)
 end
 
 function skill_choice_ui:buildHeaderSection(parent, session)
-	local earnedSkillIds = self:getPilotEarnedSkillIds(session.pilot, session.slotIndex)
+	local earnedSkillIds = cplus_plus_ex:getPilotEarnedSkillIds(session.pilot, {session.slotIndex})
 	local headerHeight = self:calcHeaderHeight(#earnedSkillIds)
 
 	local headerRow = UiWeightLayout()
@@ -415,7 +281,7 @@ function skill_choice_ui:buildHeaderSection(parent, session)
 		:vgap(6)
 		:addTo(headerRow)
 
-	local portraitSurface = self:getPilotPortraitSurface(session.pilot)
+	local portraitSurface = cplus_plus_ex:getPilotPortraitSurface(session.pilot)
 	local portraitDecorations = { DecoFrame(), DecoAlign(0, 0) }
 	if portraitSurface then
 		table.insert(portraitDecorations, DecoSurface(portraitSurface))
@@ -427,7 +293,7 @@ function skill_choice_ui:buildHeaderSection(parent, session)
 		:decorate(portraitDecorations)
 		:addTo(portraitColumn)
 
-	local pilotName = self:getPilotDisplayName(session.pilot)
+	local pilotName = cplus_plus_ex:getPilotDisplayName(session.pilot)
 	Ui()
 		:widthpx(PORTRAIT_COLUMN_WIDTH)
 		:heightpx(24)
@@ -476,20 +342,15 @@ function skill_choice_ui:onSkillOptionClicked(session, btn, skillId)
 	end
 end
 
-function skill_choice_ui:buildSkillOptionButton(parent, rowParent, skillId, fullWidth, session)
+function skill_choice_ui:buildSkillOptionButton(parent, skillId, session)
 	local skillInfo = self:getSkillDisplayInfo(skillId)
 	local decoText = self:buildSkillRowText(skillInfo)
-	local target = rowParent or parent
 
 	local btn = Ui()
-	if fullWidth then
-		btn:width(1)
-	else
-		btn:widthpx(self:calcSkillRowWidth(skillInfo, decoText, BUTTON_MIN_WIDTH, fullWidth) or BUTTON_MIN_WIDTH)
-	end
-	btn:heightpx(ROW_HEIGHT)
+		:width(1)
+		:heightpx(ROW_HEIGHT)
 		:decorate(self:buildSkillRowDecorations("default", skillInfo, decoText))
-		:addTo(target)
+		:addTo(parent)
 
 	btn._decoText = decoText
 	btn._skillInfo = skillInfo
@@ -505,8 +366,8 @@ function skill_choice_ui:buildSkillOptionButton(parent, rowParent, skillId, full
 end
 
 function skill_choice_ui:buildChoicesLayout(parent, session)
-	return self:buildSkillRowsLayout(parent, session.choices, function(container, row, skillId, fullWidth)
-		self:buildSkillOptionButton(container, row, skillId, fullWidth, session)
+	return self:buildSkillRowsLayout(parent, session.choices, function(container, skillId)
+		self:buildSkillOptionButton(container, skillId, session)
 	end)
 end
 
@@ -676,27 +537,10 @@ function skill_choice_ui:clearPendingDialogs()
 	dialogOpen = false
 end
 
-function skill_choice_ui:clearStoredChoiceCache()
-	self:ensureChoiceSaveData()
-	GAME.cplus_plus_ex.pilotSkillChoices = {}
-end
-
-function skill_choice_ui:onResetTurn()
-	self:clearStoredChoiceCache()
-	self:resetCplusRandomSession()
-	self:clearPendingDialogs()
-end
-
 function skill_choice_ui:load()
 	memhack:addPilotChangedHook(function(pilot, changes)
 		self:onPilotLevelChanged(pilot, changes)
 	end)
-
-	if modapiext and modapiext.addResetTurnHook then
-		modapiext:addResetTurnHook(function()
-			self:onResetTurn()
-		end)
-	end
 
 	modApi.events.onGameExited:subscribe(function()
 		self:clearPendingDialogs()
