@@ -10,10 +10,11 @@ StarWars_AuxiliarySuperlaser = Skill:new{
 	SplashDamage = 3,
 	SplashFurtherDamage = 1,
 	ShakeBaseVal = 0.4,
-	BounceBaseVal = 20,
+	BounceBaseVal = 30,
 	BounceDecay = 0.80,
 	ShockwaveDelay = 0.1,
 	Icon = "weapons/science_sw_auxiliary_laser.png",
+	Explosion = "explo_fire1",
 	LaunchSound = "/weapons/laser_burst",
 	ImpactSound = "/impact/generic/explosion",
 	Projectile = "effects/shot_sw_superlaser",
@@ -26,12 +27,12 @@ StarWars_AuxiliarySuperlaser = Skill:new{
 
 -- Add orbital launch animation (reuse timetravel effect)
 ANIMS.StarWars_AuxSuperlaser_Anim = Animation:new{
-	Image = "effects/superlaser.png",
-	NumFrames = 1,
+	Image = "effects/superlaser_core.png",
+	NumFrames = 14,
 	Loop = false,
-	PosX = 0,
-	Time = 0.5,
-	PosY = 0,
+	PosX = -40,
+	Time = 0.05,
+	PosY = -360,
 }
 
 local mod = mod_loader.mods[modApi.currentMod]
@@ -88,18 +89,17 @@ end
 function StarWars_AuxiliarySuperlaser:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
 
-	local animDamage = SpaceDamage(p2)
-	animDamage.sScript = [[
+	ret:AddScript([[
 		Board:AddAnimation(]] .. p2:GetString().. [[, "StarWars_AuxSuperlaser_Anim", 1)
-	]]
-	animDamage.fDelay = 0.1
-	ret:AddDamage(animDamage)
+	]])
+	ret:AddDelay(0.3)
 
 	-- Center tile - instant kill and turn to lava
 	local centerDamage = SpaceDamage(p2, DAMAGE_DEATH)
 	if not Board:IsTerrain(p2, TERRAIN_HOLE) then
 		centerDamage.iTerrain = TERRAIN_LAVA
 	end
+	
 	ret:AddDamage(centerDamage)
 	ret:AddBoardShake(self.ShakeBaseVal * self.SplashDamage)
 	ret:AddDelay(self.ShockwaveDelay)
