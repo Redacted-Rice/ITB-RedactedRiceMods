@@ -12,7 +12,9 @@ StarWars_AuxiliarySuperlaser = Skill:new{
 	ShakeBaseVal = 0.4,
 	BounceBaseVal = 30,
 	BounceDecay = 0.80,
-	ShockwaveDelay = 0.1,
+	IntroDelay = 0.3,
+	PassDelay = 0.06,
+	TotalPasses = 16,
 	Icon = "weapons/science_sw_auxiliary_laser.png",
 	Explosion = "explo_fire1",
 	LaunchSound = "/weapons/laser_burst",
@@ -25,14 +27,13 @@ StarWars_AuxiliarySuperlaser = Skill:new{
 	}
 }
 
--- Add orbital launch animation (reuse timetravel effect)
 ANIMS.StarWars_AuxSuperlaser_Anim = Animation:new{
 	Image = "effects/superlaser_core.png",
-	NumFrames = 14,
+	NumFrames = 11,
 	Loop = false,
 	PosX = -40,
-	Time = 0.05,
 	PosY = -360,
+	Lengths = {0.06, 0.06, 0.06, 0.06, 0.06, 0.3, 0.06, 0.06, 0.06, 0.06, 0.06},
 }
 
 local mod = mod_loader.mods[modApi.currentMod]
@@ -54,112 +55,109 @@ StarWars_AuxiliarySuperlaser_AB = StarWars_AuxiliarySuperlaser_A:new{
 	Limited = 2,
 }
 
--- No longer auto-charges - recharge now happens via Death Star's repair action
-
 function StarWars_AuxiliarySuperlaser:GetTargetArea(point)
 	local ret = PointList()
-
-	-- Can target any valid space on the board
 	local size = Board:GetSize()
 	for x = 0, size.x - 1 do
 		for y = 0, size.y - 1 do
-			local p = Point(x, y)
-			ret:push_back(p)
+			ret:push_back(Point(x, y))
 		end
 	end
 	return ret
 end
 
-local function addSplashDamage(ret, splashSpace, damage)
-	if Board:IsValid(splashSpace) then
-		local splashDamage = SpaceDamage(splashSpace, damage)
-
-		-- Terrain changes
-		if Board:GetTerrain(splashSpace) == TERRAIN_ICE then
-			splashDamage.iTerrain = TERRAIN_WATER
-		elseif Board:GetTerrain(splashSpace) == TERRAIN_MOUNTAIN then
-			-- Scorched earth effect: Turn mountain to rubble and set it on fire
-			splashDamage.iTerrain = TERRAIN_RUBBLE
-			splashDamage.iFire = EFFECT_CREATE
+local function getValidSpacesAtDistance(center, distance)
+	local tiles = {}
+	for x = -distance, distance do
+		for y = -distance, distance do
+			local space = center + Point(x, y)
+			if Board:IsValid(space) and center:ManhattanDistance(space) == distance then
+				table.insert(tiles, space)
+			end
 		end
-		ret:AddDamage(splashDamage)
+	end
+	return tiles
+end
+
+local function addCenterEffect(ret, center, damage)
+	local damage = SpaceDamage(center, damage)
+	if damage and not Board:IsTerrain(center, TERRAIN_HOLE) then
+		damage.iTerrain = TERRAIN_LAVA
+	end
+	ret:AddDamage(damage)
+end
+
+local function addExplosionEffects(ret, spaces, damage, isAdj)
+	for _, space in ipairs(spaces) do
+		local damage = SpaceDamage(space, damage)
+		if damage then
+			local terrain = Board:GetTerrain(space)
+			if isAdj then
+				if terrain ~= TERRAIN_ICE and terrain ~= TERRAIN_LAVA and terrain ~= TERRAIN_WATER and terrain ~= TERRAIN_HOLE then
+					damage.iTerrain = TERRAIN_RUBBLE
+					damage.iFire = EFFECT_CREATE
+				end
+			end
+			-- melt ice for funsies
+			if Board:GetTerrain(space) == TERRAIN_ICE then
+				damage.iTerrain = TERRAIN_WATER
+			end
+		end
+		ret:AddDamage(damage)
 	end
 end
 
 function StarWars_AuxiliarySuperlaser:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
+	local explosion = self.Explosion
 
 	ret:AddScript([[
-		Board:AddAnimation(]] .. p2:GetString().. [[, "StarWars_AuxSuperlaser_Anim", 1)
+		Board:AddAnimation(]] .. p2:GetString() .. [[, "StarWars_AuxSuperlaser_Anim", 1)
 	]])
-	ret:AddDelay(0.3)
-
-	-- Center tile - instant kill and turn to lava
-	local centerDamage = SpaceDamage(p2, DAMAGE_DEATH)
-	if not Board:IsTerrain(p2, TERRAIN_HOLE) then
-		centerDamage.iTerrain = TERRAIN_LAVA
-	end
-	
-	ret:AddDamage(centerDamage)
+	ret:AddDelay(self.IntroDelay)
 	ret:AddBoardShake(self.ShakeBaseVal * self.SplashDamage)
-	ret:AddDelay(self.ShockwaveDelay)
 
-	-- Add shockwave effect using bounce - emanates from center
 	local bounce = self.BounceBaseVal
-	ret:AddBounce(p2, bounce)
-	bounce = bounce * self.BounceDecay
 
-	-- Adjacent tiles
-	for dir = DIR_START, DIR_END do
-		local adjacentPos = p2 + DIR_VECTORS[dir]
-		addSplashDamage(ret, adjacentPos, self.SplashDamage)
-		-- Add bounce to adjacent tiles for shockwave effect
-		if Board:IsValid(adjacentPos) then
-			ret:AddBounce(adjacentPos, bounce)
-		end
-	end
-	bounce = bounce * self.BounceDecay
-	ret:AddDelay(self.ShockwaveDelay)
+	local adjacentSpaces = = getValidSpacesAtDistance(p2, 1)
+	local furtherSpaces = getValidSpacesAtDistance(p2, 2)
 
-	-- Two away straight line
-	for dir = DIR_START, DIR_END do
-		local adjacentPos = p2 + DIR_VECTORS[dir] * 2
-		addSplashDamage(ret, adjacentPos, self.SplashFurtherDamage)
-		-- Add bounce to further tiles for diminishing shockwave effect
-		if Board:IsValid(adjacentPos) then
-			ret:AddBounce(adjacentPos, bounce)
-		end
-	end
-	-- Two away corners
-	for dir = DIR_START, DIR_END do
-		local adjacentCornerPos = p2 + DIR_VECTORS[dir] + DIR_VECTORS[(dir + 1) % 4]
-		addSplashDamage(ret, adjacentCornerPos, self.SplashFurtherDamage)
-		-- Add bounce to corner tiles for diminishing shockwave effect
-		if Board:IsValid(adjacentCornerPos) then
-			ret:AddBounce(adjacentCornerPos, bounce)
-		end
-	end
-	bounce = bounce * self.BounceDecay
-	ret:AddDelay(self.ShockwaveDelay)
+	local CENTER = 1
+	local ADJACENT = 2
+	local FURTHER = 3
+	local addDamageInPass = {2, 4, 6}
+	local explosionsInPasses = {{1,2,3}, {3,4,5}, {5,6,7}}
 
-	-- Continue the shockwave out to end of board
-	local maxDistance = Board:GetSize().x + Board:GetSize().y
-	for distance = 3, maxDistance do
-		local hasValidTile = false
-		-- Diagonals
-		for dir = DIR_START, DIR_END do
-			for diagIdx = 0, (distance - 1) do
-				local diagonalPos = p2 + DIR_VECTORS[dir] * (distance - diagIdx) + DIR_VECTORS[(dir + 1) % 4] * diagIdx
-				if Board:IsValid(diagonalPos) then
-					hasValidTile = true
-					ret:AddBounce(diagonalPos, bounce)
-				end
+	for pass = 1, self.TotalPasses do
+		if list_contains(explosionsInPasses[CENTER], pass) then
+			local damage = nil
+			if pass == addDamageInPass[CENTER] then
+				damage = DAMAGE_DEATH
 			end
+			addCenterEffect(ret, p2, damage)
 		end
-		if hasValidTile then
-			bounce = bounce * self.BounceDecay
-			ret:AddDelay(self.ShockwaveDelay)
+		if list_contains(explosionsInPasses[ADJACENT], pass) then
+			local damage = nil
+			if pass == addDamageInPass[ADJACENT] then
+				damage = self.SplashDamage
+			end
+			addExplosionEffects(ret, adjacentSpaces, damage, true)
 		end
+		if list_contains(explosionsInPasses[FURTHER], pass) then
+			local damage = nil
+			if pass == addDamageInPass[FURTHER] then
+				damage = self.SplashFurtherDamage
+			end
+			addExplosionEffects(ret, furtherSpaces, damage, false)
+		end
+
+		-- Add shockwave
+		for _, space in ipairs(getValidSpacesAtDistance(p2, pass - 1)) do
+			ret:AddBounce(space, bounce)
+		end
+		bounce = bounce * self.BounceDecay
+
+		ret:AddDelay(self.PassDelay)
 	end
 
 	return ret
