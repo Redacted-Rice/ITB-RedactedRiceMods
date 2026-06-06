@@ -13,16 +13,19 @@ local GRID_GAP = 8
 local GRID_PADDING = 4
 
 -- TODO: Consider what I want these to actually be
-local DIALOG_MIN_WIDTH = 540
-local DIALOG_MAX_WIDTH = 960
+local DIALOG_MIN_WIDTH = 900
+local DIALOG_MAX_WIDTH = 1080
 local DIALOG_WIDTH_PCT = 0.70
+local DIALOG_MIN_HEIGHT = 600
+local DIALOG_MAX_HEIGHT = 1200
 local DIALOG_HEIGHT_PCT = 0.80
 
 local SKILL_LIST_VGAP = 10
 local PROMPT_BOTTOM_GAP = 10
 local HEADER_INNER_GAP = 10
+local TEXT_HEIGHT = 20
 local PORTRAIT_SIZE = 130
-local PORTRAIT_COLUMN_WIDTH = PORTRAIT_SIZE + 32
+local PORTRAIT_COLUMN_WIDTH = PORTRAIT_SIZE
 local PROMPT_CHAR_WRAP = 100
 
 local SKILL_ICON_SCALE = 2
@@ -186,13 +189,13 @@ function skill_choice_ui:buildSkillRowText(skillInfo)
 end
 
 function skill_choice_ui:calcHeaderHeight(earnedSkillCount)
-	local portraitHeight = PORTRAIT_SIZE + 6 + 24
+	local portraitHeight = PORTRAIT_SIZE + 8
 
 	if earnedSkillCount == 0 then
-		return math.max(portraitHeight, 20 + ROW_HEIGHT)
+		return math.max(portraitHeight, TEXT_HEIGHT + ROW_HEIGHT)
 	end
 
-	local skillsHeight = 20 + GRID_PADDING * 2
+	local skillsHeight = TEXT_HEIGHT + GRID_PADDING * 2
 		+ earnedSkillCount * ROW_HEIGHT
 		+ math.max(0, earnedSkillCount - 1) * GRID_GAP
 
@@ -266,6 +269,18 @@ function skill_choice_ui:buildSkillDisplayLayout(parent, skillIds)
 	end)
 end
 
+function skill_choice_ui:buildPilotNameSection(parent, session)
+	Ui()
+		:width(1)
+		:heightpx(TEXT_HEIGHT)
+		:decorate({
+			DecoText(
+				cplus_plus_ex:getPilotDisplayName(session.pilot)
+			),
+		})
+		:addTo(parent)
+end
+
 function skill_choice_ui:buildHeaderSection(parent, session)
 	local earnedSkillIds = cplus_plus_ex:getPilotEarnedSkillIds(session.pilot, {session.slotIndex})
 	local headerHeight = self:calcHeaderHeight(#earnedSkillIds)
@@ -278,7 +293,6 @@ function skill_choice_ui:buildHeaderSection(parent, session)
 
 	local portraitColumn = UiBoxLayout()
 		:widthpx(PORTRAIT_COLUMN_WIDTH)
-		:vgap(6)
 		:addTo(headerRow)
 
 	local portraitSurface = cplus_plus_ex:getPilotPortraitSurface(session.pilot)
@@ -293,13 +307,6 @@ function skill_choice_ui:buildHeaderSection(parent, session)
 		:decorate(portraitDecorations)
 		:addTo(portraitColumn)
 
-	local pilotName = cplus_plus_ex:getPilotDisplayName(session.pilot)
-	Ui()
-		:widthpx(PORTRAIT_COLUMN_WIDTH)
-		:heightpx(24)
-		:decorate({ DecoCAlignedText(pilotName) })
-		:addTo(portraitColumn)
-
 	local skillsColumn = UiBoxLayout()
 		:width(1)
 		:vgap(6)
@@ -307,7 +314,7 @@ function skill_choice_ui:buildHeaderSection(parent, session)
 
 	Ui()
 		:width(1)
-		:heightpx(20)
+		:heightpx(TEXT_HEIGHT)
 		:decorate({ DecoText("Current Skills") })
 		:addTo(skillsColumn)
 
@@ -406,7 +413,8 @@ function skill_choice_ui:getDialogFrameOptions()
 	return {
 		minW = DIALOG_MIN_WIDTH,
 		maxW = math.min(DIALOG_MAX_WIDTH, DIALOG_WIDTH_PCT * ScreenSizeX()),
-		maxH = DIALOG_HEIGHT_PCT * ScreenSizeY(),
+		minH = DIALOG_MIN_HEIGHT,
+		maxH = math.min(DIALOG_MAX_HEIGHT, DIALOG_HEIGHT_PCT * ScreenSizeY()),
 		compactH = false,
 	}
 end
@@ -436,6 +444,7 @@ function skill_choice_ui:buildDialogContent(scroll, session)
 		:vgap(SKILL_LIST_VGAP)
 		:addTo(scroll)
 
+	self:buildPilotNameSection(scrollContent, session)
 	self:buildHeaderSection(scrollContent, session)
 	self:buildSectionDivider(scrollContent)
 	self:buildSelectionSection(scrollContent, session)
@@ -459,7 +468,7 @@ function skill_choice_ui:onDialogOpened(ui, session)
 	end
 
 	local frame = sdlext.buildButtonDialog(
-		"Pilot Levelled Up",
+		"Pilot Leveled Up",
 		function(scroll)
 			return self:buildDialogContent(scroll, session)
 		end,
