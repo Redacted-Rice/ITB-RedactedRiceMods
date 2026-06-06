@@ -1,3 +1,4 @@
+local PASS_DELAY = 0.06
 StarWars_AuxiliarySuperlaser = Skill:new{
 	Name = "Aux. Superlaser",
 	Description = "Instakills center tile and turns it to lava. Deals 3 damage adjacent, 1 damage beyond. Recharged by repair.",
@@ -12,8 +13,8 @@ StarWars_AuxiliarySuperlaser = Skill:new{
 	ShakeBaseVal = 0.4,
 	BounceBaseVal = 30,
 	BounceDecay = 0.80,
-	IntroDelay = 0.3,
-	PassDelay = 0.06,
+	IntroFrames = 5,
+	PassDelay = PASS_DELAY,
 	TotalPasses = 16,
 	Icon = "weapons/science_sw_auxiliary_laser.png",
 	Explosion = "explo_fire1",
@@ -33,7 +34,10 @@ ANIMS.StarWars_AuxSuperlaser_Anim = Animation:new{
 	Loop = false,
 	PosX = -40,
 	PosY = -360,
-	Lengths = {0.06, 0.06, 0.06, 0.06, 0.06, 0.3, 0.06, 0.06, 0.06, 0.06, 0.06},
+	Lengths = {
+		PASS_DELAY, PASS_DELAY, PASS_DELAY, PASS_DELAY, PASS_DELAY, 
+		0.3, 
+		PASS_DELAY, PASS_DELAY, PASS_DELAY, PASS_DELAY, PASS_DELAY},
 }
 
 local mod = mod_loader.mods[modApi.currentMod]
@@ -68,11 +72,15 @@ end
 
 local function getValidSpacesAtDistance(center, distance)
 	local tiles = {}
-	for x = -distance, distance do
-		for y = -distance, distance do
-			local space = center + Point(x, y)
-			if Board:IsValid(space) and center:ManhattanDistance(space) == distance then
-				table.insert(tiles, space)
+	if distance == 0 then
+		table.insert(tiles, center)
+	else
+		for x = -distance, distance do
+			for y = -distance, distance do
+				local space = center + Point(x, y)
+				if Board:IsValid(space) and center:Manhattan(space) == distance then
+					table.insert(tiles, space)
+				end
 			end
 		end
 	end
@@ -80,30 +88,35 @@ local function getValidSpacesAtDistance(center, distance)
 end
 
 local function addCenterEffect(ret, center, damage)
-	local damage = SpaceDamage(center, damage)
 	if damage and not Board:IsTerrain(center, TERRAIN_HOLE) then
-		damage.iTerrain = TERRAIN_LAVA
+		sd = SpaceDamage(center, damage)
+		sd.iTerrain = TERRAIN_LAVA
+		ret:AddDamage(sd)
+	else
+		ret:AddDamage(SpaceDamage(center))
 	end
-	ret:AddDamage(damage)
 end
 
 local function addExplosionEffects(ret, spaces, damage, isAdj)
 	for _, space in ipairs(spaces) do
-		local damage = SpaceDamage(space, damage)
 		if damage then
+			local sd = SpaceDamage(space, damage)
 			local terrain = Board:GetTerrain(space)
 			if isAdj then
 				if terrain ~= TERRAIN_ICE and terrain ~= TERRAIN_LAVA and terrain ~= TERRAIN_WATER and terrain ~= TERRAIN_HOLE then
-					damage.iTerrain = TERRAIN_RUBBLE
-					damage.iFire = EFFECT_CREATE
+					sd.iTerrain = TERRAIN_RUBBLE
+					sd.sScript = [[Board:SetRubbleType(]]..space:GetString()..[[, RUBBLE_MOUNTAIN)]]
+					sd.iFire = EFFECT_CREATE
 				end
 			end
 			-- melt ice for funsies
 			if Board:GetTerrain(space) == TERRAIN_ICE then
-				damage.iTerrain = TERRAIN_WATER
+				sd.iTerrain = TERRAIN_WATER
 			end
+			ret:AddDamage(sd)
+		else
+			ret:AddDamage(SpaceDamage(space))
 		end
-		ret:AddDamage(damage)
 	end
 end
 
@@ -114,19 +127,19 @@ function StarWars_AuxiliarySuperlaser:GetSkillEffect(p1, p2)
 	ret:AddScript([[
 		Board:AddAnimation(]] .. p2:GetString() .. [[, "StarWars_AuxSuperlaser_Anim", 1)
 	]])
-	ret:AddDelay(self.IntroDelay)
+	ret:AddDelay(self.IntroFrames * self.PassDelay)
 	ret:AddBoardShake(self.ShakeBaseVal * self.SplashDamage)
 
 	local bounce = self.BounceBaseVal
 
-	local adjacentSpaces = = getValidSpacesAtDistance(p2, 1)
+	local adjacentSpaces = getValidSpacesAtDistance(p2, 1)
 	local furtherSpaces = getValidSpacesAtDistance(p2, 2)
 
 	local CENTER = 1
 	local ADJACENT = 2
 	local FURTHER = 3
-	local addDamageInPass = {2, 4, 6}
-	local explosionsInPasses = {{1,2,3}, {3,4,5}, {5,6,7}}
+	local addDamageInPass = {1, 3, 5}
+	local explosionsInPasses = {{1,3,5,7,9}, {3,5,7}, {5}}
 
 	for pass = 1, self.TotalPasses do
 		if list_contains(explosionsInPasses[CENTER], pass) then
