@@ -56,13 +56,15 @@ a.th_entborg_broken =  a.MechUnit:new{Image = "units/player/th_entborg_broken.pn
 a.th_entborgw_broken = a.MechUnit:new{Image = "units/player/th_entborg_w_broken.png", PosX = -17, PosY =  1 }
 a.th_entborg_ns =      a.MechIcon:new{Image = "units/player/th_entborg_ns.png" }
 
+local name = "Entborg"
 local class = "TechnoVek"
 if cyborg == 0 then
+local name = "Ent Mech"
 	class = "Prime"
 end
 
 Treeherders_EntborgMech = Pawn:new{
-	Name = "Entborg Mech",
+	Name = name,
 	Class = class,
 	Health = 3,
 	MoveSpeed = 4,
