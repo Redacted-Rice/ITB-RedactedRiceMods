@@ -10,8 +10,7 @@ None
 Known issues:
 1. Forest Firer bounce happens after push. Doesn't seem to be a way around this but its just visual anyways
 2. Forest Firer teleport and launch SFX just sometimes don't play. Not sure why this is
-3. Forest armor icon will sometimes appear when environment effects are occuring. I think this should be mostly fixed now but may show occasionally
-4. Treevac doesn't distinguish between damage in the attack that causes the push vs follow on attacks when checking for spaces to push to
+3. Treevac doesn't distinguish between damage in the attack that causes the push vs follow on attacks when checking for spaces to push to
 
 
 ------------------------------------------------------------------------------
@@ -44,7 +43,8 @@ MoreLvlUpSkills:
 None
 
 Known Issues:
-* Vigor on Harold will not show icon when using repair. Not sure why its not displaying. Seems to be something unique with how his repair skill works
+1. Vigor on Harold will not show icon when using repair. Not sure why its not displaying. Seems to be something unique with how his repair skill works
+2. On death effects don't trigger with +/x damage effects. This will be a difficult one to fix
 
 
 ------------------------------------------------------------------------------
