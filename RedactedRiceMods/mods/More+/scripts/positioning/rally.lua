@@ -79,7 +79,7 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 						movingPawnId, p2:GetString(), adjacentId, adjacentLoc:GetString())
 				more_plus.libs.weaponPreview.ExecuteWithState(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
 					function()
-						more_plus.libs.weaponPreview:AddAnimation(adjacentLoc.loc, more_plus.commonIcons.boost.key, nil,  -- delay
+						more_plus.libs.weaponPreview:AddAnimation(adjacentLoc, more_plus.commonIcons.boost.key, nil,  -- delay
 								more_plus.WEAPON_PREVIEW_GROUP_ID, GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
 					end, movingPawnId
 				)
