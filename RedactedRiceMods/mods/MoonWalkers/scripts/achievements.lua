@@ -6,7 +6,7 @@ MoonStridersAchievements = {
 	lastAttacked = nil,
 }
 
-local squad = "moonstriders"
+local squad = "moonwalkers"
 local achievements = {
 	grave = modApi.achievements:add{
 		id = "hallow_grave",
@@ -49,7 +49,7 @@ end
 local baseTooltip = achievements.secure.getTooltip
 achievements.secure.getTooltip = function(self)
 	local result = baseTooltip(self)
-	if (not achievements.secure:isComplete()) and isGame() then
+	if (not achievements.secure:isComplete()) then
 		local islandsSecured = 0
 		for i = 0, 3 do
 			if RegionData and RegionData["island"..i] and RegionData["island"..i].secured then
@@ -85,10 +85,10 @@ end
 
 -- Drops
 function MoonStridersAchievements.onMissionStartHook(mission)
-	if isRightSquad() and not achievements.grave:isComplete() then
+	if isRightSquad() and isInMission() and not achievements.grave:isComplete() then
 		MoonStridersAchievements.drops = 0
 	end
-	
+
 	-- It doesn't seem to fire at least most times on fourth island for whatever reason
 	-- so call it here and it will trigger on starting the volcano
 	MoonStridersAchievements.checkIslandsSecured()
@@ -96,13 +96,13 @@ end
 
 -- Swing
 function MoonStridersAchievements.onSkillStartHook(mission, pawn, weaponId, p1, p2)
-	if isRightSquad() and not achievements.swing:isComplete()then
+	if isRightSquad() and isInMission() and not achievements.swing:isComplete()then
 		MoonStridersAchievements.lastAttacked = nil
-		
+
 		-- make sure we have the actual weaponid
 		if type(weaponId) == 'table' then
 			weaponId = weaponId.__Id
-		end 
+		end
 
 		if string.sub(weaponId, 1 , string.len("MoonStriders_ColossusHook")) == "MoonStriders_ColossusHook" and
 				p1:Manhattan(p2) >= 5 then
@@ -113,7 +113,7 @@ end
 
 -- Swing and drops
 function MoonStridersAchievements.onPawnKilledHook(mission, pawn)
-	if isRightSquad() then
+	if isRightSquad() and isInMission() then
 		if not achievements.swing:isComplete()then
 			if MoonStridersAchievements.lastAttacked then
 				achievements.swing:trigger()

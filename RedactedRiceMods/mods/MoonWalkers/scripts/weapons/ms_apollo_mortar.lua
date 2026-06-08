@@ -1,6 +1,6 @@
 MoonStriders_ApolloMortar = ArtilleryDefault:new{
 	Name = "Apollo Mortar",
-	Description = "Powerful artillery strike, damaging a single tile and pulling adjacent tiles. If multiple pawns are targetted, the first in attack order will be pulled in.", 
+	Description = "Powerful artillery strike, damaging a single tile and pulling adjacent tiles (in order relative to attack: far, right, left, close).",
 	Class = "Ranged",
 	Icon = "weapons/ranged_mortar.png",
 	Rarity = 3,
@@ -32,7 +32,7 @@ MoonStriders_ApolloMortar = ArtilleryDefault:new{
 		Mountain = Point(2,3)
 	}
 }
-		
+
 Weapon_Texts.MoonStriders_ApolloMortar_Upgrade1 = "Shield Buildings"
 MoonStriders_ApolloMortar_A = MoonStriders_ApolloMortar:new{
 	UpgradeDescription = "This attack will shield Grid Buildings (both primary target and adjacent spaces)",
@@ -51,7 +51,7 @@ MoonStriders_ApolloMortar_A = MoonStriders_ApolloMortar:new{
 		Mountain = Point(2,3)
 	}
 }
-	
+
 Weapon_Texts.MoonStriders_ApolloMortar_Upgrade2 = "+2 Damage"
 MoonStriders_ApolloMortar_B = MoonStriders_ApolloMortar:new{
 	UpgradeDescription = "Increases damage by 2.",
@@ -60,34 +60,34 @@ MoonStriders_ApolloMortar_B = MoonStriders_ApolloMortar:new{
 	ExplosionCenter = "ExploArt2",
 	BounceAmount = 3,
 }
-			
+
 MoonStriders_ApolloMortar_AB = MoonStriders_ApolloMortar:new{
 		DamageCenter = 3,
 		Damage = 3,---USED FOR TOOLTIPS
 		ExplosionCenter = "ExploArt3",
 		BuildingDamage = false,
 		BounceAmount = 3,
-	}			
+	}
 
 -- DefaultArtillery overrident to pull instead of push
-function MoonStriders_ApolloMortar:GetSkillEffect(p1, p2)	
+function MoonStriders_ApolloMortar:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
 	local direction = GetDirection(p2 - p1)
-	
+
 	local sDamage = (self.ShieldBuildings and Board:GetTerrain(p2) == TERRAIN_BUILDING and 0) or self.DamageCenter
 	local damage = SpaceDamage(p2, sDamage)
 	damage.sAnimation = self.ExplosionCenter
 	if self.ShieldBuildings and Board:GetTerrain(p2) == TERRAIN_BUILDING then damage.iShield = EFFECT_CREATE end
-	
-	if not self.BuildingDamage and Board:IsBuilding(p2) then		-- Target Buildings - 
+
+	if not self.BuildingDamage and Board:IsBuilding(p2) then		-- Target Buildings -
 		damage.iDamage = DAMAGE_ZERO
 	end
-	
+
 	ret:AddBounce(p1, 1)
 	ret:AddArtillery(damage, self.UpShot)
-	
+
 	if self.BounceAmount ~= 0 then	ret:AddBounce(p2, self.BounceAmount) end
-	
+
 	-- far, left, right, close
 	local hasFoundPawn = Board:GetPawn(p2) ~= nil
 	for _, relDir in ipairs({0,1,3,2}) do
@@ -95,13 +95,13 @@ function MoonStriders_ApolloMortar:GetSkillEffect(p1, p2)
 		local space = p2 + DIR_VECTORS[dir]
 		damage = SpaceDamage(space,  self.DamageOuter)
 		if self.ShieldBuildings and Board:GetTerrain(p2 + DIR_VECTORS[dir]) == TERRAIN_BUILDING then damage.iShield = EFFECT_CREATE end
-		
+
 		if self.Push == 1 then
 			damage.iPush = (dir + 2) % 4
 		end
 		damage.sAnimation = self.OuterAnimation..dir
-		
-		if not self.BuildingDamage and Board:IsBuilding(p2 + DIR_VECTORS[dir]) then	
+
+		if not self.BuildingDamage and Board:IsBuilding(p2 + DIR_VECTORS[dir]) then
 			damage.iDamage = 0
 			damage.sAnimation = "airpush_"..dir
 		end
@@ -113,10 +113,10 @@ function MoonStriders_ApolloMortar:GetSkillEffect(p1, p2)
 			hasFoundPawn = true
 		end
 		damage.fDelay = 0.05
-		
+
 		ret:AddDamage(damage)
-		if self.BounceOuterAmount ~= 0 then	ret:AddBounce(p2 + DIR_VECTORS[dir], self.BounceOuterAmount) end  
+		if self.BounceOuterAmount ~= 0 then	ret:AddBounce(p2 + DIR_VECTORS[dir], self.BounceOuterAmount) end
 	end
 
 	return ret
-end		
+end
