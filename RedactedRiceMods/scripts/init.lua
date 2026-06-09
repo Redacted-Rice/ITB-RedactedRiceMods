@@ -28,6 +28,7 @@ local libs = {
 	"predictableRandom",
 	"trait",
 	"traitReplace",
+	"trainPawn",
 	-- tutorialTips functions a bit differently and is intentionally excluded here
 	"weaponPreview",
 }

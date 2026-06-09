@@ -149,6 +149,34 @@ Released: 03/28/2026
 
 Initial release. Works for massive but has some issue with exta UIs some icons like flying are use in
 
+## TrainPawn
+Current Release: 0.3.1
+
+### 0.3.1
+Released: 06/02/2026
+
+* WeaponPreview file layout: locals always defined; version gate only wraps `finalizeInit`
+* Engineless cars use `TrainPawnEnginelessSpeed` and `Pushable` from the pawn class (engine speed untouched)
+* `addTrainCharge` has no undo snapshot; player Move keeps undo via `buildTrainMoveEffect`
+
+### 0.3.0
+Released: 06/02/2026
+
+* WeaponPreview-style `finalizeInit` on `onModsInitialized` (local fns, version-safe)
+* Train Move: `AddMove` for engine and cars. Charge weapons (`addTrainCharge`): engine `AddCharge`, cars `AddMove`
+* `addTrainCharge(effect, path, delay)` for charge weapons (vanilla-style, like Prime dash)
+* Mech sprites stay in each mod; removed generic anim registration from the lib
+
+### 0.2.0
+Released: 06/02/2026
+
+* Renamed from TrainMechLib; `TrainPawnType`, trait icons, `onPawnLanding` formation snap
+
+### 0.1.0
+Released: 06/02/2026
+
+* Initial linked train movement library (as TrainMechLib)
+
 ## TutorialTips
 Current Release: 1.2.0
 
