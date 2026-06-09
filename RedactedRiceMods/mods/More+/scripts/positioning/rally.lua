@@ -129,7 +129,7 @@ function customSkill.undoBoosted(mission, pawn, undonePosition)
 
 	-- If we added shield, then remove it
 	if GAME.more_plus.rally.boosted_by_effect[pawnId] then
-		if GAME.more_plus.rally.boosted_by_effect[pawnId].selfPawn then
+		if GAME.more_plus.rally.boosted_by_effect[pawnId].self then
 			logger.logDebug(SUBMODULE, "Pawn %d (self) was not boosted before Rally, removing boosted on undo", pawnId)
 			pawn:SetShield(false)
 		end
