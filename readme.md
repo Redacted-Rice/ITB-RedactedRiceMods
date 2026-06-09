@@ -19,10 +19,9 @@ Please enjoy and contact us if you run into any issues!
 * WorldBuilders - v1.3.2 - This squad focuses on terrain manipulation to block and avoid damage. It has some strong single target effects but you can easily get overwhelmed by numbers if not strategically manipulating the terrain
 
 # Other
-* More+ - v2.1.0 - 35 custom pilot level up skills across 5 categories with Status Library integration
+* More+ - v2.2.0 - 35 custom pilot level up skills across 5 categories with Status Library integration
 * RebalanceCore+ - v1.0.2 - Reblances the core vanilla level up skills (other than reactor) so they are not strictly worse than the AE ones
 * Pilots+ - v1.0.0 - A few pilots focused around adding bonus level up skills beyond the standard two per pilot on level up
-
 
 # Libs
 * ArtilleryArc - v2.0.0 - Originally created by Lemonymous to customize aritllery height. Updated to handle multishot arcs and two click weapons
@@ -59,13 +58,13 @@ Latest release: 1.7.0
 Released: XX/XX/2026
 
 Squads:
-* Moon Walkers 1.0.0
+* Moon Walkers  1.0.0
 * Star Wars     1.0.2
 * Treeherders   3.1.2
 * WorldBuilders 1.3.2
 
 Other Mods:
-* More+          2.1.0
+* More+          2.2.0
 * RebalanceCore+ 1.0.2
 * Pilots+        1.0.0
 

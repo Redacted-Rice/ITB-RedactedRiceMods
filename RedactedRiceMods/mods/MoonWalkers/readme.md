@@ -6,7 +6,7 @@ Created by Das Keifer on behalf of Jefepato
 There’s a YouTuber whose Breach skills are keen,
 Jefepato shows mods crisp and clean,
 So I crafted with care,
-Moon Stalkers to share,
+Moon Walkers to share,
 As a thanks for every mod seen.
 
 This is a somehwat "joke" squad but is very playable. See if you can find all the inversions.
