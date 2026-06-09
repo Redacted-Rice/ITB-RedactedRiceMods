@@ -41,7 +41,7 @@ function customSkill.setShieldings(pawnId, setSelf, adjId)
 
 	initGameSaveData()
 	if not GAME.more_plus.escort.shielded_by_effect[pawnId] then
-		GAME.more_plus.escort.shielded_by_effect[pawnId] = {adjPawns = {}, selfPawn = setSelf or false}
+		GAME.more_plus.escort.shielded_by_effect[pawnId] = {adjPawns = {}, self = setSelf or false}
 	end
 	if adjId then
 		GAME.more_plus.escort.shielded_by_effect[pawnId].adjPawns[adjId] = true
@@ -118,7 +118,7 @@ function customSkill.undoShield(mission, pawn, undonePosition)
 
 	-- If we added shield, then remove it
 	if GAME.more_plus.escort.shielded_by_effect[pawnId] then
-		if GAME.more_plus.escort.shielded_by_effect[pawnId].selfPawn then
+		if GAME.more_plus.escort.shielded_by_effect[pawnId].self then
 			logger.logDebug(SUBMODULE, "Pawn %d (self) was not shielded before Escort, removing shield on undo", pawnId)
 			pawn:SetShield(false)
 		end

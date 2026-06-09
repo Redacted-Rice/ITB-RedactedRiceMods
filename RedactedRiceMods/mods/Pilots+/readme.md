@@ -20,7 +20,7 @@ Skill: Combat Protocols - Gains random skills equal to level on each level up. (
 
 ### Sgt Drake
 
-Sergent Solomon Drake is a grizzled combat veteran who's seen more battles than he can count turned combat trainer. While fighting alongside other pilots he takes time to teach the squad hard-won survival tricks and tactics he's learned over the years.
+Sergeant Solomon Drake is a grizzled combat veteran who's seen more battles than he can count turned combat trainer. While fighting alongside other pilots he takes time to teach the squad hard-won survival tricks and tactics he's learned over the years.
 
 Skill: Combat Mentor - After completing 3 missions with a pilot, the pilot will gain one random level up skill
 
