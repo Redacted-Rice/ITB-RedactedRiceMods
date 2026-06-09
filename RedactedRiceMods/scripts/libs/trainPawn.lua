@@ -185,6 +185,59 @@ local function getTrainChain()
 	return chain
 end
 
+--------- TRAIN PAWN DIRECTIONAL IMAGES ------------------
+
+local function setPawnFacing(pawn, direction , skipSave)
+	if direction == nil then
+		return
+	end
+	if not skipSave then
+		-- TODO: Make a temporary
+		setStoredFacing(pawn:GetId(), direction)
+	end
+	local class = _G[pawn:GetType()]
+	local image = class and class.Image
+	if not image then
+		return
+	end
+	local animId = image .. "_dir" .. direction
+	if ANIMS[animId] then
+		pawn:SetCustomAnim(animId)
+	end
+end
+
+local function setAllPawnFacingToDefault()
+	for _, pawnData in ipairs(getTrainChain()) do
+		setPawnFacing(pawnData.pawn, DEFAULT_DIR)
+	end
+end
+
+local function refreshAllPawnVisuals()
+	if not Board or not isLinkedTrainMode() then
+		return
+	end
+
+	local prevPawn = nil
+	for _, pawnData in ipairs(getTrainChain()) do
+		local direction = getStoredFacing(pawnData.id)
+		if direction == nil then
+			if prevPawn == nil then
+				local engine = getEngine()
+				local cars = getCars()
+				if cars[1] then
+					direction = GetDirection(engine:GetSpace() - cars[1]:GetSpace())
+				else
+					direction = DEFAULT_DIR
+				end
+			else
+				direction = GetDirection(prevPawn:GetSpace() - pawnData.pawn:GetSpace())
+			end
+		end
+		setPawnFacing(pawnData.pawn, direction)
+		prevPawn = pawnData.pawn
+	end
+end
+
 --------- CAR PAWN MOVE SKILL EFFECT ------------------
 
 TrainPawn_FollowerMove = Move:new{}
@@ -227,19 +280,16 @@ end
 
 --------- TRAIN PAWN MOVE FUNCTIONS ------------------
 
-local function addStep(effect, path, fromIndex, toIndex, pawnId, delay)
+local function addStep(effect, path, fromIndex, toIndex, pawnId)
 	local from = path:index(fromIndex)
 	local to = path:index(toIndex)
 	local dir = GetDirection(to - from)
 
 	-- Switch image direction
-	effect:AddScript(buildFacingScript(pawnId, dir))
-
-	-- Move it one step
-	local step = PointList()
-	step:push_back(from)
-	step:push_back(to)
-	effect:AddMove(step, delay)
+	effect:AddScript( [[
+		Board:GetPawn(]]..pawnId..[[):SetSpace(]]..to:GetString()..[[)
+	]])
+	TrainPawn.setPawnFacing(Board:GetPawn(pawnId), dir, true)
 end
 
 local function buildNextFollowerPath(prevPawnPath, pawnPos)
@@ -252,8 +302,9 @@ local function buildNextFollowerPath(prevPawnPath, pawnPos)
 end
 
 local function buildTrainMoveEffect(engine, p1, p2)
-	local enginePath = Board:GetPath(p1, p2, engine:GetPathProf())
 	local ret = SkillEffect()
+	local enginePath = Board:GetPath(p1, p2, engine:GetPathProf())
+	ret:AddMove(enginePath, NO_DELAY)
 
 	-- train pawn states captured on skill start
 
@@ -262,13 +313,17 @@ local function buildTrainMoveEffect(engine, p1, p2)
 	local lastPawn = #cars
 	for i, car in ipairs(cars) do
 		paths[i] = buildNextFollowerPath(paths[i - 1], car:GetSpace())
+		ret:AddMove(paths[i], NO_DELAY)
 	end
 
+	-- Add move for display purposes. This won't let us move onto unmovable spaces reliably
+
 	for step = 2, enginePath:size() do
-		addStep(ret, paths[0], step - 1, step, engine:GetId(), lastPawn == 0 and FULL_DELAY or NO_DELAY)
+		addStep(ret, paths[0], step - 1, step, engine:GetId())
 		for i, car in ipairs(cars) do
-			addStep(ret, paths[i], step - 1, step, car:GetId(), lastPawn == i and FULL_DELAY or NO_DELAY)
+			addStep(ret, paths[i], step - 1, step, car:GetId())
 		end
+		ret:AddDelay(0.1)
 	end
 	return ret
 end
@@ -342,6 +397,10 @@ local function onTrainMoveStart(mission, pawn, weaponId)
 	captureTrainMoveUndoState(mission, engine)
 end
 
+local function onTrainMoveEnd(mission, pawn, weaponId)
+	--TODO: Save temp facing state
+end
+
 local function onTrainUndoMove(mission, pawn, undonePosition)
 	if not mission then
 		return
@@ -370,60 +429,6 @@ local function onTrainUndoMove(mission, pawn, undonePosition)
 
 	-- Clear the state. Technically not needed
 	clearStoredUndoState(mission)
-end
-
---------- TRAIN PAWN DIRECTIONAL IMAGES ------------------
-
-local function setPawnFacing(pawn, direction)
-	if direction == nil then
-		return
-	end
-	setStoredFacing(pawn:GetId(), direction)
-	local class = _G[pawn:GetType()]
-	local image = class and class.Image
-	if not image then
-		return
-	end
-	local animId = image .. "_dir" .. direction
-	if ANIMS[animId] then
-		pawn:SetCustomAnim(animId)
-	end
-end
-
-local function buildFacingScript(pawnId, direction)
-	return "TrainPawn.setPawnFacing(Board:GetPawn(" .. pawnId .. "), " .. direction .. ")"
-end
-
-local function resetAllPawnFacing()
-	for _, pawnData in ipairs(getTrainChain()) do
-		setPawnFacing(pawnData.pawn, DEFAULT_DIR)
-	end
-end
-
-local function refreshAllPawnVisuals()
-	if not Board or not isLinkedTrainMode() then
-		return
-	end
-
-	local prevPawn = nil
-	for _, pawnData in ipairs(getTrainChain()) do
-		local direction = getStoredFacing(pawnData.id)
-		if direction == nil then
-			if prevPawn == nil then
-				local engine = getEngine()
-				local cars = getCars()
-				if cars[1] then
-					direction = GetDirection(engine:GetSpace() - cars[1]:GetSpace())
-				else
-					direction = DEFAULT_DIR
-				end
-			else
-				direction = GetDirection(prevPawn:GetSpace() - pawnData.pawn:GetSpace())
-			end
-		end
-		setPawnFacing(pawnData.pawn, direction)
-		prevPawn = pawnData.pawn
-	end
 end
 
 --------- DEPLOYMENT HANDLING ------------------
@@ -480,7 +485,7 @@ local function alignTrainPawn(pawn)
     else
 		local facing = GetDirection(prevPawn:GetSpace() - pawn:GetSpace())
 		-- Adjust the engine facing if the next car is already in the right position
-		if alreadyThere and prevPawn == engine then
+		if alreadyThere and prevPawn:GetId() == engine:GetId() then
 			setPawnFacing(engine, facing)
 		end
 		setPawnFacing(pawn, facing)
@@ -498,7 +503,7 @@ end
 
 local function onMissionStart(mission)
 	applyTrainPawnState()
-	resetAllPawnFacing()
+	setAllPawnFacingToDefault()
 end
 
 local function onPostLoadGame()
@@ -519,9 +524,9 @@ local function onPawnLanding(pawnId)
 	end
 end
 
-local function onPawnPositionChanged(mission, pawn, oldPosition)
+--[[local function onPawnPositionChanged(mission, pawn, oldPosition)
 	-- Todo: need to handle in case they move engine by other effects
-end
+end]]
 
 local function registerEvents()
 	modApi.events.onPawnLanding:subscribe(onPawnLanding)
@@ -532,11 +537,12 @@ local function registerHooks()
 	modApi:addPostLoadGameHook(onPostLoadGame)
 
 	modapiext:addSkillStartHook(onTrainMoveStart)
+	modapiext:addSkillEndHook(onTrainMoveEnd)
 	modapiext:addPawnUndoMoveHook(onTrainUndoMove)
 
-	modapiext:addPawnPositionChangedHook(function(mission, pawn, oldPosition)
-		onPawnPositionChanged(mission, pawn, oldPosition)
-	end)
+	--modapiext:addPawnPositionChangedHook(onPawnPositionChanged)
+
+	modapiext:addPawnUnselectedHook(refreshAllPawnVisuals)
 end
 
 local function onModsInitialized()
