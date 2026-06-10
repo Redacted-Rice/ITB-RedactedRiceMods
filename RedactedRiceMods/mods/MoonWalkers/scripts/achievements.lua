@@ -137,7 +137,7 @@ end
 end]]
 
 function MoonStridersAchievements:subscribe()
-	modApi.events.onIslandLeft:subscribe(self.onIslandLeftHook)
+	--modApi.events.onIslandLeft:subscribe(self.onIslandLeftHook)
 end
 
 function MoonStridersAchievements:addHooks()
