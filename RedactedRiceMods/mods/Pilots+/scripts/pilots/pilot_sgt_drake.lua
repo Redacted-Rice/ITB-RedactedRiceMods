@@ -241,7 +241,9 @@ function this:load(options, version)
 end
 
 -- Register personality with dialog
-CreatePilotPersonality(pilot.Personality, dialog)
+local personality = CreatePilotPersonality(pilot.Personality, pilot.Name)
+personality:AddDialogTable(dialog)
+Personality[pilot.Personality] = personality
 
 Pilot_Sgt_Drake_Ref = this
 return Pilot_Sgt_Drake_Ref
