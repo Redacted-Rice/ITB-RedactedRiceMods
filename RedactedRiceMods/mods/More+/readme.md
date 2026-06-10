@@ -14,7 +14,7 @@ Please enjoy and contact us if you run into any issues.
 * Email: RedactedRice@gmail.com
 
 ## Known Issues
-* On death effects don't trigger with +/x damage effects. This will be a difficult one to fix
+* On death effects (Arachnoid not spawning on kill) don't trigger with +/x damage effects. Shooting for a fix next CPLUS+ release
 
 ## Custom Skills Added
 
