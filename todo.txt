@@ -28,7 +28,8 @@ Known Issues:
 ------------------------------------------------------------------------------
 
 Star Wars:
-Start work on the empire >:)
+2.0: Empire Strikes Back
+	* in progress
 
 
 ------------------------------------------------------------------------------
@@ -50,23 +51,17 @@ Known Issues:
 ------------------------------------------------------------------------------
 
 Pilots+:
-1. Add extra skills to corp skill names
-2. Test out moonstrider achievements again
-3. Remove extra data storage in sgt drake
-4. More testing
+
+1.2:
+	* Add extra skills to corp skills somehow
+	* Remove extra data storage in sgt drake
+	* Add option for sgt drake to choice from his own earned skills only
 
 
 ------------------------------------------------------------------------------
 
 LegendaryLvlUpSkills:
 Planned out. To start work later
-
-
-------------------------------------------------------------------------------
-
-PilotStore:
-In progress. May end up scraping. It will get complicated especially if I want to handle virtual skills now.
-May instead make mod to allow choosing between x skills on level up
 
 
 ------------------------------------------------------------------------------

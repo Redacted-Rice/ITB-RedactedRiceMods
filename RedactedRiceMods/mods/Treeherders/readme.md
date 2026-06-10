@@ -16,7 +16,20 @@ Please enjoy and contact us if you run into any issues!
 3. Forest armor icon will sometimes appear when environment effects are occuring. I think this should be mostly fixed now but may show occasionally
 
 # Releases
-Latest release: 3.1.2
+Latest release: 3.1.3
+
+## 3.1.3
+Released: XX/XX/2026
+
+compatible with:
+* ItB AE        1.2.93
+* ModLoader     2.9.4
+* ModLoaderExt  1.21
+* memedit       1.2.0
+* easyEdit      2.0.8
+
+### Notes
+* Fixed mech names to include "Mech"
 
 ## 3.1.2
 Released: 05/04/2026
