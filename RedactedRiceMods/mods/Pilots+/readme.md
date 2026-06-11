@@ -24,6 +24,12 @@ Sergeant Solomon Drake is a grizzled combat veteran who's seen more battles than
 
 Skill: Combat Mentor - After completing 3 missions with a pilot, the pilot will gain one random level up skill
 
+### Instructor Hale
+
+A methodical field instructor who passes on her own earned level up skills to the squad. Once she has learned a skill herself, she can teach it to another pilot over three shared missions.
+
+Skill: Field Instruction - Every 3 missions, teaches one of her earned level up skills to a random squad pilot who does not already have it
+
 
 # Releases
 Latest release: 1.0.0

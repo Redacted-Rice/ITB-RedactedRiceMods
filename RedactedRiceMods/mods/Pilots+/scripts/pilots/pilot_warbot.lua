@@ -18,7 +18,7 @@ local pilot = {
 	Name = "Warbot",
 	Sex = SEX_MALE,
 	Skill = "Combat Protocols",
-	Voice = "/voice/ralph",
+	Voice = "/voice/archimedes",
 }
 
 local dialog = require(path .. "scripts/pilots/dialog_warbot")
