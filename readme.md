@@ -55,7 +55,7 @@ Latest release: 1.7.0
 * Adding Invulnerable+ skill
 * Various other minor fixes
 
-Released: XX/XX/2026
+Released: 6/11/2026
 
 Squads:
 * Moon Walkers  1.0.0

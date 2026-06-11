@@ -125,7 +125,7 @@ Copied from Lemonymous and updated to handle multiple traits by appending text t
 Current Release: 0.9.1
 
 ### 0.9.1
-Released: XX/XX/2026
+Released: 6/11/2026
 
 Fixing case where Board could be nil causing a failure
 
@@ -153,7 +153,7 @@ Initial release. Works for massive but has some issue with exta UIs some icons l
 Current Release: 1.2.0
 
 ### 1.2.0
-Released: XX/XX/2026
+Released: 6/11/2026
 
 * Included to support WeaponPreview and updated to allow specifying a rootId instead of always using mod.id to support weaponPreview using it
 
@@ -167,7 +167,7 @@ Brough in from Lemonymous' repo in support of ArtilleryArc. No changes
 Current Release: 4.1.0
 
 ### 4.1.0
-Released: XX/XX/2026
+Released: 6/11/2026
 
 * Added support for grouping of icons so we can show when a bunch of icons would be displayed
 * Added tool tips via H key for showing details for preview with details (mainly for the above grouped icons case)
