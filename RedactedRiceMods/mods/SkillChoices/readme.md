@@ -1,18 +1,30 @@
 # Skill Choices
-A mod by Redacted Rice that lets you pick pilot level up skills when a pilot levels up instead of receiving a pre-assigned random skill.
+A mod that lets you pick pilot level up skills when a pilot levels up instead of receiving a pre-assigned random skill for Into the Breach by Redacted Rice.
+
+Created by Das Keifer
+
+Join the Redacted Rice discord for support, more mods, discussion and other projects: https://discord.gg/CNjTVrpN4v
+
+Please enjoy and contact us if you run into any issues!
+* RedactedRice Discord Server: https://discord.gg/CNjTVrpN4v
+* ItB Discord: Das Keifer
+* Email: RedactedRice@gmail.com
 
 ## Features
 - On pilot level up, opens a dialog with a configurable number of skill options (default: 3, up to 20)
-- Fewer options are shown when fewer valid skills are available (e.g. requesting 20 with only 14 enabled skills shows 14)
-- Layout adapts by count: a single-column list for up to 6 options, a 2-column grid for 7-12, and a 3-column grid for 13+
-- Large option counts scroll inside the dialog instead of stretching off-screen
 - Skill buttons show the short name. Hover to see full name and description
-- Requires selecting a skill and clicking **Confirm** before the choice is applied
-- Clicking outside the dialog does **not** close it
 
-## Configuration
-In the mod configuration screen, use **Level Up Skill Choices** to set how many options are offered (2-20). This requires a restart.
+# Releases
+Latest release: 1.0.0
 
-## Requirements
-- CPLUS+ Ex
-- Memhack Ex
+## 1.0.0
+Released: 6/11/2026
+
+compatible with:
+* ItB AE        1.2.93
+* ModLoader     2.9.5
+* memhack       1.2.0
+* CPLUS+        1.2.0
+
+### Notes
+* Initial release!
