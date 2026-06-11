@@ -8,7 +8,7 @@ local mod = {
 	description = "Choose pilot level up skills from a configurable sized list of options when a pilot levels up.",
 	dependencies = {
 		redactedrice_cplus_plus = "1.2.0",
-		redactedrice_memhack = "1.1.1",
+		redactedrice_memhack = "1.2.0",
 	},
 }
 
