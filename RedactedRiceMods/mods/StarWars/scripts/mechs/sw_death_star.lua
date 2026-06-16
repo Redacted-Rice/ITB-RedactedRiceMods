@@ -6,24 +6,20 @@ local mod = modApi:getCurrentMod()
 
 local squadColors = modApi:getPaletteImageOffset("starwars_empire_color")
 
--- Temporarily use Millennium Falcon images
 local files = {
-	"sw_melfalcon.png",
-	"sw_melfalcon_a.png",
-	"sw_melfalcon_w_broken.png",
-	"sw_melfalcon_broken.png",
-	"sw_melfalcon_ns.png",
+	"sw_deathstar_ns.png",
 	"sw_melfalcon_h.png"
 }
 
 -- -x = left, +x = right
 -- -y = up, +y - down
 local a = ANIMS
-a.sw_deathstar =         a.MechUnit:new{Image = "units/player/sw_melfalcon.png",          PosX = -19, PosY = -11 }
-a.sw_deathstara =        a.MechUnit:new{Image = "units/player/sw_melfalcon_a.png",        PosX = -19, PosY = -11, NumFrames = 5 }
-a.sw_deathstar_broken =  a.MechUnit:new{Image = "units/player/sw_melfalcon_broken.png",   PosX = -19, PosY = 1 }
-a.sw_deathstarw_broken = a.MechUnit:new{Image = "units/player/sw_melfalcon_w_broken.png", PosX = -18, PosY = 4 }
-a.sw_deathstar_ns =      a.MechIcon:new{Image = "units/player/sw_melfalcon_ns.png" }
+-- These shouldn't matter
+a.sw_deathstar =         a.MechUnit:new{Image = "units/player/sw_deathstar_ns.png", PosX = -18, PosY = 4 }
+a.sw_deathstara =        a.MechUnit:new{Image = "units/player/sw_deathstar_ns.png", PosX = -18, PosY = 4 }
+a.sw_deathstar_broken =  a.MechUnit:new{Image = "units/player/sw_deathstar_ns.png", PosX = -18, PosY = 4 }
+a.sw_deathstarw_broken = a.MechUnit:new{Image = "units/player/sw_deathstar_ns.png", PosX = -18, PosY = 4 }
+a.sw_deathstar_ns =      a.MechIcon:new{Image = "units/player/sw_deathstar_ns.png" }
 
 -- Add orbital launch animation (reuse timetravel effect)
 a.StarWars_DeathStarLaunch = Animation:new{
