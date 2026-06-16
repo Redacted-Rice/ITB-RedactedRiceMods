@@ -29,10 +29,12 @@ Known Issues:
 
 Star Wars:
 2.0: Empire Strikes Back (v1.9)
-	1. Images for weapons & replace repair
-	2. Death star replace repair
-	3. Testing playthrough
-	4. Vader image (and replace repair) & testing
+	1. Images for weapons & Death star replace repair
+	2. Vader image (and replace repair) & testing
+	3. Add more images (anims, break, water, etc)
+	4. Death star + shielded building in adj evacs building
+	5. Skill effect issue for repair skill
+	6. Testing playthrough
 
 
 ------------------------------------------------------------------------------

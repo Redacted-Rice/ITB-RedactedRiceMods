@@ -1,7 +1,6 @@
 StarWars_EmpireOfTerror = PassiveSkill:new{
 	Name = "Empire of Terror",
 	Description = "The first 4 grid lost from buildings will be restored. Building populations are halved during player turns.",
-	Class = "Any",
 	PowerCost = 3,
 	Upgrades = 2,
 	UpgradeCost = {2, 1},
@@ -214,7 +213,7 @@ function StarWars_EmpireOfTerror:GetPassiveSkillEffect_MissionStartHook(mission)
 	end
 end
 
-function StarWars_EmpireOfTerror:skillStartBoostGrid(weaponId, self)
+function StarWars_EmpireOfTerror:skillStartBoostGrid(weaponId)
 	if weaponId == "Move" then return end
 
 	initGameSaveData()
@@ -240,7 +239,7 @@ function StarWars_EmpireOfTerror:skillStartBoostGrid(weaponId, self)
 	end
 end
 
-function StarWars_EmpireOfTerror:skillEndRevertGrid(weaponId, self)
+function StarWars_EmpireOfTerror:skillEndRevertGrid(weaponId)
 	if weaponId == "Move" then return end
 
 	initGameSaveData()

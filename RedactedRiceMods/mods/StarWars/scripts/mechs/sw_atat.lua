@@ -9,20 +9,20 @@ local squadColors = modApi:getPaletteImageOffset("starwars_empire_color")
 -- Temporarily use Snow Speeder images
 local files = {
 	"sw_atat.png",
-	"sw_snowspeeder_a.png",
-	"sw_snowspeeder_w_broken.png",
-	"sw_snowspeeder_broken.png",
-	"sw_snowspeeder_ns.png",
-	"sw_snowspeeder_h.png"
+	"sw_atat_ns.png",
 }
+
+for _, file in ipairs(files) do
+	modApi:appendAsset("img/units/player/" .. file, mechPath .. file)
+end
 
 -- -x = left, +x = right
 -- -y = up, +y - down
 local a = ANIMS
 a.sw_atat =         a.MechUnit:new{Image = "units/player/sw_atat.png",          PosX = -20, PosY = -6 }
-a.sw_atata =        a.MechUnit:new{Image = "units/player/sw_snowspeeder_a.png",        PosX = -20, PosY = -6, NumFrames = 6 }
-a.sw_atat_broken =  a.MechUnit:new{Image = "units/player/sw_snowspeeder_broken.png",   PosX = -18, PosY = -1 }
-a.sw_atatw_broken = a.MechUnit:new{Image = "units/player/sw_snowspeeder_w_broken.png", PosX = -18, PosY = 6 }
+a.sw_atata =        a.MechUnit:new{Image = "units/player/sw_atat.png",        PosX = -20, PosY = -6, NumFrames = 1 }
+a.sw_atat_broken =  a.MechUnit:new{Image = "units/player/sw_atat.png",   PosX = -18, PosY = -1 }
+a.sw_atatw_broken = a.MechUnit:new{Image = "units/player/sw_atat.png", PosX = -18, PosY = 6 }
 a.sw_atat_ns =      a.MechIcon:new{Image = "units/player/sw_atat_ns.png" }
 
 
