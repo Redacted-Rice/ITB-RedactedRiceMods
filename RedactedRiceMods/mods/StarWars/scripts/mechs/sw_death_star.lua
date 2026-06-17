@@ -8,6 +8,7 @@ local squadColors = modApi:getPaletteImageOffset("starwars_empire_color")
 
 local files = {
 	"sw_death_star_ns.png",
+	"sw_death_star_h.png",
 }
 
 for _, file in ipairs(files) do
@@ -18,10 +19,10 @@ end
 -- -y = up, +y - down
 local a = ANIMS
 -- These shouldn't matter
-a.sw_deathstar =         a.MechUnit:new{Image = "units/player/sw_death_star_ns.png", PosX = -18, PosY = 4 }
-a.sw_deathstara =        a.MechUnit:new{Image = "units/player/sw_death_star_ns.png", PosX = -18, PosY = 4 }
-a.sw_deathstar_broken =  a.MechUnit:new{Image = "units/player/sw_death_star_ns.png", PosX = -18, PosY = 4 }
-a.sw_deathstarw_broken = a.MechUnit:new{Image = "units/player/sw_death_star_ns.png", PosX = -18, PosY = 4 }
+a.sw_deathstar =         a.MechUnit:new{Image = "units/player/sw_death_star_ns.png", PosX = -22, PosY = -8 }
+a.sw_deathstara =        a.MechUnit:new{Image = "units/player/sw_death_star_ns.png", PosX = -22, PosY = -8 }
+a.sw_deathstar_broken =  a.MechUnit:new{Image = "units/player/sw_death_star_ns.png", PosX = -22, PosY = -8 }
+a.sw_deathstarw_broken = a.MechUnit:new{Image = "units/player/sw_death_star_ns.png", PosX = -22, PosY = -8 }
 a.sw_deathstar_ns =      a.MechIcon:new{Image = "units/player/sw_death_star_ns.png" }
 
 -- Add orbital launch animation (reuse timetravel effect)
