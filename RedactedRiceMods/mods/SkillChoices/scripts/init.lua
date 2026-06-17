@@ -18,7 +18,8 @@ function mod:metadata()
 		"Level Up Skill Choices",
 		"Number of level up skills offered when a pilot levels up",
 		{
-			values = { 2, 3, 4, 5, 6, 8, 10, 14, 20 },
+			values = { 2, 3, 4, 5, 6, 8, 10, 14, 20, "all" },
+			strings = { "2", "3", "4", "5", "6", "8", "10", "14", "20", "All" },
 			value = 3,
 		}
 	)
