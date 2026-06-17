@@ -69,9 +69,28 @@ local function addChoiceAndRemoveFromPool(choices, value, pool)
 	end
 end
 
+-- Returns all enabled skills that pass constraints for this pilot and slot, in alphabetical order.
+function skill_choice_ui:buildAllValidChoices(pilot, slotIndex)
+	local selectedSkills = self:buildConstraintContext(pilot, slotIndex)
+	local choices = {}
+
+	for _, skillId in ipairs(self:buildAvailableSkills()) do
+		if cplus_plus_ex:checkSkillConstraints(pilot, selectedSkills, skillId) then
+			table.insert(choices, skillId)
+		end
+	end
+
+	return choices
+end
+
 -- Returns up to `count` distinct valid choices, or fewer when not enough skills exist.
 -- First choice is always the pre-assigned skill for this slot.
+-- When count is "all", returns every enabled non-conflicting skill in alphabetical order.
 function skill_choice_ui:generateChoices(pilot, slotIndex, count)
+	if count == "all" then
+		return self:buildAllValidChoices(pilot, slotIndex)
+	end
+
 	local selectedSkills = self:buildConstraintContext(pilot, slotIndex)
 	local pool = self:buildAvailableSkills()
 	local choices = {}
