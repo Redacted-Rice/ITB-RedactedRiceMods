@@ -44,6 +44,18 @@ function skill_choice_ui:buildAvailableSkills()
 	return availableSkills
 end
 
+function skill_choice_ui:sortSkillIdsForDisplay(skillIds)
+	table.sort(skillIds, function(a, b)
+		local nameA = self:getSkillDisplayInfo(a).shortName:lower()
+		local nameB = self:getSkillDisplayInfo(b).shortName:lower()
+		if nameA ~= nameB then
+			return nameA < nameB
+		end
+		return a < b
+	end)
+	return skillIds
+end
+
 function skill_choice_ui:buildConstraintContext(pilot, slotIndex)
 	local selectedSkills = {}
 
@@ -59,17 +71,16 @@ function skill_choice_ui:buildConstraintContext(pilot, slotIndex)
 	return selectedSkills
 end
 
-local function addChoiceAndRemoveFromPool(choices, value, pool)
-	table.insert(choices, value)
+local function removeFromPool(pool, skillId)
 	for i, id in ipairs(pool) do
-		if id == value then
+		if id == skillId then
 			table.remove(pool, i)
 			return
 		end
 	end
 end
 
--- Returns all enabled skills that pass constraints for this pilot and slot, in alphabetical order.
+-- Returns all enabled skills that pass constraints for this pilot and slot.
 function skill_choice_ui:buildAllValidChoices(pilot, slotIndex)
 	local selectedSkills = self:buildConstraintContext(pilot, slotIndex)
 	local choices = {}
@@ -84,8 +95,8 @@ function skill_choice_ui:buildAllValidChoices(pilot, slotIndex)
 end
 
 -- Returns up to `count` distinct valid choices, or fewer when not enough skills exist.
--- First choice is always the pre-assigned skill for this slot.
--- When count is "all", returns every enabled non-conflicting skill in alphabetical order.
+-- The pre-assigned skill is always included. When count is "all", returns every
+-- enabled non-conflicting skill.
 function skill_choice_ui:generateChoices(pilot, slotIndex, count)
 	if count == "all" then
 		return self:buildAllValidChoices(pilot, slotIndex)
@@ -96,16 +107,18 @@ function skill_choice_ui:generateChoices(pilot, slotIndex, count)
 	local choices = {}
 
 	local preAssigned = pilot:getLvlUpSkill(slotIndex):getIdStr()
-	addChoiceAndRemoveFromPool(choices, preAssigned, pool)
+	table.insert(choices, preAssigned)
+	removeFromPool(pool, preAssigned)
 
 	while #choices < count do
 		local skillId = cplus_plus_ex:selectRandomSkill(pool, pilot, nil, selectedSkills)
-		-- Not enough where valid choices or we grabbed them all so we are done
 		if not skillId then
 			break
 		end
-		addChoiceAndRemoveFromPool(choices, skillId, pool)
+		table.insert(choices, skillId)
+		removeFromPool(pool, skillId)
 	end
+
 	return choices
 end
 
@@ -245,13 +258,19 @@ function skill_choice_ui:buildSkillRowsLayout(parent, skillIds, itemBuilder)
 		return nil
 	end
 
+	local sortedSkillIds = {}
+	for _, skillId in ipairs(skillIds) do
+		table.insert(sortedSkillIds, skillId)
+	end
+	self:sortSkillIdsForDisplay(sortedSkillIds)
+
 	local container = UiBoxLayout()
 		:width(1)
 		:vgap(GRID_GAP)
 		:padding(GRID_PADDING)
 		:addTo(parent)
 
-	for _, skillId in ipairs(skillIds) do
+	for _, skillId in ipairs(sortedSkillIds) do
 		itemBuilder(container, skillId)
 	end
 
