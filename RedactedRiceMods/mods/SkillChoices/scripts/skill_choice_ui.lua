@@ -5,8 +5,13 @@ local skill_choice_ui = {}
 
 local SUBMODULE = "SkillChoices"
 
+local PAUSE_ANIM_ID = "sc_skillchoices_pause"
+local PAUSE_ANIM_IMAGE = "effects/sc_skillchoices_pause.png"
+local PAUSE_ANIM_DURATION = 0.05
+
 local pendingQueue = {}
 local dialogOpen = false
+local pauseAnimRegistered = false
 
 local ROW_HEIGHT = 45
 local GRID_GAP = 8
@@ -584,7 +589,36 @@ function skill_choice_ui:clearPendingDialogs()
 	dialogOpen = false
 end
 
+function skill_choice_ui:registerPauseAnimation()
+	if pauseAnimRegistered then
+		return
+	end
+
+	ANIMS[PAUSE_ANIM_ID] = ANIMS.Animation:new{
+		Image = PAUSE_ANIM_IMAGE,
+		NumFrames = 1,
+		Time = PAUSE_ANIM_DURATION,
+		Loop = false,
+	}
+
+	pauseAnimRegistered = true
+end
+
+-- Keeps the board busy by retriggering a hidden one-frame animation with FULL_DELAY.
+function skill_choice_ui:retriggerBoardBusyHold()
+	if not dialogOpen or not Board or GetCurrentMission() == nil then
+		return
+	end
+	Board:AddAnimation(Point(0, 0), PAUSE_ANIM_ID, FULL_DELAY)
+end
+
 function skill_choice_ui:load()
+	self:registerPauseAnimation()
+
+	modApi.events.onFrameDrawn:subscribe(function()
+		self:retriggerBoardBusyHold()
+	end)
+
 	memhack:addPilotChangedHook(function(pilot, changes)
 		self:onPilotLevelChanged(pilot, changes)
 	end)
