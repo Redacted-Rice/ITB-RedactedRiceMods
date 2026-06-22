@@ -26,6 +26,11 @@ function mod:metadata()
 end
 
 function mod:init(options)
+	modApi:appendAsset(
+		"img/effects/sc_skillchoices_pause.png",
+		self.resourcePath .. "img/effects/sc_skillchoices_pause.png"
+	)
+
 	local skill_choice_ui = require(self.scriptPath .. "skill_choice_ui")
 	self.skill_choice_ui = skill_choice_ui
 end
