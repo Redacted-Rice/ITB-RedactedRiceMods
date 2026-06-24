@@ -1,6 +1,8 @@
 --[[
 TraitReplace - Allows adding custom UI traits that cycle with vanilla traits
 
+Libs Wiki: https://github.com/Redacted-Rice/ITB-RedactedRiceMods/wiki
+
 Author: Das Keifer of Redacted Rice
 Discord Server: https://discord.gg/CNjTVrpN4v
 
@@ -13,7 +15,7 @@ icons on top of flying and Lemonymous for the trait library which was
 the inspiration/starting point for this
 ]]
 
-local VERSION = "0.9.1"
+local VERSION = "0.9.2"
 local DEBUG = false
 
 local mod_path = mod_loader.mods[modApi.currentMod]
