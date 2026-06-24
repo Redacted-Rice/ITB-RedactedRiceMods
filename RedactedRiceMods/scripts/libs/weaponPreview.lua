@@ -7,6 +7,8 @@ local VERSION = "4.1.0"
 -- by Lemonymous
 -- Enhanced by Das Keifer to allow usage in skill build events and
 -- for two click weapon support
+--
+-- Wiki (4.x): https://github.com/Redacted-Rice/ITB-RedactedRiceMods/wiki
 ----------------------------------------------------------------------
 --  A library for
 --   - enhancing preview of weapons/move/repair skills with
@@ -1390,7 +1392,7 @@ local path = GetParentPath(...)
 
 local function initTutorialTips()
 	tutorialTips = require(path .. "tutorialTips")
-	
+
 	-- Initialize with a specific root ID so it can be shared/reset by other mods
 	tutorialTips:Init("WeaponPreviewLib")
 

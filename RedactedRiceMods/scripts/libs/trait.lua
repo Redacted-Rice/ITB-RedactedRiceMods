@@ -5,6 +5,9 @@ local VERSION = "3.0.1"
 --
 -- by Lemonymous
 -- Enhanced by Das Keifer to support multiple trait cycling and icons in move preview
+--
+-- Wiki (3.x): https://github.com/Redacted-Rice/ITB-RedactedRiceMods/wiki
+--
 ---------------------------------------------------------------------
 -- Provides functionality to add traits to pawns.
 -- Traits are purely visual - displaying an icon and a description.

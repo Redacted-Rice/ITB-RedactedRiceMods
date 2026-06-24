@@ -1,11 +1,10 @@
 --[[
 PassiveEffect - Allows for easily creating passive effect for weapons
 
-Author: Das Keifer of Redacted Rice
-Version: 1.3.0
-Discord Server: https://discord.gg/CNjTVrpN4v
+Libs Wiki: https://github.com/Redacted-Rice/ITB-RedactedRiceMods/wiki
 
-See the Treeherder's "Wake the Forest" passive ability for an example of usage
+Author: Das Keifer of Redacted Rice
+Discord Server: https://discord.gg/CNjTVrpN4v
 
 How to Use:
 In the function mod:load(options, version) in init.lua after loading your weapons, load the passive effects:
@@ -35,7 +34,7 @@ When creating a weapon:
 			"preEnvironmentHook"})
  ]]--
 
-local VERSION = "1.4.0"
+local VERSION = "1.5.0"
 
 -- Version check
 local isNewestVersion = false
@@ -459,55 +458,77 @@ if isNewestVersion then
 		PassiveEffect.saveGameRefreshPassives()
 	end
 
-	--The function that adds the required hooks to the game for passive weapons
-	--This should only be called once for all instances of ModUtils!
-	function PassiveEffect:addHooks()
-		modApi:addMissionStartHook(self.determineIfPassivesAreActive) --covers starting a new
-		modApi:addPostLoadGameHook(self.determineIfPassivesAreActiveFromSaveData) --covers loading into (continuing) a mission
-		-- Guards for things only added during a mission or any edge cases as we save after any change that should result in them changing or testing the changes
-		modApi:addSaveGameHook(self.saveGameRefreshPassives)
+	function PassiveEffect:subscribeLibEvents()
+		if self.libEventsSubscribed then
+			return
+		end
+		self.libEventsSubscribed = true
 
-		-- Test mech requires special handling. The event is fired before the board is set so we
-		-- use the skill build as a trigger for loading the powered weapons as it will be done
-		-- right at the start since it starts with move active
-		modApi:addTestMechEnteredHook(self.setIsTestMech)
-		modApi:addTestMechExitedHook(self.unsetIsTestMech)
+		modApi.events.onModsLoaded:subscribe(function()
+			PassiveEffect:reloadWeaponHooks()
+		end)
 
-		--Create the needed hook objects and add the functions that handle executing
-		--the active passive effects
-		for hookOrEvent,_ in pairs(PassiveEffect.data.possibleEffects) do
-			if PassiveEffect.DebugLog then LOG("Processing passive effect caller for: "..hookOrEvent) end
+		modApi.events.onMissionStart:subscribe(function(mission)
+			PassiveEffect.determineIfPassivesAreActive()
+		end)
 
-			local handlerFn = PassiveEffect.buildPassiveEffectHookFn(hookOrEvent)
+		modApi.events.onPostLoadGame:subscribe(function()
+			PassiveEffect.determineIfPassivesAreActiveFromSaveData()
+		end)
 
-			-- Check if this is an event or a hook
-			if PassiveEffect.isEvent(hookOrEvent) then
-				-- Subscribe to event (only once per event)
-				if not PassiveEffect.data.eventSubscriptions[hookOrEvent] then
-					local event, source = PassiveEffect.findEvent(hookOrEvent)
-					if event and event.subscribe then
-						if PassiveEffect.DebugLog then LOG("Subscribing to event " .. hookOrEvent .. " from " .. source) end
-						local subscription = event:subscribe(handlerFn)
-						PassiveEffect.data.eventSubscriptions[hookOrEvent] = subscription
-					else
-						LOG("WARNING: Event " .. hookOrEvent .. " not found or doesn't support subscribe!")
-					end
+		modApi.events.onSaveGame:subscribe(function()
+			PassiveEffect.saveGameRefreshPassives()
+		end)
+
+		modApi.events.onTestMechEntered:subscribe(function(mission)
+			PassiveEffect.setIsTestMech(mission)
+		end)
+
+		modApi.events.onTestMechExited:subscribe(function()
+			PassiveEffect.unsetIsTestMech()
+		end)
+	end
+
+	function PassiveEffect:subscribeWeaponEvents()
+		for hookOrEvent, _ in pairs(PassiveEffect.data.possibleEffects) do
+			if PassiveEffect.isEvent(hookOrEvent) and not PassiveEffect.data.eventSubscriptions[hookOrEvent] then
+				local event, source = PassiveEffect.findEvent(hookOrEvent)
+				if event and event.subscribe then
+					local handlerFn = PassiveEffect.buildPassiveEffectHookFn(hookOrEvent)
+					if PassiveEffect.DebugLog then LOG("Subscribing to event " .. hookOrEvent .. " from " .. source) end
+					PassiveEffect.data.eventSubscriptions[hookOrEvent] = event:subscribe(handlerFn)
 				else
-					if PassiveEffect.DebugLog then LOG("Already subscribed to event: " .. hookOrEvent) end
+					LOG("WARNING: Event " .. hookOrEvent .. " not found or doesn't support subscribe!")
 				end
-			elseif PassiveEffect.isHook(hookOrEvent) then
-				-- Add hook using traditional add function
+			elseif PassiveEffect.DebugLog and PassiveEffect.isEvent(hookOrEvent) then
+				LOG("Already subscribed to event: " .. hookOrEvent)
+			end
+		end
+	end
+
+	function PassiveEffect:reloadWeaponHooks()
+		for hookOrEvent, _ in pairs(PassiveEffect.data.possibleEffects) do
+			if PassiveEffect.isHook(hookOrEvent) then
+				if PassiveEffect.DebugLog then LOG("Processing passive effect hook for: " .. hookOrEvent) end
+
+				local handlerFn = PassiveEffect.buildPassiveEffectHookFn(hookOrEvent)
 				local addHook = PassiveEffect.getAddFunctionForHook(hookOrEvent)
 				if PassiveEffect.DebugLog then LOG("Adding hook " .. hookOrEvent .. " via " .. addHook) end
 
-				--supports hooks in both the ModLoader and the ModUtils
 				if modapiext[addHook] then
 					modapiext[addHook](modapiext, handlerFn)
-				else --already asserted that its in one of the two
+				else
 					modApi[addHook](modApi, handlerFn)
 				end
 			end
 		end
+	end
+
+	-- One-time setup: lib lifecycle events and weapon event subscriptions
+	function PassiveEffect:finalizeInit()
+		PassiveEffect:subscribeLibEvents()
+		PassiveEffect:subscribeWeaponEvents()
+		PassiveEffect:autoSetWeaponsPassiveFields()
 	end
 
 
@@ -591,28 +612,22 @@ if isNewestVersion then
 
 		return allExisting
 	end
-
-	function PassiveEffect:finalizeLoad()
-		PassiveEffect:addHooks()
-		PassiveEffect:autoSetWeaponsPassiveFields()
-	end
 else
 	LOG("PassiveEffect: Skipping version " .. VERSION .. " (already have " .. PassiveEffect.version .. ")")
 end
 
-local function onModsLoaded()
+local function onModsInitializedHook()
 	if VERSION < PassiveEffect.version then
 		return
 	end
 
-	if PassiveEffect.loaded then
+	if BoardUtils.initialized then
 		return
 	end
-
-	PassiveEffect:finalizeLoad()
-	PassiveEffect.loaded = true
+	PassiveEffect:finalizeInit()
+	PassiveEffect.initialized = true
 end
 
-modApi:addModsLoadedHook(onModsLoaded)
+modApi:addModsInitializedHook(onModsInitializedHook)
 
 return PassiveEffect
