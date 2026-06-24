@@ -2,7 +2,7 @@
 PredictableRandom - Allows for choosing random values in a predictable with resets and undoing
 
 Author: Das Keifer of Redacted Rice
-Version: 1.2.0
+Version: 1.3.0
 Discord Server: https://discord.gg/CNjTVrpN4v
 
 My own usage of this was mostly removed because I decided to go a different way for the non-passive weapons
@@ -10,12 +10,8 @@ but the passive "Wake the Forest" still uses this somewhat. See the Treeherder's
 forestUtils:floraformNumOfRandomSpaces function for a simple example of usage
 
 How to Use:
-In the function mod:load(options, version) in init.lua add this lines:
-	predictableRandom:load()
-Make sure you have initialized and called passiveEffect:addPassiveEffect for each weapon as part of init to
-ensure all weapons are loaded before the passive effects are loaded or else they will not work properly.
-This must also be done once per instance and in the load function as the hooks are cleared and reloaded
-when starting or reloading a game
+Call predictableRandom functions during gameplay. Event subscriptions are registered
+automatically via onModsInitialized and persist across game reloads.
 
 When creating a weapon:
 1. (optional) set the global seed for cross game consistency
@@ -44,7 +40,20 @@ predictableRandom:resetToLastRoll(id)
 		id - the randomizer id
  ]]--
 
-local VERSION = "1.2.0"
+local VERSION = "1.3.0"
+
+local function onModsInitialized()
+	if VERSION < PredictableRandom.version then
+		return
+	end
+
+	if PredictableRandom.initialized then
+		return
+	end
+
+	PredictableRandom:finalizeInit()
+	PredictableRandom.initialized = true
+end
 
 -- Version check
 local isNewestVersion = false
@@ -163,23 +172,19 @@ if isNewestVersion then
 		return math.random(minVal, maxVal)
 	end
 
-	--roll the randomizer each turn to keep things varying
-	function PredictableRandom:registerAutoRollHook()
-		modApi:addNextTurnHook(function()
-				if GAME.Randomizers then
-					for _, rand in pairs(GAME.Randomizers) do
-						PredictableRandom.rollRandomizer(rand)
-					end
+	function PredictableRandom:finalizeInit()
+		modApi.events.onNextTurn:subscribe(function())
+			if GAME and GAME.Randomizers then
+				for _, rand in pairs(GAME.Randomizers) do
+					PredictableRandom.rollRandomizer(rand)
 				end
 			end
-		)
-	end
-
-	function PredictableRandom:load()
-		PredictableRandom:registerAutoRollHook()
+		end)
 	end
 else
 	LOG("PredictableRandom: Skipping version " .. VERSION .. " (already have " .. PredictableRandom.version .. ")")
 end
+
+modApi:addModsInitializedHook(onModsInitialized)
 
 return PredictableRandom
