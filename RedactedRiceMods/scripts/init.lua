@@ -38,9 +38,6 @@ function mod:init(options)
 	self.libs = {}
 	for _, libId in ipairs(libs) do
 		self.libs[libId] = require(path.."libs/"..libId)
-		if self.libs[libId].init then
-			self.libs[libId]:init()
-		end
 	end
 
 	-- ArtilleryArc and TutorialTip behave a bit differently
@@ -49,14 +46,6 @@ function mod:init(options)
 
     -- add modApiExt as well
 	self.libs.modApiExt = modapiext
-end
-
-function mod:load(options, version)
-	for _, libId in ipairs(libs) do
-		if self.libs[libId].load then
-			self.libs[libId]:load()
-		end
-	end
 end
 
 return mod

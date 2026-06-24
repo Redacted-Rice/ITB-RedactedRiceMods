@@ -61,6 +61,7 @@ if isNewestVersion then
 	PassiveEffect.data.possibleEffects = PassiveEffect.data.possibleEffects or {}
 	PassiveEffect.data.activeEffects = PassiveEffect.data.activeEffects or {}
 	PassiveEffect.data.activePassives = PassiveEffect.data.activePassives or {}
+	PassiveEffect.data.eventSubscriptions = PassiveEffect.data.eventSubscriptions or {}  -- Track event subscriptions
 
 	if PassiveEffect.IsMechTest == nil then
 		PassiveEffect.IsMechTest = false
@@ -72,6 +73,29 @@ if isNewestVersion then
 	--can be addressed in this function as needed
 	function PassiveEffect.getAddFunctionForHook(hook)
 		return "add"..hook:gsub("^%l", string.upper)
+	end
+
+	-- Check if this is an event (starts with "on") vs a hook (ends with "Hook")
+	function PassiveEffect.isEvent(name)
+		return name:match("^on")
+	end
+
+	function PassiveEffect.isHook(name)
+		return name:match("Hook$")
+	end
+
+	-- Find an event in modApi.events, modapiext.events, or BoardEvents
+	function PassiveEffect.findEvent(eventName)
+		if modApi and modApi.events and modApi.events[eventName] then
+			return modApi.events[eventName], "modApi.events"
+		end
+		if modapiext and modapiext.events and modapiext.events[eventName] then
+			return modapiext.events[eventName], "modapiext.events"
+		end
+		if BoardEvents and BoardEvents[eventName] then
+			return BoardEvents[eventName], "BoardEvents"
+		end
+		return nil, nil
 	end
 
 	function PassiveEffect.getFunctionNameForHook(hook)
@@ -123,10 +147,25 @@ if isNewestVersion then
 			assert(_G[weapon][weaponFunctionName])
 			assert(type(_G[weapon][weaponFunctionName]) == "function")
 
-			--ensure the add function exists
-			local addHook = PassiveEffect.getAddFunctionForHook(hook)
-			assert(modapiext[addHook] or modApi[addHook])
-			assert(type(modapiext[addHook]) == "function" or type(modApi[addHook]) == "function")
+			-- Check if this is an event or a hook
+			local isEvent = PassiveEffect.isEvent(hook)
+			local isHook = PassiveEffect.isHook(hook)
+
+			if isEvent then
+				-- For events, verify the event exists
+				local event, source = PassiveEffect.findEvent(hook)
+				if not event then
+					error("Event '" .. hook .. "' not found in modApi.events, modapiext.events, or BoardEvents")
+				end
+				if PassiveEffect.DebugLog then LOG("Found event " .. hook .. " in " .. source) end
+			elseif isHook then
+				-- For hooks, ensure the add function exists
+				local addHook = PassiveEffect.getAddFunctionForHook(hook)
+				assert(modapiext[addHook] or modApi[addHook], "Hook function not found: " .. addHook)
+				assert(type(modapiext[addHook]) == "function" or type(modApi[addHook]) == "function")
+			else
+				error("'" .. hook .. "' must be either a hook (ending with 'Hook') or an event (starting with 'on')")
+			end
 
 			--get the list of potential effects associated with the hook or create it
 			local hookTable = PassiveEffect.data.possibleEffects[hook]
@@ -436,16 +475,37 @@ if isNewestVersion then
 
 		--Create the needed hook objects and add the functions that handle executing
 		--the active passive effects
-		for hook,_ in pairs(PassiveEffect.data.possibleEffects) do
-			if PassiveEffect.DebugLog then LOG("Creating passive effect caller for hook: "..hook) end
-			local hookObj = PassiveEffect.buildPassiveEffectHookFn(hook)
-			local addHook = PassiveEffect.getAddFunctionForHook(hook)
+		for hookOrEvent,_ in pairs(PassiveEffect.data.possibleEffects) do
+			if PassiveEffect.DebugLog then LOG("Processing passive effect caller for: "..hookOrEvent) end
 
-			--supports hooks in both the ModLoader and the ModUtils
-			if modapiext[addHook] then
-				modapiext[addHook](modapiext, hookObj)
-			else --already asserted that its in one of the two
-				modApi[addHook](modApi, hookObj)
+			local handlerFn = PassiveEffect.buildPassiveEffectHookFn(hookOrEvent)
+
+			-- Check if this is an event or a hook
+			if PassiveEffect.isEvent(hookOrEvent) then
+				-- Subscribe to event (only once per event)
+				if not PassiveEffect.data.eventSubscriptions[hookOrEvent] then
+					local event, source = PassiveEffect.findEvent(hookOrEvent)
+					if event and event.subscribe then
+						if PassiveEffect.DebugLog then LOG("Subscribing to event " .. hookOrEvent .. " from " .. source) end
+						local subscription = event:subscribe(handlerFn)
+						PassiveEffect.data.eventSubscriptions[hookOrEvent] = subscription
+					else
+						LOG("WARNING: Event " .. hookOrEvent .. " not found or doesn't support subscribe!")
+					end
+				else
+					if PassiveEffect.DebugLog then LOG("Already subscribed to event: " .. hookOrEvent) end
+				end
+			elseif PassiveEffect.isHook(hookOrEvent) then
+				-- Add hook using traditional add function
+				local addHook = PassiveEffect.getAddFunctionForHook(hookOrEvent)
+				if PassiveEffect.DebugLog then LOG("Adding hook " .. hookOrEvent .. " via " .. addHook) end
+
+				--supports hooks in both the ModLoader and the ModUtils
+				if modapiext[addHook] then
+					modapiext[addHook](modapiext, handlerFn)
+				else --already asserted that its in one of the two
+					modApi[addHook](modApi, handlerFn)
+				end
 			end
 		end
 	end
@@ -532,12 +592,27 @@ if isNewestVersion then
 		return allExisting
 	end
 
-	function PassiveEffect:load()
+	function PassiveEffect:finalizeLoad()
 		PassiveEffect:addHooks()
 		PassiveEffect:autoSetWeaponsPassiveFields()
 	end
 else
 	LOG("PassiveEffect: Skipping version " .. VERSION .. " (already have " .. PassiveEffect.version .. ")")
 end
+
+local function onModsLoaded()
+	if VERSION < PassiveEffect.version then
+		return
+	end
+
+	if PassiveEffect.loaded then
+		return
+	end
+
+	PassiveEffect:finalizeLoad()
+	PassiveEffect.loaded = true
+end
+
+modApi:addModsLoadedHook(onModsLoaded)
 
 return PassiveEffect
