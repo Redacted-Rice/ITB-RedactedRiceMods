@@ -1,6 +1,8 @@
 --[[
 BoardUtils - Utilities related to board, pathing, and movement
 
+Libs Wiki: https://github.com/Redacted-Rice/ITB-RedactedRiceMods/wiki
+
 Author: Das Keifer of Redacted Rice
 Discord Server: https://discord.gg/CNjTVrpN4v
 ]]

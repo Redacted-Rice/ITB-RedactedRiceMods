@@ -1,8 +1,9 @@
 --[[
 PredictableRandom - Allows for choosing random values in a predictable with resets and undoing
 
+Libs Wiki: https://github.com/Redacted-Rice/ITB-RedactedRiceMods/wiki
+
 Author: Das Keifer of Redacted Rice
-Version: 1.3.0
 Discord Server: https://discord.gg/CNjTVrpN4v
 
 My own usage of this was mostly removed because I decided to go a different way for the non-passive weapons

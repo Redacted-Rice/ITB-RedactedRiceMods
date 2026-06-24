@@ -1,8 +1,9 @@
 --[[
 PawnTypeUtils - functions to allow determining more detailed pawn types
 
+Libs Wiki: https://github.com/Redacted-Rice/ITB-RedactedRiceMods/wiki
+
 Author: Das Keifer of Redacted Rice
-Version: 1.1.0
 Discord Server: https://discord.gg/CNjTVrpN4v
 
 Builds on top of easy edit to allow determining in game what spawn
