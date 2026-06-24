@@ -72,7 +72,7 @@ end
 -- Register a new target trait for replacement
 -- config = {
 --   id = "massive",
---   checkMethod = "IsMassive",
+--   checkMethod = "IsMassive",  -- string: pawn method name, or function(pawn) -> bool
 --   iconFilename = "icon_massive.png",
 --   descTitle = "Status_massive_Title",
 --   descText = "Status_massive_Text",
@@ -81,6 +81,11 @@ local function registerTargetTrait(config)
 	if traitRegistry[config.id] then
 		LOG("Target trait '" .. config.id .. "' already registered, skipping.")
 		return false
+	end
+
+	local checkMethodType = type(config.checkMethod)
+	if checkMethodType ~= "string" and checkMethodType ~= "function" then
+		error("TraitReplace: checkMethod must be a string or function for trait '" .. tostring(config.id) .. "'")
 	end
 
 	if DEBUG then LOG("Registering target trait: " .. config.id) end
@@ -249,6 +254,16 @@ local function getUIEnabledPawn()
 	return pawn
 end
 
+-- Evaluate a trait's checkMethod against a pawn.
+-- Strings call the named pawn method; functions receive the pawn as an argument.
+local function evaluateCheckMethod(pawn, checkMethod)
+	if type(checkMethod) == "function" then
+		return checkMethod(pawn)
+	end
+
+	return pawn[checkMethod](pawn)
+end
+
 -- Check if we should be showing the icon for a specific trait
 local function shouldShowIcon(pawn, replaceTraitId)
 	if not pawn then return false end
@@ -256,8 +271,7 @@ local function shouldShowIcon(pawn, replaceTraitId)
 	local traitData = traitRegistry[replaceTraitId]
 	if not traitData then return false end
 
-	-- Call the configured pawn method
-	return pawn[traitData.config.checkMethod](pawn)
+	return evaluateCheckMethod(pawn, traitData.config.checkMethod)
 end
 
 -- Get the current icon surface for the pawn
