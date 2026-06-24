@@ -5,7 +5,7 @@ Author: Das Keifer of Redacted Rice
 Discord Server: https://discord.gg/CNjTVrpN4v
 ]]
 
-local VERSION = "1.5.0"
+local VERSION = "1.6.0"
 
 -- Version check
 local isNewestVersion = false
@@ -358,8 +358,7 @@ if isNewestVersion then
 		end
 	end
 
-	function BoardUtils:init()
-		-- Initialize event subscriptions
+	function BoardUtils:finalizeInit()
 		modapiext.events.onPawnUndoMove:subscribe(function(mission, pawn, undonePosition)
 			BoardUtils.clearHijackedPath()
 		end)
@@ -374,5 +373,20 @@ if isNewestVersion then
 else
 	LOG("BoardUtils: Skipping version " .. VERSION .. " (already have " .. BoardUtils.version .. ")")
 end
+
+local function onModsInitialized()
+	if VERSION < BoardUtils.version then
+		return
+	end
+
+	if BoardUtils.initialized then
+		return
+	end
+
+	BoardUtils:finalizeInit()
+	BoardUtils.initialized = true
+end
+
+modApi:addModsInitializedHook(onModsInitialized)
 
 return BoardUtils

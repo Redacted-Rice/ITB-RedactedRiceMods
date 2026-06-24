@@ -921,7 +921,7 @@ if isHighestVersion then
 		end
 
 		-- Add UI widgets for all registered traits after surfaces are populated
-		sdlext.addUiRootCreatedHook(function(screen, uiRoot)
+		modApi.events.onUiRootCreated:subscribe(function(screen, uiRoot)
 			createUIWidgets(uiRoot)
 		end)
 
