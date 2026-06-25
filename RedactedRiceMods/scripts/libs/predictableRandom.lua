@@ -174,7 +174,7 @@ if isNewestVersion then
 	end
 
 	function PredictableRandom:finalizeInit()
-		modApi.events.onNextTurn:subscribe(function())
+		modApi.events.onNextTurn:subscribe(function()
 			if GAME and GAME.Randomizers then
 				for _, rand in pairs(GAME.Randomizers) do
 					PredictableRandom.rollRandomizer(rand)
