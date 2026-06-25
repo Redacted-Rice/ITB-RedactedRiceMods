@@ -48,4 +48,7 @@ function mod:init(options)
 	self.libs.modApiExt = modapiext
 end
 
+function mod:load(options)
+end
+
 return mod
