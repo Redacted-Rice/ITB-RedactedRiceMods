@@ -5,7 +5,7 @@ local path = mod.resourcePath
 local scriptPath = mod.scriptPath
 
 -- Register with logging system
-local DEBUG = true
+local DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("Pilots+", "Warbot", DEBUG)
 
