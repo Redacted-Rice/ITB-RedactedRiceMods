@@ -14,9 +14,11 @@ local PENDING_SELECTION_SKILL_ID = "SkillChoices_PendingSelection"
 local PAUSE_ANIM_ID = "sc_skillchoices_pause"
 local PAUSE_ANIM_IMAGE = "effects/sc_skillchoices_pause.png"
 local PAUSE_ANIM_DURATION = 0.05
+local OPEN_CLOSE_DELAY_MS = 500
 
 local pendingQueue = {}
 local dialogOpen = false
+local pausingForSelection = false
 local pauseAnimRegistered = false
 local deferredSkillIds = {}
 
@@ -803,9 +805,16 @@ function skill_choice_ui:showDialog(entry, onComplete)
 end
 
 function skill_choice_ui:processQueue()
-	logger.logDebug(LOG_ID, "processQueue dialogOpen=%s queueLen=%d",
-		tostring(dialogOpen), #pendingQueue)
-	if dialogOpen or #pendingQueue == 0 then
+	logger.logDebug(LOG_ID, "processQueue dialogOpen=%s pausingForSelection=%s queueLen=%d",
+	tostring(dialogOpen), tostring(pausingForSelection), #pendingQueue)
+	if dialogOpen then
+		return
+	end
+
+	if #pendingQueue == 0 then
+		modApi:scheduleHook(OPEN_CLOSE_DELAY_MS, function()
+        		pausingForSelection = false
+		end)
 		return
 	end
 
@@ -824,7 +833,12 @@ function skill_choice_ui:enqueue(pilot, slotIndex)
 		pilot = pilot,
 		slotIndex = slotIndex,
 	})
-	self:processQueue()
+	
+	-- Delay it slightly
+	pausingForSelection = true
+	modApi:scheduleHook(OPEN_CLOSE_DELAY_MS, function()
+		self:processQueue()
+	end)
 end
 
 function skill_choice_ui:onPilotLevelChanged(pilot, changes)
@@ -854,6 +868,7 @@ function skill_choice_ui:clearPendingDialogs()
 	logger.logDebug(LOG_ID, "clearPendingDialogs")
 	pendingQueue = {}
 	dialogOpen = false
+	pausingForSelection = false
 	self:clearAllStoredSkills()
 end
 
@@ -874,7 +889,7 @@ end
 
 -- Keeps the board busy by retriggering a hidden one-frame animation with FULL_DELAY.
 function skill_choice_ui:retriggerBoardBusyHold()
-	if not dialogOpen or not Board or GetCurrentMission() == nil then
+	if not pausingForSelection or not Board or GetCurrentMission() == nil then
 		return
 	end
 	Board:AddAnimation(Point(0, 0), PAUSE_ANIM_ID, FULL_DELAY)
