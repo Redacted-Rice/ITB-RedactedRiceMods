@@ -21,7 +21,12 @@ Released: 05/04/2026
 * Brought in from Lemonymous' repo and enhanced to support two click weapons and mutli shot effects
 
 ## BoardUtils
-Current Release: 1.5.0
+Current Release: 1.6.0
+
+### 1.6.0
+Released: 7/7/2026
+
+* Fixing multi-lib loading appraoch
 
 ### 1.5.0
 Released: 05/04/2026
@@ -53,7 +58,13 @@ Released: 01/10/2026
 Initial release to keep in sync with other libs
 
 ## PassiveEffect
-Current Release: 1.4.0
+Current Release: 2.0.0
+
+### 2.0.0
+Released: 7/7/2026
+
+* Updating to support events in addition to hooks
+* Fixing multi-lib loading appraoch
 
 ### 1.4.0
 Released: 03/30/2026
@@ -93,7 +104,12 @@ Released: 03/28/2026
 Initial release
 
 ## PredictableRandom
-Current Release: 1.2.0
+Current Release: 1.3.0
+
+### 1.3.0
+Released: 7/7/2026
+
+* Fixing multi-lib loading appraoch
 
 ### 1.2.0
 Released: 03/30/2026
@@ -122,7 +138,12 @@ Released: 02/14/2026
 Copied from Lemonymous and updated to handle multiple traits by appending text together and cycling through images
 
 ## TraitReplace
-Current Release: 0.9.1
+Current Release: 0.9.2
+
+### 0.9.2
+Released: 7/7/2026
+
+* Fixing multi-lib loading appraoch
 
 ### 0.9.1
 Released: 6/11/2026

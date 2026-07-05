@@ -44,10 +44,11 @@ None
 ------------------------------------------------------------------------------
 
 MoreLvlUpSkills:
-v2.1.1 (v1.8.1)
+v2.2.1 (v1.8.1)
 	1. Reflect does not account for boost
 	2. Vekk hormones and reflect interaction? (See Jefe's video)
 	3. Kill shot oddities for rook pawn (Jefe part 1)
+	4. A few more I have listed in doc
 
 Known Issues:
 1. Vigor on Harold will not show icon when using repair. Not sure why its not displaying. Seems to be something unique with how his repair skill works
@@ -70,7 +71,7 @@ Pilots+:
 Skill Choices:
 
 1.0 (v.1.8)
-	1. More testing
+	1. Icon
 
 ------------------------------------------------------------------------------
 

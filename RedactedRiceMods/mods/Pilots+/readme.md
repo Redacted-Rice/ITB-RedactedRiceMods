@@ -26,7 +26,19 @@ Skill: Combat Mentor - After completing 3 missions with a pilot, the pilot will 
 
 
 # Releases
-Latest release: 1.0.0
+Latest release: 1.0.1
+
+## 1.0.1
+Released: 7/7/2026
+
+compatible with:
+* ItB AE        1.2.93
+* ModLoader     2.9.5
+* memhack       1.3.0
+* CPLUS+        1.3.0
+
+### Notes
+* Added mod icon
 
 ## 1.0.0
 Released: 6/11/2026
