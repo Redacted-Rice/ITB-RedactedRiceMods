@@ -19,7 +19,8 @@ StarWars_TowCable = TankDefault:new{
 		Unit = Point(2,3),
 		Enemy = Point(2,1),
 		Target = Point(2,1),
-	}
+	},
+	Debug = false,
 }
 
 -- Weapon text definitions
@@ -56,23 +57,65 @@ function StarWars_TowCable:initGameSaveData()
 	end
 end
 
+function StarWars_TowCable:isTowCabled(pawnId)
+	self:initGameSaveData()
+	return GAME.starwars.tow_cabled[pawnId] ~= nil
+end
+
+function StarWars_TowCable:removeTowCabledPawn(pawnId)
+	self:initGameSaveData()
+	if self.Debug then LOG("Removing cable from pawn " .. pawnId) end
+	GAME.starwars.tow_cabled[pawnId] = nil
+end
+
+function StarWars_TowCable:clearTowCabled()
+	self:initGameSaveData()
+	if self.Debug then LOG("Removing all cables") end
+	GAME.starwars.tow_cabled = {}
+end
+
+-- Player mechs persist between missions so we need to reset move speed to base at mission end.
+function StarWars_TowCable:restorePlayerMoveSpeeds()
+	if not Board then
+		return
+	end
+
+	self:initGameSaveData()
+	for _, pawnId in ipairs(extract_table(Board:GetPawns(TEAM_PLAYER))) do
+		if self.Debug then LOG("Checking pawn " .. pawnId) end
+		local pawn = Board:GetPawn(pawnId)
+		if pawn and pawn:IsMech() and GAME.starwars.tow_cabled[pawnId] then
+			pawn:SetMoveSpeed(GAME.starwars.tow_cabled[pawnId])
+		end
+	end
+end
+
 function StarWars_TowCable:loadTowCabled()
 	modApi:runLater(function()
 		self:initGameSaveData()
-		for _, pawnId in ipairs(GAME.starwars.tow_cabled) do
-			if Board:GetPawn(pawnId) then
-				Board:GetPawn(pawnId):SetMoveSpeed(0)
+		for pawnId, _ in pairs(GAME.starwars.tow_cabled) do
+			local pawn = Board:GetPawn(pawnId)
+			if pawn then
+				pawn:SetMoveSpeed(0)
 			end
 		end
 	end)
 end
 
 function StarWars_TowCable:load(options, version)
-	-- Hook into mission start to reset force focus tracking
 	modApi:addMissionStartHook(function(mission)
-		self:initGameSaveData()
-		GAME.starwars.tow_cabled = {}
+		self:clearTowCabled()
 	end)
+
+	modApi:addMissionEndHook(function(mission)
+		self:restorePlayerMoveSpeeds()
+		self:clearTowCabled()
+	end)
+
+	modapiext:addPawnKilledHook(function(mission, pawn)
+		self:removeTowCabledPawn(pawn:GetId())
+	end)
+
 	modapiext:addGameLoadedHook(function() self:loadTowCabled() end)
 	modapiext:addResetTurnHook(function() self:loadTowCabled() end)
 end
@@ -88,23 +131,23 @@ function StarWars_TowCable:GetSkillEffect(p1, p2)
 	if self.SetFire then
 		projectileDamage.iFire = EFFECT_CREATE
 	end
-	
+
 	-- Set speed to 0
 	if Board:IsPawnSpace(p2) then
 		projectileDamage.sScript = projectileDamage.sScript .. [[
 				local pawn = Board:GetPawn(]].. p2:GetString() ..[[)
 					Board:Ping(pawn:GetSpace(), GL_Color(255, 0, 0))
-					pawn:SetMoveSpeed(0)
 					StarWars_TowCable:initGameSaveData()
-					table.insert(GAME.starwars.tow_cabled, pawn:GetId())
+					GAME.starwars.tow_cabled[pawn:GetId()] = pawn:GetMoveSpeed()
+					pawn:SetMoveSpeed(0)
 				]]
 	end
 	ret:AddProjectile(projectileDamage, self.ProjectileArt)
-	
+
 	if self.CancelAttack then
 		BoardUtils.addCancelEffect(p2, ret)
 	end
-	
+
 	-- cancel will put out the fire since its part of the same attack
 	-- so apply it here so it displays (first one) and also takes effect
 	if self.SetFire then

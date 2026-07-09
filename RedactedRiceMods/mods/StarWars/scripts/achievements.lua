@@ -185,13 +185,8 @@ function StarWarsAchievements.onPawnKilledHook(mission, pawn)
 
 	if not achievements.realoriginal:isComplete() then
 		if pawn:IsEnemy() and mod_loader.mods.redactedrice_libs.libs.pawnTypeUtils.isBoss(pawn) and
-				GAME and GAME.starwars and GAME.starwars.tow_cabled then
-			for _, pawnId in ipairs(GAME.starwars.tow_cabled) do
-				if pawnId == pawn:GetId() then
-					achievements.realoriginal:trigger()
-					break
-				end
-			end
+				StarWars_TowCable:isTowCabled(pawn:GetId()) then
+			achievements.realoriginal:trigger()
 		end
 	end
 
