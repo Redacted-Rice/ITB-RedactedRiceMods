@@ -621,7 +621,7 @@ local function onModsInitializedHook()
 		return
 	end
 
-	if BoardUtils.initialized then
+	if PassiveEffect.initialized then
 		return
 	end
 	PassiveEffect:finalizeInit()
