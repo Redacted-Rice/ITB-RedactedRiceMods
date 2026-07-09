@@ -10,7 +10,7 @@ Builds on top of easy edit to allow determining in game what spawn
 category a pawn belongs to
 ]]
 
-local VERSION = "1.1.0"
+local VERSION = "1.1.1"
 
 -- Version check
 local isNewestVersion = false
@@ -65,10 +65,14 @@ if isNewestVersion then
 	function PawnTypeUtils.isBoss(pawn)
 		local pawnType = pawn:GetType()
 
+		if _G[pawnType].Tier == TIER_BOSS then
+			return true
+		end
+
 		-- First check if the mission has a boss pawn
 		local mission = GetCurrentMission()
-		if mission and mission.BossPawn then
-			return pawnType == mission.BossPawn
+		if mission and mission.BossPawn and pawnType == mission.BossPawn then
+			return true
 		end
 
 		-- Or check if its in any of the easy edit missions bosses
@@ -79,7 +83,6 @@ if isNewestVersion then
 				end
 			end
 		end
-
 		return false
 	end
 
