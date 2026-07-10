@@ -7,7 +7,7 @@ Author: Das Keifer of Redacted Rice
 Discord Server: https://discord.gg/CNjTVrpN4v
 ]]
 
-local VERSION = "1.6.0"
+local VERSION = "1.7.0"
 
 -- Version check
 local isNewestVersion = false
@@ -160,6 +160,13 @@ if isNewestVersion then
 		end
 	end
 
+	function BoardUtils.isAPlayerTeam(team)
+		return team == TEAM_PLAYER or team == TEAM_MECH
+	end
+	function BoardUtils.isAnEnemyTeam(team)
+		return team == TEAM_BOTS or team == TEAM_ENEMY or team == TEAM_ENEMY_MAJOR
+	end
+
 	function BoardUtils.makeTerrainBasedMatcher(pawn, pawnCheckType, exclTerrainCheckFn)
 		return function(point, hash)
 			if exclTerrainCheckFn(point) then
@@ -178,11 +185,14 @@ if isNewestVersion then
 				if BoardUtils.isPawnFlying(pawn) then
 					return true
 				end
-				-- Otherwise only can't pass through enemies
-				local pawnTeam = otherPawn:GetTeam()
-				if pawnCheckType == "default" and (pawnTeam == TEAM_BOTS or
-						pawnTeam == TEAM_ENEMY or pawnTeam == TEAM_ENEMY_MAJOR) then
-					return false
+				-- Block opposing team pawns as default
+				if pawnCheckType == "default" then
+					local moverTeam = pawn:GetTeam()
+					local otherTeam = otherPawn:GetTeam()
+					if BoardUtils.isAPlayerTeam(moverTeam) and BoardUtils.isAnEnemyTeam(otherTeam) or
+							BoardUtils.isAnEnemyTeam(moverTeam) and BoardUtils.isAPlayerTeam(otherTeam) then
+						return false
+					end
 				end
 			end
 			return true
@@ -200,7 +210,8 @@ if isNewestVersion then
 	function BoardUtils.makeGenericMatcher(pawn, pawnCheckType)
 		return BoardUtils.makeTerrainBasedMatcher(pawn, pawnCheckType, function(point)
 			local terrain = Board:GetTerrain(point)
-			return (not BoardUtils.isPawnFlying(pawn) and Board:GetTerrain(point) == TERRAIN_HOLE) or
+			return (not BoardUtils.isPawnFlying(pawn) and terrain == TERRAIN_HOLE) or
+				   (not pawn:IsMassive() and terrain == TERRAIN_WATER) or
 					terrain == TERRAIN_BUILDING or terrain == TERRAIN_MOUNTAIN
 		end)
 	end
@@ -358,6 +369,54 @@ if isNewestVersion then
 				effect:AddScript([[Board:SetSmoke(]]..p:GetString()..[[, false, false)]])
 			end
 		end
+	end
+
+	function BoardUtils.isSafeSpawnTile(point, pathing)
+		if not Board:IsValid(point) then
+			return false
+		end
+		if Board:IsPawnSpace(point) then
+			return false
+		end
+		if pathing and Board:IsBlocked(point, pathing) then
+			return false
+		end
+		-- Some of these may be redundant
+		if not Board:IsSafe(point) then
+			return false
+		end
+		if Board:IsDangerous(point) then
+			return false
+		end
+		if Board:IsDangerousItem(point) then
+			return false
+		end
+		if Board:IsSpawning(point) then
+			return false
+		end
+		if Board:IsEnvironmentDanger(point) then
+			return false
+		end
+		if Board:IsAcid(point) then
+			return false
+		end
+		return true
+	end
+
+	function BoardUtils.getSafeSpawnTiles(pathing)
+		local candidates = {}
+		local boardSize = Board:GetSize()
+
+		for x = 0, boardSize.x - 1 do
+			for y = 0, boardSize.y - 1 do
+				local point = Point(x, y)
+				if BoardUtils.isSafeSpawnTile(point, pathing) then
+					table.insert(candidates, point)
+				end
+			end
+		end
+
+		return candidates
 	end
 
 	function BoardUtils:finalizeInit()
