@@ -9,15 +9,48 @@ local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
 	},
 }
 
-customSkill.DEBUG = true
+customSkill.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Reflect", customSkill.DEBUG)
 
 more_plus:addCustomTraitIcon(customSkill)
 
 -- Track reflects by attacker pawn ID
-customSkill.pendingReflects = {} -- [attackerPawnId] = {totalDamage, hasInstakill}
+customSkill.pendingReflects = {} -- [attackerPawnId] = {totalDamage, hasInstakill, reflectorId}
 customSkill.reflectorPawns = {} -- Set of pawn IDs that are reflecting
+
+-- Boost needs to be manually handled since its added after by the game
+local function getReflectDamage(attackingPawn, spaceDamage)
+	if spaceDamage.iDamage == DAMAGE_DEATH then
+		logger.logDebug(SUBMODULE, "Reflecting DAMAGE_DEATH back to attacker %d", attackerId)
+		return DAMAGE_DEATH
+	end
+
+	local incoming = spaceDamage.iDamage
+	if attackingPawn:IsBoosted() then
+		incoming = incoming + 1
+	end
+	logger.logDebug(SUBMODULE, "Reflecting %d damage back to attacker %d (incoming: %d, base: %d, boost: %s)",
+			math.ceil(incoming / 2), attackingPawn:GetId(), incoming, spaceDamage.iDamage,
+			tostring(attackingPawn:IsBoosted()))
+	return math.ceil(incoming / 2)
+end
+
+-- Reflect damage must not be appended to the enemy attack SkillEffect or Vek
+-- Hormones treats it as enemy to enemy damage. Use a separate effect
+-- owned by the reflecting mech instead and we will need to use weapon
+-- preview for the damage
+function RrReflect_ApplyDamage(reflectorId, attackerId, damage)
+	local attacker = Board:GetPawn(attackerId)
+	if not attacker then
+		return
+	end
+
+	local effect = SkillEffect()
+	effect.iOwner = reflectorId
+	effect:AddDamage(SpaceDamage(attacker:GetSpace(), damage))
+	Board:AddEffect(effect)
+end
 
 function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage, indexes, targetPawn)
 	-- Check if this is damage from an enemy to a mech
@@ -31,23 +64,15 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 		local attackerStartLoc = attackingPawn:GetSpace()
 		local targetStartLoc = targetPawn:GetSpace()
 
-		-- Calculate reflect damage
-		local reflectDamage = 0
-		if spaceDamage.iDamage == DAMAGE_DEATH then
-			reflectDamage = DAMAGE_DEATH
-			logger.logDebug(SUBMODULE, "Reflecting DAMAGE_DEATH back to attacker %d", attackerId)
-		else
-			reflectDamage = math.ceil(spaceDamage.iDamage / 2)
-			logger.logDebug(SUBMODULE, "Reflecting %d damage back to attacker %d (original: %d)",
-					reflectDamage, attackerId, spaceDamage.iDamage)
-		end
-
+		-- Calculate reflect damage from incoming damage
+		local reflectDamage = getReflectDamage(attackingPawn, spaceDamage)
 		-- Track reflect damage by attacker ID
 		if not self.pendingReflects[attackerId] then
 			self.pendingReflects[attackerId] = {
 				attackerId = attackerId,
 				totalDamage = 0,
-				hasInstakill = false
+				hasInstakill = false,
+				reflectorId = reflectorId,
 			}
 		end
 
@@ -110,13 +135,26 @@ function customSkill:SkillEffectEvaluated(phase)
 		if attacker then
 			local currentLoc = self:getPawnSpace(attacker)
 
-			-- Create aggregated reflect damage
-			local finalDamage = reflectData.hasInstakill and DAMAGE_DEATH or reflectData.totalDamage
-			local reflectSd = SpaceDamage(currentLoc, finalDamage)
-			table.insert(results, reflectSd)
+			-- Apply via script so damage is not part of the enemy attack effect
+			-- We need to use weapon preview to apply the damage preview since
+			-- we use a script
+			more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
+				function()
+					more_plus.libs.weaponPreview:AddDamage(SpaceDamage(currentLoc, reflectData.totalDamage))
+				end, attackerId
+			)
+			local reflectDamage = SpaceDamage(currentLoc, 0)
+			reflectDamage.bHide = true
+			reflectDamage.sScript = string.format(
+				"RrReflect_ApplyDamage(%d, %d, %s)",
+				reflectData.reflectorId,
+				attackerId,
+				reflectData.totalDamage
+			)
+			table.insert(results, reflectDamage)
 
-			logger.logDebug(SUBMODULE, "Created aggregated reflect damage to attacker %d at %s (damage: %s)",
-					attackerId, currentLoc:GetString(),
+			logger.logDebug(SUBMODULE, "Queued reflect damage to attacker %d at %s via reflector %d (damage: %s)",
+					attackerId, currentLoc:GetString(), reflectData.reflectorId,
 					finalDamage == DAMAGE_DEATH and "DEATH" or tostring(finalDamage))
 		else
 			logger.logWarn(SUBMODULE, "Attacker pawn %d not found when applying reflect", attackerId)

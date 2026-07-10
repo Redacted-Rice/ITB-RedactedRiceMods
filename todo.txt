@@ -45,14 +45,12 @@ None
 
 MoreLvlUpSkills:
 v2.2.1 (v1.8.1)
-	1. Reflect does not account for boost
-	2. Vekk hormones and reflect interaction? (See Jefe's video)
-	3. Kill shot oddities for rook pawn (Jefe part 1)
-	4. A few more I have listed in doc
+* Continue testing
 
 Known Issues:
 1. Vigor on Harold will not show icon when using repair. Not sure why its not displaying. Seems to be something unique with how his repair skill works
-2. On death effects don't trigger with +/x damage effects. This will be a difficult one to fix
+2. Reflect damage if boosted by psion will continue to show boosted until attacks are refreshed after psion is killed. There isn't a good way around this as its due to the game not updating the queued attacks
+3. Chess pawns have very odd movement that would be very difficult to make movement skills work with. As such they are just excluded. Other squads/weapons with such movement may have similar issues
 
 
 ------------------------------------------------------------------------------
