@@ -5,6 +5,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 	constraints = {
 		groups = {more_plus.GROUPS.MOVE_TYPE},
+		squadExclusions = {"knight_ChessPawns"},
 	}
 }
 

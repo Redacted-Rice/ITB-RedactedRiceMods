@@ -9,6 +9,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	constraints = {
 		groups = {more_plus.GROUPS.MOVE_TYPE},
 		pilotExclusions = {"Pilot_Recycler", cplus_plus_ex.isFlyingCyborg},
+		squadExclusions = {"knight_ChessPawns"},
 	}
 }
 
