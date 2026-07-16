@@ -18,6 +18,7 @@ local OPEN_CLOSE_DELAY_MS = 500
 
 local pendingQueue = {}
 local dialogOpen = false
+local activeDialogEntry = nil
 local pausingForSelection = false
 local pauseAnimRegistered = false
 local deferredSkillIds = {}
@@ -753,6 +754,7 @@ function skill_choice_ui:onDialogClosed(session)
 	logger.logDebug(LOG_ID, "onDialogClosed pilot=%s slot=%d",
 		session.pilot:getIdStr(), session.slotIndex)
 	dialogOpen = false
+	activeDialogEntry = nil
 	if session.onComplete then
 		session.onComplete()
 	end
@@ -796,6 +798,10 @@ function skill_choice_ui:showDialog(entry, onComplete)
 	end
 
 	dialogOpen = true
+	activeDialogEntry = {
+		pilotId = session.pilot:getIdStr(),
+		slotIndex = session.slotIndex,
+	}
 	logger.logDebug(LOG_ID, "showDialog opening UI pilot=%s slot=%d", session.pilot:getIdStr(), session.slotIndex)
 
 	sdlext.showDialog(function(ui, quit)
@@ -826,7 +832,34 @@ function skill_choice_ui:processQueue()
 	end)
 end
 
+function skill_choice_ui:isPilotSlotPending(pilot, slotIndex)
+	local pilotId = pilot:getIdStr()
+	if activeDialogEntry
+		and activeDialogEntry.pilotId == pilotId
+		and activeDialogEntry.slotIndex == slotIndex then
+		return true
+	end
+
+	for _, entry in ipairs(pendingQueue) do
+		if entry.pilot:getIdStr() == pilotId and entry.slotIndex == slotIndex then
+			return true
+		end
+	end
+
+	return false
+end
+
 function skill_choice_ui:enqueue(pilot, slotIndex)
+	-- Due to some oddities with how options are stored, if we later enabled ext in a run
+	-- that didn't have it, events won't get cleared and we can fire multiple times. To
+	-- protect against this or other cases that might cause this, ensure we don't already
+	-- have the event in the queue before adding it.
+	if self:isPilotSlotPending(pilot, slotIndex) then
+		logger.logDebug(LOG_ID, "enqueue skip duplicate pilot=%s slot=%d queueLen=%d",
+			pilot:getIdStr(), slotIndex, #pendingQueue)
+		return
+	end
+
 	logger.logDebug(LOG_ID, "enqueue pilot=%s slot=%d queueLen=%d",
 		pilot:getIdStr(), slotIndex, #pendingQueue + 1)
 	table.insert(pendingQueue, {
@@ -868,6 +901,7 @@ function skill_choice_ui:clearPendingDialogs()
 	logger.logDebug(LOG_ID, "clearPendingDialogs")
 	pendingQueue = {}
 	dialogOpen = false
+	activeDialogEntry = nil
 	pausingForSelection = false
 	self:clearAllStoredSkills()
 end
