@@ -15,7 +15,19 @@ Please enjoy and contact us if you run into any issues!
 - Skill buttons show the short name. Hover to see full name and description
 
 # Releases
-Latest release: 1.0.0
+Latest release: 1.0.1
+
+## 1.0.1
+Released: 7/16/2026
+
+compatible with:
+* ItB AE        1.2.93
+* ModLoader     2.9.5
+* memhack       1.3.0
+* CPLUS+        1.3.1
+
+### Notes
+* Added a check to prevent multiple of the skill effects from queueing/popping
 
 ## 1.0.0
 Released: 7/7/2026

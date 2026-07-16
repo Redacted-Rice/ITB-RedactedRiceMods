@@ -74,7 +74,20 @@ These are skills that have a stronger than typical positive effect but also incl
 * Vindictive - +1 damage to enemies for each negative status effect on piloted mech.
 
 # Releases
-Latest release: 2.2.0
+Latest release: 2.2.1
+
+## 2.2.1
+Released: 7/16/2026
+
+compatible with:
+* ItB AE 	1.2.93
+* ModLoader 2.9.5
+* memhack	1.3.0
+* CPLUS+ Ex	1.3.1
+
+### Notes
+* Fixed reflect to account for boost and not be affected by vek hormones
+* Added exclusions for chess pawns for movement fns
 
 ## 2.2.0
 Released: 6/11/2026

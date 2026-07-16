@@ -44,8 +44,7 @@ None
 ------------------------------------------------------------------------------
 
 MoreLvlUpSkills:
-v2.2.1 (v1.8.1)
-* Continue testing
+None
 
 Known Issues:
 1. Vigor on Harold will not show icon when using repair. Not sure why its not displaying. Seems to be something unique with how his repair skill works
@@ -67,9 +66,8 @@ Pilots+:
 ------------------------------------------------------------------------------
 
 Skill Choices:
+None
 
-1.0 (v.1.8)
-	1. Icon
 
 ------------------------------------------------------------------------------
 
