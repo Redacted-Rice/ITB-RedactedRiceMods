@@ -21,7 +21,13 @@ Released: 05/04/2026
 * Brought in from Lemonymous' repo and enhanced to support two click weapons and mutli shot effects
 
 ## BoardUtils
-Current Release: 1.6.0
+Current Release: 1.7.0
+
+### 1.7.0
+Released: 7/16/2026
+
+* Updating movement functions to work for enemies as well as players
+* Added functions for finding safe tiles to spawn on
 
 ### 1.6.0
 Released: 7/7/2026
@@ -92,7 +98,11 @@ Released: ?
 Initial Release.
 
 ## PawnTypeUtils
-Current Release: 1.1.0
+Current Release: 1.1.1
+
+### 1.1.1
+Released: 7/16/2026
+* Reworked pawn boss check to catch more cases
 
 ### 1.1.0
 Released: 03/30/2026

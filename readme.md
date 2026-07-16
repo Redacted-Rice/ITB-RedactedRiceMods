@@ -14,20 +14,21 @@ Please enjoy and contact us if you run into any issues!
 
 # Squads
 * Moon Walkers - v1.0.0 - They seem so familiar... but backwards. Yin and Yang, push and pull, Rift Walkers and Moon Walkers. A somewhat joke squad build on the idea of Rift Walkers but backwards.
-* Star Wars - v1.0.2 - Play as your favorite iconic rebel starships and Luke to fight back against the evil vek empire. This squad can hit hard but has less board control options at the start. Luke can focus on the force to deal massive damage the next turn.
+* Star Wars - v1.0.3 - Play as your favorite iconic rebel starships and Luke to fight back against the evil vek empire. This squad can hit hard but has less board control options at the start. Luke can focus on the force to deal massive damage the next turn.
 * Treeherders - v3.1.3 - Inspired by ents, this squad focuses on using forests tiles to increase their power. The flagship entborg mech gets stronger as the forests get destroyed
 * WorldBuilders - v1.3.3 - This squad focuses on terrain manipulation to block and avoid damage. It has some strong single target effects but you can easily get overwhelmed by numbers if not strategically manipulating the terrain
 
 # Other
-* More+ - v2.2.0 - 35 custom pilot level up skills across 5 categories with Status Library integration
+* More+ - v2.2.1 - 35 custom pilot level up skills across 5 categories with Status Library integration
 * RebalanceCore+ - v1.1.0 - Reblances the core vanilla level up skills (other than reactor) so they are not strictly worse than the AE ones
 * Pilots+ - v1.0.1 - A few pilots focused around adding bonus level up skills beyond the standard two per pilot on level up
+* SkillChoices - v1.0.1 - Allows for selecting between a configurable amount of pilot level up skills on leveling up pilots
 
 # Libs
 * ArtilleryArc - v2.0.0 - Originally created by Lemonymous to customize aritllery height. Updated to handle multishot arcs and two click weapons
-* BoardUtils - v1.6.0 - Board related functions and pathing
+* BoardUtils - v1.7.0 - Board related functions and pathing
 * PassiveEffect - v2.0.0 - Helps with adding passive weapons to the game. This will handle automatically detecting if the weapon is powered and only call hooks when it is
-* PawnTypeUtils - v1.1.0 - Functions to allow determining more detailed pawn types (using EasyEdit)
+* PawnTypeUtils - v1.1.1 - Functions to allow determining more detailed pawn types (using EasyEdit)
 * PredictableRandom - v1.3.0 - Get random numbers in a way that is repeatable for when undoing moves or resetting turns
 * Trait - v3.0.1 - Add traits to pawns & the board. Originally created by Lemonymous and updated to v3.x.x to support multiple traits via appending text and cycling images as well as showing icons for move previews
 * TraitReplace - v0.9.2 - Allows adding custom UI traits that cycle with vanilla traits
@@ -43,7 +44,49 @@ Please enjoy and contact us if you run into any issues!
 To uninstall, delete the folder in mods
 
 # Releases
-Latest release: 1.8.0
+Latest release: 1.8.1
+
+## 1.8.1
+* Added skill exclusions for chess pawns
+* Fixed reflect not accounting for boost and incorrectly adding damage for vek hormones
+* Added a guard against the skill choices popping multiple times per level up
+* Fixed bug where attacking ally with tow cable would permenantly set move to 0
+* Fixes and new APIs in support libs
+
+Released: 7/16/2026
+
+Squads:
+* Moon Walkers  1.0.0
+* Star Wars     1.0.3
+* Treeherders   3.1.3
+* WorldBuilders 1.3.3
+
+Other Mods:
+* More+          2.2.1
+* RebalanceCore+ 1.1.0
+* Pilots+        1.0.1
+* Skill Choices  1.0.1
+
+Libs:
+* ArtilleryArc      2.0.0
+* BoardUtils        1.7.0
+* PassiveEffect     2.0.0
+* PawnTypeUtils     1.1.1
+* PredictableRandom 1.3.0
+* Trait             3.0.1
+* TraitReplace      0.9.2
+* TutorialTips      1.2.0
+* WeaponArmed       2.1.0
+* WeaponPreview     4.1.0
+
+Dependencies:
+* ItB AE        1.2.93
+* ModLoader     2.9.5
+* ModLoaderExt  1.24
+* Memedit       1.2.1
+* EasyEdit	    2.0.8
+* Memhack       1.3.0
+* CPLUS+ Ex     1.3.1
 
 ## 1.8.0
 * Added Skill Choices Mod
