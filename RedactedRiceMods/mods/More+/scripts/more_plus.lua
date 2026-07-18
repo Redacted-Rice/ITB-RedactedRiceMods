@@ -82,6 +82,7 @@ more_plus.GROUPS = {
 	ADD_HEALTH = "Add Health",
 	ADD_MOVE = "Add Move",
 	ADD_GRID_DEF = "Add Grid Def",
+	ADD_REACTOR = "Add Reactor",
 	MOVE_TYPE = "Move Type",
 	BOOST = "Boost",
 	SHIELD = "Shield",
@@ -104,6 +105,9 @@ function more_plus:addVanillaSkillsToGroups()
 
 	-- Add Grid Def group
 	cplus_plus_ex:registerSkillToGroup("Grid", self.GROUPS.ADD_GRID_DEF)
+
+	-- Add Reactor group
+	cplus_plus_ex:registerSkillToGroup("Reactor", self.GROUPS.ADD_REACTOR)
 
 	-- Boost group
 	cplus_plus_ex:registerSkillToGroup("Opener", self.GROUPS.BOOST)
