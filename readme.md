@@ -32,7 +32,7 @@ Please enjoy and contact us if you run into any issues!
 * PredictableRandom - v1.3.0 - Get random numbers in a way that is repeatable for when undoing moves or resetting turns
 * Trait - v3.0.1 - Add traits to pawns & the board. Originally created by Lemonymous and updated to v3.x.x to support multiple traits via appending text and cycling images as well as showing icons for move previews
 * TraitReplace - v0.9.2 - Allows adding custom UI traits that cycle with vanilla traits
-* TutorialTips - v1.2.0 - Added for WeaponPreview to support tool tips for the group and more details tips and modified slighlty to allow specifying the mod.id for weaponPreview/other lib usage
+* TutorialTips - v1.5.0 - Based on Lemonymous v1.4 with profile-aware storage; keeps custom rootId Init support for WeaponPreview/shared lib usage
 * WeaponArmed - v2.1.0 - Created by Lemonymous and incorporated due to dependencies. No changes made
 * WeaponPreview - v4.1.0 - Add icons to weapon previews. Originally created by Lemonymous and updated to v4.x.x to support use in skill build hooks and two click weapons and group icons and display tool tips for icons with descriptions
 
@@ -75,7 +75,7 @@ Libs:
 * PredictableRandom 1.3.0
 * Trait             3.0.1
 * TraitReplace      0.9.2
-* TutorialTips      1.2.0
+* TutorialTips      1.5.0
 * WeaponArmed       2.1.0
 * WeaponPreview     4.1.0
 
