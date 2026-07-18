@@ -181,7 +181,13 @@ Released: 03/28/2026
 Initial release. Works for massive but has some issue with exta UIs some icons like flying are use in
 
 ## TutorialTips
-Current Release: 1.2.0
+Current Release: 1.5.0
+
+### 1.5.0
+Released: 7/17/2026
+
+* Updated from Lemonymous TutorialTips v1.4 (profile-path storage, map editor guard, Assert API, lowercase methods with PascalCase aliases)
+* Kept custom rootId Init support from 1.2 so WeaponPreview/shared libs can own tip namespaces across mods
 
 ### 1.2.0
 Released: 6/11/2026
