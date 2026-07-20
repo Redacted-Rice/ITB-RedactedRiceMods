@@ -14,6 +14,7 @@ legendary_plus.skills = {}
 -- Shared defaults for all Legendary+ skills
 legendary_plus.DEFAULTS = {
 	reusability = cplus_plus_ex.REUSABLILITY.PER_RUN,
+	reusabilityLimit = cplus_plus_ex.REUSABLILITY.REUSABLE,
 	slotRestriction = cplus_plus_ex.SLOT_RESTRICTION.SECOND,
 	weight = cplus_plus_ex.DEFAULT_WEIGHT / 2,
 }
@@ -73,6 +74,9 @@ end
 function legendary_plus:applyDefaults(skill)
 	if skill.reusability == nil then
 		skill.reusability = self.DEFAULTS.reusability
+	end
+	if skill.reusabilityLimit == nil then
+		skill.reusabilityLimit = self.DEFAULTS.reusabilityLimit
 	end
 	if skill.slotRestriction == nil then
 		skill.slotRestriction = self.DEFAULTS.slotRestriction
