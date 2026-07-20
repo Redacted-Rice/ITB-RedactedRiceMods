@@ -5,7 +5,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }
 
-customSkill.DEBUG = true
+customSkill.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Rally", customSkill.DEBUG)
 
