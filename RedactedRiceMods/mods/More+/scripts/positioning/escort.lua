@@ -75,13 +75,21 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 			for _, adjacentLoc in ipairs(adjacentMechs) do
 				local adjacentPawn = Board:GetPawn(adjacentLoc)
 				local adjacentId = adjacentPawn:GetId()
+				local movingPawnId = pawn:GetId()
 				logger.logDebug(SUBMODULE, "Escort pawn %d moving to %s, shielding adjacent ally %d at %s",
-						pawn:GetId(), p2:GetString(), adjacentId, adjacentLoc:GetString())
+						movingPawnId, p2:GetString(), adjacentId, adjacentLoc:GetString())
+
+				more_plus.libs.weaponPreview.ExecuteWithState(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
+					function()
+						more_plus.libs.weaponPreview:AddAnimation(adjacentLoc, more_plus.commonIcons.shield.key, nil,  -- delay
+								more_plus.WEAPON_PREVIEW_GROUP_ID, GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
+					end, movingPawnId
+				)
 
 				local shieldDamage = SpaceDamage(adjacentLoc, 0)
-				shieldDamage.iShield = EFFECT_CREATE
 				shieldDamage.sScript = [[
-						cplus_plus_ex.baseClasses.SkillActive.skills.RrEscort.setShieldings(]] .. pawn:GetId() .. [[, false, ]] .. adjacentId .. [[)]]
+						cplus_plus_ex.baseClasses.SkillActive.skills.RrEscort.setShieldings(]] .. movingPawnId .. [[, false, ]] .. adjacentId .. [[)
+						Board:GetPawn(]] .. adjacentId .. [[):SetShield(true)]]
 				skillEffect:AddDamage(shieldDamage)
 			end
 		end
@@ -103,10 +111,17 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 			logger.logDebug(SUBMODULE, "Pawn %d moving adjacent to Escort pawn, shielding",
 					pawnId)
 
+			more_plus.libs.weaponPreview.ExecuteWithState(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
+				function()
+					more_plus.libs.weaponPreview:AddAnimation(p2, more_plus.commonIcons.shield.key, nil,  -- delay
+						more_plus.WEAPON_PREVIEW_GROUP_ID, GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
+				end, pawnId
+			)
+
 			local shieldDamage = SpaceDamage(p2, 0)
-			shieldDamage.iShield = EFFECT_CREATE
 			shieldDamage.sScript = [[
-					cplus_plus_ex.baseClasses.SkillActive.skills.RrEscort.setShieldings(]]..pawnId..[[, true)]]
+					cplus_plus_ex.baseClasses.SkillActive.skills.RrEscort.setShieldings(]]..pawnId..[[, true)
+					Board:GetPawn(]]..pawnId..[[):SetShield(true)]]
 			skillEffect:AddDamage(shieldDamage)
 		end
 	end

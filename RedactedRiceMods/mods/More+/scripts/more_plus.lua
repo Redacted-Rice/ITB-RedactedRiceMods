@@ -178,6 +178,7 @@ more_plus.commonIcons = {
 	shackle = {key = "rr_shackle", img =  "combat/icons/icon_mp_RrShackle_glow.png"},
 	noDamage = {key = "rr_no_damage", img =  "combat/icons/icon_mp_RrNoDamage_glow.png"},
 	boost = {key = "rr_boosted", img = "advanced/combat/icons/icon_boosted_glow.png"},
+	shield = {key = "rr_shield", img = "combat/icons/icon_shield_glow.png"},
 	armor1 = {key = "rr_armor_one", img = "combat/icons/icon_mp_RrArmorOne_glow.png"},
 	armor3 = {key = "rr_armor_three", img = "combat/icons/icon_mp_RrArmorThree_glow.png"},
 	reflect = {key = "rr_Reflect", img = "combat/icons/icon_mp_RrReflect_glow.png"},
