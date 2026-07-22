@@ -98,6 +98,10 @@ function legendary_plus:registerSkill(skill)
 	skill.description = "LegendaryPlus_" .. skill.id .. "_Description"
 	modApi:setText(skill.description, skill._description)
 
+	if skill.icon == nil then
+		skill.icon = "img/combat/icons/icon_lp_" .. skill.id .. ".png"
+	end
+
 	cplus_plus_ex:registerSkill(self.CATEGORY, skill)
 	logger.logDebug(SUBMODULE, "Registered skill %s", skill.id)
 
@@ -107,6 +111,8 @@ function legendary_plus:registerSkill(skill)
 end
 
 function legendary_plus:init()
+	modApi:appendAssets("img/combat/icons/", "img/combat/icons/")
+
 	self:loadSkills()
 	for _, skill in ipairs(self.skills) do
 		self:registerSkill(skill)
