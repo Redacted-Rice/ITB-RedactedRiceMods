@@ -6,7 +6,8 @@ local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
 	constraints = {
 		groups = {more_plus.GROUPS.STATUS_BASED},
 		pilotExclusions = {"Pilot_Rock", "Pilot_Zoltan"},
-	}
+	},
+	modifiesKillDamage = false,
 }
 
 customSkill.DEBUG = false
@@ -24,44 +25,43 @@ local adverseStatuses = {
 
 function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage, indexes, targetPawn)
 	-- Check if attacker is dealing damage to an enemy
-	if source == self.SOURCE_ATTACKER and targetPawn and
-			targetPawn:IsEnemy() and spaceDamage.iDamage > 0 and
-			spaceDamage.iDamage ~= DAMAGE_ZERO then
+	if source ~= self.SOURCE_ATTACKER or not targetPawn or not targetPawn:IsEnemy() or
+			not (spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO) then
+		return
+	end
 
-		local pawnId = attackingPawn:GetId()
-		local appliedStatuses = {}
+	local pawnId = attackingPawn:GetId()
+	local appliedStatuses = {}
 
-		-- Check vanilla fire and acid status
-		if attackingPawn:IsFire() then
-			spaceDamage.iFire = EFFECT_CREATE
-			table.insert(appliedStatuses, "Fire")
-			logger.logDebug(SUBMODULE, "Applied fire to target at %s", spaceDamage.loc:GetString())
-		end
-		if attackingPawn:IsAcid() then
-			spaceDamage.iAcid = EFFECT_CREATE
-			table.insert(appliedStatuses, "Acid")
-			logger.logDebug(SUBMODULE, "Applied acid to target at %s", spaceDamage.loc:GetString())
-		end
+	-- Check vanilla fire and acid status
+	if attackingPawn:IsFire() then
+		spaceDamage.iFire = EFFECT_CREATE
+		table.insert(appliedStatuses, "Fire")
+		logger.logDebug(SUBMODULE, "Applied fire to target at %s", spaceDamage.loc:GetString())
+	end
+	if attackingPawn:IsAcid() then
+		spaceDamage.iAcid = EFFECT_CREATE
+		table.insert(appliedStatuses, "Acid")
+		logger.logDebug(SUBMODULE, "Applied acid to target at %s", spaceDamage.loc:GetString())
+	end
 
-		-- Check Status library adverse effects if available
-		if Status and Status.GetStatus then
-			for _, statusName in ipairs(adverseStatuses) do
-				local hasStatus = Status.GetStatus(pawnId, statusName)
-				if hasStatus then
-					-- Apply the status to the target using the iXxx metatable syntax
-					spaceDamage["i"..statusName] = EFFECT_CREATE
-					table.insert(appliedStatuses, statusName)
-					logger.logDebug(SUBMODULE, "Applied %s to target at %s", statusName, spaceDamage.loc:GetString())
-				end
+	-- Check Status library adverse effects if available
+	if Status and Status.GetStatus then
+		for _, statusName in ipairs(adverseStatuses) do
+			local hasStatus = Status.GetStatus(pawnId, statusName)
+			if hasStatus then
+				-- Apply the status to the target using the iXxx metatable syntax
+				spaceDamage["i"..statusName] = EFFECT_CREATE
+				table.insert(appliedStatuses, statusName)
+				logger.logDebug(SUBMODULE, "Applied %s to target at %s", statusName, spaceDamage.loc:GetString())
 			end
-		end
-
-		if #appliedStatuses > 0 then
-			logger.logDebug(SUBMODULE, "Malevolent applied %d statuses: %s",
-				#appliedStatuses, table.concat(appliedStatuses, ", "))
 		end
 	end
 
+	if #appliedStatuses > 0 then
+		logger.logDebug(SUBMODULE, "Malevolent applied %d statuses: %s",
+			#appliedStatuses, table.concat(appliedStatuses, ", "))
+	end
 end
 
 return customSkill
