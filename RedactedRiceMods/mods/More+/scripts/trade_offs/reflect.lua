@@ -7,6 +7,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
 	constraints = {
 		pilotExclusions = {"Pilot_Zoltan"},
 	},
+	modifiesKillDamage = false,
 }
 
 customSkill.DEBUG = false
@@ -20,18 +21,18 @@ customSkill.pendingReflects = {} -- [attackerPawnId] = {totalDamage, hasInstakil
 customSkill.reflectorPawns = {} -- Set of pawn IDs that are reflecting
 
 -- Boost needs to be manually handled since its added after by the game
-local function getReflectDamage(attackingPawn, spaceDamage)
-	if spaceDamage.iDamage == DAMAGE_DEATH then
-		logger.logDebug(SUBMODULE, "Reflecting DAMAGE_DEATH back to attacker %d", attackerId)
+local function getReflectDamage(attackingPawn, damage)
+	if damage == DAMAGE_DEATH then
+		logger.logDebug(SUBMODULE, "Reflecting DAMAGE_DEATH back to attacker %d", attackingPawn:GetId())
 		return DAMAGE_DEATH
 	end
 
-	local incoming = spaceDamage.iDamage
+	local incoming = damage
 	if attackingPawn:IsBoosted() then
 		incoming = incoming + 1
 	end
 	logger.logDebug(SUBMODULE, "Reflecting %d damage back to attacker %d (incoming: %d, base: %d, boost: %s)",
-			math.ceil(incoming / 2), attackingPawn:GetId(), incoming, spaceDamage.iDamage,
+			math.ceil(incoming / 2), attackingPawn:GetId(), incoming, damage,
 			tostring(attackingPawn:IsBoosted()))
 	return math.ceil(incoming / 2)
 end
@@ -54,53 +55,54 @@ end
 
 function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage, indexes, targetPawn)
 	-- Check if this is damage from an enemy to a mech
-	if source == self.SOURCE_TARGET and attackingPawn and
-			attackingPawn:IsEnemy() and spaceDamage.iDamage > 0 and
-			spaceDamage.iDamage ~= DAMAGE_ZERO then
-		local attackerId = attackingPawn:GetId()
-		local reflectorId = targetPawn:GetId()
-
-		-- Display icons at pawns starting position
-		local attackerStartLoc = attackingPawn:GetSpace()
-		local targetStartLoc = targetPawn:GetSpace()
-
-		-- Calculate reflect damage from incoming damage
-		local reflectDamage = getReflectDamage(attackingPawn, spaceDamage)
-		-- Track reflect damage by attacker ID
-		if not self.pendingReflects[attackerId] then
-			self.pendingReflects[attackerId] = {
-				attackerId = attackerId,
-				totalDamage = 0,
-				hasInstakill = false,
-				reflectorId = reflectorId,
-			}
-		end
-
-		if reflectDamage == DAMAGE_DEATH then
-			self.pendingReflects[attackerId].hasInstakill = true
-		else
-			self.pendingReflects[attackerId].totalDamage =
-					self.pendingReflects[attackerId].totalDamage + reflectDamage
-		end
-
-		-- Track reflector pawns
-		self.reflectorPawns[reflectorId] = true
-
-		-- Add reflect icons at start locations with group ID
-		logger.logDebug(SUBMODULE, "Adding reflect damage icon from %s to attacker %s",
-				targetStartLoc:GetString(), attackerStartLoc:GetString())
-		more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
-			function()
-				more_plus.libs.weaponPreview:AddAnimation(attackerStartLoc, more_plus.commonIcons.reflect.key, nil,  -- delay
-						more_plus.WEAPON_PREVIEW_GROUP_ID, GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
-				more_plus.libs.weaponPreview:AddAnimation(targetStartLoc, more_plus.commonIcons.reflect.key, nil,  -- delay
-						more_plus.WEAPON_PREVIEW_GROUP_ID, GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
-			end, attackerId
-		)
-
-		logger.logDebug(SUBMODULE, "Tracked reflect to attacker %d (damage: %s)",
-				attackerId, reflectDamage == DAMAGE_DEATH and "DEATH" or tostring(reflectDamage))
+	if source ~= self.SOURCE_TARGET or not attackingPawn or not attackingPawn:IsEnemy() or
+			not (spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO) then
+		return
 	end
+
+	local attackerId = attackingPawn:GetId()
+	local reflectorId = targetPawn:GetId()
+
+	-- Display icons at pawns starting position
+	local attackerStartLoc = attackingPawn:GetSpace()
+	local targetStartLoc = targetPawn:GetSpace()
+
+	-- Calculate reflect damage from incoming damage
+	local reflectDamage = getReflectDamage(attackingPawn, spaceDamage.iDamage)
+	-- Track reflect damage by attacker ID
+	if not self.pendingReflects[attackerId] then
+		self.pendingReflects[attackerId] = {
+			attackerId = attackerId,
+			totalDamage = 0,
+			hasInstakill = false,
+			reflectorId = reflectorId,
+		}
+	end
+
+	if reflectDamage == DAMAGE_DEATH then
+		self.pendingReflects[attackerId].hasInstakill = true
+	else
+		self.pendingReflects[attackerId].totalDamage =
+				self.pendingReflects[attackerId].totalDamage + reflectDamage
+	end
+
+	-- Track reflector pawns
+	self.reflectorPawns[reflectorId] = true
+
+	-- Add reflect icons at start locations with group ID
+	logger.logDebug(SUBMODULE, "Adding reflect damage icon from %s to attacker %s",
+			targetStartLoc:GetString(), attackerStartLoc:GetString())
+	more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
+		function()
+			more_plus.libs.weaponPreview:AddAnimation(attackerStartLoc, more_plus.commonIcons.reflect.key, nil,  -- delay
+					more_plus.WEAPON_PREVIEW_GROUP_ID, GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
+			more_plus.libs.weaponPreview:AddAnimation(targetStartLoc, more_plus.commonIcons.reflect.key, nil,  -- delay
+					more_plus.WEAPON_PREVIEW_GROUP_ID, GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
+		end, attackerId
+	)
+
+	logger.logDebug(SUBMODULE, "Tracked reflect to attacker %d (damage: %s)",
+			attackerId, reflectDamage == DAMAGE_DEATH and "DEATH" or tostring(reflectDamage))
 end
 
 function customSkill:SkillEffectEvaluated(phase)
@@ -155,7 +157,7 @@ function customSkill:SkillEffectEvaluated(phase)
 
 			logger.logDebug(SUBMODULE, "Queued reflect damage to attacker %d at %s via reflector %d (damage: %s)",
 					attackerId, currentLoc:GetString(), reflectData.reflectorId,
-					finalDamage == DAMAGE_DEATH and "DEATH" or tostring(finalDamage))
+					tostring(reflectData.totalDamage))
 		else
 			logger.logWarn(SUBMODULE, "Attacker pawn %d not found when applying reflect", attackerId)
 		end
