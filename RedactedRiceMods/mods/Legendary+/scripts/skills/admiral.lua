@@ -1,30 +1,33 @@
-local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
-	id = "RrPontoons",
-	name = "Pontoons",
-	description = "Piloted mech floats on top of liquid tiles without being affected by them.",
-	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
+local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
+	id = "RrAdmiral",
+	name = "Admiral",
+	description = "Piloted mech floats on top of liquid tiles. +1 damage while on water or lava.",
 	modified = {},
 	-- Prospero already has flying so it doesn't help at all
-	-- Flying cyborgs (Hornet) also don't benefit from pontoons
+	-- Flying cyborgs (Hornet) also don't benefit from amphibious
 	constraints = {
-		groups = {more_plus.GROUPS.MOVE_TYPE},
+		groups = {legendary_plus.GROUPS.MOVE_TYPE, legendary_plus.GROUPS.ADD_DAMAGE},
 		pilotExclusions = {"Pilot_Recycler", cplus_plus_ex.isFlyingCyborg},
 		squadExclusions = {"knight_ChessPawns"},
-	}
+	},
+	priority = 80,
+	reusabilityLimit = cplus_plus_ex.REUSABLILITY.REUSABLE,
 }
 
--- Initialize logger
 customSkill.DEBUG = false
 local logger = memhack.logger
-local SUBMODULE = logger.register("More+", "Amphibious", customSkill.DEBUG)
+local SUBMODULE = logger.register("Legendary+", "Admiral", customSkill.DEBUG)
 
-more_plus:addCustomTraitIcon(customSkill)
+legendary_plus:addCustomTraitIcon(customSkill)
 
 function customSkill:setupEffect()
+	cplus_plus_ex.baseClasses.SkillEffectModifier.setupEffect(self)
+
 	table.insert(customSkill.events, modapiext.events.onTargetAreaBuild:subscribe(customSkill.moveTargetArea))
 	table.insert(customSkill.events, modapiext.events.onPawnPositionChanged:subscribe(customSkill.addFlyingIfNeeded))
 	table.insert(customSkill.events, modapiext.events.onPawnSelected:subscribe(customSkill.addFlyingIfNeeded))
 	table.insert(customSkill.events, modapiext.events.onSkillBuild:subscribe(customSkill.clearFlying))
+	table.insert(customSkill.events, modapiext.events.onSkillBuild:subscribe(customSkill.moveSkillBuild))
 end
 
 function customSkill.isLiquidTerrain(terrain)
@@ -34,13 +37,15 @@ end
 function customSkill.moveTargetArea(mission, pawn, weaponId, p1, targetArea)
 	if weaponId == "Move" then
 		local pilot = pawn:GetPilot()
-		if pilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot) and more_plus.libs.boardUtils.isPawnHijackedFlying(pawn) then
+		if pilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot)
+				and legendary_plus.libs.boardUtils.isPawnHijackedFlying(pawn) then
 			-- First time, unset flying and get a new set of points without flying
 			-- Note other things that change path must use isPawnFlying in BoardUtils
 			-- To work right on the second pass or else it could see the pawn as flying
-			-- when in shouldn't be
+			-- when it shouldn't be
 			if pawn:IsFlying() then
-				logger.logDebug(SUBMODULE, "Recalculating move target area for amphibious pawn %d at %s", pawn:GetId(), p1:GetString())
+				logger.logDebug(SUBMODULE, "Recalculating move target area for amphibious pawn %d at %s",
+						pawn:GetId(), p1:GetString())
 				pawn:SetFlying(false)
 				while not targetArea:empty() do
 					targetArea:erase(0)
@@ -61,7 +66,7 @@ function customSkill.applyOnMissionEnter()
 		local terrain = Board:GetTerrain(pawn:GetSpace())
 		if self.isLiquidTerrain(terrain) then
 			logger.logDebug(SUBMODULE, "Setting flying for pawn %d on liquid terrain", mechInfo.pawnId)
-			more_plus.libs.boardUtils.setHijackedFlying(pawn, true)
+			legendary_plus.libs.boardUtils.setHijackedFlying(pawn, true)
 		end
 	end
 end
@@ -71,10 +76,10 @@ function customSkill.addFlyingIfNeeded(mission, pawn)
 		local terrain = Board:GetTerrain(pawn:GetSpace())
 		if self.isLiquidTerrain(terrain) then
 			logger.logDebug(SUBMODULE, "Setting flying for pawn %d on liquid terrain", pawn:GetId())
-			more_plus.libs.boardUtils.setHijackedFlying(pawn, true)
+			legendary_plus.libs.boardUtils.setHijackedFlying(pawn, true)
 		else
 			logger.logDebug(SUBMODULE, "Removing flying for pawn %d on solid terrain", pawn:GetId())
-			more_plus.libs.boardUtils.setHijackedFlying(pawn, false)
+			legendary_plus.libs.boardUtils.setHijackedFlying(pawn, false)
 		end
 	end
 end
@@ -83,6 +88,30 @@ function customSkill.clearFlying(mission, pawn)
 	if cplus_plus_ex:isSkillOnPawn(customSkill.id, pawn) then
 		logger.logDebug(SUBMODULE, "Clearing flying for pawn %d", pawn:GetId())
 		more_plus.libs.boardUtils.setHijackedFlying(pawn, false)
+	end
+end
+
+-- +1 damage while on water/lava
+function customSkill.shouldBonus(source, attackingPawn, damage)
+	if source ~= customSkill.SOURCE_ATTACKER or not attackingPawn or not damage
+			or damage <= 0 or damage == DAMAGE_DEATH or damage == DAMAGE_ZERO then
+		return false
+	end
+	return self.isLiquidTerrain(Board:GetTerrain(attackingPawn:GetSpace()))
+end
+
+function customSkill:modifyKillDamage(source, attackingPawn, spaceDamage, indexes, targetPawn, currentDamage)
+	if targetPawn and targetPawn:IsEnemy() and self.shouldBonus(source, attackingPawn, currentDamage) then
+		return currentDamage + 1
+	end
+	return currentDamage
+end
+
+function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage, indexes, targetPawn)
+	if targetPawn and targetPawn:IsEnemy() and self.shouldBonus(source, attackingPawn, spaceDamage.iDamage) then
+		legendary_plus:previewExtraDamage(phase, spaceDamage.loc, attackingPawn:GetId(), customSkill)
+		spaceDamage.iDamage = spaceDamage.iDamage + 1
+		logger.logDebug(SUBMODULE, "Admiral +1 on liquid at %s", spaceDamage.loc:GetString())
 	end
 end
 

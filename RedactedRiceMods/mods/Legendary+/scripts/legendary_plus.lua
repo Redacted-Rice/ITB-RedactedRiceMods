@@ -6,6 +6,8 @@ legendary_plus.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("Legendary+", "Core", legendary_plus.DEBUG)
 
+legendary_plus.libs = legendary_plus.libs or {}
+
 -- Use same group ID as More+
 legendary_plus.WEAPON_PREVIEW_GROUP_ID = "more_plus_levelup_skills"
 legendary_plus.CATEGORY = "Legendary+"
@@ -19,12 +21,131 @@ legendary_plus.DEFAULTS = {
 	weight = cplus_plus_ex.DEFAULT_WEIGHT / 2,
 }
 
+-- Group name strings match More+ so skills share exclusion pools when both mods are enabled
 legendary_plus.GROUPS = {
 	ADD_HEALTH = "Add Health",
 	ADD_MOVE = "Add Move",
 	ADD_GRID_DEF = "Add Grid Def",
 	ADD_REACTOR = "Add Reactor",
+	MOVE_TYPE = "Move Type",
+	ADD_DAMAGE = "Add Damage",
+	SHIELD = "Shield",
+	ITEM_DROP = "Item Drop",
+	REVIVE = "Revive",
 }
+
+legendary_plus.commonIcons = {
+	extraDamage = {key = "rr_lp_extra_damage", img = "combat/icons/icon_damage_glow.png"},
+	boost = {key = "rr_lp_boosted", img = "advanced/combat/icons/icon_boosted_glow.png"},
+}
+
+legendary_plus.DISABLED_BY_DEFAULT = {
+	"RrGridHero",
+	"RrComeback",
+	"RrJuggernaut",
+	"RrMedic",
+}
+
+function legendary_plus:addCommonCustomImages()
+	for _, iconData in pairs(self.commonIcons) do
+		if not ANIMS[iconData.key] then
+			ANIMS[iconData.key] = ANIMS.Animation:new{
+				Image = iconData.img,
+				NumFrames = 1,
+				Time = 1,
+				Loop = true,
+			}
+		end
+	end
+end
+
+function legendary_plus:previewExtraDamage(phase, loc, pawnId, skill)
+	local weaponPreview = (more_plus and more_plus.libs and more_plus.libs.weaponPreview)
+			or self.libs.weaponPreview
+	if not weaponPreview then
+		return
+	end
+
+	local tipName = skill._name or skill.name or ""
+	local tipDesc = skill._description or ""
+	weaponPreview.ExecuteWithState(phase,
+		function()
+			weaponPreview:AddAnimation(loc, self.commonIcons.extraDamage.key, nil,
+					self.WEAPON_PREVIEW_GROUP_ID, tipName .. ": " .. tipDesc)
+		end, pawnId
+	)
+end
+
+-- Drop tile next to move origin preferring relative opposite, left, right, same
+-- back, forward, left.
+function legendary_plus.canPlaceMoveDrop(loc, excludeLoc)
+	if not Board:IsValid(loc)
+			or (excludeLoc and loc == excludeLoc)
+			or Board:IsItem(loc)
+			or Board:IsBuilding(loc)
+			or Board:IsPod(loc)
+			or Board:GetPawn(loc) then
+		return false
+	end
+
+	local terrain = Board:GetTerrain(loc)
+	if terrain == TERRAIN_HOLE or terrain == TERRAIN_WATER
+			or terrain == TERRAIN_LAVA or terrain == TERRAIN_ACID
+			or terrain == TERRAIN_MOUNTAIN then
+		return false
+	end
+
+	return true
+end
+
+function legendary_plus.findMoveDropTile(origin, dest)
+	if not origin or not dest or origin == dest then
+		return nil
+	end
+
+	local facing = GetDirection(origin - dest)
+	-- Relative opposite, left, right, same
+	local dirs = {
+		(facing + 2) % 4,
+		(facing + 1) % 4,
+		(facing + 3) % 4,
+		facing,
+	}
+
+	for _, dir in ipairs(dirs) do
+		local loc = origin + DIR_VECTORS[dir]
+		-- Never place on the destination
+		if legendary_plus.canPlaceMoveDrop(loc, dest) then
+			return loc
+		end
+	end
+
+	return nil
+end
+
+function legendary_plus:addCustomTraitIcon(skill)
+	local iconImg = skill.icon or ("img/combat/icons/icon_lp_" .. skill.id .. ".png")
+	skill.icon = iconImg
+	logger.logDebug(SUBMODULE, "Adding trait icon %s at %s", skill.id, iconImg)
+
+	if not self.libs.traitReplace then
+		logger.logWarn(SUBMODULE, "traitReplace lib unavailable; skipping trait icon for %s", skill.id)
+		return
+	end
+
+	self.libs.traitReplace:add{
+		targetTrait = "massive",
+		func = function(trait, pawn)
+			if cplus_plus_ex:isSkillOnPawn(skill.id, pawn) then
+				return true
+			end
+			return false
+		end,
+		icon = iconImg,
+		desc_title = skill.name,
+		desc_text = skill.description,
+	}
+end
 
 -- Add vanilla skills to groups
 function legendary_plus:addVanillaSkillsToGroups()
@@ -112,23 +233,38 @@ end
 
 function legendary_plus:init()
 	modApi:appendAssets("img/combat/icons/", "img/combat/icons/")
+	self:addCommonCustomImages()
 
 	self:loadSkills()
 	for _, skill in ipairs(self.skills) do
 		self:registerSkill(skill)
 	end
 	self:addVanillaSkillsToGroups()
+
+	-- Trapper and Medic both drop items on move and conflict hard
+	cplus_plus_ex:registerSkillExclusion("RrTrapper", "RrMedic")
+end
+
+function legendary_plus:disableDefaultSkills()
+	logger.logDebug(SUBMODULE, "Disabling default disabled skills...")
+	for _, skillId in ipairs(self.DISABLED_BY_DEFAULT) do
+		logger.logDebug(SUBMODULE, "Disabling skill %s", skillId)
+		cplus_plus_ex:disableSkill(skillId)
+	end
+	logger.logDebug(SUBMODULE, "Disabled %d skills", #self.DISABLED_BY_DEFAULT)
 end
 
 function legendary_plus:load()
 	-- Register More+ weapon preview group with offset and multi-icon
-	WeaponPreview:RegisterGroup(self.WEAPON_PREVIEW_GROUP_ID,Point(-25, 11))
-	logger.logDebug(SUBMODULE, "Registered More+ weapon preview group with WeaponPreview")
+	WeaponPreview:RegisterGroup(self.WEAPON_PREVIEW_GROUP_ID, Point(-25, 11))
+	logger.logDebug(SUBMODULE, "Registered Legendary+ weapon preview group")
 
 	-- Add vanilla skills to groups after CPLUS+_Ex has registered them
 	logger.logDebug(SUBMODULE, "Adding vanilla skills to groups...")
 	self:addVanillaSkillsToGroups()
-	
+
+	self:disableDefaultSkills()
+
 	logger.logDebug(SUBMODULE, "Loading all skills for Legendary+...")
 	for _, skill in ipairs(self.skills) do
 		logger.logDebug(SUBMODULE, "Loading skill %s", skill.id)

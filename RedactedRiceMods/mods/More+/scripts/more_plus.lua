@@ -13,10 +13,13 @@ more_plus.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Core", more_plus.DEBUG)
 
--- Convert CPLUS+ Ex phase enum to weaponPreview library enum
+-- Convert CPLUS+ Ex / DamageModifierLib phase enum to weaponPreview library enum.
+-- Phase values are defined on damageModifierLib (not SkillEffectModifier) and
+-- already match weaponPreview.STATE_* numerically.
 function more_plus.convertPhase(phase)
 	local damageModifierLib = cplus_plus_ex.damageModifierLib
 	local weaponPreview = more_plus.libs.weaponPreview
+	local dml = cplus_plus_ex.damageModifierLib
 
 	if phase == damageModifierLib.PHASE_NONE then
 		return weaponPreview.STATE_NONE
@@ -34,7 +37,11 @@ function more_plus.convertPhase(phase)
 		return weaponPreview.STATE_QUEUED_FINAL_EFFECT
 	end
 
-	-- Default to none if unknown
+	-- Phases are numeric and already aligned with STATE_*; pass through
+	if type(phase) == "number" then
+		return phase
+	end
+
 	logger.logWarn(SUBMODULE, "Unknown phase: %s", tostring(phase))
 	return weaponPreview.STATE_NONE
 end
