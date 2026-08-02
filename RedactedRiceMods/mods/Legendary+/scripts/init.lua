@@ -13,6 +13,11 @@ local mod = {
 
 function mod:init()
 	local legendary_plus = require(self.scriptPath .. "legendary_plus")
+
+	for libId, lib in pairs(mod_loader.mods.redactedrice_libs.libs) do
+		legendary_plus.libs[libId] = lib
+	end
+
 	legendary_plus:init()
 end
 

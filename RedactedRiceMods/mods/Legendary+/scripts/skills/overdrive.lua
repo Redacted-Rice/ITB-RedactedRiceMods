@@ -7,4 +7,5 @@ return {
 		groups = { legendary_plus.GROUPS.ADD_REACTOR },
 		skillExclusions = {"Reactor"},
 	},
+	reusabilityLimit = cplus_plus_ex.REUSABLILITY.REUSABLE,
 }

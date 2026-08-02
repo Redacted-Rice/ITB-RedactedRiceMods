@@ -7,6 +7,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 	constraints = {
 		pilotExclusions = {cplus_plus_ex.isCyborg},
+		groups = {"Revive"},
 	}
 }
 
@@ -73,6 +74,7 @@ more_plus.libs.traitReplace:addStateful{
 
 function customSkill:setupEffect()
 	table.insert(customSkill.events, modApi.events.onMissionStart:subscribe(customSkill.resetTrackedData))
+	table.insert(customSkill.events, modApi.events.onMissionNextPhaseCreated:subscribe(customSkill.resetTrackedData))
 	table.insert(customSkill.events, modapiext.events.onPawnKilled:subscribe(customSkill.pawnKilled))
 	table.insert(customSkill.events, modApi.events.onNextTurn:subscribe(customSkill.nextTurnRevive))
 	table.insert(customSkill.events, modApi.events.onMissionEnd:subscribe(customSkill.revivePending))
