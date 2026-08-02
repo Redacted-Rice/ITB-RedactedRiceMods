@@ -6,4 +6,5 @@ return {
 	constraints = {
 		groups = { legendary_plus.GROUPS.ADD_GRID_DEF },
 	},
+	reusabilityLimit = cplus_plus_ex.REUSABLILITY.REUSABLE,
 }

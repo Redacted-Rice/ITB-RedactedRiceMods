@@ -11,4 +11,5 @@ return {
 		skillExclusions = {"Reactor"},
 		pilotExclusions = {"Pilot_Zoltan", "Pilot_Rock"},
 	},
+	reusabilityLimit = cplus_plus_ex.REUSABLILITY.REUSABLE,
 }
