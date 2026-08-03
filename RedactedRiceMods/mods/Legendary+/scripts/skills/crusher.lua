@@ -14,7 +14,7 @@ legendary_plus:addCustomTraitIcon(customSkill)
 
 function customSkill.canCrack(loc)
 	return Board:IsValid(loc) and not Board:IsBuilding(loc) and
-			not Board:IsPod(loc) and not Board:IsCracked(loc) and
+			not Board:IsPod(loc) and not Board:IsItem(loc) and not Board:IsCracked(loc) and
 			Board:GetTerrain(loc) ~= TERRAIN_WATER and Board:GetTerrain(loc) ~= TERRAIN_LAVA and
 			Board:GetTerrain(loc) ~= TERRAIN_ACID and Board:GetTerrain(loc) ~= TERRAIN_HOLE
 end
@@ -39,7 +39,7 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 
 	for dir = DIR_START, DIR_END do
 		local adj = p2 + DIR_VECTORS[dir]
-		if self.canCrack(adj) then
+		if customSkill.canCrack(adj) then
 			local damageC = SpaceDamage(adj, 0)
 			damageC.iCrack = EFFECT_CREATE
 			skillEffect:AddDamage(damageC)
