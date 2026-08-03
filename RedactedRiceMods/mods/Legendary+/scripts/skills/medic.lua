@@ -1,65 +1,28 @@
-local ITEM_ID = "Item_Repair_Mine"
-
 local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	id = "RrMedic",
 	name = "Medic",
-	description = "When moving, drop a repair pad on a free tile next to your origin (relative to the direction back toward it).",
-	minesByMove = {},
+	description = "When moving, mark your origin tile; a repair pad is placed there at end of turn.",
 	reusabilityLimit = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }
 
 customSkill.DEBUG = false
-local logger = memhack.logger
-local SUBMODULE = logger.register("Legendary+", "Medic", customSkill.DEBUG)
 
 legendary_plus:addCustomTraitIcon(customSkill)
 
+local MARKER_TOOLTIP = "rr_lp_RrMedic_drop"
+TILE_TOOLTIPS[MARKER_TOOLTIP] = {
+	"Repair Pad",
+	"A repair pad will be placed here at end of turn.",
+}
+
+local MOVE_DROP_CONFIG = {
+	itemId = "Item_Repair_Mine",
+	markerIcon = "advanced/combat/healtile_on.png",
+	markerTooltip = MARKER_TOOLTIP,
+}
+
 function customSkill:setupEffect()
-	table.insert(customSkill.events, modapiext.events.onSkillBuild:subscribe(customSkill.moveSkillBuild))
-	table.insert(customSkill.events, modapiext.events.onPawnUndoMove:subscribe(customSkill.undoMine))
-end
-
-function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect)
-	if weaponId ~= "Move" then
-		return
-	end
-
-	local pilot = pawn:GetPilot()
-	if not pilot or not cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot) then
-		return
-	end
-
-	local mineLoc = legendary_plus.findMoveDropTile(p1, p2)
-	if not mineLoc then
-		logger.logDebug(SUBMODULE, "No valid repair pad tile next to origin %s for pawn %d",
-				p1:GetString(), pawn:GetId())
-		return
-	end
-
-	local pawnId = pawn:GetId()
-	local mineDamage = SpaceDamage(mineLoc, 0)
-	mineDamage.sItem = ITEM_ID
-	mineDamage.sScript = string.format(
-		[[cplus_plus_ex.baseClasses.SkillActive.skills.RrMedic.minesByMove[%d] = %s]],
-		pawnId, mineLoc:GetString()
-	)
-	skillEffect:AddDamage(mineDamage)
-	logger.logDebug(SUBMODULE, "Will drop repair pad at %s (origin %s -> %s) for pawn %d",
-			mineLoc:GetString(), p1:GetString(), p2:GetString(), pawnId)
-end
-
-function customSkill.undoMine(mission, pawn, undonePosition)
-	local pawnId = pawn:GetId()
-	local mineLoc = customSkill.minesByMove[pawnId]
-	if not mineLoc then
-		return
-	end
-
-	if Board:IsItem(mineLoc) and Board:GetItem(mineLoc) == ITEM_ID then
-		Board:RemoveItem(mineLoc)
-		logger.logDebug(SUBMODULE, "Removed repair pad at %s for pawn %d (undo)", mineLoc:GetString(), pawnId)
-	end
-	customSkill.minesByMove[pawnId] = nil
+	legendary_plus.moveDrop:setupSkillEffect(customSkill, MOVE_DROP_CONFIG)
 end
 
 return customSkill

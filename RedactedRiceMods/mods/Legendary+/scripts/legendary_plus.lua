@@ -42,6 +42,7 @@ legendary_plus.commonIcons = {
 legendary_plus.DISABLED_BY_DEFAULT = {
 	"RrGridHero",
 	"RrComeback",
+	"RrFreezer",
 	"RrJuggernaut",
 	"RrMedic",
 }
@@ -76,11 +77,9 @@ function legendary_plus:previewExtraDamage(phase, loc, pawnId, skill)
 	)
 end
 
--- Drop tile next to move origin preferring relative opposite, left, right, same
--- back, forward, left.
-function legendary_plus.canPlaceMoveDrop(loc, excludeLoc)
+-- Whether a tile can receive a move-origin item drop at end of turn.
+function legendary_plus.canPlaceMoveDrop(loc)
 	if not Board:IsValid(loc)
-			or (excludeLoc and loc == excludeLoc)
 			or Board:IsItem(loc)
 			or Board:IsBuilding(loc)
 			or Board:IsPod(loc)
@@ -96,31 +95,6 @@ function legendary_plus.canPlaceMoveDrop(loc, excludeLoc)
 	end
 
 	return true
-end
-
-function legendary_plus.findMoveDropTile(origin, dest)
-	if not origin or not dest or origin == dest then
-		return nil
-	end
-
-	local facing = GetDirection(origin - dest)
-	-- Relative opposite, left, right, same
-	local dirs = {
-		(facing + 2) % 4,
-		(facing + 1) % 4,
-		(facing + 3) % 4,
-		facing,
-	}
-
-	for _, dir in ipairs(dirs) do
-		local loc = origin + DIR_VECTORS[dir]
-		-- Never place on the destination
-		if legendary_plus.canPlaceMoveDrop(loc, dest) then
-			return loc
-		end
-	end
-
-	return nil
 end
 
 function legendary_plus:addCustomTraitIcon(skill)
@@ -235,14 +209,18 @@ function legendary_plus:init()
 	modApi:appendAssets("img/combat/icons/", "img/combat/icons/")
 	self:addCommonCustomImages()
 
+	require(path .. "move_drop"):init()
+
 	self:loadSkills()
 	for _, skill in ipairs(self.skills) do
 		self:registerSkill(skill)
 	end
 	self:addVanillaSkillsToGroups()
 
-	-- Trapper and Medic both drop items on move and conflict hard
+	-- Trapper, Medic, and Freezer all drop items on move and conflict with each other
 	cplus_plus_ex:registerSkillExclusion("RrTrapper", "RrMedic")
+	cplus_plus_ex:registerSkillExclusion("RrTrapper", "RrFreezer")
+	cplus_plus_ex:registerSkillExclusion("RrMedic", "RrFreezer")
 end
 
 function legendary_plus:disableDefaultSkills()
