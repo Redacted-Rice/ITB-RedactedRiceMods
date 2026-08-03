@@ -1,7 +1,10 @@
 local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
-	id = "RrTrapper",
-	name = "Trapper",
-	description = "When moving, mark your origin tile; an explosive mine is placed there at end of turn.",
+	id = "RrFreezer",
+	name = "Freezer",
+	description = "When moving, mark your origin tile; a freeze mine is placed there at end of turn.",
+	constraints = {
+		groups = {legendary_plus.GROUPS.ITEM_DROP},
+	},
 	reusabilityLimit = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }
 
@@ -9,15 +12,15 @@ customSkill.DEBUG = false
 
 legendary_plus:addCustomTraitIcon(customSkill)
 
-local MARKER_TOOLTIP = "rr_lp_RrTrapper_drop"
+local MARKER_TOOLTIP = "rr_lp_RrFreezer_drop"
 TILE_TOOLTIPS[MARKER_TOOLTIP] = {
-	"Explosive Mine",
-	"An explosive mine will be placed here at end of turn.",
+	"Freeze Mine",
+	"A freeze mine will be placed here at end of turn.",
 }
 
 local MOVE_DROP_CONFIG = {
-	itemId = "Item_Mine",
-	markerIcon = "combat/icons/icon_mine_glow.png",
+	itemId = "Freeze_Mine",
+	markerIcon = "combat/icons/icon_frozenmine_glow.png",
 	markerTooltip = MARKER_TOOLTIP,
 }
 
