@@ -24,7 +24,7 @@ function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onTargetAreaBuild:subscribe(customSkill.moveTargetArea))
 	table.insert(customSkill.events, modapiext.events.onPawnPositionChanged:subscribe(customSkill.addFlyingIfNeeded))
 	table.insert(customSkill.events, modapiext.events.onPawnSelected:subscribe(customSkill.addFlyingIfNeeded))
-	table.insert(customSkill.events, modapiext.events.onSkillBuild:subscribe(customSkill.clearFlying))
+	table.insert(customSkill.events, modApi.events.onMissionEnd:subscribe(customSkill.clearFlying))
 end
 
 function customSkill.isLiquidTerrain(terrain)
@@ -59,7 +59,7 @@ function customSkill.applyOnMissionEnter()
 	for _, mechInfo in pairs(cplus_plus_ex:getMechsWithSkill(customSkill.id)) do
 		local pawn = Board:GetPawn(mechInfo.pawnId)
 		local terrain = Board:GetTerrain(pawn:GetSpace())
-		if self.isLiquidTerrain(terrain) then
+		if customSkill.isLiquidTerrain(terrain) then
 			logger.logDebug(SUBMODULE, "Setting flying for pawn %d on liquid terrain", mechInfo.pawnId)
 			more_plus.libs.boardUtils.setHijackedFlying(pawn, true)
 		end
@@ -69,7 +69,7 @@ end
 function customSkill.addFlyingIfNeeded(mission, pawn)
 	if cplus_plus_ex:isSkillOnPawn(customSkill.id, pawn) then
 		local terrain = Board:GetTerrain(pawn:GetSpace())
-		if self.isLiquidTerrain(terrain) then
+		if customSkill.isLiquidTerrain(terrain) then
 			logger.logDebug(SUBMODULE, "Setting flying for pawn %d on liquid terrain", pawn:GetId())
 			more_plus.libs.boardUtils.setHijackedFlying(pawn, true)
 		else

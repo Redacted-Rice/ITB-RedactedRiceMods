@@ -59,21 +59,21 @@ function customSkill:clearEvents()
 	cplus_plus_ex.baseClasses.SkillEffectModifier.clearEvents(self)
 end
 
-local function shouldBonus(source, targetPawn, damage)
+function customSkill.shouldBonus(source, targetPawn, damage)
 	return source == customSkill.SOURCE_ATTACKER and targetPawn and
 			targetPawn:IsEnemy() and targetPawn:IsFlying() and
 			damage > 0 and damage ~= DAMAGE_DEATH and damage ~= DAMAGE_ZERO
 end
 
 function customSkill:modifyKillDamage(source, attackingPawn, spaceDamage, indexes, targetPawn, currentDamage)
-	if shouldBonus(source, targetPawn, currentDamage) then
+	if self.shouldBonus(source, targetPawn, currentDamage) then
 		return currentDamage + 1
 	end
 	return currentDamage
 end
 
 function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage, indexes, targetPawn)
-	if shouldBonus(source, targetPawn, spaceDamage.iDamage) then
+	if self.shouldBonus(source, targetPawn, spaceDamage.iDamage) then
 		legendary_plus:previewExtraDamage(phase, spaceDamage.loc, attackingPawn:GetId(), customSkill)
 		spaceDamage.iDamage = spaceDamage.iDamage + 1
 		logger.logDebug(SUBMODULE, "Ace +1 vs flying at %s", spaceDamage.loc:GetString())
