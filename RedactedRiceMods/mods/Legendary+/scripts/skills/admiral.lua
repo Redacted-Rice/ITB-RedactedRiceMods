@@ -26,7 +26,7 @@ function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onTargetAreaBuild:subscribe(customSkill.moveTargetArea))
 	table.insert(customSkill.events, modapiext.events.onPawnPositionChanged:subscribe(customSkill.addFlyingIfNeeded))
 	table.insert(customSkill.events, modapiext.events.onPawnSelected:subscribe(customSkill.addFlyingIfNeeded))
-	table.insert(customSkill.events, modapiext.events.onSkillBuild:subscribe(customSkill.clearFlying))
+	table.insert(customSkill.events, modApi.events.onMissionEnd:subscribe(customSkill.clearFlying))
 	table.insert(customSkill.events, modapiext.events.onSkillBuild:subscribe(customSkill.moveSkillBuild))
 end
 
@@ -64,7 +64,7 @@ function customSkill.applyOnMissionEnter()
 	for _, mechInfo in pairs(cplus_plus_ex:getMechsWithSkill(customSkill.id)) do
 		local pawn = Board:GetPawn(mechInfo.pawnId)
 		local terrain = Board:GetTerrain(pawn:GetSpace())
-		if self.isLiquidTerrain(terrain) then
+		if customSkill.isLiquidTerrain(terrain) then
 			logger.logDebug(SUBMODULE, "Setting flying for pawn %d on liquid terrain", mechInfo.pawnId)
 			legendary_plus.libs.boardUtils.setHijackedFlying(pawn, true)
 		end
@@ -74,7 +74,7 @@ end
 function customSkill.addFlyingIfNeeded(mission, pawn)
 	if cplus_plus_ex:isSkillOnPawn(customSkill.id, pawn) then
 		local terrain = Board:GetTerrain(pawn:GetSpace())
-		if self.isLiquidTerrain(terrain) then
+		if customSkill.isLiquidTerrain(terrain) then
 			logger.logDebug(SUBMODULE, "Setting flying for pawn %d on liquid terrain", pawn:GetId())
 			legendary_plus.libs.boardUtils.setHijackedFlying(pawn, true)
 		else
@@ -97,7 +97,7 @@ function customSkill.shouldBonus(source, attackingPawn, damage)
 			or damage <= 0 or damage == DAMAGE_DEATH or damage == DAMAGE_ZERO then
 		return false
 	end
-	return self.isLiquidTerrain(Board:GetTerrain(attackingPawn:GetSpace()))
+	return customSkill.isLiquidTerrain(Board:GetTerrain(attackingPawn:GetSpace()))
 end
 
 function customSkill:modifyKillDamage(source, attackingPawn, spaceDamage, indexes, targetPawn, currentDamage)

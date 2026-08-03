@@ -35,8 +35,8 @@ legendary_plus.GROUPS = {
 }
 
 legendary_plus.commonIcons = {
-	extraDamage = {key = "rr_lp_extra_damage", img = "combat/icons/icon_damage_glow.png"},
-	boost = {key = "rr_lp_boosted", img = "advanced/combat/icons/icon_boosted_glow.png"},
+	-- Same key/image as More+ so weapon preview treats them as one icon
+	extraDamage = {key = "rr_extra_damage", img = "combat/icons/icon_mp_RrExtraDamage_glow.png"},
 }
 
 legendary_plus.DISABLED_BY_DEFAULT = {
