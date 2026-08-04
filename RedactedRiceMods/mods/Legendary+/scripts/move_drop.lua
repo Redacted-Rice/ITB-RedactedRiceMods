@@ -15,14 +15,43 @@ local function initGameSaveData()
 	GAME.legendary_plus.move_drop.pending = GAME.legendary_plus.move_drop.pending or {}
 end
 
+-- Terrain/building checks only. Ignore pawns so move origin can be marked while
+-- the moving mech is still standing on it.
+function moveDrop:canMarkDropTile(loc)
+	if not Board:IsValid(loc)
+			or Board:IsItem(loc)
+			or Board:IsBuilding(loc)
+			or Board:IsPod(loc) then
+		return false
+	end
+
+	local terrain = Board:GetTerrain(loc)
+	if terrain == TERRAIN_HOLE or terrain == TERRAIN_WATER
+			or terrain == TERRAIN_LAVA or terrain == TERRAIN_ACID
+			or terrain == TERRAIN_MOUNTAIN then
+		return false
+	end
+
+	return true
+end
+
 function moveDrop:markSpace(loc, markerIcon, markerTooltip)
+	if not Board or not Board:IsValid(loc) then
+		return
+	end
 	Board:MarkSpaceImage(loc, markerIcon, MARKER_COLOR)
 	Board:MarkSpaceDesc(loc, markerTooltip)
 end
 
-function moveDrop:unmarkSpace(loc)
-	if Board and Board:IsValid(loc) then
-		Board:ClearSpace(loc)
+-- MarkSpaceImage needs to be applied each mission update.
+function moveDrop:remarkPending()
+	if not Board then
+		return
+	end
+
+	initGameSaveData()
+	for _, data in pairs(GAME.legendary_plus.move_drop.pending) do
+		self:markSpace(data.loc, data.markerIcon, data.markerTooltip)
 	end
 end
 
@@ -33,7 +62,6 @@ function moveDrop:clearPendingForPawn(pawnId)
 		return
 	end
 
-	self:unmarkSpace(pending.loc)
 	GAME.legendary_plus.move_drop.pending[pawnId] = nil
 	logger.logDebug(SUBMODULE, "Cleared pending drop for pawn %d at %s", pawnId, pending.loc:GetString())
 end
@@ -45,6 +73,8 @@ function moveDrop:queueDrop(pawnId, loc, itemId, markerIcon, markerTooltip)
 	GAME.legendary_plus.move_drop.pending[pawnId] = {
 		loc = loc,
 		itemId = itemId,
+		markerIcon = markerIcon,
+		markerTooltip = markerTooltip,
 	}
 
 	self:markSpace(loc, markerIcon, markerTooltip)
@@ -55,6 +85,25 @@ function moveDrop:undoPending(pawnId)
 	self:clearPendingForPawn(pawnId)
 end
 
+-- Whether a tile can receive a move origin item drop at end of turn.
+function moveDrop:canPlaceMoveDrop(loc)
+	if not Board:IsValid(loc)
+			or Board:IsItem(loc)
+			or Board:IsPod(loc)
+			or Board:IsCracked(loc) then
+		return false
+	end
+
+	local terrain = Board:GetTerrain(loc)
+	if terrain == TERRAIN_HOLE or terrain == TERRAIN_WATER
+			or terrain == TERRAIN_LAVA or terrain == TERRAIN_ACID
+			or terrain == TERRAIN_MOUNTAIN or terrain == TERRAIN_BUILDING then
+		return false
+	end
+
+	return true
+end
+
 function moveDrop:placePendingDrops()
 	if not Board then
 		return
@@ -62,12 +111,16 @@ function moveDrop:placePendingDrops()
 
 	initGameSaveData()
 	local pending = GAME.legendary_plus.move_drop.pending
+	local effect = SkillEffect()
+	local any = false
 
 	for pawnId, data in pairs(pending) do
-		self:unmarkSpace(data.loc)
-		if legendary_plus.canPlaceMoveDrop(data.loc) then
-			Board:SetItem(data.loc, data.itemId)
-			logger.logDebug(SUBMODULE, "Placed %s at %s for pawn %d",
+		if self:canPlaceMoveDrop(data.loc) then
+			local damage = SpaceDamage(data.loc, 0)
+			damage.sItem = data.itemId
+			effect:AddDamage(damage)
+			any = true
+			logger.logDebug(SUBMODULE, "Placing %s at %s for pawn %d",
 					data.itemId, data.loc:GetString(), pawnId)
 		else
 			logger.logDebug(SUBMODULE, "Skipped %s at %s for pawn %d (space no longer valid)",
@@ -76,15 +129,14 @@ function moveDrop:placePendingDrops()
 	end
 
 	GAME.legendary_plus.move_drop.pending = {}
+
+	if any then
+		Board:AddEffect(effect)
+	end
 end
 
 function moveDrop:reset()
 	initGameSaveData()
-	if Board then
-		for _, data in pairs(GAME.legendary_plus.move_drop.pending) do
-			self:unmarkSpace(data.loc)
-		end
-	end
 	GAME.legendary_plus.move_drop.pending = {}
 	logger.logDebug(SUBMODULE, "Reset pending move drops")
 end
@@ -94,7 +146,7 @@ function moveDrop:handleMove(pawn, origin, dest, skillEffect, config)
 		return false
 	end
 
-	if not legendary_plus.canPlaceMoveDrop(origin) then
+	if not self:canMarkDropTile(origin) then
 		logger.logDebug(SUBMODULE, "Cannot mark origin %s for pawn %d",
 				origin:GetString(), pawn:GetId())
 		return false
@@ -149,13 +201,18 @@ function moveDrop:init()
 	modApi.events.onMissionEnd:subscribe(function()
 		self:reset()
 	end)
-	modApi.events.onNextTurn:subscribe(function()
+	-- Place after players end their turn - NextTurn is fired after queued attacks
+	modApi.events.onPostEnvironment:subscribe(function()
 		if Game:GetTeamTurn() == TEAM_ENEMY then
 			self:placePendingDrops()
 		end
 	end)
 	modapiext.events.onResetTurn:subscribe(function()
 		self:reset()
+	end)
+	-- Env-style marks must be reapplied every frame
+	modApi.events.onMissionUpdate:subscribe(function()
+		self:remarkPending()
 	end)
 end
 
