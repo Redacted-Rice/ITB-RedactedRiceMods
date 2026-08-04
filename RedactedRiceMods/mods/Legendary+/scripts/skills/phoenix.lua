@@ -9,7 +9,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	reusabilityLimit = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }
 
-customSkill.DEBUG = false
+customSkill.DEBUG = true
 local logger = memhack.logger
 local SUBMODULE = logger.register("Legendary+", "Phoenix", customSkill.DEBUG)
 
@@ -101,35 +101,41 @@ end
 
 function customSkill.revivePending()
 	initGameSaveData()
+	logger.logDebug(SUBMODULE, "Phoenix checking " .. #GAME.legendary_plus.phoenix.pending_revive .. " pending revives")
 	for pawnId, _ in pairs(GAME.legendary_plus.phoenix.pending_revive) do
 		local pawn = Board:GetPawn(pawnId)
-		if pawn and pawn:IsDead() then
-			local pawnSpace = pawn:GetSpace()
+		if pawn then
+			if not pawn:IsDead() then
+				logger.logDebug(SUBMODULE, "Phoenix pawn %d at %s is already alive???",
+						pawnId, pawnSpace:GetString())
+			else
+				local pawnSpace = pawn:GetSpace()
 
-			-- Revive to 1 HP, clear fire/acid
-			local repairDamage = SpaceDamage(pawnSpace, -1)
-			repairDamage.iFire = EFFECT_REMOVE
-			repairDamage.iAcid = EFFECT_REMOVE
-			Board:AddEffect(repairDamage)
+				-- Revive to 1 HP, clear fire/acid
+				local repairDamage = SpaceDamage(pawnSpace, -1)
+				repairDamage.iFire = EFFECT_REMOVE
+				repairDamage.iAcid = EFFECT_REMOVE
+				Board:AddEffect(repairDamage)
 
-			Board:AddEffect(SpaceDamage(Point(0, 0), 0, 0.5))
-			local effects = SpaceDamage()
-			-- Clear frozen, add shield and boosted
-			effects.sScript = string.format([[
-				local pawn = Board:GetPawn(%d)
-				if pawn then
-					pawn:SetFrozen(false)
-					pawn:SetBoosted(true)
-					pawn:SetShield(true)
-				end
-				Board:AddAlert(%s, "PHOENIX")
-				Board:Ping(%s, GL_Color(255, 180, 60))
-			]], pawnId, pawnSpace:GetString(), pawnSpace:GetString())
-			Board:AddEffect(effects)
+				Board:AddEffect(SpaceDamage(Point(0, 0), 0, 0.5))
+				local effects = SpaceDamage()
+				-- Clear frozen, add shield and boosted
+				effects.sScript = string.format([[
+					local pawn = Board:GetPawn(%d)
+					if pawn then
+						pawn:SetFrozen(false)
+						pawn:SetBoosted(true)
+						pawn:SetShield(true)
+					end
+					Board:AddAlert(%s, "PHOENIX")
+					Board:Ping(%s, GL_Color(255, 180, 60))
+				]], pawnId, pawnSpace:GetString(), pawnSpace:GetString())
+				Board:AddEffect(effects)
 
-			GAME.legendary_plus.phoenix.used_by_pawn[pawnId] = true
-			logger.logDebug(SUBMODULE, "Phoenix revived pawn %d to 1 HP at %s",
-					pawnId, pawnSpace:GetString())
+				GAME.legendary_plus.phoenix.used_by_pawn[pawnId] = true
+				logger.logDebug(SUBMODULE, "Phoenix revived pawn %d to 1 HP at %s",
+						pawnId, pawnSpace:GetString())
+			end
 		end
 		GAME.legendary_plus.phoenix.pending_revive[pawnId] = nil
 	end
