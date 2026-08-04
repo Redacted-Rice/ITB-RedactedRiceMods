@@ -17,7 +17,7 @@ TILE_TOOLTIPS[MARKER_TOOLTIP] = {
 
 local MOVE_DROP_CONFIG = {
 	itemId = "Item_Mine",
-	markerIcon = "combat/icons/icon_mine_glow.png",
+	markerIcon = "combat/mine.png",
 	markerTooltip = MARKER_TOOLTIP,
 }
 

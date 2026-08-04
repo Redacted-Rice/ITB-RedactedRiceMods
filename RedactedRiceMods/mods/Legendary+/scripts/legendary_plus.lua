@@ -77,26 +77,6 @@ function legendary_plus:previewExtraDamage(phase, loc, pawnId, skill)
 	)
 end
 
--- Whether a tile can receive a move-origin item drop at end of turn.
-function legendary_plus.canPlaceMoveDrop(loc)
-	if not Board:IsValid(loc)
-			or Board:IsItem(loc)
-			or Board:IsBuilding(loc)
-			or Board:IsPod(loc)
-			or Board:GetPawn(loc) then
-		return false
-	end
-
-	local terrain = Board:GetTerrain(loc)
-	if terrain == TERRAIN_HOLE or terrain == TERRAIN_WATER
-			or terrain == TERRAIN_LAVA or terrain == TERRAIN_ACID
-			or terrain == TERRAIN_MOUNTAIN then
-		return false
-	end
-
-	return true
-end
-
 function legendary_plus:addCustomTraitIcon(skill)
 	local iconImg = skill.icon or ("img/combat/icons/icon_lp_" .. skill.id .. ".png")
 	skill.icon = iconImg
