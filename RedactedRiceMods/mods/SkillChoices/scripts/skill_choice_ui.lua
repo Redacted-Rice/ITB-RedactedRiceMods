@@ -3,7 +3,7 @@
 
 local skill_choice_ui = {}
 
-skill_choice_ui.DEBUG = false
+skill_choice_ui.DEBUG = true
 
 local logger = memhack.logger
 local LOG_ID = logger.register("SkillChoices", "UI", skill_choice_ui.DEBUG)
@@ -132,6 +132,8 @@ end
 
 function skill_choice_ui:clearStoredSkill(pilot, slotIndex)
 	local pilotId = pilot:getIdStr()
+	local stored = self:getStoredSkillId(pilot, slotIndex)
+
 	if deferredSkillIds[pilotId] then
 		deferredSkillIds[pilotId][slotIndex] = nil
 		if next(deferredSkillIds[pilotId]) == nil then
@@ -145,13 +147,66 @@ function skill_choice_ui:clearStoredSkill(pilot, slotIndex)
 			gameDeferred[pilotId] = nil
 		end
 	end
+
+	-- Deferred rolls stay marked as per_run until cleared so other pilots cannot take them.
+	-- Release the claim when the reservation ends (chosen, invalid, or discarded).
+	if stored then
+		cplus_plus_ex:unmarkPerRunSkill(stored)
+		logger.logDebug(LOG_ID, "clearStoredSkill released per_run claim pilot=%s slot=%d skill=%s",
+			pilotId, slotIndex, stored)
+	end
 end
 
 function skill_choice_ui:clearAllStoredSkills()
-	deferredSkillIds = {}
+	local function releaseAll(map)
+		if not map then
+			return
+		end
+		for _, slots in pairs(map) do
+			for _, skillId in pairs(slots) do
+				cplus_plus_ex:unmarkPerRunSkill(skillId)
+			end
+		end
+	end
+
+	releaseAll(deferredSkillIds)
 	if GAME and GAME.redactedrice_SkillChoices then
+		releaseAll(GAME.redactedrice_SkillChoices.deferredSkills)
 		GAME.redactedrice_SkillChoices.deferredSkills = {}
 	end
+	deferredSkillIds = {}
+end
+
+-- bb1cdf8 only releases claims during apply/revalidation. Choice generation calls
+-- checkSkillConstraints/selectRandomSkill directly, so temporarily release this
+-- pilot's deferred roll while building options (other pilots' reservations stay).
+function skill_choice_ui:withDeferredClaimReleased(pilot, slotIndex, fn)
+	local deferred = self:getStoredSkillId(pilot, slotIndex)
+	if deferred then
+		cplus_plus_ex:unmarkPerRunSkill(deferred)
+		logger.logDebug(LOG_ID, "withDeferredClaimReleased unmark pilot=%s slot=%d skill=%s",
+			pilot:getIdStr(), slotIndex, deferred)
+	end
+
+	local result = fn()
+
+	-- Remake reservation if still deferred for this pilot/slot
+	local stillDeferred = self:getStoredSkillId(pilot, slotIndex)
+	if stillDeferred then
+		cplus_plus_ex:markPerRunSkillAsUsed(stillDeferred)
+		logger.logDebug(LOG_ID, "withDeferredClaimReleased remark pilot=%s slot=%d skill=%s",
+			pilot:getIdStr(), slotIndex, stillDeferred)
+	end
+
+	return result
+end
+
+local function copySelectedSkills(selectedSkills)
+	local copy = {}
+	for k, v in pairs(selectedSkills) do
+		copy[k] = v
+	end
+	return copy
 end
 
 function skill_choice_ui:deferSkillForChoice(pilot, slotIndex, skillId)
@@ -274,16 +329,18 @@ end
 
 -- Returns all enabled skills that pass constraints for this pilot and slot.
 function skill_choice_ui:buildAllValidChoices(pilot, slotIndex)
-	local selectedSkills = self:buildConstraintContext(pilot, slotIndex)
-	local choices = {}
+	return self:withDeferredClaimReleased(pilot, slotIndex, function()
+		local selectedSkills = self:buildConstraintContext(pilot, slotIndex)
+		local choices = {}
 
-	for _, skillId in ipairs(cplus_plus_ex:getAssignableSkillIds()) do
-		if cplus_plus_ex:checkSkillConstraints(pilot, selectedSkills, skillId) then
-			table.insert(choices, skillId)
+		for _, skillId in ipairs(cplus_plus_ex:getAssignableSkillIds()) do
+			if cplus_plus_ex:checkSkillConstraints(pilot, selectedSkills, skillId, slotIndex) then
+				table.insert(choices, skillId)
+			end
 		end
-	end
 
-	return choices
+		return choices
+	end)
 end
 
 -- Returns up to `count` distinct valid choices, or fewer when not enough skills exist.
@@ -302,29 +359,33 @@ function skill_choice_ui:generateChoices(pilot, slotIndex, count)
 		return choices
 	end
 
-	local selectedSkills = self:buildConstraintContext(pilot, slotIndex)
-	local pool = cplus_plus_ex:getAssignableSkillIds()
-	local choices = {}
+	return self:withDeferredClaimReleased(pilot, slotIndex, function()
+		local selectedSkills = self:buildConstraintContext(pilot, slotIndex)
+		local pool = cplus_plus_ex:getAssignableSkillIds()
+		local choices = {}
 
-	local preAssigned = self:getValidStoredSkillId(pilot, slotIndex)
-		or self:getResolvedSlotSkillId(pilot, slotIndex)
-	if preAssigned and cplus_plus_ex:checkSkillConstraints(pilot, selectedSkills, preAssigned) then
-		table.insert(choices, preAssigned)
-		removeFromPool(pool, preAssigned)
-	end
-
-	while #choices < count do
-		local skillId = cplus_plus_ex:selectRandomSkill(pool, pilot, nil, selectedSkills)
-		if not skillId then
-			break
+		local preAssigned = self:getValidStoredSkillId(pilot, slotIndex)
+			or self:getResolvedSlotSkillId(pilot, slotIndex)
+		if preAssigned and cplus_plus_ex:checkSkillConstraints(pilot, selectedSkills, preAssigned, slotIndex) then
+			table.insert(choices, preAssigned)
+			removeFromPool(pool, preAssigned)
 		end
-		table.insert(choices, skillId)
-		removeFromPool(pool, skillId)
-	end
 
-	logger.logDebug(LOG_ID, "generateChoices pilot=%s slot=%d result=[%s]",
-		pilot:getIdStr(), slotIndex, table.concat(choices, ", "))
-	return self:filterValidChoiceSkillIds(choices)
+		while #choices < count do
+			-- Copy context so selectRandomSkill's slot write does not accumulate picks.
+			local skillId = cplus_plus_ex:selectRandomSkill(
+				pool, pilot, slotIndex, copySelectedSkills(selectedSkills))
+			if not skillId then
+				break
+			end
+			table.insert(choices, skillId)
+			removeFromPool(pool, skillId)
+		end
+
+		logger.logDebug(LOG_ID, "generateChoices pilot=%s slot=%d result=[%s]",
+			pilot:getIdStr(), slotIndex, table.concat(choices, ", "))
+		return self:filterValidChoiceSkillIds(choices)
+	end)
 end
 
 function skill_choice_ui:getCachedSurface(path)
@@ -656,13 +717,15 @@ function skill_choice_ui:createDialogSession(entry, onComplete)
 end
 
 function skill_choice_ui:pickFallbackChoice(pilot, slotIndex)
-	local selectedSkills = self:buildConstraintContext(pilot, slotIndex)
-	return cplus_plus_ex:selectRandomSkill(
-		cplus_plus_ex:getAssignableSkillIds(),
-		pilot,
-		slotIndex,
-		selectedSkills
-	)
+	return self:withDeferredClaimReleased(pilot, slotIndex, function()
+		local selectedSkills = self:buildConstraintContext(pilot, slotIndex)
+		return cplus_plus_ex:selectRandomSkill(
+			cplus_plus_ex:getAssignableSkillIds(),
+			pilot,
+			slotIndex,
+			copySelectedSkills(selectedSkills)
+		)
+	end)
 end
 
 function skill_choice_ui:getDialogPrompt(session)
