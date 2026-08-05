@@ -92,9 +92,6 @@ function mod:load(options, version)
 	-- Load as needed
 	self.pilots:load(options, version)
 	StarWars_TowCable:load(options, version)
-	
-	-- Load passive effects
-	self.libs.passiveEffect:load()
 
 	modApi:addSquad(
 		{
