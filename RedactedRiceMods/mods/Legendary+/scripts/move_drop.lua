@@ -6,7 +6,7 @@ moveDrop.DEBUG = legendary_plus.DEBUG
 local logger = memhack.logger
 local SUBMODULE = logger.register("Legendary+", "MoveDrop", moveDrop.DEBUG)
 
-local MARKER_COLOR = GL_Color(255, 226, 88, 0.75)
+local MARKER_COLOR = GL_Color(220, 220, 220, 0.25)
 
 local function initGameSaveData()
 	GAME = GAME or {}
@@ -203,9 +203,7 @@ function moveDrop:init()
 	end)
 	-- Place after players end their turn - NextTurn is fired after queued attacks
 	modApi.events.onPostEnvironment:subscribe(function()
-		if Game:GetTeamTurn() == TEAM_ENEMY then
-			self:placePendingDrops()
-		end
+		self:placePendingDrops()
 	end)
 	modapiext.events.onResetTurn:subscribe(function()
 		self:reset()
