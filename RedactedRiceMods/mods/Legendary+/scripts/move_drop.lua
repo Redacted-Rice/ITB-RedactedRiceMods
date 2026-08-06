@@ -2,7 +2,7 @@ legendary_plus.moveDrop = legendary_plus.moveDrop or {}
 
 local moveDrop = legendary_plus.moveDrop
 
-moveDrop.DEBUG = legendary_plus.DEBUG
+moveDrop.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("Legendary+", "MoveDrop", moveDrop.DEBUG)
 
@@ -193,20 +193,21 @@ function moveDrop:init()
 	self.initialized = true
 
 	modApi.events.onMissionStart:subscribe(function()
+		logger.logDebug(SUBMODULE, "Mission start")
 		self:reset()
 	end)
 	modApi.events.onMissionNextPhaseCreated:subscribe(function()
+		logger.logDebug(SUBMODULE, "Mission next phase created")
 		self:reset()
 	end)
 	modApi.events.onMissionEnd:subscribe(function()
+		logger.logDebug(SUBMODULE, "Mission end")
 		self:reset()
 	end)
 	-- Place after players end their turn - NextTurn is fired after queued attacks
 	modApi.events.onPostEnvironment:subscribe(function()
+		logger.logDebug(SUBMODULE, "Post environment")
 		self:placePendingDrops()
-	end)
-	modapiext.events.onResetTurn:subscribe(function()
-		self:reset()
 	end)
 	-- Env-style marks must be reapplied every frame
 	modApi.events.onMissionUpdate:subscribe(function()
