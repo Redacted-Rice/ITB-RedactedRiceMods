@@ -2,6 +2,9 @@ local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	id = "RrTrapper",
 	name = "Trapper",
 	description = "When moving, mark your origin tile; an explosive mine is placed there at end of turn.",
+	constraints = {
+		groups = {legendary_plus.GROUPS.ITEM_DROP},
+	},
 	reusabilityLimit = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }
 
