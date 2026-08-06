@@ -11,7 +11,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
 	reusabilityLimit = cplus_plus_ex.REUSABLILITY.REUSABLE,
 }
 
-customSkill.DEBUG = false
+customSkill.DEBUG = true
 local logger = memhack.logger
 local SUBMODULE = logger.register("Legendary+", "Ace", customSkill.DEBUG)
 
@@ -47,7 +47,13 @@ function customSkill:setupEffect()
 	cplus_plus_ex.baseClasses.SkillEffectModifier.setupEffect(self)
 
 	table.insert(customSkill.events, modApi.events.onMissionStart:subscribe(applyFlying))
-	table.insert(customSkill.events, modApi.events.onMissionNextPhaseCreated:subscribe(applyFlying))
+	table.insert(customSkill.events, modApi.events.onMissionNextPhaseCreated:subscribe(
+		function()
+			modApi:runLater(function()
+				applyFlying()
+				logger.logDebug(SUBMODULE, "Later Applying flying to all mechs")
+			end)
+		end))
 	table.insert(customSkill.events, modApi.events.onMissionEnd:subscribe(clearAppliedFlying))
 
 	-- Apply right away if just awarded

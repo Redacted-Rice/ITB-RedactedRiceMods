@@ -8,7 +8,6 @@ return {
 			legendary_plus.GROUPS.ADD_HEALTH,
 			legendary_plus.GROUPS.ADD_MOVE,
 		},
-		skillExclusions = {"Reactor"},
 		pilotExclusions = {"Pilot_Zoltan", "Pilot_Rock"},
 	},
 	reusabilityLimit = cplus_plus_ex.REUSABLILITY.REUSABLE,
