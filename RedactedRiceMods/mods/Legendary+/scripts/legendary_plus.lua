@@ -18,7 +18,7 @@ legendary_plus.DEFAULTS = {
 	reusability = cplus_plus_ex.REUSABLILITY.PER_RUN,
 	reusabilityLimit = cplus_plus_ex.REUSABLILITY.REUSABLE,
 	slotRestriction = cplus_plus_ex.SLOT_RESTRICTION.SECOND,
-	weight = cplus_plus_ex.DEFAULT_WEIGHT / 2,
+	weight = 0.4,
 }
 
 -- Group name strings match More+ so skills share exclusion pools when both mods are enabled
