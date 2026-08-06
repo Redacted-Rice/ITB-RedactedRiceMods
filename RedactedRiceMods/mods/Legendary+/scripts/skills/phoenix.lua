@@ -21,6 +21,9 @@ local function initGameSaveData()
 	GAME.legendary_plus.phoenix = GAME.legendary_plus.phoenix or {}
 	GAME.legendary_plus.phoenix.used_by_pawn = GAME.legendary_plus.phoenix.used_by_pawn or {}
 	GAME.legendary_plus.phoenix.pending_revive = GAME.legendary_plus.phoenix.pending_revive or {}
+	-- Pawns that revived this turn. needed because the game doesn't seem to save
+	-- boosted and shielded in the reset save but the HP it does save for some reason
+	GAME.legendary_plus.phoenix.buffed_by_pawn = GAME.legendary_plus.phoenix.buffed_by_pawn or {}
 end
 
 legendary_plus.libs.traitReplace:addStateful{
@@ -58,12 +61,23 @@ function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onPawnKilled:subscribe(customSkill.pawnKilled))
 	table.insert(customSkill.events, modApi.events.onNextTurn:subscribe(customSkill.nextTurnRevive))
 	table.insert(customSkill.events, modApi.events.onMissionEnd:subscribe(customSkill.revivePending))
+	-- Any time the game is loaded, we may need to reapply
+	table.insert(customSkill.events, modApi.events.onPostLoadGame:subscribe(customSkill.reapplyReviveBuffs))
 end
 
 function customSkill.resetTrackedData()
 	initGameSaveData()
 	GAME.legendary_plus.phoenix.used_by_pawn = {}
 	GAME.legendary_plus.phoenix.pending_revive = {}
+	GAME.legendary_plus.phoenix.buffed_by_pawn = {}
+end
+
+local function applyReviveBuffs(pawn)
+	if not pawn or pawn:IsDead() then
+		return
+	end
+	pawn:SetBoosted(true)
+	pawn:SetShield(true)
 end
 
 -- Mark for revive on next player turn
@@ -101,13 +115,11 @@ end
 
 function customSkill.revivePending()
 	initGameSaveData()
-	logger.logDebug(SUBMODULE, "Phoenix checking " .. #GAME.legendary_plus.phoenix.pending_revive .. " pending revives")
 	for pawnId, _ in pairs(GAME.legendary_plus.phoenix.pending_revive) do
 		local pawn = Board:GetPawn(pawnId)
 		if pawn then
 			if not pawn:IsDead() then
-				logger.logDebug(SUBMODULE, "Phoenix pawn %d at %s is already alive???",
-						pawnId, pawnSpace:GetString())
+				logger.logDebug(SUBMODULE, "Phoenix pawn %d is already alive, skipping revive", pawnId)
 			else
 				local pawnSpace = pawn:GetSpace()
 
@@ -115,24 +127,24 @@ function customSkill.revivePending()
 				local repairDamage = SpaceDamage(pawnSpace, -1)
 				repairDamage.iFire = EFFECT_REMOVE
 				repairDamage.iAcid = EFFECT_REMOVE
-				Board:AddEffect(repairDamage)
-
-				Board:AddEffect(SpaceDamage(Point(0, 0), 0, 0.5))
-				local effects = SpaceDamage()
-				-- Clear frozen, add shield and boosted
-				effects.sScript = string.format([[
+				repairDamage.iFrozen = EFFECT_REMOVE
+				-- iShield doesn't seem to work here
+				--repairDamage.iShield = EFFECT_CREATE
+				repairDamage.sScript = string.format([[
 					local pawn = Board:GetPawn(%d)
 					if pawn then
-						pawn:SetFrozen(false)
 						pawn:SetBoosted(true)
-						pawn:SetShield(true)
+						modApi:runLater(function()
+							pawn:SetShield(true)
+						end)
 					end
 					Board:AddAlert(%s, "PHOENIX")
 					Board:Ping(%s, GL_Color(255, 180, 60))
 				]], pawnId, pawnSpace:GetString(), pawnSpace:GetString())
-				Board:AddEffect(effects)
+				Board:AddEffect(repairDamage)
 
 				GAME.legendary_plus.phoenix.used_by_pawn[pawnId] = true
+				GAME.legendary_plus.phoenix.buffed_by_pawn[pawnId] = true
 				logger.logDebug(SUBMODULE, "Phoenix revived pawn %d to 1 HP at %s",
 						pawnId, pawnSpace:GetString())
 			end
@@ -146,6 +158,31 @@ function customSkill.nextTurnRevive()
 		return
 	end
 	customSkill.revivePending()
+end
+
+-- Reset Turn restores undo tracked heal, but script buffs can be dropped.
+-- Re apply after the board finishes restoring (runLater), and shield via AddEffect.
+function customSkill.reapplyReviveBuffs(mission)
+	initGameSaveData()
+	local pawnIds = {}
+	for pawnId, _ in pairs(GAME.legendary_plus.phoenix.buffed_by_pawn) do
+		table.insert(pawnIds, pawnId)
+	end
+	if #pawnIds == 0 then
+		return
+	end
+
+	modApi:runLater(function()
+		for _, pawnId in ipairs(pawnIds) do
+			local pawn = Board and Board:GetPawn(pawnId)
+			if pawn and not pawn:IsDead() then
+				applyReviveBuffs(pawn)
+				logger.logDebug(SUBMODULE, "Phoenix re-applied shield/boost to pawn %d after turn reset", pawnId)
+			end
+		end
+	end)
+	-- Clear it so reloads don't reapply
+	GAME.legendary_plus.phoenix.buffed_by_pawn = {}
 end
 
 return customSkill
