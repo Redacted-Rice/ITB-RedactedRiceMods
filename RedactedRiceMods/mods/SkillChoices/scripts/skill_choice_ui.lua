@@ -22,6 +22,9 @@ local activeDialogEntry = nil
 local pausingForSelection = false
 local pauseAnimRegistered = false
 local deferredSkillIds = {}
+-- Choices confirmed this run, keyed by pilotId -> slotIndex -> skillId.
+-- Survives delevel so re-earning a slot keeps the pick without re-prompting.
+local chosenSkillIds = {}
 
 local ROW_HEIGHT = 45
 local GRID_GAP = 8
@@ -55,37 +58,92 @@ function skill_choice_ui:ensureGameStorage()
 	end
 	GAME.redactedrice_SkillChoices = GAME.redactedrice_SkillChoices or {}
 	GAME.redactedrice_SkillChoices.deferredSkills = GAME.redactedrice_SkillChoices.deferredSkills or {}
-	return GAME.redactedrice_SkillChoices.deferredSkills
+	GAME.redactedrice_SkillChoices.chosenSkills = GAME.redactedrice_SkillChoices.chosenSkills or {}
+	return GAME.redactedrice_SkillChoices
+end
+
+local function storePilotSlotMap(map, pilotId, slotIndex, skillId)
+	if not map[pilotId] then
+		map[pilotId] = {}
+	end
+	map[pilotId][slotIndex] = skillId
+end
+
+local function clearPilotSlotMap(map, pilotId, slotIndex)
+	if not map[pilotId] then
+		return
+	end
+	map[pilotId][slotIndex] = nil
+	if next(map[pilotId]) == nil then
+		map[pilotId] = nil
+	end
+end
+
+local function getPilotSlotMapValue(localMap, gameMap, pilotId, slotIndex)
+	local localSlots = localMap[pilotId]
+	if localSlots and localSlots[slotIndex] then
+		return localSlots[slotIndex]
+	end
+	if gameMap and gameMap[pilotId] and gameMap[pilotId][slotIndex] then
+		return gameMap[pilotId][slotIndex]
+	end
+	return nil
 end
 
 function skill_choice_ui:storeDeferredSkill(pilotId, slotIndex, skillId)
-	if not deferredSkillIds[pilotId] then
-		deferredSkillIds[pilotId] = {}
-	end
-	deferredSkillIds[pilotId][slotIndex] = skillId
+	storePilotSlotMap(deferredSkillIds, pilotId, slotIndex, skillId)
 
-	local gameDeferred = self:ensureGameStorage()
-	if gameDeferred then
-		if not gameDeferred[pilotId] then
-			gameDeferred[pilotId] = {}
-		end
-		gameDeferred[pilotId][slotIndex] = skillId
+	local gameStorage = self:ensureGameStorage()
+	if gameStorage then
+		storePilotSlotMap(gameStorage.deferredSkills, pilotId, slotIndex, skillId)
 	end
 end
 
 function skill_choice_ui:getStoredSkillId(pilot, slotIndex)
+	local gameStorage = self:ensureGameStorage()
+	return getPilotSlotMapValue(
+		deferredSkillIds,
+		gameStorage and gameStorage.deferredSkills,
+		pilot:getIdStr(),
+		slotIndex
+	)
+end
+
+function skill_choice_ui:storeChosenSkill(pilotId, slotIndex, skillId)
+	storePilotSlotMap(chosenSkillIds, pilotId, slotIndex, skillId)
+
+	local gameStorage = self:ensureGameStorage()
+	if gameStorage then
+		storePilotSlotMap(gameStorage.chosenSkills, pilotId, slotIndex, skillId)
+	end
+end
+
+function skill_choice_ui:getChosenSkillId(pilot, slotIndex)
+	local gameStorage = self:ensureGameStorage()
+	return getPilotSlotMapValue(
+		chosenSkillIds,
+		gameStorage and gameStorage.chosenSkills,
+		pilot:getIdStr(),
+		slotIndex
+	)
+end
+
+function skill_choice_ui:clearChosenSkill(pilot, slotIndex)
 	local pilotId = pilot:getIdStr()
-	local pilotDeferred = deferredSkillIds[pilotId]
-	if pilotDeferred and pilotDeferred[slotIndex] then
-		return pilotDeferred[slotIndex]
-	end
+	clearPilotSlotMap(chosenSkillIds, pilotId, slotIndex)
 
-	local gameDeferred = self:ensureGameStorage()
-	if gameDeferred and gameDeferred[pilotId] and gameDeferred[pilotId][slotIndex] then
-		return gameDeferred[pilotId][slotIndex]
+	local gameStorage = self:ensureGameStorage()
+	if gameStorage then
+		clearPilotSlotMap(gameStorage.chosenSkills, pilotId, slotIndex)
 	end
+end
 
-	return nil
+function skill_choice_ui:clearAllChosenSkills()
+	chosenSkillIds = {}
+	local gameStorage = self:ensureGameStorage()
+	if gameStorage then
+		gameStorage.chosenSkills = {}
+	end
 end
 
 function skill_choice_ui:isValidChoiceSkillId(skillId)
@@ -134,18 +192,10 @@ function skill_choice_ui:clearStoredSkill(pilot, slotIndex)
 	local pilotId = pilot:getIdStr()
 	local stored = self:getStoredSkillId(pilot, slotIndex)
 
-	if deferredSkillIds[pilotId] then
-		deferredSkillIds[pilotId][slotIndex] = nil
-		if next(deferredSkillIds[pilotId]) == nil then
-			deferredSkillIds[pilotId] = nil
-		end
-	end
-	local gameDeferred = self:ensureGameStorage()
-	if gameDeferred and gameDeferred[pilotId] then
-		gameDeferred[pilotId][slotIndex] = nil
-		if next(gameDeferred[pilotId]) == nil then
-			gameDeferred[pilotId] = nil
-		end
+	clearPilotSlotMap(deferredSkillIds, pilotId, slotIndex)
+	local gameStorage = self:ensureGameStorage()
+	if gameStorage then
+		clearPilotSlotMap(gameStorage.deferredSkills, pilotId, slotIndex)
 	end
 
 	-- Deferred rolls stay marked as per_run until cleared so other pilots cannot take them.
@@ -170,11 +220,13 @@ function skill_choice_ui:clearAllStoredSkills()
 	end
 
 	releaseAll(deferredSkillIds)
-	if GAME and GAME.redactedrice_SkillChoices then
-		releaseAll(GAME.redactedrice_SkillChoices.deferredSkills)
-		GAME.redactedrice_SkillChoices.deferredSkills = {}
+	local gameStorage = self:ensureGameStorage()
+	if gameStorage then
+		releaseAll(gameStorage.deferredSkills)
+		gameStorage.deferredSkills = {}
 	end
 	deferredSkillIds = {}
+	self:clearAllChosenSkills()
 end
 
 -- bb1cdf8 only releases claims during apply/revalidation. Choice generation calls
@@ -642,6 +694,7 @@ function skill_choice_ui:applyChosenSkill(pilot, slotIndex, skillId)
 
 	self:clearStoredSkill(pilot, slotIndex)
 	cplus_plus_ex:applySkillIdsToPilot(pilot, { skill1, skill2 }, true)
+	self:storeChosenSkill(pilot:getIdStr(), slotIndex, skillId)
 	return true
 end
 
@@ -937,6 +990,19 @@ function skill_choice_ui:enqueue(pilot, slotIndex)
 	end)
 end
 
+function skill_choice_ui:restoreChosenSkillIfNeeded(pilot, slotIndex, skillId)
+	local currentId = pilot:getLvlUpSkill(slotIndex):getIdStr()
+	if currentId == skillId then
+		logger.logDebug(LOG_ID, "restoreChosenSkillIfNeeded already present pilot=%s slot=%d skill=%s",
+			pilot:getIdStr(), slotIndex, skillId)
+		return true
+	end
+
+	logger.logDebug(LOG_ID, "restoreChosenSkillIfNeeded reapply pilot=%s slot=%d skill=%s (was %s)",
+		pilot:getIdStr(), slotIndex, skillId, tostring(currentId))
+	return self:applyChosenSkill(pilot, slotIndex, skillId)
+end
+
 function skill_choice_ui:onPilotLevelChanged(pilot, changes)
 	if not pilot or not changes or not changes.level then
 		return
@@ -946,6 +1012,18 @@ function skill_choice_ui:onPilotLevelChanged(pilot, changes)
 	local oldLevel = changes.level.old
 	if newLevel <= oldLevel or newLevel < 1 or newLevel > cplus_plus_ex.MAX_SKILL_SLOTS then
 		return
+	end
+
+	-- Already chose this slot earlier in the run (e.g. after a delevel). Keep it.
+	local previouslyChosen = self:getChosenSkillId(pilot, newLevel)
+	if previouslyChosen then
+		if self:isValidChoiceSkillId(previouslyChosen) then
+			self:restoreChosenSkillIfNeeded(pilot, newLevel, previouslyChosen)
+			return
+		end
+		logger.logWarn(LOG_ID, "onPilotLevelChanged clearing invalid prior choice pilot=%s slot=%d skill=%s",
+			pilot:getIdStr(), newLevel, tostring(previouslyChosen))
+		self:clearChosenSkill(pilot, newLevel)
 	end
 
 	if not self:getValidStoredSkillId(pilot, newLevel)
