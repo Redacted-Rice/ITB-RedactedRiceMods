@@ -9,9 +9,9 @@ you want to go crazy, you can configure them to be regular skills O.O
 Join the Redacted Rice discord for support, more mods, discussion and other projects: https://discord.gg/CNjTVrpN4v
 
 The defaults for this mod are the intended weights assuming you have More+, RebalCore+, and
-this mod with the defaults (10 legendary skills, 27 other skills). With such, the chance of a 
+this mod with the defaults (10 legendary skills, 27 other skills). With such, the chance of a
 pilot getting a legendary skill for a single pilo is ~12.9% which was specifically choosen as
-this means you max 5 pilots in a run, you have ~50% chance of getting at least one legendary 
+this means you max 5 pilots in a run, you have ~50% chance of getting at least one legendary
 skill. Below is are tables for reference for modifying the weights to your liking based on
 odds of seeing legendary skills in a run. Obviously feel free to adjust as you see fit.
 
@@ -48,12 +48,13 @@ Please enjoy and contact us if you run into any issues.
 
 ### Offense
 * **Ace** - Piloted mech gains Flying. +1 damage to Flying enemies
-* **Admiral** - Piloted mech floats on liquid tiles. +1 damage while on water or lava
+* **Admiral** - Piloted mech floats on liquid tiles and gains +1 damage while doing so.
 * **Reckless** - +1 damage dealt and +1 damage taken
 
 ### Defense / Utility
 * **Comeback** - +33 Grid Defense after the first building is damaged each mission
 * **Crusher** - When moving, crack all tiles adjacent to your destination
-* **Medic** - When moving, drop a repair pad near your origin
+* **Freezer** - When moving, drop a freeze mine at your origin on turn end
+* **Medic** - When moving, drop a repair pad at your origin on turn end
 * **Phoenix** - Once per mission, revive with 1 HP at the start of the next turn (or mission end)
-* **Trapper** - When moving, drop an explosive mine near your origin
+* **Trapper** - When moving, drop an exploding mine at your origin on turn end

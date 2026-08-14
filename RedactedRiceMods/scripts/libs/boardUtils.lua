@@ -7,7 +7,7 @@ Author: Das Keifer of Redacted Rice
 Discord Server: https://discord.gg/CNjTVrpN4v
 ]]
 
-local VERSION = "1.7.0"
+local VERSION = "1.7.1"
 
 -- Version check
 local isNewestVersion = false
@@ -199,6 +199,10 @@ if isNewestVersion then
 		end
 	end
 
+	function BoardUtils.isLiquid(terrain)
+		return terrain == TERRAIN_WATER or terrain == TERRAIN_LAVA or terrain == TERRAIN_ACID
+	end
+
 	--pawnCheckType "none", "default", "any"
 	function BoardUtils.makeAllTerrainMatcher(pawn, pawnCheckType)
 		return BoardUtils.makeTerrainBasedMatcher(pawn, pawnCheckType, function(point)
@@ -207,11 +211,13 @@ if isNewestVersion then
 	end
 
 	--pawnCheckType "none", "default", "any"
+	-- Flying can use holes and liquid. Massive can use liquid. Nobody walks buildings/mountains.
 	function BoardUtils.makeGenericMatcher(pawn, pawnCheckType)
 		return BoardUtils.makeTerrainBasedMatcher(pawn, pawnCheckType, function(point)
 			local terrain = Board:GetTerrain(point)
-			return (not BoardUtils.isPawnFlying(pawn) and terrain == TERRAIN_HOLE) or
-				   (not pawn:IsMassive() and terrain == TERRAIN_WATER) or
+			local flying = BoardUtils.isPawnFlying(pawn)
+			return (not flying and terrain == TERRAIN_HOLE) or
+				   (not flying and not pawn:IsMassive() and BoardUtils.isLiquid(terrain)) or
 					terrain == TERRAIN_BUILDING or terrain == TERRAIN_MOUNTAIN
 		end)
 	end
