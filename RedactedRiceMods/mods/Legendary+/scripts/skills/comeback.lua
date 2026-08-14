@@ -4,7 +4,7 @@ local COMEBACK_PING_COLOR = GL_Color(80, 255, 120)
 local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	id = "RrComeback",
 	name = "Comeback",
-	description = "+33 Grid Defense after the first building is damaged each mission.",
+	description = "+".. GRID_DEF_BONUS.. " Grid Defense after the first building is damaged each mission.",
 	constraints = {
 		groups = {legendary_plus.GROUPS.ADD_GRID_DEF},
 	},

@@ -1,7 +1,7 @@
 local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
 	id = "RrAdmiral",
 	name = "Admiral",
-	description = "Piloted mech floats on top of liquid tiles. +1 damage while on water or lava.",
+	description = "Piloted mech floats on top of liquid tiles and deal +1 damage while on a one.",
 	modified = {},
 	-- Prospero already has flying so it doesn't help at all
 	-- Flying cyborgs (Hornet) also don't benefit from amphibious
@@ -28,10 +28,6 @@ function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onPawnSelected:subscribe(customSkill.addFlyingIfNeeded))
 	table.insert(customSkill.events, modApi.events.onMissionEnd:subscribe(customSkill.clearFlying))
 	table.insert(customSkill.events, modapiext.events.onSkillBuild:subscribe(customSkill.moveSkillBuild))
-end
-
-function customSkill.isLiquidTerrain(terrain)
-	return terrain == TERRAIN_WATER or terrain == TERRAIN_LAVA or terrain == TERRAIN_ACID
 end
 
 function customSkill.moveTargetArea(mission, pawn, weaponId, p1, targetArea)
@@ -64,7 +60,7 @@ function customSkill.applyOnMissionEnter()
 	for _, mechInfo in pairs(cplus_plus_ex:getMechsWithSkill(customSkill.id)) do
 		local pawn = Board:GetPawn(mechInfo.pawnId)
 		local terrain = Board:GetTerrain(pawn:GetSpace())
-		if customSkill.isLiquidTerrain(terrain) then
+		if legendary_plus.libs.boardUtils.isLiquid(terrain) then
 			logger.logDebug(SUBMODULE, "Setting flying for pawn %d on liquid terrain", mechInfo.pawnId)
 			legendary_plus.libs.boardUtils.setHijackedFlying(pawn, true)
 		end
@@ -74,7 +70,7 @@ end
 function customSkill.addFlyingIfNeeded(mission, pawn)
 	if cplus_plus_ex:isSkillOnPawn(customSkill.id, pawn) then
 		local terrain = Board:GetTerrain(pawn:GetSpace())
-		if customSkill.isLiquidTerrain(terrain) then
+		if legendary_plus.libs.boardUtils.isLiquid(terrain) then
 			logger.logDebug(SUBMODULE, "Setting flying for pawn %d on liquid terrain", pawn:GetId())
 			legendary_plus.libs.boardUtils.setHijackedFlying(pawn, true)
 		else
@@ -97,7 +93,7 @@ function customSkill.shouldBonus(source, attackingPawn, damage)
 			or damage <= 0 or damage == DAMAGE_DEATH or damage == DAMAGE_ZERO then
 		return false
 	end
-	return customSkill.isLiquidTerrain(Board:GetTerrain(attackingPawn:GetSpace()))
+	return legendary_plus.libs.boardUtils.isLiquid(Board:GetTerrain(attackingPawn:GetSpace()))
 end
 
 function customSkill:modifyKillDamage(source, attackingPawn, spaceDamage, indexes, targetPawn, currentDamage)

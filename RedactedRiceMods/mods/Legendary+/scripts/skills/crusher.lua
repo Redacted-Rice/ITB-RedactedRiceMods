@@ -1,7 +1,7 @@
 local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	id = "RrCrusher",
 	name = "Crusher",
-	description = "When moving, crack all tiles adjacent to your destination.",
+	description = "When moving, crack all eligble tiles adjacent to your destination. Will not crack building, item, uncrackable, or already cracked tiles.",
 	crackedByMove = {},
 	reusabilityLimit = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }
@@ -10,7 +10,22 @@ customSkill.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("Legendary+", "Crusher", customSkill.DEBUG)
 
+-- Preview icon offset (no weapon preview group — icon is not consolidated with other skills).
+customSkill.PREVIEW_OFFSET = Point(-14, 14)
+customSkill.NO_CRACK_ANIM = "rr_lp_crusher_no_crack"
+
 legendary_plus:addCustomTraitIcon(customSkill)
+
+if not ANIMS[customSkill.NO_CRACK_ANIM] then
+	ANIMS[customSkill.NO_CRACK_ANIM] = ANIMS.Animation:new{
+		Image = "advanced/combat/icons/icon_crack_glow_off.png",
+		NumFrames = 1,
+		Time = 1,
+		Loop = true,
+		PosX = customSkill.PREVIEW_OFFSET.x,
+		PosY = customSkill.PREVIEW_OFFSET.y,
+	}
+end
 
 function customSkill.canCrack(loc)
 	return Board:IsValid(loc) and not Board:IsBuilding(loc) and
@@ -45,6 +60,15 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 			skillEffect:AddDamage(damageC)
 			table.insert(pointStrings, adj:GetString())
 			logger.logDebug(SUBMODULE, "Will crack %s for Crusher move by pawn %d", adj:GetString(), pawnId)
+		else
+			legendary_plus.libs.weaponPreview.ExecuteWithState(legendary_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
+				function()
+					legendary_plus.libs.weaponPreview:AddAnimation(adj, customSkill.NO_CRACK_ANIM, nil, nil,
+							GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
+				end, pawnId
+			)
+			logger.logDebug(SUBMODULE, "No tiles to crack for pawn %d move to %s, showing placeholder icon",
+						pawnId, adj:GetString())
 		end
 	end
 

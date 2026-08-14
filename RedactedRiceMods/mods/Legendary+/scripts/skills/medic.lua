@@ -1,7 +1,7 @@
 local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	id = "RrMedic",
 	name = "Medic",
-	description = "When moving, mark your origin tile; a repair pad is placed there at end of turn.",
+	description = "When moving, mark your original tile for a repair pad to be deployed at turn end.",
 	constraints = {
 		groups = {legendary_plus.GROUPS.ITEM_DROP},
 	},
