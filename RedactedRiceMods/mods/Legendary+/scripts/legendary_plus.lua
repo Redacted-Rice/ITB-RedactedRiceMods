@@ -59,11 +59,10 @@ function legendary_plus:addCommonCustomImages()
 end
 
 function legendary_plus:previewExtraDamage(phase, loc, pawnId, skill)
-	local weaponPreview = (more_plus and more_plus.libs and more_plus.libs.weaponPreview)
-			or self.libs.weaponPreview
-	if not weaponPreview then
+	if not self.libs.weaponPreview then
 		return
 	end
+	local weaponPreview = self.libs.weaponPreview
 
 	local tipName = skill._name or skill.name or ""
 	local tipDesc = skill._description or ""
