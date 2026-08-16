@@ -26,8 +26,9 @@ function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onTargetAreaBuild:subscribe(customSkill.moveTargetArea))
 	table.insert(customSkill.events, modapiext.events.onPawnPositionChanged:subscribe(customSkill.addFlyingIfNeeded))
 	table.insert(customSkill.events, modapiext.events.onPawnSelected:subscribe(customSkill.addFlyingIfNeeded))
+	table.insert(customSkill.events, modApi.events.onMissionStart:subscribe(customSkill.applyOnMissionEnter))
+	table.insert(customSkill.events, modApi.events.onMissionNextPhaseCreated:subscribe(customSkill.applyOnMissionEnter))
 	table.insert(customSkill.events, modApi.events.onMissionEnd:subscribe(customSkill.clearFlying))
-	table.insert(customSkill.events, modapiext.events.onSkillBuild:subscribe(customSkill.moveSkillBuild))
 end
 
 function customSkill.moveTargetArea(mission, pawn, weaponId, p1, targetArea)
@@ -80,10 +81,13 @@ function customSkill.addFlyingIfNeeded(mission, pawn)
 	end
 end
 
-function customSkill.clearFlying(mission, pawn)
-	if cplus_plus_ex:isSkillOnPawn(customSkill.id, pawn) then
-		logger.logDebug(SUBMODULE, "Clearing flying for pawn %d", pawn:GetId())
-		more_plus.libs.boardUtils.setHijackedFlying(pawn, false)
+function customSkill.clearFlying()
+	for _, mechInfo in pairs(cplus_plus_ex:getMechsWithSkill(customSkill.id)) do
+		local pawn = Board and Board:GetPawn(mechInfo.pawnId)
+		if pawn then
+			logger.logDebug(SUBMODULE, "Clearing flying for pawn %d", pawn:GetId())
+			legendary_plus.libs.boardUtils.setHijackedFlying(pawn, false)
+		end
 	end
 end
 

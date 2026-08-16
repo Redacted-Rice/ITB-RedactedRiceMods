@@ -11,7 +11,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
 	reusabilityLimit = cplus_plus_ex.REUSABLILITY.REUSABLE,
 }
 
-customSkill.DEBUG = true
+customSkill.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("Legendary+", "Ace", customSkill.DEBUG)
 
