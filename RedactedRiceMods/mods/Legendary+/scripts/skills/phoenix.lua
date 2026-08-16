@@ -3,13 +3,14 @@ local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	name = "Phoenix",
 	description = "Once per mission, the first time this mech dies it is revived with 1 HP at the start of the next turn (or mission end), clears statuses, and gains Boosted and Shield.",
 	constraints = {
+		groups = {legendary_plus.GROUPS.REVIVE},
 		pilotExclusions = {cplus_plus_ex.isCyborg},
 		skillExclusions = {"InvulnerablePlus"},
 	},
 	reusabilityLimit = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }
 
-customSkill.DEBUG = true
+customSkill.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("Legendary+", "Phoenix", customSkill.DEBUG)
 

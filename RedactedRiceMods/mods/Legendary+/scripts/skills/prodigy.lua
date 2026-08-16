@@ -7,6 +7,7 @@ return {
 		groups = {
 			legendary_plus.GROUPS.ADD_HEALTH,
 			legendary_plus.GROUPS.ADD_MOVE,
+			legendary_plus.GROUPS.ADD_REACTOR,
 		},
 		pilotExclusions = {"Pilot_Zoltan", "Pilot_Rock"},
 	},
