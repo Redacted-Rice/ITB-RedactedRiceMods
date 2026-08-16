@@ -13,13 +13,12 @@ more_plus.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Core", more_plus.DEBUG)
 
--- Convert CPLUS+ Ex / DamageModifierLib phase enum to weaponPreview library enum.
--- Phase values are defined on damageModifierLib (not SkillEffectModifier) and
--- already match weaponPreview.STATE_* numerically.
+-- Convert DamageModifierLib phase enum to weaponPreview STATE_*.
+-- Always use the shared lib from redactedrice_libs (via more_plus.libs),
+-- not anything on cplus_plus_ex — CPLUS+ only owns the skill base classes.
 function more_plus.convertPhase(phase)
-	local damageModifierLib = cplus_plus_ex.damageModifierLib
+	local damageModifierLib = more_plus.libs.damageModifierLib
 	local weaponPreview = more_plus.libs.weaponPreview
-	local dml = cplus_plus_ex.damageModifierLib
 
 	if phase == damageModifierLib.PHASE_NONE then
 		return weaponPreview.STATE_NONE

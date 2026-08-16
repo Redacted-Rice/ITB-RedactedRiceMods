@@ -694,6 +694,14 @@ function skill_choice_ui:applyChosenSkill(pilot, slotIndex, skillId)
 
 	self:clearStoredSkill(pilot, slotIndex)
 	cplus_plus_ex:applySkillIdsToPilot(pilot, { skill1, skill2 }, true)
+
+	local appliedId = pilot:getLvlUpSkill(slotIndex):getIdStr()
+	if appliedId ~= skillId then
+		logger.logWarn(LOG_ID, "applyChosenSkill mismatch pilot=%s slot=%d wanted=%s got=%s",
+			pilot:getIdStr(), slotIndex, skillId, tostring(appliedId))
+		return false
+	end
+
 	self:storeChosenSkill(pilot:getIdStr(), slotIndex, skillId)
 	return true
 end
@@ -1017,12 +1025,18 @@ function skill_choice_ui:onPilotLevelChanged(pilot, changes)
 	-- Already chose this slot earlier in the run (e.g. after a delevel). Keep it.
 	local previouslyChosen = self:getChosenSkillId(pilot, newLevel)
 	if previouslyChosen then
-		if self:isValidChoiceSkillId(previouslyChosen) then
-			self:restoreChosenSkillIfNeeded(pilot, newLevel, previouslyChosen)
+		if self:isValidChoiceSkillId(previouslyChosen)
+			and self:restoreChosenSkillIfNeeded(pilot, newLevel, previouslyChosen)
+			and pilot:getLvlUpSkill(newLevel):getIdStr() == previouslyChosen then
+			logger.logDebug(LOG_ID, "onPilotLevelChanged restored prior choice pilot=%s slot=%d skill=%s",
+				pilot:getIdStr(), newLevel, previouslyChosen)
 			return
 		end
-		logger.logWarn(LOG_ID, "onPilotLevelChanged clearing invalid prior choice pilot=%s slot=%d skill=%s",
-			pilot:getIdStr(), newLevel, tostring(previouslyChosen))
+		logger.logWarn(LOG_ID, "onPilotLevelChanged prior choice restore failed pilot=%s slot=%d skill=%s current=%s",
+			pilot:getIdStr(),
+			newLevel,
+			tostring(previouslyChosen),
+			tostring(pilot:getLvlUpSkill(newLevel):getIdStr()))
 		self:clearChosenSkill(pilot, newLevel)
 	end
 
