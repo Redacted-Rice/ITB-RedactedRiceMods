@@ -32,7 +32,7 @@ local function isBuildingDamaged()
 end
 
 local function foreachActiveInstance(fn)
-	for _, mechInfo in ipairs(cplus_plus_ex:getMechsWithSkill(customSkill.id)) do
+	for _, mechInfo in pairs(cplus_plus_ex:getMechsWithSkill(customSkill.id)) do
 		local pilot = mechInfo.pilot
 		local pilotId = pilot and pilot:getIdStr()
 		if pilot and pilotId then
@@ -77,7 +77,7 @@ local function pingComebackPawn(pawnId)
 end
 
 local function pingComebackPawns()
-	for _, mechInfo in ipairs(cplus_plus_ex:getMechsWithSkill(customSkill.id)) do
+	for _, mechInfo in pairs(cplus_plus_ex:getMechsWithSkill(customSkill.id)) do
 		pingComebackPawn(mechInfo.pawnId)
 	end
 end

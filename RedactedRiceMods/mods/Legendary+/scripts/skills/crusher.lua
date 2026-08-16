@@ -1,7 +1,7 @@
 local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	id = "RrCrusher",
 	name = "Crusher",
-	description = "When moving, crack all eligble tiles adjacent to your destination. Will not crack building, item, uncrackable, or already cracked tiles.",
+	description = "When moving, crack all eligible tiles adjacent to your destination. Will not crack building, item, uncrackable, or already cracked tiles.",
 	crackedByMove = {},
 	reusabilityLimit = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }
@@ -60,7 +60,7 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 			skillEffect:AddDamage(damageC)
 			table.insert(pointStrings, adj:GetString())
 			logger.logDebug(SUBMODULE, "Will crack %s for Crusher move by pawn %d", adj:GetString(), pawnId)
-		else
+		elseif Board:IsValid(adj) then
 			legendary_plus.libs.weaponPreview.ExecuteWithState(legendary_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
 				function()
 					legendary_plus.libs.weaponPreview:AddAnimation(adj, customSkill.NO_CRACK_ANIM, nil, nil,

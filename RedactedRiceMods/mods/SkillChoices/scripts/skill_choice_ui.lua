@@ -3,7 +3,7 @@
 
 local skill_choice_ui = {}
 
-skill_choice_ui.DEBUG = true
+skill_choice_ui.DEBUG = false
 
 local logger = memhack.logger
 local LOG_ID = logger.register("SkillChoices", "UI", skill_choice_ui.DEBUG)

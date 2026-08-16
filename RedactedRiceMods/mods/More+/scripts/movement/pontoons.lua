@@ -75,10 +75,13 @@ function customSkill.addFlyingIfNeeded(mission, pawn)
 	end
 end
 
-function customSkill.clearFlying(mission, pawn)
-	if cplus_plus_ex:isSkillOnPawn(customSkill.id, pawn) then
-		logger.logDebug(SUBMODULE, "Clearing flying for pawn %d", pawn:GetId())
-		more_plus.libs.boardUtils.setHijackedFlying(pawn, false)
+function customSkill.clearFlying()
+	for _, mechInfo in pairs(cplus_plus_ex:getMechsWithSkill(customSkill.id)) do
+		local pawn = Board and Board:GetPawn(mechInfo.pawnId)
+		if pawn then
+			logger.logDebug(SUBMODULE, "Clearing flying for pawn %d", pawn:GetId())
+			more_plus.libs.boardUtils.setHijackedFlying(pawn, false)
+		end
 	end
 end
 
