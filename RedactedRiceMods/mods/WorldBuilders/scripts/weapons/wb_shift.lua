@@ -108,22 +108,10 @@ function WorldBuilders_Shift:IsAllowedCustomBuildingSwap(unique, ct)
 			startsWith(ct, "lmn_ground_meadow")
 end
 
--- Terrain swaps are default allowed
+-- Terrain swaps are default allowed. Shared list lives on BoardUtils so spawn
+-- exclusion and Shift stay in sync (train rails, belts, tele pads, etc.).
 function WorldBuilders_Shift:IsUnallowedCustomTerrainSwap(ct)
-	unallowed = startsWith(ct, "square_misslesilo") or startsWith(ct, "supervolcano") or
-		startsWith(ct, "tele_") or startsWith(ct, "conveyor")  or
-		-- Into the Wild
-		startsWith(ct, "lmn_ground_geyser") or startsWith(ct, "lmn_ground_volcanic_vent") or
-		-- Nautilus
-		-- todo incenerator? How to handle - this is a custom anim through the game. Add memedit scan so I can access? Maybe just don't worry about it
-		startsWith(ct, "ground_buried_s") or startsWith(ct, "ground_buried_f") or startsWith(ct, "ground_mineral") or
-		-- Farline (whirlpool is close to working - it removes the old one)
-		startsWith(ct, "tosx_whirlpool") or startsWith(ct, "tosx_vent_") or
-		-- Vertex
-		startsWith(ct, "tosx_evacsite")
-		-- candyland custom tiles can all be swapped
-	--LOG("Custom Tile "..ct.. (unallowed and "unallowed" or "allowed"))
-	return unallowed
+	return BoardUtils.isUnallowedCustomTerrain(ct)
 end
 
 function WorldBuilders_Shift:IsUnshiftableCustomTile(p)

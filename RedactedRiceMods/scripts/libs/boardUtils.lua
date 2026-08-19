@@ -7,7 +7,7 @@ Author: Das Keifer of Redacted Rice
 Discord Server: https://discord.gg/CNjTVrpN4v
 ]]
 
-local VERSION = "1.7.1"
+local VERSION = "1.7.2"
 
 -- Version check
 local isNewestVersion = false
@@ -354,6 +354,53 @@ if isNewestVersion then
 		BoardUtils.lastActed = nil
 	end
 
+	local function startsWith(str, prefix)
+		return string.sub(str, 1, #prefix) == prefix
+	end
+
+	-- Custom tiles that are not cosmetic ground overlays. Spawn logic treats
+	-- these as unsafe. Mirrors WorldBuilders Shift's unallowed terrain swaps,
+	-- plus mission tiles such as train rails.
+	BoardUtils.UNSAFE_CUSTOM_TILE_PREFIXES = {
+		-- Vanilla missions
+		"ground_rail",          -- train / armored train tracks
+		"square_missilesilo",   -- satellite silos
+		"supervolcano",         -- final island volcano
+		"tele_",                -- teleporter pads
+		"conveyor",             -- conveyor belts
+		-- Into the Wild
+		"lmn_ground_geyser",
+		"lmn_ground_volcanic_vent",
+		-- Nautilus
+		"ground_buried_s",
+		"ground_buried_f",
+		"ground_mineral",
+		-- Far Line
+		"tosx_whirlpool",
+		"tosx_vent_",
+		-- Vertex
+		"tosx_evacsite",
+	}
+
+	function BoardUtils.isUnallowedCustomTerrain(customTile)
+		if customTile == nil or customTile == "" then
+			return false
+		end
+		for _, prefix in ipairs(BoardUtils.UNSAFE_CUSTOM_TILE_PREFIXES) do
+			if startsWith(customTile, prefix) then
+				return true
+			end
+		end
+		return false
+	end
+
+	function BoardUtils.isSafeCustomTile(point)
+		if not Board:IsValid(point) then
+			return false
+		end
+		return not BoardUtils.isUnallowedCustomTerrain(Board:GetCustomTile(point))
+	end
+
 	function BoardUtils.addCancelEffect(p, effect)
 		local smoked = Board:IsSmoke(p)
 		if not smoked then
@@ -382,6 +429,12 @@ if isNewestVersion then
 			return false
 		end
 		if Board:IsPawnSpace(point) then
+			return false
+		end
+		if Board:IsItem(point) then
+			return false
+		end
+		if not BoardUtils.isSafeCustomTile(point) then
 			return false
 		end
 		if pathing and Board:IsBlocked(point, pathing) then
