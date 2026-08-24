@@ -7,7 +7,7 @@ Author: Das Keifer of Redacted Rice
 Discord Server: https://discord.gg/CNjTVrpN4v
 ]]
 
-local VERSION = "1.7.2"
+local VERSION = "1.7.3"
 
 -- Version check
 local isNewestVersion = false
@@ -98,6 +98,34 @@ if isNewestVersion then
 
 	function BoardUtils.clearHijackedPath()
 		BoardUtils.hijackedPath = nil
+	end
+
+	-- Move types from memedit constants.lua (SPACE_DAMAGE_PLIST_TYPE_*)
+	function BoardUtils.skillEffectUsesPathMovement(skillEffect)
+		if not skillEffect or not skillEffect.effect then
+			return true
+		end
+
+		for idx = 1, skillEffect.effect:size() do
+			local spaceDamage = skillEffect.effect:index(idx)
+			if spaceDamage:IsMovement() then
+				if not spaceDamage.GetMoveType then
+					return true
+				end
+				local moveType = spaceDamage:GetMoveType()
+				if moveType == SPACE_DAMAGE_PLIST_TYPE_MOVE
+						or moveType == SPACE_DAMAGE_PLIST_TYPE_BURROW then
+					return true
+				end
+				return false
+			end
+		end
+
+		return true
+	end
+
+	function BoardUtils.skillEffectUsesPointToPointMovement(skillEffect)
+		return not BoardUtils.skillEffectUsesPathMovement(skillEffect)
 	end
 
 	function BoardUtils.addForcedSigleMove(skillEffect, pawnId, dest)

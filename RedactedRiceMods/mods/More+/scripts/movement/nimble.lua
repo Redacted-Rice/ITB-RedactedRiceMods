@@ -16,6 +16,8 @@ local SUBMODULE = logger.register("More+", "Nimble", customSkill.DEBUG)
 
 more_plus:addCustomTraitIcon(customSkill)
 
+local boardUtils = more_plus.libs.boardUtils
+
 local originalCanMoveOnBuildings = BoardUtils.CanMoveOnMountains
 BoardUtils.CanMoveOnMountains = function(pawn)
 	-- Check if this pawn has Nimble skill
@@ -100,10 +102,8 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 	if weaponId == "Move" then
 		local pilot = pawn:GetPilot()
 		if pilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot) then
-			-- Only apply custom pathing for ground-based units
-			-- Jumpers and teleporters use point-to-point movement
-			-- Burrowers follow a path but already have special pathing
-			if not (pawn:IsJumper() or pawn:IsTeleporter() or pawn:IsBurrower()) then
+			-- Path based movement (walk, burrow). Skip leap/teleport/charge
+			if boardUtils.skillEffectUsesPathMovement(skillEffect) then
 				local passThroughMode = customSkill.getPassThroughMode(pilot)
 				logger.logDebug(SUBMODULE, "Calculating custom path for pawn %d from %s to %s with mode %s",
 						pawn:GetId(), p1:GetString(), p2:GetString(), passThroughMode)
