@@ -98,10 +98,12 @@ end
 
 function WorldBuilders_Passive_Move:GetPassiveSkillEffect_SkillBuildHook(mission, pawn, weaponId, p1, p2, skillEffect)
 	if weaponId == "Move" and pawn:IsMech() then
-		-- findBfsPath(..., true) == as point list
-		-- No pawns block path but any pawn blocks landing
-		local path = self.boardUtils.findBfsPath(p1, p2, self.boardUtils.makeAllTerrainMatcher(pawn, "none"), true) -- nothing blocks move through
-		self.boardUtils.addForcedMove(skillEffect, path)
+		-- Path based movement (walk, burrow). Skip leap/teleport/charge
+		if self.boardUtils.skillEffectUsesPathMovement(skillEffect) then
+			local path = self.boardUtils.findBfsPath(p1, p2,
+					self.boardUtils.makeAllTerrainMatcher(pawn, "none"), true)
+			self.boardUtils.addForcedMove(skillEffect, path)
+		end
 	end
 end
 
