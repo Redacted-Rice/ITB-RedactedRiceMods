@@ -18,12 +18,16 @@ customSkill.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("Legendary+", "Admiral", customSkill.DEBUG)
 
+-- Tell board utils this allows moving on (and through) water
+BoardUtils.CanMoveOnWater = BoardUtils.makeAllowIfHasSkill(BoardUtils.CanMoveOnWater, customSkill.id)
+
 legendary_plus:addCustomTraitIcon(customSkill)
 
 function customSkill:setupEffect()
 	cplus_plus_ex.baseClasses.SkillEffectModifier.setupEffect(self)
 
 	table.insert(customSkill.events, modapiext.events.onTargetAreaBuild:subscribe(customSkill.moveTargetArea))
+	table.insert(customSkill.events, modapiext.events.onSkillBuild:subscribe(customSkill.moveSkillBuild))
 	table.insert(customSkill.events, modapiext.events.onPawnPositionChanged:subscribe(customSkill.addFlyingIfNeeded))
 	table.insert(customSkill.events, modapiext.events.onPawnSelected:subscribe(customSkill.addFlyingIfNeeded))
 	table.insert(customSkill.events, modApi.events.onMissionStart:subscribe(customSkill.applyOnMissionEnter))
@@ -32,26 +36,46 @@ function customSkill:setupEffect()
 end
 
 function customSkill.moveTargetArea(mission, pawn, weaponId, p1, targetArea)
-	if weaponId == "Move" then
+	-- customSkill.recalculating guards against re entering this block from our own
+	-- manual fireTargetAreaBuildHooks call below.
+	if weaponId == "Move" and not customSkill.recalculating then
 		local pilot = pawn:GetPilot()
 		if pilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot)
 				and legendary_plus.libs.boardUtils.isPawnHijackedFlying(pawn) then
-			-- First time, unset flying and get a new set of points without flying
-			-- Note other things that change path must use isPawnFlying in BoardUtils
-			-- To work right on the second pass or else it could see the pawn as flying
-			-- when it shouldn't be
+			-- First time, manually calcualte our reachable points to avoid recalling getTargetArea
+			-- as this messes with the weapon preview state
 			if pawn:IsFlying() then
 				logger.logDebug(SUBMODULE, "Recalculating move target area for amphibious pawn %d at %s",
 						pawn:GetId(), p1:GetString())
-				pawn:SetFlying(false)
 				while not targetArea:empty() do
 					targetArea:erase(0)
 				end
-				local newPoints = Move:GetTargetArea(p1)
-				for idx = 1, newPoints:size() do
-					targetArea:push_back(newPoints:index(idx))
+				local groundedPoints = legendary_plus.libs.boardUtils.getMoveReachableInRange(
+						pawn, pawn:GetMoveSpeed(), p1, "default")
+				for idx = 1, groundedPoints:size() do
+					targetArea:push_back(groundedPoints:index(idx))
 				end
-				pawn:SetFlying(true)
+
+				-- Call the fireTargetAreaBuildHooks so other skills (e.g. nimble or supporter)
+				-- can add to it as appropriate
+				customSkill.recalculating = true
+				modApiExt_internal.fireTargetAreaBuildHooks(mission, pawn, weaponId, p1, targetArea)
+				customSkill.recalculating = false
+			end
+		end
+	end
+end
+
+-- Override move skill to allow for building the "correct" path based on what is allowed
+function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect)
+	if weaponId == "Move" then
+		local pilot = pawn:GetPilot()
+		if pilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot) then
+			if legendary_plus.libs.boardUtils.skillEffectUsesPathMovement(skillEffect) then
+				local path = legendary_plus.libs.boardUtils.findMovePath(pawn, p1, p2, "default", true)
+				if path then
+					legendary_plus.libs.boardUtils.addForcedMove(skillEffect, path)
+				end
 			end
 		end
 	end

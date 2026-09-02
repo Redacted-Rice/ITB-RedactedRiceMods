@@ -3,7 +3,6 @@ local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	name = "Jump Jets",
 	description = "Piloted Mech can jump with -1 move as its movement.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
-	skipJump = false,
 	-- Don't allow on kwan - its mostly duplicative with his skill
 	-- Propsero already has flying so it doesn't help at all either
 	-- Flying cyborgs (Hornet) also don't benefit from jump jets
@@ -19,38 +18,52 @@ customSkill.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "JumpJets", customSkill.DEBUG)
 
+-- Cache of the points this adds to the move target area per pawn for performance
+-- and so we can readd them without calling getTargetArea to avoid weapon preview
+-- issues
+customSkill.addedPointsByPawn = {}
+
+local function resetAddedPointsCache()
+	customSkill.addedPointsByPawn = {}
+end
+
+-- Leap can go through all tiles (but not on them)
+BoardUtils.CanMoveThroughHoles = BoardUtils.makeAllowIfHasSkill(BoardUtils.CanMoveThroughHoles, customSkill.id)
+BoardUtils.CanMoveThroughBuildings = BoardUtils.makeAllowIfHasSkill(BoardUtils.CanMoveThroughBuildings, customSkill.id)
+BoardUtils.CanMoveThroughMountains = BoardUtils.makeAllowIfHasSkill(BoardUtils.CanMoveThroughMountains, customSkill.id)
+BoardUtils.CanMoveThroughWater = BoardUtils.makeAllowIfHasSkill(BoardUtils.CanMoveThroughWater, customSkill.id)
+
 more_plus:addCustomTraitIcon(customSkill)
 
 function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onTargetAreaBuild:subscribe(customSkill.moveTargetArea))
 	table.insert(customSkill.events, modapiext.events.onSkillBuild:subscribe(customSkill.moveSkillBuild))
+	table.insert(customSkill.events, modApi.events.onMissionStart:subscribe(resetAddedPointsCache))
 end
 
 function customSkill.moveTargetArea(mission, pawn, weaponId, p1, targetArea)
 	if weaponId == "Move" then
 		local pilot = pawn:GetPilot()
 		if pilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot) then
-			if customSkill.skipJump then
-				logger.logDebug(SUBMODULE, "Skipping jump jets target area for pawn %d from %s",
-					pawn:GetId(), p1:GetString())
-				return
-			end
-
 			local hashedNormalPoints = {}
 			for idx = 1, targetArea:size() do
 				local point = targetArea:index(idx)
 				hashedNormalPoints[more_plus.libs.boardUtils.getSpaceHash(point)] = true
 			end
 
-			-- Get our jump params and determine the reachable points
+			-- Get our jump speed and determine the reachable points. Board utils handles passable/
+			-- stoppable checks already
 			local jumpMoveSpeed = math.max(0, pawn:GetMoveSpeed() - 1)
-			local jumpPoints = PointList()
-			more_plus.libs.boardUtils.getReachableInRange(jumpPoints, jumpMoveSpeed, p1,
-					more_plus.libs.boardUtils.makeAllTerrainMatcher(pawn, "none"),
-					more_plus.libs.boardUtils.makeGenericMatcher(pawn, "any"))
+			local jumpPoints = more_plus.libs.boardUtils.getMoveReachableInRange(
+					pawn, jumpMoveSpeed, p1, "none")
 
 			logger.logDebug(SUBMODULE, "Jump jets target area from %s with speed %d found %d reachable spaces",
 					p1:GetString(), jumpMoveSpeed, jumpPoints:size())
+
+			-- Track exactly which points this added so moveSkillBuild can check
+			-- reachability later without re calling GetTargetArea as that causes issues
+			local jumpAddedPoints = {}
+			customSkill.addedPointsByPawn[pawn:GetId()] = jumpAddedPoints
 
 			-- Go through and add any that are not already there
 			local addedCount = 0
@@ -60,6 +73,7 @@ function customSkill.moveTargetArea(mission, pawn, weaponId, p1, targetArea)
 				local pointHash = more_plus.libs.boardUtils.getSpaceHash(point)
 				if not hashedNormalPoints[pointHash] then
 					targetArea:push_back(point)
+					jumpAddedPoints[pointHash] = true
 					table.insert(addedPoints, point:GetString())
 					addedCount = addedCount + 1
 				end
@@ -80,19 +94,23 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 	if weaponId == "Move" then
 		local pilot = pawn:GetPilot()
 		if pilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot) then
-			-- Instead of storing, we recalulcate skipping jump for better order-independent
-			-- calculation for other skills like nimble and water proof that change things up
-			customSkill.skipJump = true
-			local nonJumpPoints = Move:GetTargetArea(p1)
-			customSkill.skipJump = false
+			-- Use the added points to determine if the destination is reachable without a jump
+			local jumpAddedPoints = customSkill.addedPointsByPawn[pawn:GetId()]
 
-			-- Now determine if we can reach with normal movement, in which case, do so and return
-			for idx = 1, nonJumpPoints:size() do
-				if nonJumpPoints:index(idx) == p2 then
-					logger.logDebug(SUBMODULE, "Destination %s reachable via normal move for pawn %d, using normal movement",
-							p2:GetString(), pawn:GetId())
-					return
-				end
+			-- This should always be populated by moveTargetArea before a skill effect
+			-- is ever built for this pawn's Move but just to be safe...
+			if not jumpAddedPoints then
+				logger.logWarn(SUBMODULE, "No cached jump target area for pawn %d at %s, skipping jump check",
+						pawn:GetId(), p1:GetString())
+				return
+			end
+
+			-- If this destination isn't one we added its reachable some other way
+			-- so don't change the move type
+			if not jumpAddedPoints[more_plus.libs.boardUtils.getSpaceHash(p2)] then
+				logger.logDebug(SUBMODULE, "Destination %s reachable without jump for pawn %d, using normal movement",
+						p2:GetString(), pawn:GetId())
+				return
 			end
 
 			-- Otherwise we get to leap there!
