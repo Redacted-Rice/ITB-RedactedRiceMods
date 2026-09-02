@@ -3,30 +3,29 @@ local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	name = "Supporter",
 	description = "Piloted mech can teleport to tiles adjacent to allies.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
-	skipSupporter = false
 }
 
 customSkill.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Supporter", customSkill.DEBUG)
 
+customSkill.addedPointsByPawn = {}
+
+local function resetAddedPointsCache()
+	customSkill.addedPointsByPawn = {}
+end
+
 more_plus:addCustomTraitIcon(customSkill)
 
 function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onTargetAreaBuild:subscribe(customSkill.moveTargetArea))
 	table.insert(customSkill.events, modapiext.events.onSkillBuild:subscribe(customSkill.moveSkillBuild))
+	table.insert(customSkill.events, modApi.events.onMissionStart:subscribe(resetAddedPointsCache))
 end
 
 function customSkill.moveTargetArea(mission, pawn, weaponId, p1, targetArea)
 	if weaponId == "Move" then
 		if pawn and cplus_plus_ex:isSkillOnPawn(customSkill.id, pawn) then
-			-- Skip if analyzing for the build effect
-			if customSkill.skipSupporter then
-				logger.logDebug(SUBMODULE, "Skipping supporter target area for pawn %d from %s",
-						pawn:GetId(), p1:GetString())
-				return
-			end
-
 			logger.logDebug(SUBMODULE, "Supporter pawn %d at %s, finding allies for teleport",
 					pawn:GetId(), p1:GetString())
 
@@ -38,8 +37,13 @@ function customSkill.moveTargetArea(mission, pawn, weaponId, p1, targetArea)
 			local existingPoints = {}
 			for i = 1, targetArea:size() do
 				local point = targetArea:index(i)
-				existingPoints[point:GetString()] = true
+				existingPoints[BoardUtils.getSpaceHash(point)] = true
 			end
+
+			-- Track exactly which points this added so moveSkillBuild can check
+			-- reachability later without re calling GetTargetArea as that causes issues
+			local supporterAddedPoints = {}
+			customSkill.addedPointsByPawn[pawn:GetId()] = supporterAddedPoints
 
 			for _, pawnId in ipairs(extract_table(Board:GetPawns(TEAM_PLAYER))) do
 				local allyPawn = Board:GetPawn(pawnId)
@@ -76,11 +80,12 @@ function customSkill.moveTargetArea(mission, pawn, weaponId, p1, targetArea)
 
 					-- Add each new valid adjacent tile to move area
 					for _, adjLoc in ipairs(adjacentTiles) do
-						local locStr = adjLoc:GetString()
-						if not existingPoints[locStr] then
+						local locHash = BoardUtils.getSpaceHash(adjLoc)
+						if not existingPoints[locHash] then
 							targetArea:push_back(adjLoc)
-							existingPoints[locStr] = true
-							table.insert(addedPoints, locStr)
+							existingPoints[locHash] = true
+							supporterAddedPoints[locHash] = true
+							table.insert(addedPoints, adjLoc:GetString())
 							addedCount = addedCount + 1
 						end
 					end
@@ -101,18 +106,23 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 	if weaponId == "Move" then
 		local pilot = pawn:GetPilot()
 		if pilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot) then
-			-- Recalculate target area without supporter skill to check if destination is normally reachable
-			customSkill.skipSupporter = true
-			local nonSupporterPoints = Move:GetTargetArea(p1)
-			customSkill.skipSupporter = false
+			-- Use the added points to determine if the destination is reachable without a teleport
+			local supporterAddedPoints = customSkill.addedPointsByPawn[pawn:GetId()]
 
-			-- Check if we can reach with normal movement, in which case, do so and return
-			for idx = 1, nonSupporterPoints:size() do
-				if nonSupporterPoints:index(idx) == p2 then
-					logger.logDebug(SUBMODULE, "Destination %s reachable via normal move for pawn %d, using normal movement",
-							p2:GetString(), pawn:GetId())
-					return
-				end
+			-- This should always be populated by moveTargetArea before a skill effect
+			-- is ever built for this pawn's Move but just to be safe...
+			if not supporterAddedPoints then
+				logger.logWarn(SUBMODULE, "No cached supporter target area for pawn %d at %s, skipping teleport check",
+						pawn:GetId(), p1:GetString())
+				return
+			end
+
+			-- If this destination isn't one we added its reachable some other way
+			-- so don't change the move type
+			if not supporterAddedPoints[BoardUtils.getSpaceHash(p2)] then
+				logger.logDebug(SUBMODULE, "Destination %s reachable without supporter for pawn %d, using normal movement",
+						p2:GetString(), pawn:GetId())
+				return
 			end
 
 			-- Otherwise we need to teleport there!

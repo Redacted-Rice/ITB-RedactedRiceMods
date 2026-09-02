@@ -54,33 +54,12 @@ WorldBuilders_Passive_Move.traitReplace:add{
 	desc_text = "This unit can move past units and over/on buildings and mountains",
 }
 
--- Store the original methods
-
-local originalCanMoveOnMountains = BoardUtils.CanMoveOnMountains
-BoardUtils.CanMoveOnMountains = function(pawn)
-	-- Check if this pawn has All Terrain passive active
-	if pawn:IsMech() and WorldBuilders_Passive_Move.passiveEffect:countAnyVersionOfPassiveActive("WorldBuilders_Passive_Move") > 0 then
-		return true
-	end
-	-- Fall back to original implementation
-	if originalCanMoveOnMountains ~= nil then
-		return originalCanMoveOnMountains(pawn)
-	end
-	return false
+-- Grant on (and through) buildings/mountains while All Terrain is active
+local function isAllTerrainActiveOnMech(pawn)
+	return pawn:IsMech() and WorldBuilders_Passive_Move.passiveEffect:countAnyVersionOfPassiveActive("WorldBuilders_Passive_Move") > 0
 end
-
-local originalCanMoveOnBuildings = BoardUtils.CanMoveOnBuildings
-BoardUtils.CanMoveOnBuildings = function(pawn)
-	-- Check if this pawn has All Terrain passive active
-	if pawn:IsMech() and WorldBuilders_Passive_Move.passiveEffect:countAnyVersionOfPassiveActive("WorldBuilders_Passive_Move") > 0 then
-		return true
-	end
-	-- Fall back to original implementation
-	if originalCanMoveOnBuildings ~= nil then
-		return originalCanMoveOnBuildings(pawn)
-	end
-	return false
-end
+BoardUtils.CanMoveOnMountains = BoardUtils.makeAllowIf(BoardUtils.CanMoveOnMountains, isAllTerrainActiveOnMech)
+BoardUtils.CanMoveOnBuildings = BoardUtils.makeAllowIf(BoardUtils.CanMoveOnBuildings, isAllTerrainActiveOnMech)
 
 function WorldBuilders_Passive_Move:GetPassiveSkillEffect_TargetAreaBuildHook(mission, pawn, weaponId, p1, targetArea)
 	if weaponId == "Move" and pawn:IsMech() then
@@ -89,20 +68,25 @@ function WorldBuilders_Passive_Move:GetPassiveSkillEffect_TargetAreaBuildHook(mi
 		    targetArea:erase(0)
 		end
 		-- Add the new points
-		-- No pawns block path but any pawn blocks landing
-		self.boardUtils.getReachableInRange(targetArea, pawn:GetMoveSpeed(), p1,
-				self.boardUtils.makeAllTerrainMatcher(pawn, "none"), -- nothing blocks move through
-				self.boardUtils.makeAllTerrainMatcher(pawn, "any")) -- any blocks land on
+		-- No pawns block path but any pawn blocks landing. Board utils handles passable/
+		-- stoppable checks already
+		local newPoints = self.boardUtils.getMoveReachableInRange(
+				pawn, pawn:GetMoveSpeed(), p1, "none")
+		for idx = 1, newPoints:size() do
+			targetArea:push_back(newPoints:index(idx))
+		end
 	end
 end
 
 function WorldBuilders_Passive_Move:GetPassiveSkillEffect_SkillBuildHook(mission, pawn, weaponId, p1, p2, skillEffect)
 	if weaponId == "Move" and pawn:IsMech() then
-		-- Path based movement (walk, burrow). Skip leap/teleport/charge
+		-- Path based movement (walk, burrow). Skip leap/teleport/charge.
 		if self.boardUtils.skillEffectUsesPathMovement(skillEffect) then
-			local path = self.boardUtils.findBfsPath(p1, p2,
-					self.boardUtils.makeAllTerrainMatcher(pawn, "none"), true)
-			self.boardUtils.addForcedMove(skillEffect, path)
+			-- Board utils handles passable/stoppable checks already
+			local path = self.boardUtils.findMovePath(pawn, p1, p2, "none", true)
+			if path then
+				self.boardUtils.addForcedMove(skillEffect, path)
+			end
 		end
 	end
 end
