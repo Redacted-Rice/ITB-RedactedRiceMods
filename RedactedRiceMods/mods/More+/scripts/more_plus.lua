@@ -13,28 +13,34 @@ more_plus.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Core", more_plus.DEBUG)
 
--- Convert CPLUS+ Ex phase enum to weaponPreview library enum
+-- Convert DamageModifierLib phase enum to weaponPreview STATE_*.
+-- Always use the shared lib from redactedrice_libs (via more_plus.libs),
+-- not anything on cplus_plus_ex — CPLUS+ only owns the skill base classes.
 function more_plus.convertPhase(phase)
-	local SkillEffectModifier = cplus_plus_ex.baseClasses.SkillEffectModifier
+	local damageModifierLib = more_plus.libs.damageModifierLib
 	local weaponPreview = more_plus.libs.weaponPreview
 
-	if phase == SkillEffectModifier.PHASE_NONE then
+	if phase == damageModifierLib.PHASE_NONE then
 		return weaponPreview.STATE_NONE
-	elseif phase == SkillEffectModifier.PHASE_SKILL_EFFECT then
+	elseif phase == damageModifierLib.PHASE_SKILL_EFFECT then
 		return weaponPreview.STATE_SKILL_EFFECT
-	elseif phase == SkillEffectModifier.PHASE_TARGET_AREA then
+	elseif phase == damageModifierLib.PHASE_TARGET_AREA then
 		return weaponPreview.STATE_TARGET_AREA
-	elseif phase == SkillEffectModifier.PHASE_QUEUED_SKILL then
+	elseif phase == damageModifierLib.PHASE_QUEUED_SKILL then
 		return weaponPreview.STATE_QUEUED_SKILL
-	elseif phase == SkillEffectModifier.PHASE_SECOND_TARGET_AREA then
+	elseif phase == damageModifierLib.PHASE_SECOND_TARGET_AREA then
 		return weaponPreview.STATE_SECOND_TARGET_AREA
-	elseif phase == SkillEffectModifier.PHASE_FINAL_EFFECT then
+	elseif phase == damageModifierLib.PHASE_FINAL_EFFECT then
 		return weaponPreview.STATE_FINAL_EFFECT
-	elseif phase == SkillEffectModifier.PHASE_QUEUED_FINAL_EFFECT then
+	elseif phase == damageModifierLib.PHASE_QUEUED_FINAL_EFFECT then
 		return weaponPreview.STATE_QUEUED_FINAL_EFFECT
 	end
 
-	-- Default to none if unknown
+	-- Phases are numeric and already aligned with STATE_*; pass through
+	if type(phase) == "number" then
+		return phase
+	end
+
 	logger.logWarn(SUBMODULE, "Unknown phase: %s", tostring(phase))
 	return weaponPreview.STATE_NONE
 end
@@ -82,6 +88,7 @@ more_plus.GROUPS = {
 	ADD_HEALTH = "Add Health",
 	ADD_MOVE = "Add Move",
 	ADD_GRID_DEF = "Add Grid Def",
+	ADD_REACTOR = "Add Reactor",
 	MOVE_TYPE = "Move Type",
 	BOOST = "Boost",
 	SHIELD = "Shield",
@@ -104,6 +111,9 @@ function more_plus:addVanillaSkillsToGroups()
 
 	-- Add Grid Def group
 	cplus_plus_ex:registerSkillToGroup("Grid", self.GROUPS.ADD_GRID_DEF)
+
+	-- Add Reactor group
+	cplus_plus_ex:registerSkillToGroup("Reactor", self.GROUPS.ADD_REACTOR)
 
 	-- Boost group
 	cplus_plus_ex:registerSkillToGroup("Opener", self.GROUPS.BOOST)
@@ -178,6 +188,7 @@ more_plus.commonIcons = {
 	shackle = {key = "rr_shackle", img =  "combat/icons/icon_mp_RrShackle_glow.png"},
 	noDamage = {key = "rr_no_damage", img =  "combat/icons/icon_mp_RrNoDamage_glow.png"},
 	boost = {key = "rr_boosted", img = "advanced/combat/icons/icon_boosted_glow.png"},
+	shield = {key = "rr_shield", img = "combat/icons/icon_shield_glow.png"},
 	armor1 = {key = "rr_armor_one", img = "combat/icons/icon_mp_RrArmorOne_glow.png"},
 	armor3 = {key = "rr_armor_three", img = "combat/icons/icon_mp_RrArmorThree_glow.png"},
 	reflect = {key = "rr_Reflect", img = "combat/icons/icon_mp_RrReflect_glow.png"},

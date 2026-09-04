@@ -7,7 +7,7 @@ Author: Das Keifer of Redacted Rice
 Discord Server: https://discord.gg/CNjTVrpN4v
 ]]
 
-local VERSION = "1.7.0"
+local VERSION = "1.8.0"
 
 -- Version check
 local isNewestVersion = false
@@ -24,6 +24,10 @@ if isNewestVersion then
 	-- Initialize data tables
 	BoardUtils.hijackedFlying = BoardUtils.hijackedFlying or {}
 	BoardUtils.hijackedPath = BoardUtils.hijackedPath
+	-- Caches pathing for performance reasons
+	BoardUtils.movePathCache = {}
+	BoardUtils.reachableCache = {}
+	BoardUtils.NO_PATH = BoardUtils.NO_PATH or {}
 
 	-- Constants
 	BoardUtils.SPACE_DAMAGE_KEYS = {
@@ -54,6 +58,57 @@ if isNewestVersion then
 		"bHidePath",
 	}
 
+	function BoardUtils.isPawnHijackedFlying(pawn)
+		return BoardUtils.hijackedFlying[pawn:GetId()]
+	end
+
+	function BoardUtils.isPawnFlying(pawn)
+		return pawn:IsFlying() and not BoardUtils.hijackedFlying[pawn:GetId()]
+	end
+
+	-- Helper for building the common "allow this if a condition is met, otherwise
+	-- defer to whatever was already there" override chain used by CanMoveOn*/
+	-- CanMoveThrough*
+	-- Example: BoardUtils.CanMoveOnWater = BoardUtils.makeAllowIf(BoardUtils.CanMoveOnWater, myPredicate)
+	function BoardUtils.makeAllowIf(original, allowIfFn)
+		return function(pawn)
+			if allowIfFn(pawn) then
+				return true
+			end
+			if original ~= nil then
+				return original(pawn)
+			end
+			return false
+		end
+	end
+
+	-- Convenience wrapper: allowIfFn checks cplus_plus_ex:isSkillOnPawn for skillId.
+	-- Example: BoardUtils.CanMoveOnWater = BoardUtils.makeAllowIfHasSkill(BoardUtils.CanMoveOnWater, customSkill.id)
+	function BoardUtils.makeAllowIfHasSkill(original, skillId)
+		return BoardUtils.makeAllowIf(original, function(pawn)
+			return cplus_plus_ex:isSkillOnPawn(skillId, pawn)
+		end)
+	end
+
+	function BoardUtils.setHijackedFlying(pawn, enabled)
+		if enabled then
+			BoardUtils.hijackedFlying[pawn:GetId()] = true
+			pawn:SetFlying(true)
+		elseif BoardUtils.hijackedFlying[pawn:GetId()] then
+			BoardUtils.hijackedFlying[pawn:GetId()] = nil
+			pawn:SetFlying(false)
+		end
+	end
+
+	-- Road Runner (Kwan): pilot can pass through enemy units while moving
+	-- So can flying and jumping but those currently are handled by the 
+	-- pawnCheckType setting. In the future maybe migrate to using this
+	-- instead?
+	function BoardUtils.canPassThroughEnemyPawns(pawn)
+		local pilot = pawn:GetPilot()
+		return pilot ~= nil and pilot:getSkillStr() == "Road_Runner"
+	end
+
 	-- Override as needed per skills that allow this.
 	-- Make sure to call original
 	if not BoardUtils.CanMoveOnMountains then
@@ -70,22 +125,54 @@ if isNewestVersion then
 		end
 	end
 
-	function BoardUtils.setHijackedFlying(pawn, enabled)
-		if enabled then
-			BoardUtils.hijackedFlying[pawn:GetId()] = true
-			pawn:SetFlying(true)
-		elseif BoardUtils.hijackedFlying[pawn:GetId()] then
-			BoardUtils.hijackedFlying[pawn:GetId()] = nil
-			pawn:SetFlying(false)
+	-- Vanilla: only flying pawns can be over holes
+	-- Override for skills that grant hole immunity without granting full flight.
+	if not BoardUtils.CanMoveOnHoles then
+		function BoardUtils.CanMoveOnHoles(pawn)
+			return BoardUtils.isPawnFlying(pawn)
 		end
 	end
 
-	function BoardUtils.isPawnHijackedFlying(pawn)
-		return BoardUtils.hijackedFlying[pawn:GetId()]
+	-- Vanilla: flying pawns hover above water/lava/acid, and massive pawns can
+	-- move into them but not fire
+	if not BoardUtils.CanMoveOnWater then
+		function BoardUtils.CanMoveOnWater(pawn)
+			return BoardUtils.isPawnFlying(pawn) or pawn:IsMassive()
+		end
 	end
 
-	function BoardUtils.isPawnFlying(pawn)
-		return pawn:IsFlying() and not BoardUtils.hijackedFlying[pawn:GetId()]
+	-- CanMoveThrough* below governs passing over terrain without landing on it,
+	-- distinct from CanMoveOn* above (ending movement). Jumpers and teleporters 
+	-- can pass over much unlandable terrain. Fliers can do so as well but are
+	-- already covered via the matching CanMoveOn* fallback (if you can land on 
+	-- it, you can pass  through it). Skills only need to override CanMoveOn* (eg. 
+	-- Nimble, Pontoons/Admiral) and get the matching CanMoveThrough* for "free".
+	if not BoardUtils.CanMoveThroughHoles then
+		function BoardUtils.CanMoveThroughHoles(pawn)
+			return pawn:IsJumper() or pawn:IsTeleporter()
+					or BoardUtils.CanMoveOnHoles(pawn)
+		end
+	end
+
+	if not BoardUtils.CanMoveThroughWater then
+		function BoardUtils.CanMoveThroughWater(pawn)
+			return pawn:IsJumper() or pawn:IsTeleporter()
+					or BoardUtils.CanMoveOnWater(pawn)
+		end
+	end
+
+	if not BoardUtils.CanMoveThroughBuildings then
+		function BoardUtils.CanMoveThroughBuildings(pawn)
+			return pawn:IsJumper() or pawn:IsTeleporter()
+					or BoardUtils.CanMoveOnBuildings(pawn)
+		end
+	end
+
+	if not BoardUtils.CanMoveThroughMountains then
+		function BoardUtils.CanMoveThroughMountains(pawn)
+			return pawn:IsJumper() or pawn:IsTeleporter()
+					or BoardUtils.CanMoveOnMountains(pawn)
+		end
 	end
 
 	function BoardUtils.setHijackedPath(path)
@@ -98,6 +185,34 @@ if isNewestVersion then
 
 	function BoardUtils.clearHijackedPath()
 		BoardUtils.hijackedPath = nil
+	end
+
+	-- Move types from memedit constants.lua (SPACE_DAMAGE_PLIST_TYPE_*)
+	function BoardUtils.skillEffectUsesPathMovement(skillEffect)
+		if not skillEffect or not skillEffect.effect then
+			return true
+		end
+
+		for idx = 1, skillEffect.effect:size() do
+			local spaceDamage = skillEffect.effect:index(idx)
+			if spaceDamage:IsMovement() then
+				if not spaceDamage.GetMoveType then
+					return true
+				end
+				local moveType = spaceDamage:GetMoveType()
+				if moveType == SPACE_DAMAGE_PLIST_TYPE_MOVE
+						or moveType == SPACE_DAMAGE_PLIST_TYPE_BURROW then
+					return true
+				end
+				return false
+			end
+		end
+
+		return true
+	end
+
+	function BoardUtils.skillEffectUsesPointToPointMovement(skillEffect)
+		return not BoardUtils.skillEffectUsesPathMovement(skillEffect)
 	end
 
 	function BoardUtils.addForcedSigleMove(skillEffect, pawnId, dest)
@@ -181,17 +296,17 @@ if isNewestVersion then
 				if pawnCheckType == "any" then
 					return false
 				end
-				-- Flying pawns can pass through any other pawn
-				if BoardUtils.isPawnFlying(pawn) then
+				-- Flying, jumping, and teleporting pawns can pass through any other pawn
+				if BoardUtils.isPawnFlying(pawn) or pawn:IsJumper() or pawn:IsTeleporter() then
 					return true
 				end
-				-- Block opposing team pawns as default
+				-- Block opposing team pawns as default (Road Runner exempt)
 				if pawnCheckType == "default" then
 					local moverTeam = pawn:GetTeam()
 					local otherTeam = otherPawn:GetTeam()
 					if BoardUtils.isAPlayerTeam(moverTeam) and BoardUtils.isAnEnemyTeam(otherTeam) or
 							BoardUtils.isAnEnemyTeam(moverTeam) and BoardUtils.isAPlayerTeam(otherTeam) then
-						return false
+						return BoardUtils.canPassThroughEnemyPawns(pawn)
 					end
 				end
 			end
@@ -199,21 +314,70 @@ if isNewestVersion then
 		end
 	end
 
-	--pawnCheckType "none", "default", "any"
-	function BoardUtils.makeAllTerrainMatcher(pawn, pawnCheckType)
+	function BoardUtils.isLiquid(terrain)
+		return terrain == TERRAIN_WATER or terrain == TERRAIN_LAVA or terrain == TERRAIN_ACID
+	end
+
+	-- pawnCheckType "none", "default", "any"
+	-- Normal move end space: respects CanMoveOnHoles/CanMoveOnWater/CanMoveOnBuildings/
+	-- CanMoveOnMountains
+	function BoardUtils.makeMoveLandableMatcher(pawn, pawnCheckType)
 		return BoardUtils.makeTerrainBasedMatcher(pawn, pawnCheckType, function(point)
-			return not BoardUtils.isPawnFlying(pawn) and Board:GetTerrain(point) == TERRAIN_HOLE
+			local terrain = Board:GetTerrain(point)
+			return (terrain == TERRAIN_HOLE and not BoardUtils.CanMoveOnHoles(pawn)) or
+					(BoardUtils.isLiquid(terrain) and not BoardUtils.CanMoveOnWater(pawn)) or
+					(terrain == TERRAIN_BUILDING and not BoardUtils.CanMoveOnBuildings(pawn)) or
+					(terrain == TERRAIN_MOUNTAIN and not BoardUtils.CanMoveOnMountains(pawn))
 		end)
 	end
 
-	--pawnCheckType "none", "default", "any"
-	function BoardUtils.makeGenericMatcher(pawn, pawnCheckType)
+	-- pawnCheckType "none", "default", "any"
+	-- Normal move path through spaces: respects CanMoveThroughHoles/CanMoveThroughWater/
+	-- CanMoveThroughBuildings/CanMoveThroughMountains (which each respect the *CanMoveOn* 
+	-- versions)
+	function BoardUtils.makeMovePassableMatcher(pawn, pawnCheckType)
 		return BoardUtils.makeTerrainBasedMatcher(pawn, pawnCheckType, function(point)
 			local terrain = Board:GetTerrain(point)
-			return (not BoardUtils.isPawnFlying(pawn) and terrain == TERRAIN_HOLE) or
-				   (not pawn:IsMassive() and terrain == TERRAIN_WATER) or
-					terrain == TERRAIN_BUILDING or terrain == TERRAIN_MOUNTAIN
+			return (terrain == TERRAIN_HOLE and not BoardUtils.CanMoveThroughHoles(pawn)) or
+					(BoardUtils.isLiquid(terrain) and not BoardUtils.CanMoveThroughWater(pawn)) or
+					(terrain == TERRAIN_BUILDING and not BoardUtils.CanMoveThroughBuildings(pawn)) or
+					(terrain == TERRAIN_MOUNTAIN and not BoardUtils.CanMoveThroughMountains(pawn))
 		end)
+	end
+
+	function BoardUtils.clearMoveCaches()
+		BoardUtils.movePathCache = {}
+		BoardUtils.reachableCache = {}
+	end
+
+	-- Cache key has many parts in case it modifies and is called multiple times in a build
+	function BoardUtils.makeMoveCacheKey(pawnId, startHash, extraHash, passThroughMode)
+		return pawnId .. ":" .. startHash .. ":" .. extraHash .. ":" .. (passThroughMode or "default")
+	end
+
+	function BoardUtils.hashesToPointList(hashes, asPointList)
+		if asPointList == false then
+			local path = {}
+			for _, hash in ipairs(hashes) do
+				local x, y = BoardUtils.unhashSpace(hash)
+				table.insert(path, Point(x, y))
+			end
+			return path
+		end
+		local points = PointList()
+		for _, hash in ipairs(hashes) do
+			local x, y = BoardUtils.unhashSpace(hash)
+			points:push_back(Point(x, y))
+		end
+		return points
+	end
+
+	function BoardUtils.pointListToHashes(pointList)
+		local hashes = {}
+		for idx = 1, pointList:size() do
+			table.insert(hashes, BoardUtils.getSpaceHash(pointList:index(idx)))
+		end
+		return hashes
 	end
 
 	function BoardUtils.getReachableInRange(reachable, range, start, predicatePassable, predicateStoppable)
@@ -252,7 +416,29 @@ if isNewestVersion then
 		end
 	end
 
-	function BoardUtils.findBfsPath(p1, p2, predicate, asPointList)
+	-- Cached wrapper around getReachableInRange using standard move matchers.
+	function BoardUtils.getMoveReachableInRange(pawn, range, start, passThroughMode)
+		passThroughMode = passThroughMode or "default"
+		local cacheKey = BoardUtils.makeMoveCacheKey(
+				pawn:GetId(),
+				BoardUtils.getSpaceHash(start),
+				range,
+				passThroughMode)
+		local cached = BoardUtils.reachableCache[cacheKey]
+		if cached then
+			return BoardUtils.hashesToPointList(cached, true)
+		end
+
+		local reachable = PointList()
+		BoardUtils.getReachableInRange(reachable, range, start,
+				BoardUtils.makeMovePassableMatcher(pawn, passThroughMode),
+				BoardUtils.makeMoveLandableMatcher(pawn, "any"))
+		BoardUtils.reachableCache[cacheKey] = BoardUtils.pointListToHashes(reachable)
+		return BoardUtils.hashesToPointList(BoardUtils.reachableCache[cacheKey], true)
+	end
+
+	function BoardUtils.findBfsPath(p1, p2, predicatePassable, predicateStoppable, asPointList)
+		local size = 8
 		local queue = {p1}
 		local head = 1
 
@@ -274,7 +460,7 @@ if isNewestVersion then
 					k = cameFrom[k]
 				end
 				if asPointList then
-					pointsPath = PointList()
+					local pointsPath = PointList()
 					for _, point in ipairs(path) do
 						pointsPath:push_back(point)
 					end
@@ -285,15 +471,57 @@ if isNewestVersion then
 
 			for idx = 0, 3 do
 				local adj = cur + DIR_VECTORS[idx]
-				local h = BoardUtils.getSpaceHash(adj)
-				-- only walk tiles if there is no subset or that exist in the subset
-				if (not predicate or predicate(adj, h)) and cameFrom[h] == nil then
-					cameFrom[h] = BoardUtils.getSpaceHash(cur)
-					table.insert(queue, adj)
+
+				if adj.x >= 0 and adj.x < size and adj.y >= 0 and adj.y < size then
+					local h = BoardUtils.getSpaceHash(adj)
+					if cameFrom[h] == nil then
+						-- Same rules as getReachableInRange: passable for traversal,
+						-- and destination must also be landable.
+						local canTraverse = not predicatePassable or predicatePassable(adj, h)
+						if adj == p2 then
+							canTraverse = canTraverse
+									and (not predicateStoppable or predicateStoppable(adj, h))
+						end
+						if canTraverse then
+							cameFrom[h] = BoardUtils.getSpaceHash(cur)
+							table.insert(queue, adj)
+						end
+					end
 				end
 			end
 		end
 		return nil
+	end
+
+	-- BFS move path using the same passable/landable matchers as getReachableInRange.
+	function BoardUtils.findMovePath(pawn, p1, p2, passThroughMode, asPointList)
+		passThroughMode = passThroughMode or "default"
+		local cacheKey = BoardUtils.makeMoveCacheKey(
+				pawn:GetId(),
+				BoardUtils.getSpaceHash(p1),
+				BoardUtils.getSpaceHash(p2),
+				passThroughMode)
+		local cached = BoardUtils.movePathCache[cacheKey]
+		if cached ~= nil then
+			if cached == BoardUtils.NO_PATH then
+				return nil
+			end
+			return BoardUtils.hashesToPointList(cached, asPointList)
+		end
+
+		local path = BoardUtils.findBfsPath(p1, p2,
+				BoardUtils.makeMovePassableMatcher(pawn, passThroughMode),
+				BoardUtils.makeMoveLandableMatcher(pawn, "any"),
+				true)
+		if path then
+			BoardUtils.movePathCache[cacheKey] = BoardUtils.pointListToHashes(path)
+		else
+			BoardUtils.movePathCache[cacheKey] = BoardUtils.NO_PATH
+		end
+		if BoardUtils.movePathCache[cacheKey] == BoardUtils.NO_PATH then
+			return nil
+		end
+		return BoardUtils.hashesToPointList(BoardUtils.movePathCache[cacheKey], asPointList)
 	end
 
 	function BoardUtils.getSpaceHash(spaceOrX, y)
@@ -348,6 +576,53 @@ if isNewestVersion then
 		BoardUtils.lastActed = nil
 	end
 
+	local function startsWith(str, prefix)
+		return string.sub(str, 1, #prefix) == prefix
+	end
+
+	-- Custom tiles that are not cosmetic ground overlays. Spawn logic treats
+	-- these as unsafe. Mirrors WorldBuilders Shift's unallowed terrain swaps,
+	-- plus mission tiles such as train rails.
+	BoardUtils.UNSAFE_CUSTOM_TILE_PREFIXES = {
+		-- Vanilla missions
+		"ground_rail",          -- train / armored train tracks
+		"square_missilesilo",   -- satellite silos
+		"supervolcano",         -- final island volcano
+		"tele_",                -- teleporter pads
+		"conveyor",             -- conveyor belts
+		-- Into the Wild
+		"lmn_ground_geyser",
+		"lmn_ground_volcanic_vent",
+		-- Nautilus
+		"ground_buried_s",
+		"ground_buried_f",
+		"ground_mineral",
+		-- Far Line
+		"tosx_whirlpool",
+		"tosx_vent_",
+		-- Vertex
+		"tosx_evacsite",
+	}
+
+	function BoardUtils.isUnallowedCustomTerrain(customTile)
+		if customTile == nil or customTile == "" then
+			return false
+		end
+		for _, prefix in ipairs(BoardUtils.UNSAFE_CUSTOM_TILE_PREFIXES) do
+			if startsWith(customTile, prefix) then
+				return true
+			end
+		end
+		return false
+	end
+
+	function BoardUtils.isSafeCustomTile(point)
+		if not Board:IsValid(point) then
+			return false
+		end
+		return not BoardUtils.isUnallowedCustomTerrain(Board:GetCustomTile(point))
+	end
+
 	function BoardUtils.addCancelEffect(p, effect)
 		local smoked = Board:IsSmoke(p)
 		if not smoked then
@@ -376,6 +651,12 @@ if isNewestVersion then
 			return false
 		end
 		if Board:IsPawnSpace(point) then
+			return false
+		end
+		if Board:IsItem(point) then
+			return false
+		end
+		if not BoardUtils.isSafeCustomTile(point) then
 			return false
 		end
 		if pathing and Board:IsBlocked(point, pathing) then
@@ -422,6 +703,19 @@ if isNewestVersion then
 	function BoardUtils:finalizeInit()
 		modapiext.events.onPawnUndoMove:subscribe(function(mission, pawn, undonePosition)
 			BoardUtils.clearHijackedPath()
+			BoardUtils.clearMoveCaches()
+		end)
+
+		modapiext.events.onPawnPositionChanged:subscribe(function()
+			BoardUtils.clearMoveCaches()
+		end)
+
+		modApi.events.onMissionStart:subscribe(function()
+			BoardUtils.clearMoveCaches()
+		end)
+
+		modApi.events.onMissionEnd:subscribe(function()
+			BoardUtils.clearMoveCaches()
 		end)
 
 		-- Setup last acted pawn tracking

@@ -65,11 +65,18 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 				logger.logDebug(SUBMODULE, "Pawn %d moving to %s adjacent to building, will add shield",
 						pawnId, p2:GetString())
 
+				more_plus.libs.weaponPreview.ExecuteWithState(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
+					function()
+						more_plus.libs.weaponPreview:AddAnimation(p2, more_plus.commonIcons.shield.key, nil,  -- delay
+							more_plus.WEAPON_PREVIEW_GROUP_ID, GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
+					end, pawnId
+				)
+
 				local shieldDamage = SpaceDamage(p2, 0)
-				shieldDamage.iShield = EFFECT_CREATE
 				shieldDamage.sScript = string.format([[
-						GAME.more_plus.urban.shielded_by_effect[%d] = true]],
-						pawnId)
+						local pawnId = %d
+						GAME.more_plus.urban.shielded_by_effect[pawnId] = true
+						Board:GetPawn(pawnId):SetShield(true)]], pawnId)
 				skillEffect:AddDamage(shieldDamage)
 			else
 				logger.logDebug(SUBMODULE, "No shield - not adjacent to building or already shielded")

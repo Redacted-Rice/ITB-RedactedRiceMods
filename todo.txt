@@ -74,7 +74,9 @@ None
 LegendaryLvlUpSkills:
 
 1.0 (v1.10)
-	Planned out. To start work later
+1. Test crsuher with already cracked tiles
+2. Crusher icons for movement? What about other skills?
+3. Comeback (and ace and others) on final mission?
 
 
 ------------------------------------------------------------------------------

@@ -53,20 +53,22 @@ function customSkill:setupEffect()
 	table.insert(customSkill.events, modApi.events.onNextTurn:subscribe(resetBoostTracking))
 end
 
-function customSkill:momentumTriggered(pawnId, p1, p2, effect)
+function customSkill:momentumTriggered(pawnId, p1, p2, effect, builtEffect)
 	local pawn = Board:GetPawn(pawnId)
 	local distance = 0
 	local pathSource = "unknown"
+	local boardUtils = more_plus.libs.boardUtils
+	builtEffect = builtEffect or effect
 
-	-- For jumpers and teleporters always use manhattan distance
-	if pawn:IsJumper() or pawn:IsTeleporter() then
+	-- Leap, charge, and teleport use manhattan distance
+	if boardUtils.skillEffectUsesPointToPointMovement(builtEffect) then
 		distance = math.abs(p2.x - p1.x) + math.abs(p2.y - p1.y)
 		pathSource = "manhattan"
 	else
 		local path = nil
 
 		-- Check if there's a hijacked path and use it if so
-		path = more_plus.libs.boardUtils.getHijackedPath()
+		path = boardUtils.getHijackedPath()
 		if path then
 			pathSource = "hijacked"
 		else
@@ -105,10 +107,9 @@ function customSkill.checkMove(mission, pawn, weaponId, p1, p2, skillEffect)
 			if not customSkill.reentrant then
 				logger.logDebug(SUBMODULE, "First calculation pass, will recalculate pathing", pawn:GetId())
 				customSkill.reentrant = true
-				-- Ensure the skill is calculated. We actually don't care about the
-				-- return value as we use global type variables to check
-				Move:GetSkillEffect(p1, p2)
-				customSkill:momentumTriggered(pawn:GetId(), p1, p2, skillEffect)
+				-- Recalculate so hijacked paths and skill-granted movement are resolved
+				local builtEffect = Move:GetSkillEffect(p1, p2)
+				customSkill:momentumTriggered(pawn:GetId(), p1, p2, skillEffect, builtEffect)
 				customSkill.reentrant = false
 			else
 				logger.logDebug(SUBMODULE, "Second calculation pass - skipping logic", pawn:GetId())
