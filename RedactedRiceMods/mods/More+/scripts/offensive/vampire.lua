@@ -42,11 +42,12 @@ local function wouldKillTarget(attackingPawn, targetPawn, damage)
 end
 
 function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage, indexes, targetPawn)
+	local incomingDamage = spaceDamage.iDamage
 	if source ~= self.SOURCE_ATTACKER or not targetPawn or not targetPawn:IsEnemy() or
-			not (spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO) then
+			incomingDamage == DAMAGE_ZERO or not (incomingDamage == DAMAGE_DEATH or incomingDamage > 0) then
 		return
 	end
-	if not wouldKillTarget(attackingPawn, targetPawn, spaceDamage.iDamage) then
+	if not wouldKillTarget(attackingPawn, targetPawn, incomingDamage) then
 		return
 	end
 
