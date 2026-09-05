@@ -59,7 +59,7 @@ Priority guidance (lower runs first):
 
 local VERSION = "1.0.0"
 
-local DEBUG = true
+local DEBUG = false
 
 local DEFAULT_PRIORITY = 100
 local INTERNAL_PRIORITY = 0

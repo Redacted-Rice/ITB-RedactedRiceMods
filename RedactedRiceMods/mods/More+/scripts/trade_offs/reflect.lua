@@ -17,7 +17,7 @@ local SUBMODULE = logger.register("More+", "Reflect", customSkill.DEBUG)
 more_plus:addCustomTraitIcon(customSkill)
 
 -- Track reflects by attacker pawn ID
-customSkill.pendingReflects = {} -- [attackerPawnId] = {totalDamage, hasInstakill, reflectorId}
+customSkill.pendingReflects = {} -- [attackerPawnId] = {totalDamage, reflectorId}
 customSkill.reflectorPawns = {} -- Set of pawn IDs that are reflecting
 
 -- Boost needs to be manually handled since its added after by the game
@@ -55,8 +55,9 @@ end
 
 function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage, indexes, targetPawn)
 	-- Check if this is damage from an enemy to a mech
+	local incomingDamage = spaceDamage.iDamage
 	if source ~= self.SOURCE_TARGET or not attackingPawn or not attackingPawn:IsEnemy() or
-			not (spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO) then
+			incomingDamage == DAMAGE_ZERO or not (incomingDamage == DAMAGE_DEATH or incomingDamage > 0) then
 		return
 	end
 
@@ -74,14 +75,13 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 		self.pendingReflects[attackerId] = {
 			attackerId = attackerId,
 			totalDamage = 0,
-			hasInstakill = false,
 			reflectorId = reflectorId,
 		}
 	end
 
 	if reflectDamage == DAMAGE_DEATH then
-		self.pendingReflects[attackerId].hasInstakill = true
-	else
+		self.pendingReflects[attackerId].totalDamage = DAMAGE_DEATH
+	elseif self.pendingReflects[attackerId].totalDamage ~= DAMAGE_DEATH then
 		self.pendingReflects[attackerId].totalDamage =
 				self.pendingReflects[attackerId].totalDamage + reflectDamage
 	end
@@ -157,7 +157,7 @@ function customSkill:SkillEffectEvaluated(phase)
 
 			logger.logDebug(SUBMODULE, "Queued reflect damage to attacker %d at %s via reflector %d (damage: %s)",
 					attackerId, currentLoc:GetString(), reflectData.reflectorId,
-					tostring(reflectData.totalDamage))
+					reflectData.totalDamage == DAMAGE_DEATH and "DEATH" or tostring(reflectData.totalDamage))
 		else
 			logger.logWarn(SUBMODULE, "Attacker pawn %d not found when applying reflect", attackerId)
 		end
