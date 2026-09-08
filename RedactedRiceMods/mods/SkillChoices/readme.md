@@ -15,7 +15,20 @@ Please enjoy and contact us if you run into any issues!
 - Skill buttons show the short name. Hover to see full name and description
 
 # Releases
-Latest release: 1.0.1
+Latest release: 1.1.0
+
+## 1.1.0
+Released: 9/XX/2026
+
+compatible with:
+* ItB AE        1.2.93
+* ModLoader     2.9.5
+* memhack       1.4.0
+* CPLUS+        1.4.0
+
+### Notes
+* Added support for releveling pilots (e.g. cyborgs) keeping their chosen skills instead of allowing them to be reselected
+* Fixed per run skill handling when using skill choices
 
 ## 1.0.1
 Released: 7/16/2026

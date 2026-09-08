@@ -21,7 +21,20 @@ Please enjoy and contact us if you run into any issues.
 * Invulnerable is not very applicable in mission and easily forgotten. This makes it more in mission applicable
 
 # Releases
-Latest release: 1.1.0
+Latest release: 1.1.1
+
+## 1.1.1
+Released: 9/XX/2026
+
+compatible with:
+* ItB AE 	1.2.93
+* ModLoader 2.9.5
+* memhack	1.4.0
+* CPLUS+ Ex	1.4.0
+
+### Notes
+* Added Revive group exclusion for Invulnerable+
+* Reset Invulnerable+ tracking on final mission's second stage
 
 ## 1.1.0
 Released: 6/11/2026

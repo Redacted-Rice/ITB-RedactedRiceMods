@@ -21,7 +21,14 @@ Released: 05/04/2026
 * Brought in from Lemonymous' repo and enhanced to support two click weapons and mutli shot effects
 
 ## BoardUtils
-Current Release: 1.7.0
+Current Release: 1.8.0
+
+### 1.8.0
+Released: 9/XX/2026
+
+* Added path caching for move previews and reachable tiles
+* Unified terrain movement helpers with makeAllowIf and makeAllowIfHasSkill
+* Added isPawnFlying and isPawnHijackedFlying helpers
 
 ### 1.7.0
 Released: 7/16/2026
@@ -62,6 +69,15 @@ Released: 03/28/2026
 Released: 01/10/2026
 
 Initial release to keep in sync with other libs
+
+## DamageModifierLib
+Current Release: 1.0.0
+
+### 1.0.0
+Released: 9/XX/2026
+
+* Initial release for modifying weapon SpaceDamage during skill builds and deadly checks
+* Supports priority events, push/move tracking, and GetModifiedDamage helpers
 
 ## PassiveEffect
 Current Release: 2.0.0
