@@ -2,7 +2,7 @@
 local mod =  {
 	id = "redactedrice_libs",
 	name = "Redacted Rice Mods",
-	version = "1.8.1",
+	version = "1.9",
 	icon = "icon.png",
 	description = "A Collection of mods made by Redacted Rice",
 	submodFolders = {"mods/"},
@@ -14,8 +14,8 @@ local mod =  {
         modApiExt = "1.24",
         memedit = "1.2.1",
         easyEdit = "2.0.8",
-        redactedrice_memhack = "1.3.0",
-        redactedrice_cplus_plus = "1.3.1",
+        redactedrice_memhack = "1.4.0",
+        redactedrice_cplus_plus = "1.4.0",
     }
 }
 
