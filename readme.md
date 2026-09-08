@@ -16,17 +16,19 @@ Please enjoy and contact us if you run into any issues!
 * Moon Walkers - v1.0.0 - They seem so familiar... but backwards. Yin and Yang, push and pull, Rift Walkers and Moon Walkers. A somewhat joke squad build on the idea of Rift Walkers but backwards.
 * Star Wars - v1.0.3 - Play as your favorite iconic rebel starships and Luke to fight back against the evil vek empire. This squad can hit hard but has less board control options at the start. Luke can focus on the force to deal massive damage the next turn.
 * Treeherders - v3.1.3 - Inspired by ents, this squad focuses on using forests tiles to increase their power. The flagship entborg mech gets stronger as the forests get destroyed
-* WorldBuilders - v1.3.3 - This squad focuses on terrain manipulation to block and avoid damage. It has some strong single target effects but you can easily get overwhelmed by numbers if not strategically manipulating the terrain
+* WorldBuilders - v1.3.4 - This squad focuses on terrain manipulation to block and avoid damage. It has some strong single target effects but you can easily get overwhelmed by numbers if not strategically manipulating the terrain
 
 # Other
-* More+ - v2.2.1 - 35 custom pilot level up skills across 5 categories with Status Library integration
-* RebalanceCore+ - v1.1.0 - Reblances the core vanilla level up skills (other than reactor) so they are not strictly worse than the AE ones
+* More+ - v2.3.0 - 35 custom pilot level up skills across 5 categories with Status Library integration
+* Legendary+ - v1.0.0 - Rare, powerful pilot level up skills that appear less often and only in the second skill slot
+* RebalanceCore+ - v1.1.1 - Reblances the core vanilla level up skills (other than reactor) so they are not strictly worse than the AE ones
 * Pilots+ - v1.0.1 - A few pilots focused around adding bonus level up skills beyond the standard two per pilot on level up
-* SkillChoices - v1.0.1 - Allows for selecting between a configurable amount of pilot level up skills on leveling up pilots
+* SkillChoices - v1.1.0 - Allows for selecting between a configurable amount of pilot level up skills on leveling up pilots
 
 # Libs
 * ArtilleryArc - v2.0.0 - Originally created by Lemonymous to customize aritllery height. Updated to handle multishot arcs and two click weapons
-* BoardUtils - v1.7.0 - Board related functions and pathing
+* BoardUtils - v1.8.0 - Board related functions and pathing
+* DamageModifierLib - v1.0.0 - Modify weapon SpaceDamage during skill builds and deadly checks
 * PassiveEffect - v2.0.0 - Helps with adding passive weapons to the game. This will handle automatically detecting if the weapon is powered and only call hooks when it is
 * PawnTypeUtils - v1.1.1 - Functions to allow determining more detailed pawn types (using EasyEdit)
 * PredictableRandom - v1.3.0 - Get random numbers in a way that is repeatable for when undoing moves or resetting turns
@@ -44,7 +46,54 @@ Please enjoy and contact us if you run into any issues!
 To uninstall, delete the folder in mods
 
 # Releases
-Latest release: 1.8.1
+Latest release: 1.9
+
+## 1.9
+* Initial release of Legendary+ with 10 rare pilot level up skills
+* More+ reworked to use DamageModifierLib for damage related skills
+* Skill Choices updated for releveling pilots and per run skill handling
+* WorldBuilders movement weapons updated to use BoardUtils pathing
+* Invulnerable+ revive group exclusion and multi phase mission reset fix
+* BoardUtils path caching and unified terrain movement helpers
+* DamageModifierLib added for modifying weapon damage during skill builds
+* TutorialTips code updated to match 1.5.0 release
+
+Released: 9/XX/2026
+
+Squads:
+* Moon Walkers  1.0.0
+* Star Wars     1.0.3
+* Treeherders   3.1.3
+* WorldBuilders 1.3.4
+
+Other Mods:
+* More+          2.3.0
+* Legendary+     1.0.0
+* RebalanceCore+ 1.1.1
+* Pilots+        1.0.1
+* Skill Choices  1.1.0
+
+Libs:
+* ArtilleryArc       2.0.0
+* BoardUtils         1.8.0
+* DamageModifierLib  1.0.0
+* PassiveEffect      2.0.0
+* PawnTypeUtils      1.1.1
+* PredictableRandom  1.3.0
+* Trait              3.0.1
+* TraitReplace       0.9.2
+* TutorialTips       1.5.0
+* WeaponArmed        2.1.0
+* WeaponPreview      4.1.0
+
+Dependencies:
+* ItB AE        1.2.93
+* ModLoader     2.9.5
+* ModLoaderExt  1.24
+* Memedit       1.2.1
+* EasyEdit	    2.0.8
+* Memhack       1.4.0
+* CPLUS+ Ex     1.4.0
 
 ## 1.8.1
 * Added skill exclusions for chess pawns

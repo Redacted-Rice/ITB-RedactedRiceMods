@@ -40,9 +40,9 @@ legendary_plus.commonIcons = {
 }
 
 legendary_plus.DISABLED_BY_DEFAULT = {
-	"RrGridHero",
 	"RrComeback",
-	"RrJuggernaut",
+	"RrGridHero",
+	"RrMedic",
 }
 
 function legendary_plus:addCommonCustomImages()

@@ -16,7 +16,20 @@ Please enjoy and contact us if you run into any issues!
 3. When you use mold with acid, damage on second effect will show base damage on the space but will show right damage on pawn itself. This seems to be just related to how ItB handles damage and acid and throws
 
 # Releases
-Latest release: 1.3.3
+Latest release: 1.3.4
+
+## 1.3.4
+Released: 9/XX/2026
+
+compatible with:
+* ItB AE        1.2.93
+* ModLoader     2.9.5
+* ModLoaderExt  1.24
+* Memedit       1.2.1
+
+### Notes
+* Updated move and shift weapons to use BoardUtils pathing
+* Removed shadow from shaper no shadow sprite
 
 ## 1.3.3
 Released: 6/11/2026

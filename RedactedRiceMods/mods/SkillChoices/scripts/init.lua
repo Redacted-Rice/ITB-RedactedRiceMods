@@ -2,13 +2,13 @@ local mod = {
 	id = "redactedrice_SkillChoices",
 	name = "Skill Choices",
 	icon = "mod_icon.png",
-	version = "1.0.1",
+	version = "1.1.0",
 	modApiVersion = "2.9.5",
 	gameVersion = "1.2.93",
 	description = "Choose pilot level up skills from a configurable sized list of options when a pilot levels up.",
 	dependencies = {
-		redactedrice_memhack = "1.3.0",
-		redactedrice_cplus_plus = "1.3.1",
+		redactedrice_memhack = "1.4.0",
+		redactedrice_cplus_plus = "1.4.0",
 	},
 }
 

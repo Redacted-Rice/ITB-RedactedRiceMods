@@ -2,12 +2,12 @@ local mod = {
 	id = "redactedrice_RebalCorePlus",
 	name = "Rebalanced Core Lvl Up Skills",
 	icon = "mod_icon.png",
-	version = "1.1.0",
+	version = "1.1.1",
 	modApiVersion = "2.9.5",
 	gameVersion = "1.2.93",
 	dependencies = {
-        redactedrice_cplus_plus = "1.2.0",
-        redactedrice_memhack = "1.2.0",
+        redactedrice_cplus_plus = "1.4.0",
+        redactedrice_memhack = "1.4.0",
     }
 }
 

@@ -58,3 +58,19 @@ Please enjoy and contact us if you run into any issues.
 * **Medic** - When moving, drop a repair pad at your origin on turn end
 * **Phoenix** - Once per mission, revive with 1 HP at the start of the next turn (or mission end)
 * **Trapper** - When moving, drop an exploding mine at your origin on turn end
+
+# Releases
+Latest release: 1.0.0
+
+## 1.0.0
+Released: 9/XX/2026
+
+compatible with:
+* ItB AE 	1.2.93
+* ModLoader 2.9.5
+* memhack	1.4.0
+* CPLUS+ Ex	1.4.0
+
+### Notes
+* Initial release with 10 rare pilot level up skills
+* Skills default to second slot only, once per run, at half weight
