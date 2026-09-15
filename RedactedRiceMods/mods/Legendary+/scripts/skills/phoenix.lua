@@ -120,29 +120,33 @@ function customSkill.revivePending()
 		local pawn = Board:GetPawn(pawnId)
 		if pawn then
 			if not pawn:IsDead() then
-				logger.logDebug(SUBMODULE, "Phoenix pawn %d is already alive, skipping revive", pawnId)
+				logger.logDebug(SUBMODULE, "Phoenix pawn %d is already alive (%d HP), skipping revive", pawnId, pawn:GetHealth())
 			else
 				local pawnSpace = pawn:GetSpace()
 
+				-- Healing + shield in same effect doesn't
+				-- work for some reason. Heal first, then add
+				-- shield as separate effects and its fine
+				
 				-- Revive to 1 HP, clear fire/acid
 				local repairDamage = SpaceDamage(pawnSpace, -1)
 				repairDamage.iFire = EFFECT_REMOVE
 				repairDamage.iAcid = EFFECT_REMOVE
 				repairDamage.iFrozen = EFFECT_REMOVE
-				-- iShield doesn't seem to work here
 				--repairDamage.iShield = EFFECT_CREATE
 				repairDamage.sScript = string.format([[
 					local pawn = Board:GetPawn(%d)
 					if pawn then
 						pawn:SetBoosted(true)
-						modApi:runLater(function()
-							pawn:SetShield(true)
-						end)
 					end
 					Board:AddAlert(%s, "PHOENIX")
 					Board:Ping(%s, GL_Color(255, 180, 60))
 				]], pawnId, pawnSpace:GetString(), pawnSpace:GetString())
 				Board:AddEffect(repairDamage)
+
+				local shieldDamage = SpaceDamage(pawnSpace, -1)
+				shieldDamage.iShield = EFFECT_CREATE
+				Board:AddEffect(shieldDamage)
 
 				GAME.legendary_plus.phoenix.used_by_pawn[pawnId] = true
 				GAME.legendary_plus.phoenix.buffed_by_pawn[pawnId] = true
