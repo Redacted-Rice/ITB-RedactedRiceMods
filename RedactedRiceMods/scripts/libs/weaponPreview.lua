@@ -38,9 +38,11 @@ local VERSION = "4.1.1"
 --      :ClearMarks()
 --      :SetLooping(flag)
 --
---  alwaysShow (optional bool on mark methods above): if true, that queued mark
---  stays visible without hovering the pawn (default false = existing hover 
---  only behavior).
+--  Queued marks are stored by attacker pawn id. They fully display while
+--  hovering that attacker, or while hovering any tile that has one of that
+--  attack's marks (e.g. the attack target). alwaysShow (optional bool on mark
+--  methods above): if true, that queued mark stays visible without hover
+--  (default false).
 --
 --  The following methods can be used at any time to gain information
 --  about what is being currently previewed.
@@ -637,8 +639,8 @@ end
 -- Consolidate grouped animations - add individual or multi-icon marks as appropriate
 -- This function ONLY processes animations that were added with a groupId parameter.
 -- Normal animations (without groupId) are added directly to marks and bypass this entirely.
--- Pending groups are stored on the marks table itself so queued builds for different
--- pawns cannot steal each other's icons on the first hover/consolidate.
+-- Pending groups live on the marks table (keyed by attacker for queued display) and
+-- combine by space (locHash) within that list — not by which skill wrote them.
 local function consolidateGroupedAnimations(marks, state)
 	local pending = marks and marks._pendingGroups
 	if not pending then
@@ -794,6 +796,8 @@ local function executeWithState(newPreviewState, fn, queuedPawnId)
 	end
 
 	-- Already inside a matching GetSkillEffect capture - keep writing to that list.
+	-- Do not consolidate here. Pending groups accumulate by locHash so multiple
+	-- icons on the same tile can merge into one multi-icon.
 	if previewState == newPreviewState
 			and (previewState == STATE_QUEUED_SKILL or previewState == STATE_QUEUED_FINAL_EFFECT) then
 		local captureState = previewState
@@ -806,7 +810,9 @@ local function executeWithState(newPreviewState, fn, queuedPawnId)
 				end
 				queuedPreviewMarks[captureState][queuedPawnId] = writeList
 			end
-			consolidateGroupedAnimations(writeList, captureState)
+			wpLog("queued write (capture) state=%s pawn=%s pending=%s marks=%d",
+					tostring(captureState), tostring(queuedPawnId),
+					tostring(writeList._pendingGroups ~= nil), #writeList)
 			return
 		end
 	end
@@ -826,8 +832,9 @@ local function executeWithState(newPreviewState, fn, queuedPawnId)
 	local prevState = previewState
 	previewState = newPreviewState
 
-	-- Queued overlays must key by the attacker (queued pawn). Mid capture we
-	-- write into the active GetSkillEffect list. Otherwise only into queuedPawnId.
+	-- Queued overlays key by attacker for hover display. Within that list,
+	-- grouped icons combine by space so multiple sources on the same tile
+	-- will still group together
 	local writeList = nil
 	if isQueuedState then
 		if prevState == newPreviewState and previewMarks[newPreviewState] then
@@ -850,11 +857,9 @@ local function executeWithState(newPreviewState, fn, queuedPawnId)
 		queuedPreviewMarks[previewState][queuedPawnId] = writeList
 	end
 
-	-- Flush grouped pending into this pawn's mark list immediately so a later
-	-- display pass for another pawn cannot steal these icons.
-	consolidateGroupedAnimations(activeList, newPreviewState)
-	wpLog("queued write state=%s pawn=%s marks=%d",
-			tostring(newPreviewState), tostring(queuedPawnId), #(activeList or {}))
+	wpLog("queued write state=%s pawn=%s pending=%s marks=%d",
+			tostring(newPreviewState), tostring(queuedPawnId),
+			tostring(activeList and activeList._pendingGroups ~= nil), #(activeList or {}))
 
 	previewState = prevState
 end
@@ -1375,6 +1380,42 @@ local function onMissionUpdate()
 		end
 	end
 
+	local function getMarkLoc(mark)
+		if not mark or not mark.data or not mark.data[1] then
+			return nil
+		end
+		local d = mark.data[1]
+		-- MarkSpaceDamage stores a SpaceDamage copy; most others store a Point
+		if type(d) == "userdata" and d.loc then
+			return d.loc
+		end
+		return d
+	end
+
+	-- True if this attack's mark list paints the highlighted tile (target hover).
+	local function markListTouchesPoint(marks, point)
+		if not marks or not point or point == OUT_OF_BOUNDS then
+			return false
+		end
+		for _, mark in ipairs(marks) do
+			local loc = getMarkLoc(mark)
+			if loc and loc == point then
+				return true
+			end
+		end
+		local pending = marks._pendingGroups
+		if pending then
+			for _, locations in pairs(pending) do
+				for _, data in pairs(locations) do
+					if data.loc and data.loc == point then
+						return true
+					end
+				end
+			end
+		end
+		return false
+	end
+
 	local function displayQueuedMarks(state, marker)
 		local pawnMarks = queuedPreviewMarks[state]
 		if not pawnMarks then
@@ -1382,25 +1423,33 @@ local function onMissionUpdate()
 		end
 
 		local displayed = false
+		local drawn = {}
 		for pawnId, marks in pairs(pawnMarks) do
-			consolidateGroupedAnimations(marks, state)
-			local isHovered = marker:isActive() and pawnId == marker.pawnId
-			if isHovered then
-				wpLog("queued display pawn=%s marks=%d", tostring(pawnId), #marks)
-				markSpaces(marks, marker.ticker)
-				checkAndShowFirstTimeNotifications(marks, highlighted)
-				displayed = true
-			else
-				local hasAlwaysShow = false
-				for _, mark in ipairs(marks) do
-					if mark.alwaysShow then
-						hasAlwaysShow = true
-						break
-					end
-				end
-				if hasAlwaysShow then
-					markSpaces(marks, marker.ticker, function(m) return m.alwaysShow end)
+			if marks and not drawn[marks] then
+				consolidateGroupedAnimations(marks, state)
+				local isSourceHovered = marker:isActive() and pawnId == marker.pawnId
+				local isTargetHovered = markListTouchesPoint(marks, highlighted)
+				if isSourceHovered or isTargetHovered then
+					wpLog("queued display pawn=%s source=%s target=%s marks=%d",
+							tostring(pawnId), tostring(isSourceHovered),
+							tostring(isTargetHovered), #marks)
+					markSpaces(marks, marker.ticker)
+					checkAndShowFirstTimeNotifications(marks, highlighted)
+					drawn[marks] = true
 					displayed = true
+				else
+					local hasAlwaysShow = false
+					for _, mark in ipairs(marks) do
+						if mark.alwaysShow then
+							hasAlwaysShow = true
+							break
+						end
+					end
+					if hasAlwaysShow then
+						markSpaces(marks, marker.ticker, function(m) return m.alwaysShow end)
+						drawn[marks] = true
+						displayed = true
+					end
 				end
 			end
 		end
