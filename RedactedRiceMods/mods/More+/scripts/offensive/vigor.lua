@@ -19,7 +19,7 @@ local SUBMODULE = logger.register("More+", "Vigor", customSkill.DEBUG)
 more_plus:addCustomTraitIcon(customSkill)
 
 function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage, indexes, targetPawn)
-	if source ~= self.SOURCE_TARGET or spaceDamage.iDamage >= 0 or
+	if source ~= self.SOURCE_TARGET or not attackingPawn or spaceDamage.iDamage >= 0 or
 			spaceDamage.iDamage == DAMAGE_ZERO or spaceDamage.iDamage == DAMAGE_DEATH then
 		return
 	end
@@ -36,7 +36,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 		function()
 			more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc, more_plus.commonIcons.boost.key, nil,  -- delay
 					more_plus.WEAPON_PREVIEW_GROUP_ID, GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
-		end, targetId
+		end, attackingPawn:GetId()
 	)
 	spaceDamage.sScript = spaceDamage.sScript .. string.format(
 			"modApi:runLater(function() Board:GetPawn(%d):SetBoosted(true) end)", targetId)
