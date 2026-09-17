@@ -77,6 +77,21 @@ local VERSION = "4.1.1"
 --
 ----------------------------------------------------------------------
 
+local WP_DEBUG = false
+local wpLogLast = nil
+local function wpLog(fmt, ...)
+	if not WP_DEBUG then
+		return
+	end
+	local msg = string.format(fmt, ...)
+	-- Skip duplicate logs for hot loops (i.e. on hover logs)
+	if msg == wpLogLast then
+		return
+	end
+	wpLogLast = msg
+	LOG("[WP] " .. msg)
+end
+
 
 if Assert.TypeGLColor == nil then
 	local function traceback()
@@ -122,7 +137,6 @@ local TOOLTIP_KEY_TEXT = "H"
 local DEFAULT_MULTI_ICON = nil  -- Will be initialized during finalizeInit
 local DEFAULT_MULTI_ICON_MARK_DATA = nil  -- Will be initialized after createAnim is available
 local groupRegistry = {}  -- Maps groupId -> {offset = Point, multiIcon = string, multiIconMarkData = {duration, delay, loop}, groupMultiIconKey = string}
-local pendingGroupAnimations = {}  -- Tracks animations by group: [state][groupId][loc_hash] = {loc, anims = {{anim, duration, delay, loop}, ...}}
 local animationDescriptions = {}  -- Maps anim name -> description string
 
 -- Track state for tooltip key display
@@ -373,25 +387,26 @@ local function addAnimation(self, p, anim, delay, groupId, description, alwaysSh
 		delay = nil
 	end
 
-	-- Track grouped animations for consolidation
+	-- Track grouped animations for consolidation on this marks list only
 	if groupId then
-		if not pendingGroupAnimations[previewState] then
-			pendingGroupAnimations[previewState] = {}
+		local marks = previewMarks[previewState]
+		if not marks._pendingGroups then
+			marks._pendingGroups = {}
 		end
-		if not pendingGroupAnimations[previewState][groupId] then
-			pendingGroupAnimations[previewState][groupId] = {}
+		if not marks._pendingGroups[groupId] then
+			marks._pendingGroups[groupId] = {}
 		end
 
 		local locHash = p.x * 10 + p.y
-		if not pendingGroupAnimations[previewState][groupId][locHash] then
-			pendingGroupAnimations[previewState][groupId][locHash] = {
+		if not marks._pendingGroups[groupId][locHash] then
+			marks._pendingGroups[groupId][locHash] = {
 				loc = Point(p),
 				anims = {}
 			}
 		end
 
 		-- Add animation to array with its mark data, storing the original animation name
-		table.insert(pendingGroupAnimations[previewState][groupId][locHash].anims, {
+		table.insert(marks._pendingGroups[groupId][locHash].anims, {
 			anim = anim,  -- Store the adjusted animation name with group offset
 			duration = duration,
 			delay = delay,
@@ -573,12 +588,10 @@ end
 local function clearMarks(state)
 	if state then
 		previewMarks[state] = {}
-		pendingGroupAnimations[state] = {}
 	else
 		for _, s in ipairs({STATE_TARGET_AREA, STATE_SECOND_TARGET_AREA, STATE_SKILL_EFFECT,
 				STATE_FINAL_EFFECT, STATE_QUEUED_SKILL, STATE_QUEUED_FINAL_EFFECT}) do
 			previewMarks[s] = {}
-			pendingGroupAnimations[s] = {}
 		end
 	end
 end
@@ -624,13 +637,16 @@ end
 -- Consolidate grouped animations - add individual or multi-icon marks as appropriate
 -- This function ONLY processes animations that were added with a groupId parameter.
 -- Normal animations (without groupId) are added directly to marks and bypass this entirely.
+-- Pending groups are stored on the marks table itself so queued builds for different
+-- pawns cannot steal each other's icons on the first hover/consolidate.
 local function consolidateGroupedAnimations(marks, state)
-	if not pendingGroupAnimations[state] then
+	local pending = marks and marks._pendingGroups
+	if not pending then
 		return
 	end
 
 	-- Process each group
-	for groupId, locations in pairs(pendingGroupAnimations[state]) do
+	for groupId, locations in pairs(pending) do
 		for locHash, data in pairs(locations) do
 			-- Consolidate if there are multiple icons
 			if #data.anims > 1 then
@@ -681,8 +697,8 @@ local function consolidateGroupedAnimations(marks, state)
 		end
 	end
 
-	-- Clear pending animations for this state after consolidation
-	pendingGroupAnimations[state] = nil
+	-- Clear pending animations for this marks list after consolidation
+	marks._pendingGroups = nil
 end
 
 local function setLooping(self, flag)
@@ -777,11 +793,28 @@ local function executeWithState(newPreviewState, fn, queuedPawnId)
 		return
 	end
 
-	-- If its a queued state, we need the queued pawn id arg and we need to make sure the
-	-- queued preview marks are set up for the pawn
-	if newPreviewState == STATE_QUEUED_SKILL or newPreviewState == STATE_QUEUED_FINAL_EFFECT then
+	-- Already inside a matching GetSkillEffect capture - keep writing to that list.
+	if previewState == newPreviewState
+			and (previewState == STATE_QUEUED_SKILL or previewState == STATE_QUEUED_FINAL_EFFECT) then
+		local captureState = previewState
+		local writeList = previewMarks[captureState]
+		if writeList then
+			fn()
+			if queuedPawnId then
+				if not queuedPreviewMarks[captureState] then
+					queuedPreviewMarks[captureState] = {}
+				end
+				queuedPreviewMarks[captureState][queuedPawnId] = writeList
+			end
+			consolidateGroupedAnimations(writeList, captureState)
+			return
+		end
+	end
+
+	local isQueuedState = newPreviewState == STATE_QUEUED_SKILL or newPreviewState == STATE_QUEUED_FINAL_EFFECT
+
+	if isQueuedState then
 		Assert.NotEquals('nil', type(queuedPawnId), "Argument #3 can't be nil if preview state is for queued skill")
-		-- Initialize queued marks structure if needed
 		if not queuedPreviewMarks[newPreviewState] then
 			queuedPreviewMarks[newPreviewState] = {}
 		end
@@ -790,16 +823,39 @@ local function executeWithState(newPreviewState, fn, queuedPawnId)
 		end
 	end
 
-	-- Set the state and call the fn
 	local prevState = previewState
 	previewState = newPreviewState
+
+	-- Queued overlays must key by the attacker (queued pawn). Mid capture we
+	-- write into the active GetSkillEffect list. Otherwise only into queuedPawnId.
+	local writeList = nil
+	if isQueuedState then
+		if prevState == newPreviewState and previewMarks[newPreviewState] then
+			writeList = previewMarks[newPreviewState]
+		else
+			writeList = queuedPreviewMarks[newPreviewState][queuedPawnId]
+		end
+		previewMarks[newPreviewState] = writeList
+	elseif not previewMarks[newPreviewState] then
+		previewMarks[newPreviewState] = {}
+	end
+
+	local activeList = writeList or previewMarks[newPreviewState]
+
 	fn()
 
-	-- If it was a queued skill, we need to reset the queued preview marks to match
-	if newPreviewState == STATE_QUEUED_SKILL or newPreviewState == STATE_QUEUED_FINAL_EFFECT then
-		queuedPreviewMarks[previewState][queuedPawnId] = previewMarks[previewState]
+	if isQueuedState then
+		-- Keep the list we opened. Do not reread previewMarks after fn.
+		-- (a nested build can retarget previewMarks).
+		queuedPreviewMarks[previewState][queuedPawnId] = writeList
 	end
-	-- Set the state back
+
+	-- Flush grouped pending into this pawn's mark list immediately so a later
+	-- display pass for another pawn cannot steal these icons.
+	consolidateGroupedAnimations(activeList, newPreviewState)
+	wpLog("queued write state=%s pawn=%s marks=%d",
+			tostring(newPreviewState), tostring(queuedPawnId), #(activeList or {}))
+
 	previewState = prevState
 end
 
@@ -1330,6 +1386,7 @@ local function onMissionUpdate()
 			consolidateGroupedAnimations(marks, state)
 			local isHovered = marker:isActive() and pawnId == marker.pawnId
 			if isHovered then
+				wpLog("queued display pawn=%s marks=%d", tostring(pawnId), #marks)
 				markSpaces(marks, marker.ticker)
 				checkAndShowFirstTimeNotifications(marks, highlighted)
 				displayed = true
