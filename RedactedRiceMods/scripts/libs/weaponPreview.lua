@@ -1,5 +1,5 @@
 
-local VERSION = "4.1.0"
+local VERSION = "4.1.1"
 ----------------------------------------------------------------------
 -- Weapon Preview - code library
 -- https://github.com/Lemonymous/ITB-LemonymousMods/wiki/weaponPreview
@@ -26,17 +26,21 @@ local VERSION = "4.1.0"
 --  and should be used if mark is dependent of target location.
 --
 --  methods:
---      :AddAnimation(point, animation, delay)
---      :AddColor(point, gl_color, duration)
---      :AddDamage(spaceDamage, duration)
+--      :AddAnimation(point, animation, delay, groupId, description, alwaysShow)
+--      :AddColor(point, gl_color, duration, alwaysShow)
+--      :AddDamage(spaceDamage, duration, alwaysShow)
 --      :AddDelay(duration)
---      :AddDesc(point, desc, flag, duration)
---      :AddEmitter(point, emitter, duration)
---      :AddFlashing(point, flag, duration)
---      :AddImage(point, path, gl_color, duration)
---      :AddSimpleColor(point, gl_color, duration)
+--      :AddDesc(point, desc, flag, duration, alwaysShow)
+--      :AddEmitter(point, emitter, duration, alwaysShow)
+--      :AddFlashing(point, flag, duration, alwaysShow)
+--      :AddImage(point, path, gl_color, duration, alwaysShow)
+--      :AddSimpleColor(point, gl_color, duration, alwaysShow)
 --      :ClearMarks()
 --      :SetLooping(flag)
+--
+--  alwaysShow (optional bool on mark methods above): if true, that queued mark
+--  stays visible without hovering the pawn (default false = existing hover 
+--  only behavior).
 --
 --  The following methods can be used at any time to gain information
 --  about what is being currently previewed.
@@ -319,7 +323,7 @@ local function getGroupMultiIcon(groupId)
 	return DEFAULT_MULTI_ICON
 end
 
-local function addAnimation(self, p, anim, delay, groupId, description)
+local function addAnimation(self, p, anim, delay, groupId, description, alwaysShow)
 	if isPreviewerUnavailable() then return end
 
 	Assert.TypePoint(p, "Argument #1")
@@ -327,6 +331,9 @@ local function addAnimation(self, p, anim, delay, groupId, description)
 	Assert.NotEquals('nil', type(ANIMS[anim]), "Argument #2")
 	Assert.Equals({'nil', 'string'}, type(groupId), "Argument #4 (groupId)")
 	Assert.Equals({'nil', 'string'}, type(description), "Argument #5 (description)")
+	Assert.Equals({'nil', 'boolean'}, type(alwaysShow), "Argument #6 (alwaysShow)")
+
+	alwaysShow = alwaysShow == true
 
 	-- Store the original animation name before any group modifications
 	local originalAnimName = anim
@@ -389,7 +396,8 @@ local function addAnimation(self, p, anim, delay, groupId, description)
 			duration = duration,
 			delay = delay,
 			loop = base.Loop,
-			originalAnim = originalAnimName  -- Store original anim name for description lookup
+			originalAnim = originalAnimName,  -- Store original anim name for description lookup
+			alwaysShow = alwaysShow
 		})
 
 		-- Don't add grouped animations to marks yet - consolidation will handle it
@@ -404,35 +412,40 @@ local function addAnimation(self, p, anim, delay, groupId, description)
 		duration = duration,
 		delay = delay,
 		loop = base.Loop,
-		originalAnim = originalAnimName  -- Store original anim name for description lookup
+		originalAnim = originalAnimName,  -- Store original anim name for description lookup
+		alwaysShow = alwaysShow
 	})
 end
 
-local function addColor(self, p, gl_color, duration)
+local function addColor(self, p, gl_color, duration, alwaysShow)
 	if isPreviewerUnavailable() then return end
 
 	Assert.TypePoint(p, "Argument #1")
 	Assert.TypeGLColor(gl_color, "Argument #2")
 	Assert.Equals({'nil', 'number'}, type(duration), "Argument #3")
+	Assert.Equals({'nil', 'boolean'}, type(alwaysShow), "Argument #4 (alwaysShow)")
 
 	table.insert(previewMarks[previewState], {
 		fn = 'MarkSpaceColor',
 		data = {Point(p), gl_color},
-		duration = duration
+		duration = duration,
+		alwaysShow = alwaysShow == true
 	})
 end
 
-local function addDamage(self, d, duration)
+local function addDamage(self, d, duration, alwaysShow)
 	if isPreviewerUnavailable() then return end
 
 	Assert.Equals({'userdata', 'table'}, type(d), "Argument #1")
 	Assert.Equals({'nil', 'number'}, type(duration), "Argument #2")
+	Assert.Equals({'nil', 'boolean'}, type(alwaysShow), "Argument #3 (alwaysShow)")
 	Assert.TypePoint(d.loc, "Argument #1 - Field 'loc'")
 
 	table.insert(previewMarks[previewState], {
 		fn = 'MarkSpaceDamage',
 		data = {shallow_copy(d)},
-		duration = duration
+		duration = duration,
+		alwaysShow = alwaysShow == true
 	})
 end
 
@@ -446,30 +459,33 @@ local function addDelay(self, duration)
 	})
 end
 
-local function addDesc(self, p, desc, flag, duration)
+local function addDesc(self, p, desc, flag, duration, alwaysShow)
 	if isPreviewerUnavailable() then return end
 
 	Assert.TypePoint(p, "Argument #1")
 	Assert.Equals('string', type(desc), "Argument #2")
 	Assert.Equals({'nil', 'boolean'}, type(flag), "Argument #3")
 	Assert.Equals({'nil', 'number'}, type(duration), "Argument #4")
+	Assert.Equals({'nil', 'boolean'}, type(alwaysShow), "Argument #5 (alwaysShow)")
 
 	flag = flag ~= false
 
 	table.insert(previewMarks[previewState], {
 		fn = 'MarkSpaceDesc',
 		data = {Point(p), desc, flag},
-		duration = duration
+		duration = duration,
+		alwaysShow = alwaysShow == true
 	})
 end
 
-local function addEmitter(self, p, emitter, duration)
+local function addEmitter(self, p, emitter, duration, alwaysShow)
 	if isPreviewerUnavailable() then return end
 
 	Assert.TypePoint(p, "Argument #1")
 	Assert.Equals('string', type(emitter), "Argument #2")
 	Assert.NotEquals('nil', type(_G[emitter]), "Argument #2")
 	Assert.Equals({'nil', 'number'}, type(duration), "Argument #3")
+	Assert.Equals({'nil', 'boolean'}, type(alwaysShow), "Argument #4 (alwaysShow)")
 
 	local base = _G[emitter]
 
@@ -485,52 +501,59 @@ local function addEmitter(self, p, emitter, duration)
 		loc = Point(p),
 		emitter = emitter,
 		data = {},
-		duration = duration
+		duration = duration,
+		alwaysShow = alwaysShow == true
 	})
 end
 
-local function addFlashing(self, p, flag, duration)
+local function addFlashing(self, p, flag, duration, alwaysShow)
 	if isPreviewerUnavailable() then return end
 
 	Assert.TypePoint(p, "Argument #1")
 	Assert.Equals({'nil', 'boolean'}, type(flag), "Argument #2")
 	Assert.Equals({'nil', 'number'}, type(duration), "Argument #3")
+	Assert.Equals({'nil', 'boolean'}, type(alwaysShow), "Argument #4 (alwaysShow)")
 
 	flag = flag ~= false
 
 	table.insert(previewMarks[previewState], {
 		fn = 'MarkFlashing',
 		data = {Point(p), flag},
-		duration = duration
+		duration = duration,
+		alwaysShow = alwaysShow == true
 	})
 end
 
-local function addImage(self, p, path, gl_color, duration)
+local function addImage(self, p, path, gl_color, duration, alwaysShow)
 	if isPreviewerUnavailable() then return end
 
 	Assert.TypePoint(p, "Argument #1")
 	Assert.Equals('string', type(path), "Argument #2")
 	Assert.TypeGLColor(gl_color, "Argument #3")
 	Assert.Equals({'nil', 'number'}, type(duration), "Argument #4")
+	Assert.Equals({'nil', 'boolean'}, type(alwaysShow), "Argument #5 (alwaysShow)")
 
 	table.insert(previewMarks[previewState], {
 		fn = 'MarkSpaceImage',
 		data = {Point(p), path, gl_color},
-		duration = duration
+		duration = duration,
+		alwaysShow = alwaysShow == true
 	})
 end
 
-local function addSimpleColor(self, p, gl_color, duration)
+local function addSimpleColor(self, p, gl_color, duration, alwaysShow)
 	if isPreviewerUnavailable() then return end
 
 	Assert.TypePoint(p, "Argument #1")
 	Assert.TypeGLColor(gl_color, "Argument #2")
 	Assert.Equals({'nil', 'number'}, type(duration), "Argument #3")
+	Assert.Equals({'nil', 'boolean'}, type(alwaysShow), "Argument #4 (alwaysShow)")
 
 	table.insert(previewMarks[previewState], {
 		fn = 'MarkSpaceSimpleColor',
 		data = {Point(p), gl_color},
-		duration = duration
+		duration = duration,
+		alwaysShow = alwaysShow == true
 	})
 end
 
@@ -619,9 +642,14 @@ local function consolidateGroupedAnimations(marks, state)
 					local markData = groupData.multiIconMarkData or DEFAULT_MULTI_ICON_MARK_DATA
 
 					-- Collect original animation names for tooltip support
+					-- multi-icon alwaysShows if any one of the marks making it up does
 					local combinedAnims = {}
+					local alwaysShow = false
 					for _, animData in ipairs(data.anims) do
 						table.insert(combinedAnims, animData.originalAnim)
+						if animData.alwaysShow then
+							alwaysShow = true
+						end
 					end
 
 					table.insert(marks, {
@@ -632,7 +660,8 @@ local function consolidateGroupedAnimations(marks, state)
 						delay = markData.delay,
 						loop = markData.loop,
 						isMultiIcon = true,
-						combinedAnims = combinedAnims  -- Store list of original animations for tooltips
+						combinedAnims = combinedAnims,  -- Store list of original animations for tooltips
+						alwaysShow = alwaysShow
 					})
 				end
 			elseif #data.anims == 1 then
@@ -645,7 +674,8 @@ local function consolidateGroupedAnimations(marks, state)
 					duration = animData.duration,
 					delay = animData.delay,
 					loop = animData.loop,
-					originalAnim = animData.originalAnim
+					originalAnim = animData.originalAnim,
+					alwaysShow = animData.alwaysShow
 				})
 			end
 		end
@@ -937,18 +967,20 @@ local function getFinalEffect(self, p1, p2, p3, ...)
 	return result or oldGetFinalEffects[skillId](self, p1, p2, p3, ...)
 end
 
-local function getPreviewLength(marks)
+local function getPreviewLength(marks, markFilter)
 	local delay = 0
 	local length = 0
 
 	for _, mark in ipairs(marks) do
-		if mark.duration then
-			length = math.max(length, delay + mark.duration)
-		end
+		if not markFilter or markFilter(mark) then
+			if mark.duration then
+				length = math.max(length, delay + mark.duration)
+			end
 
-		if mark.delay then
-			delay = delay + mark.delay
-			length = math.max(length, delay)
+			if mark.delay then
+				delay = delay + mark.delay
+				length = math.max(length, delay)
+			end
 		end
 	end
 
@@ -974,12 +1006,13 @@ local function getAnimFrame(mark, time_start, time_curr)
 	end
 end
 
-local function markSpaces(marks, time_curr)
+-- markFilter: optional function(mark) -> bool - when set, only matching marks are drawn
+local function markSpaces(marks, time_curr, markFilter)
 	local time_start = 0
 	local looping = marks.loop
 
 	if looping ~= false then
-		local length = getPreviewLength(marks)
+		local length = getPreviewLength(marks, markFilter)
 		if length > 0 then
 			time_curr = time_curr % length
 		else
@@ -988,7 +1021,8 @@ local function markSpaces(marks, time_curr)
 	end
 
 	for _, mark in ipairs(marks) do
-		if mark.fn then
+		local include = not markFilter or markFilter(mark)
+		if include and mark.fn then
 			local duration = mark.duration or INT_MAX
 			if mark.fn == "AddAnimation" then
 				mark.data[2] = getAnimFrame(mark, time_start, time_curr)
@@ -1006,7 +1040,9 @@ local function markSpaces(marks, time_curr)
 			end
 		end
 
-		time_start = time_start + (mark.delay or 0)
+		if include then
+			time_start = time_start + (mark.delay or 0)
+		end
 	end
 end
 
@@ -1255,26 +1291,73 @@ local function onMissionUpdate()
 		actingMarker:clear()
 	end
 
-	-- Display all queued marks
-	if queuedPreviewMarks[STATE_QUEUED_SKILL] then
-		for pawnId, marks in pairs(queuedPreviewMarks[STATE_QUEUED_SKILL]) do
-			consolidateGroupedAnimations(marks, STATE_QUEUED_SKILL)
-			markSpaces(marks, queuedMarker.ticker)
-			-- Check for first time notifications when displaying marks
-			checkAndShowFirstTimeNotifications(marks, highlighted)
+	-- Hover based queued markers (alwaysShow icons still draw without hover later)
+	if queuedMarker ~= actingMarker then
+		if queuedMarker:isActive() then
+			events.onQueuedSkillEffectHidden:dispatch(queuedMarker:unpack())
+			queuedMarker:clear()
 		end
+
+		queuedMarker:copy(actingMarker)
+
+		if queuedMarker:isActive() then
+			events.onQueuedSkillEffectShown:dispatch(queuedMarker:unpack())
+		end
+	end
+
+	-- Hover based queued markers (alwaysShow icons still draw without hover later)
+	if queuedFinalEffectMarker ~= actingMarker then
+		if queuedFinalEffectMarker:isActive() then
+			events.onQueuedFinalEffectHidden:dispatch(queuedFinalEffectMarker:unpack())
+			queuedFinalEffectMarker:clear()
+		end
+
+		queuedFinalEffectMarker:copy(actingMarker)
+
+		if queuedFinalEffectMarker:isActive() then
+			events.onQueuedFinalEffectShown:dispatch(queuedFinalEffectMarker:unpack())
+		end
+	end
+
+	local function displayQueuedMarks(state, marker)
+		local pawnMarks = queuedPreviewMarks[state]
+		if not pawnMarks then
+			return false
+		end
+
+		local displayed = false
+		for pawnId, marks in pairs(pawnMarks) do
+			consolidateGroupedAnimations(marks, state)
+			local isHovered = marker:isActive() and pawnId == marker.pawnId
+			if isHovered then
+				markSpaces(marks, marker.ticker)
+				checkAndShowFirstTimeNotifications(marks, highlighted)
+				displayed = true
+			else
+				local hasAlwaysShow = false
+				for _, mark in ipairs(marks) do
+					if mark.alwaysShow then
+						hasAlwaysShow = true
+						break
+					end
+				end
+				if hasAlwaysShow then
+					markSpaces(marks, marker.ticker, function(m) return m.alwaysShow end)
+					displayed = true
+				end
+			end
+		end
+		return displayed
+	end
+
+	if displayQueuedMarks(STATE_QUEUED_SKILL, queuedMarker) then
 		queuedMarker.ticker = queuedMarker.ticker + time_delta
 	end
 
-	if queuedPreviewMarks[STATE_QUEUED_FINAL_EFFECT] then
-		for pawnId, marks in pairs(queuedPreviewMarks[STATE_QUEUED_FINAL_EFFECT]) do
-			consolidateGroupedAnimations(marks, STATE_QUEUED_FINAL_EFFECT)
-			markSpaces(marks, queuedFinalEffectMarker.ticker)
-			-- Check for first time notifications when displaying marks
-			checkAndShowFirstTimeNotifications(marks, highlighted)
-		end
+	if displayQueuedMarks(STATE_QUEUED_FINAL_EFFECT, queuedFinalEffectMarker) then
 		queuedFinalEffectMarker.ticker = queuedFinalEffectMarker.ticker + time_delta
 	end
+
 	-- Check every frame if the key is pressed and show tooltip for highlighted tile
 	checkAndShowTooltipKey(highlighted)
 end
