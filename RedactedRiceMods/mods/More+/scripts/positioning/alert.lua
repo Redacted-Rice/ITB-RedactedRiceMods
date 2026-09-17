@@ -49,7 +49,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 		function()
 			more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc, more_plus.commonIcons.armor1.key, nil,  -- delay
 					more_plus.WEAPON_PREVIEW_GROUP_ID, GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
-		end, targetPawn:GetId()
+		end, attackingPawn:GetId()
 	)
 	local oldDamage = spaceDamage.iDamage
 	spaceDamage.iDamage = newDamage
