@@ -3,8 +3,12 @@ more_plus = more_plus or {}
 more_plus.skillsByCategory = {}
 more_plus.libs = {}
 
--- Weapon preview group ID for all More+ level-up skills
+-- Weapon preview groups. Active skill icons at pos1, queued attack icons at pos2
+-- This will allow both to be displayed without overlapping
 more_plus.WEAPON_PREVIEW_GROUP_ID = "more_plus_levelup_skills"
+more_plus.WEAPON_PREVIEW_QUEUED_GROUP_ID = "more_plus_levelup_skills_queued"
+more_plus.WEAPON_PREVIEW_GROUP_OFFSET = Point(-25, 11)
+more_plus.WEAPON_PREVIEW_QUEUED_GROUP_OFFSET = Point(-18, -4)
 
 local path = GetParentPath(...)
 
@@ -43,6 +47,17 @@ function more_plus.convertPhase(phase)
 
 	logger.logWarn(SUBMODULE, "Unknown phase: %s", tostring(phase))
 	return weaponPreview.STATE_NONE
+end
+
+-- Active vs queued use separate group offsets so icons on the same tile don't overlap.
+function more_plus.getWeaponPreviewGroupId(phase)
+	local state = more_plus.convertPhase(phase)
+	local weaponPreview = more_plus.libs.weaponPreview
+	if state == weaponPreview.STATE_QUEUED_SKILL
+			or state == weaponPreview.STATE_QUEUED_FINAL_EFFECT then
+		return more_plus.WEAPON_PREVIEW_QUEUED_GROUP_ID
+	end
+	return more_plus.WEAPON_PREVIEW_GROUP_ID
 end
 
 
@@ -315,9 +330,10 @@ function more_plus:disableDefaultSkills()
 end
 
 function more_plus:load()
-	-- Register More+ weapon preview group with offset and multi-icon
-	WeaponPreview:RegisterGroup(self.WEAPON_PREVIEW_GROUP_ID,Point(-25, 11))
-	logger.logDebug(SUBMODULE, "Registered More+ weapon preview group with WeaponPreview")
+	-- Register active and queued preview groups
+	WeaponPreview:RegisterGroup(self.WEAPON_PREVIEW_GROUP_ID, self.WEAPON_PREVIEW_GROUP_OFFSET)
+	WeaponPreview:RegisterGroup(self.WEAPON_PREVIEW_QUEUED_GROUP_ID, self.WEAPON_PREVIEW_QUEUED_GROUP_OFFSET)
+	logger.logDebug(SUBMODULE, "Registered More+ weapon preview groups with WeaponPreview")
 
 	-- Add vanilla skills to groups after CPLUS+_Ex has registered them
 	logger.logDebug(SUBMODULE, "Adding vanilla skills to groups...")
