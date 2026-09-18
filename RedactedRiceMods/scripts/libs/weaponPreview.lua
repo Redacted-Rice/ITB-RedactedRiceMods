@@ -354,7 +354,8 @@ local function addAnimation(self, p, anim, delay, groupId, description, alwaysSh
 	-- Store the original animation name before any group modifications
 	local originalAnimName = anim
 
-	-- Store description if provided
+	-- Global map is a fallback when only one tip is used per anim.
+	-- Prefer per mark description so the same anim can tip differently by tile.
 	if description then
 		animationDescriptions[originalAnimName] = description
 	end
@@ -414,6 +415,7 @@ local function addAnimation(self, p, anim, delay, groupId, description, alwaysSh
 			delay = delay,
 			loop = base.Loop,
 			originalAnim = originalAnimName,  -- Store original anim name for description lookup
+			description = description,
 			alwaysShow = alwaysShow
 		})
 
@@ -430,6 +432,7 @@ local function addAnimation(self, p, anim, delay, groupId, description, alwaysSh
 		delay = delay,
 		loop = base.Loop,
 		originalAnim = originalAnimName,  -- Store original anim name for description lookup
+		description = description,
 		alwaysShow = alwaysShow
 	})
 end
@@ -659,12 +662,15 @@ local function consolidateGroupedAnimations(marks, state)
 					-- Use mark data from group registration or fall back to defaults
 					local markData = groupData.multiIconMarkData or DEFAULT_MULTI_ICON_MARK_DATA
 
-					-- Collect original animation names for tooltip support
+					-- Collect original animation names/per icon tips for tooltips
 					-- multi-icon alwaysShows if any one of the marks making it up does
 					local combinedAnims = {}
+					local combinedDescriptions = {}
 					local alwaysShow = false
 					for _, animData in ipairs(data.anims) do
 						table.insert(combinedAnims, animData.originalAnim)
+						table.insert(combinedDescriptions, animData.description
+								or animationDescriptions[animData.originalAnim])
 						if animData.alwaysShow then
 							alwaysShow = true
 						end
@@ -678,7 +684,8 @@ local function consolidateGroupedAnimations(marks, state)
 						delay = markData.delay,
 						loop = markData.loop,
 						isMultiIcon = true,
-						combinedAnims = combinedAnims,  -- Store list of original animations for tooltips
+						combinedAnims = combinedAnims,
+						combinedDescriptions = combinedDescriptions,
 						alwaysShow = alwaysShow
 					})
 				end
@@ -693,6 +700,7 @@ local function consolidateGroupedAnimations(marks, state)
 					delay = animData.delay,
 					loop = animData.loop,
 					originalAnim = animData.originalAnim,
+					description = animData.description,
 					alwaysShow = animData.alwaysShow
 				})
 			end
@@ -1156,8 +1164,9 @@ local function checkAndShowTooltipKey(highlighted)
 				-- Check if this is a multi icon mark
 				if mark.isMultiIcon and mark.combinedAnims then
 					-- Collect descriptions from all combined animations
-					for _, originalAnim in ipairs(mark.combinedAnims) do
-						local desc = animationDescriptions[originalAnim]
+					for i, originalAnim in ipairs(mark.combinedAnims) do
+						local desc = (mark.combinedDescriptions and mark.combinedDescriptions[i])
+								or animationDescriptions[originalAnim]
 						if desc and not list_contains(descriptions, desc) then
 							table.insert(descriptions, desc)
 						end
@@ -1165,7 +1174,7 @@ local function checkAndShowTooltipKey(highlighted)
 				else
 					-- Add just its description for a single icon
 					local originalAnim = mark.originalAnim or mark.anim
-					local desc = animationDescriptions[originalAnim]
+					local desc = mark.description or animationDescriptions[originalAnim]
 					if desc and not list_contains(descriptions, desc) then
 						table.insert(descriptions, desc)
 					end
@@ -1232,17 +1241,25 @@ local function checkAndShowFirstTimeNotifications(marks, loc)
 			if mark.isMultiIcon then
 				hasMultiIcon = true
 				-- Multi icons with descriptions
-				if mark.combinedAnims then
+				if mark.combinedDescriptions then
+					for _, desc in ipairs(mark.combinedDescriptions) do
+						if desc then
+							hasDescriptions = true
+							break
+						end
+					end
+				elseif mark.combinedAnims then
 					for _, originalAnim in ipairs(mark.combinedAnims) do
 						if animationDescriptions[originalAnim] then
 							hasDescriptions = true
+							break
 						end
 					end
 				end
 			else
 				-- Regular animation with description
 				local originalAnim = mark.originalAnim or mark.anim
-				if animationDescriptions[originalAnim] then
+				if mark.description or animationDescriptions[originalAnim] then
 					hasDescriptions = true
 				end
 			end

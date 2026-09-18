@@ -64,13 +64,18 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 	local attackerLoc = self:getPawnSpace(attackingPawn)
 	local targetLoc = self:getPawnSpace(targetPawn)
 
-	-- Add vampire icons with group ID for automatic consolidation
+	-- Use a different tooltip for attacker and target to be more clear
+	local attackerTip = GetText(customSkill.name) .. ": " .. GetText(customSkill.description)
+	local targetTip = GetText(customSkill.name)
+			.. ": Will be killed by the attacking pawn with Vampire, triggering attacker to repair"
+	local groupId = more_plus.getWeaponPreviewGroupId(phase)
+
 	more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
 		function()
-			more_plus.libs.weaponPreview:AddAnimation(attackerLoc, more_plus.commonIcons.vampire.key, nil,  -- delay
-					more_plus.getWeaponPreviewGroupId(phase), GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
-			more_plus.libs.weaponPreview:AddAnimation(targetLoc, more_plus.commonIcons.vampire.key, nil,  -- delay
-					more_plus.getWeaponPreviewGroupId(phase), GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
+			more_plus.libs.weaponPreview:AddAnimation(attackerLoc,
+					more_plus.commonIcons.vampire.key, nil, groupId, attackerTip)
+			more_plus.libs.weaponPreview:AddAnimation(targetLoc,
+					more_plus.commonIcons.vampire.key, nil, groupId, targetTip)
 		end, pawnId
 	)
 
