@@ -77,6 +77,10 @@ local VERSION = "4.1.1"
 --      :events.onQueuedSkillEffectShown()
 --      :events.onQueuedSkillEffectHidden()
 --
+--  If tooltips is enabled, tooltips will be shown for the highlighted
+--  tile when you hold H. If attacking with a pawn, G will show the
+--  attacking pawn's tooltip.
+--
 ----------------------------------------------------------------------
 
 local WP_DEBUG = false
@@ -134,6 +138,9 @@ local INT_MAX = 2147483647
 -- Tooltip key configuration
 local TOOLTIP_KEY = SDLKeycodes.h
 local TOOLTIP_KEY_TEXT = "H"
+-- Tooltip key config for selected pawn
+local SHOW_SELECTED_ICONS_KEY = SDLKeycodes.g
+local SHOW_SELECTED_ICONS_KEY_TEXT = "G"
 
 -- Group consolidation support
 local DEFAULT_MULTI_ICON = nil  -- Will be initialized during finalizeInit
@@ -144,7 +151,9 @@ local animationDescriptions = {}  -- Maps anim name -> description string
 -- Track state for tooltip key display
 local isTooltipKeyHeld = false
 local lastTooltipKeyState = false
-local lastHighlightedTile = nil
+local isShowSelectedIconsKeyHeld = false
+local lastShowSelectedKeyState = false
+local lastTipLoc = nil
 
 -- TutorialTips library
 local tutorialTips
@@ -1119,48 +1128,55 @@ local function onMissionChanged(mission, missionOld)
 	time_prev = os.clock()
 end
 
--- Collect and show tooltip with descriptions when tooltip key is pressed for highlighted tile
--- Also clear tooltips when key is released or tile changes
-local function checkAndShowTooltipKey(highlighted)
-	if not highlighted or highlighted == OUT_OF_BOUNDS then return end
+-- Collect and show tooltip when the hover tip key or selected pawn tip key is held.
+-- Selected tip wins if both are held (hover is ignored entirely in that case).
+local function checkAndShowTooltipKey(highlighted, selected)
+	local hoverHeld = isTooltipKeyHeld
+	local selectedHeld = isShowSelectedIconsKeyHeld
+	local hoverPressed = hoverHeld and not lastTooltipKeyState
+	local hoverReleased = (not hoverHeld) and lastTooltipKeyState
+	local selectedPressed = selectedHeld and not lastShowSelectedKeyState
+	local selectedReleased = (not selectedHeld) and lastShowSelectedKeyState
 
-	-- Check if the key state or highlighted tile changed
-	local currentTooltipKeyState = isTooltipKeyHeld
-	local tileChanged = lastHighlightedTile ~= highlighted
-	local tooltipKeyPressed = currentTooltipKeyState and not lastTooltipKeyState
-	local tooltipKeyReleased = not currentTooltipKeyState and lastTooltipKeyState
+	lastTooltipKeyState = hoverHeld
+	lastShowSelectedKeyState = selectedHeld
 
-	-- Update tracking
-	lastTooltipKeyState = currentTooltipKeyState
-	lastHighlightedTile = highlighted
+	local tipLoc = nil
+	local showNow = false
 
-	-- Clear tips if key was released
-	if tooltipKeyReleased then
-		Game:ClearTips()
+	if selectedHeld and selected then
+		-- Selected tip only. Do not clear/recheck hover while this key is held
+		tipLoc = selected:GetSpace()
+		showNow = selectedPressed or tipLoc ~= lastTipLoc
+	elseif hoverHeld and highlighted and highlighted ~= OUT_OF_BOUNDS then
+		tipLoc = highlighted
+		showNow = hoverPressed or tipLoc ~= lastTipLoc
+	else
+		if hoverReleased or selectedReleased then
+			Game:ClearTips()
+			lastTipLoc = nil
+		end
 		return
 	end
 
-	-- Only show tooltip if key was just pressed or if tile changed while the key is held
-	if not (tooltipKeyPressed or (tileChanged and currentTooltipKeyState)) then
+	if not showNow or not tipLoc or tipLoc == OUT_OF_BOUNDS then
 		return
 	end
 
-	-- Don't show if the key is not currently down
-	if not currentTooltipKeyState then return end
-
-	-- If tile changed clear the old tooltip first to avoid stacking
-	if tileChanged then
+	if tipLoc ~= lastTipLoc then
 		Game:ClearTips()
 	end
+	lastTipLoc = tipLoc
 
 	local descriptions = {}
 
 	-- Helper function to collect descriptions from marks at location
+	-- Prefer per mark description (same anim can tip differently by tile)
 	local function collectDescriptions(marks)
 		if not marks then return end
 
 		for _, mark in ipairs(marks) do
-			if mark.fn == 'AddAnimation' and mark.data and mark.data[1] == highlighted then
+			if mark.fn == 'AddAnimation' and mark.data and mark.data[1] == tipLoc then
 				-- Check if this is a multi icon mark
 				if mark.isMultiIcon and mark.combinedAnims then
 					-- Collect descriptions from all combined animations
@@ -1221,7 +1237,7 @@ local function checkAndShowTooltipKey(highlighted)
 
 		Global_Texts["WeaponPreview_TempExplanation_Title"] = "Space Effects Details"
 		Global_Texts["WeaponPreview_TempExplanation_Text"] = desc
-		Game:AddTip("WeaponPreview_TempExplanation", highlighted)
+		Game:AddTip("WeaponPreview_TempExplanation", tipLoc)
 		Global_Texts["WeaponPreview_TempExplanation_Title"] = nil
 		Global_Texts["WeaponPreview_TempExplanation_Text"] = nil
 	end
@@ -1439,6 +1455,12 @@ local function onMissionUpdate()
 			return false
 		end
 
+		-- Selected pawn tip key focuses the selected pawn. If none, the highlighted pawn.
+		-- Match by attacker id or by marks that land on that pawn's tile
+		local focusPawn = selected or highlightedPawn
+		local focusPawnId = focusPawn and focusPawn:GetId() or nil
+		local focusLoc = focusPawn and focusPawn:GetSpace() or nil
+
 		local displayed = false
 		local drawn = {}
 		for pawnId, marks in pairs(pawnMarks) do
@@ -1446,10 +1468,12 @@ local function onMissionUpdate()
 				consolidateGroupedAnimations(marks, state)
 				local isSourceHovered = marker:isActive() and pawnId == marker.pawnId
 				local isTargetHovered = markListTouchesPoint(marks, highlighted)
-				if isSourceHovered or isTargetHovered then
-					wpLog("queued display pawn=%s source=%s target=%s marks=%d",
+				local isFocusHotkey = isShowSelectedIconsKeyHeld and focusPawnId and (
+						pawnId == focusPawnId or markListTouchesPoint(marks, focusLoc))
+				if isSourceHovered or isTargetHovered or isFocusHotkey then
+					wpLog("queued display pawn=%s source=%s target=%s hotkey=%s marks=%d",
 							tostring(pawnId), tostring(isSourceHovered),
-							tostring(isTargetHovered), #marks)
+							tostring(isTargetHovered), tostring(isFocusHotkey), #marks)
 					markSpaces(marks, marker.ticker)
 					checkAndShowFirstTimeNotifications(marks, highlighted)
 					drawn[marks] = true
@@ -1481,8 +1505,8 @@ local function onMissionUpdate()
 		queuedFinalEffectMarker.ticker = queuedFinalEffectMarker.ticker + time_delta
 	end
 
-	-- Check every frame if the key is pressed and show tooltip for highlighted tile
-	checkAndShowTooltipKey(highlighted)
+	-- Hover tip key tips the highlighted tile. Selected tip key tips the selected pawn
+	checkAndShowTooltipKey(highlighted, selected)
 end
 
 local function onQueuedSkillEnd(pawn, state)
@@ -1742,16 +1766,20 @@ if isNewestVersion then
 		modapiext.events.onQueuedSkillEnd:subscribe(function(mission, pawn, weaponId) onQueuedSkillEnd(pawn, STATE_QUEUED_SKILL) end)
 		modapiext.events.onQueuedFinalEffectEnd:subscribe(function(mission, pawn, weaponId) onQueuedSkillEnd(pawn, STATE_QUEUED_FINAL_EFFECT) end)
 
-		-- Track the key state for tooltip display
+		-- Track the key state for tooltip display/selected pawn icon reveal
 		modApi.events.onKeyPressed:subscribe(function(keycode)
 			if keycode == TOOLTIP_KEY then
 				isTooltipKeyHeld = true
+			elseif keycode == SHOW_SELECTED_ICONS_KEY then
+				isShowSelectedIconsKeyHeld = true
 			end
 		end)
 
 		modApi.events.onKeyReleased:subscribe(function(keycode)
 			if keycode == TOOLTIP_KEY then
 				isTooltipKeyHeld = false
+			elseif keycode == SHOW_SELECTED_ICONS_KEY then
+				isShowSelectedIconsKeyHeld = false
 			end
 		end)
 	end
