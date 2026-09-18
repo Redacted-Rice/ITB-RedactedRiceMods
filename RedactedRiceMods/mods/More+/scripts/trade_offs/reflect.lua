@@ -93,15 +93,14 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 	local reflectorTip = GetText(customSkill.name) .. ": " .. GetText(customSkill.description)
 	local attackerTip = GetText(customSkill.name)
 			.. ": Taking half (rounded up) damage from attacking pawn with reflect"
-	local groupId = more_plus.getWeaponPreviewGroupId(phase)
 	logger.logDebug(SUBMODULE, "Adding reflect damage icon from %s to attacker %s",
 			targetStartLoc:GetString(), attackerStartLoc:GetString())
 	more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
 		function()
-			more_plus.libs.weaponPreview:AddAnimation(attackerStartLoc,
-					more_plus.commonIcons.reflect.key, nil, groupId, attackerTip)
-			more_plus.libs.weaponPreview:AddAnimation(targetStartLoc,
-					more_plus.commonIcons.reflect.key, nil, groupId, reflectorTip)
+			more_plus.addWeaponPreviewIcon(phase, attackerStartLoc,
+					more_plus.commonIcons.reflect.key, attackerTip)
+			more_plus.addWeaponPreviewIcon(phase, targetStartLoc,
+					more_plus.commonIcons.reflect.key, reflectorTip)
 		end, attackerId
 	)
 

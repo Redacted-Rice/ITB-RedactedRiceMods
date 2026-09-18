@@ -67,14 +67,13 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 	local attackerTip = GetText(customSkill.name) .. ": " .. GetText(customSkill.description)
 	local targetTip = GetText(customSkill.name)
 			.. ": Will be killed by the attacking pawn with Vampire, triggering attacker to repair"
-	local groupId = more_plus.getWeaponPreviewGroupId(phase)
 
 	more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
 		function()
-			more_plus.libs.weaponPreview:AddAnimation(attackerLoc,
-					more_plus.commonIcons.vampire.key, nil, groupId, attackerTip)
-			more_plus.libs.weaponPreview:AddAnimation(targetLoc,
-					more_plus.commonIcons.vampire.key, nil, groupId, targetTip)
+			more_plus.addWeaponPreviewIcon(phase, attackerLoc,
+					more_plus.commonIcons.vampire.key, attackerTip)
+			more_plus.addWeaponPreviewIcon(phase, targetLoc,
+					more_plus.commonIcons.vampire.key, targetTip)
 		end, pawnId
 	)
 
