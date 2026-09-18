@@ -8,8 +8,12 @@ local SUBMODULE = logger.register("Legendary+", "Core", legendary_plus.DEBUG)
 
 legendary_plus.libs = legendary_plus.libs or {}
 
--- Use same group ID as More+
+-- Use same group IDs as More+ (active + queued offsets). Right now we
+-- only use the active but do it the same just in case I add queued later.
 legendary_plus.WEAPON_PREVIEW_GROUP_ID = "more_plus_levelup_skills"
+legendary_plus.WEAPON_PREVIEW_QUEUED_GROUP_ID = "more_plus_levelup_skills_queued"
+legendary_plus.WEAPON_PREVIEW_GROUP_OFFSET = Point(-25, 11)
+legendary_plus.WEAPON_PREVIEW_QUEUED_GROUP_OFFSET = Point(-18, -4)
 legendary_plus.CATEGORY = "Legendary+"
 legendary_plus.skills = {}
 
@@ -63,13 +67,18 @@ function legendary_plus:previewExtraDamage(phase, loc, pawnId, skill)
 		return
 	end
 	local weaponPreview = self.libs.weaponPreview
+	local groupId = self.WEAPON_PREVIEW_GROUP_ID
+	if phase == weaponPreview.STATE_QUEUED_SKILL
+			or phase == weaponPreview.STATE_QUEUED_FINAL_EFFECT then
+		groupId = self.WEAPON_PREVIEW_QUEUED_GROUP_ID
+	end
 
 	local tipName = skill._name or skill.name or ""
 	local tipDesc = skill._description or ""
 	weaponPreview.ExecuteWithState(phase,
 		function()
 			weaponPreview:AddAnimation(loc, self.commonIcons.extraDamage.key, nil,
-					self.WEAPON_PREVIEW_GROUP_ID, tipName .. ": " .. tipDesc)
+					groupId, tipName .. ": " .. tipDesc)
 		end, pawnId
 	)
 end
@@ -210,9 +219,10 @@ function legendary_plus:disableDefaultSkills()
 end
 
 function legendary_plus:load()
-	-- Register More+ weapon preview group with offset and multi-icon
-	WeaponPreview:RegisterGroup(self.WEAPON_PREVIEW_GROUP_ID, Point(-25, 11))
-	logger.logDebug(SUBMODULE, "Registered Legendary+ weapon preview group")
+	-- Register active + queued preview groups (same offsets as More+)
+	WeaponPreview:RegisterGroup(self.WEAPON_PREVIEW_GROUP_ID, self.WEAPON_PREVIEW_GROUP_OFFSET)
+	WeaponPreview:RegisterGroup(self.WEAPON_PREVIEW_QUEUED_GROUP_ID, self.WEAPON_PREVIEW_QUEUED_GROUP_OFFSET)
+	logger.logDebug(SUBMODULE, "Registered Legendary+ weapon preview groups")
 
 	-- Add vanilla skills to groups after CPLUS+_Ex has registered them
 	logger.logDebug(SUBMODULE, "Adding vanilla skills to groups...")
