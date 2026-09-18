@@ -96,8 +96,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 	local pawnId = targetPawn:GetId()
 	more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
 		function()
-			more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc, more_plus.commonIcons.armor3.key, nil,  -- delay
-					more_plus.getWeaponPreviewGroupId(phase), GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
+			more_plus.addWeaponPreviewIcon(phase, spaceDamage.loc, more_plus.commonIcons.armor3.key, GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
 		end, attackingPawn:GetId()
 	)
 

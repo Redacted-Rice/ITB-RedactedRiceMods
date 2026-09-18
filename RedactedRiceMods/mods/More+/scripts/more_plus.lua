@@ -2,6 +2,9 @@ more_plus = more_plus or {}
 
 more_plus.skillsByCategory = {}
 more_plus.libs = {}
+more_plus.config_options = {
+	alwaysShowQueuedPreviewIcons = true,
+}
 
 -- Weapon preview groups. Active skill icons at pos1, queued attack icons at pos2
 -- This will allow both to be displayed without overlapping
@@ -58,6 +61,40 @@ function more_plus.getWeaponPreviewGroupId(phase)
 		return more_plus.WEAPON_PREVIEW_QUEUED_GROUP_ID
 	end
 	return more_plus.WEAPON_PREVIEW_GROUP_ID
+end
+
+function more_plus.isQueuedWeaponPreview(phase)
+	local state = more_plus.convertPhase(phase)
+	return state == more_plus.libs.weaponPreview.STATE_QUEUED_SKILL
+			or state == more_plus.libs.weaponPreview.STATE_QUEUED_FINAL_EFFECT
+end
+
+-- Read from modcontent.lua (not GAME.modOptions) so this can change mid run.
+function more_plus.refreshConfigOptions()
+	local globalOptions = nil
+	sdlext.config("modcontent.lua", function(obj)
+		if obj.modOptions and obj.modOptions["redactedrice_More+"] then
+			globalOptions = obj.modOptions["redactedrice_More+"].options
+		end
+	end)
+
+	more_plus.config_options = more_plus.config_options or {}
+	if globalOptions and globalOptions.alwaysShowQueuedPreviewIcons then
+		more_plus.config_options.alwaysShowQueuedPreviewIcons =
+				globalOptions.alwaysShowQueuedPreviewIcons.enabled == true
+	else
+		more_plus.config_options.alwaysShowQueuedPreviewIcons = true
+	end
+end
+
+-- Queued icons can alwaysShow so they stay visible without source/target hover.
+function more_plus.addWeaponPreviewIcon(phase, loc, animKey, description)
+	local alwaysShow = false
+	if more_plus.isQueuedWeaponPreview(phase) then
+		alwaysShow = more_plus.config_options.alwaysShowQueuedPreviewIcons
+	end
+	more_plus.libs.weaponPreview:AddAnimation(loc, animKey, nil,
+			more_plus.getWeaponPreviewGroupId(phase), description, alwaysShow)
 end
 
 
@@ -330,6 +367,9 @@ function more_plus:disableDefaultSkills()
 end
 
 function more_plus:load()
+	-- Config options that can change mid run
+	self:refreshConfigOptions()
+
 	-- Register active and queued preview groups
 	WeaponPreview:RegisterGroup(self.WEAPON_PREVIEW_GROUP_ID, self.WEAPON_PREVIEW_GROUP_OFFSET)
 	WeaponPreview:RegisterGroup(self.WEAPON_PREVIEW_QUEUED_GROUP_ID, self.WEAPON_PREVIEW_QUEUED_GROUP_OFFSET)

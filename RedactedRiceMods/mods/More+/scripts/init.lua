@@ -11,14 +11,13 @@ local mod = {
     }
 }
 
-function mod:init()
-	local more_plus = require(self.scriptPath .. "more_plus")
-	-- Common Redacted Rice Libs
-	for libId, lib in pairs(mod_loader.mods.redactedrice_libs.libs) do
-		more_plus.libs[libId] = lib
-	end
-
-	more_plus:init()
+function mod:metadata()
+	modApi:addGenerationOption(
+		"alwaysShowQueuedPreviewIcons",
+		"Always Show Queued Preview Icons",
+		"When enabled, More+ effect icons for queued enemy attacks stay visible without hovering the attacker or target.",
+		{ enabled = true }
+	)
 
 	-- Add config option to reset weapon preview tooltips
 	modApi:addGenerationOption(
@@ -27,6 +26,16 @@ function mod:init()
 		"Check to reset the tutorial tips for weapon preview effects (multi-icon and description tooltips).",
 		{ enabled = false }
 	)
+end
+
+function mod:init()
+	local more_plus = require(self.scriptPath .. "more_plus")
+	-- Common Redacted Rice Libs
+	for libId, lib in pairs(mod_loader.mods.redactedrice_libs.libs) do
+		more_plus.libs[libId] = lib
+	end
+
+	more_plus:init()
 end
 
 function mod:load(options, version)
