@@ -67,9 +67,9 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 	more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
 		function()
 			more_plus.libs.weaponPreview:AddAnimation(attackerLoc, more_plus.commonIcons.vampire.key, nil,  -- delay
-					more_plus.WEAPON_PREVIEW_GROUP_ID, GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
+					more_plus.getWeaponPreviewGroupId(phase), GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
 			more_plus.libs.weaponPreview:AddAnimation(targetLoc, more_plus.commonIcons.vampire.key, nil,  -- delay
-					more_plus.WEAPON_PREVIEW_GROUP_ID, GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
+					more_plus.getWeaponPreviewGroupId(phase), GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
 		end, pawnId
 	)
 
