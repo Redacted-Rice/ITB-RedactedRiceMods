@@ -8,7 +8,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
 		-- Despite not being able to heal, zoltan can still be healed by an effect and get this
 		pilotExclusions = {"Pilot_Arrogant", "Pilot_Chemical"},
 	},
-	priority = 180, -- Go after everything else including vampire
+	priority = 200, -- Go after everything else including vampire
 	modifiesKillDamage = false,
 }
 
