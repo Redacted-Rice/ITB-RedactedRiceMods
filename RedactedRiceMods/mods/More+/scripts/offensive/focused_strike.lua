@@ -37,8 +37,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 	logger.logDebug(SUBMODULE, "Adding icon for %s", spaceDamage.loc:GetString())
 	more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
 		function()
-			more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc, more_plus.commonIcons.crit.key, nil,  -- delay
-					more_plus.WEAPON_PREVIEW_GROUP_ID, GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
+			more_plus.addWeaponPreviewIcon(phase, spaceDamage.loc, more_plus.commonIcons.crit.key, GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
 		end, attackingPawn:GetId()
 	)
 	local originalDamage = spaceDamage.iDamage

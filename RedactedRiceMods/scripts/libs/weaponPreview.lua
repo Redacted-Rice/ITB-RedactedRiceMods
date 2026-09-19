@@ -1,5 +1,5 @@
 
-local VERSION = "4.1.0"
+local VERSION = "4.1.1"
 ----------------------------------------------------------------------
 -- Weapon Preview - code library
 -- https://github.com/Lemonymous/ITB-LemonymousMods/wiki/weaponPreview
@@ -26,17 +26,23 @@ local VERSION = "4.1.0"
 --  and should be used if mark is dependent of target location.
 --
 --  methods:
---      :AddAnimation(point, animation, delay)
---      :AddColor(point, gl_color, duration)
---      :AddDamage(spaceDamage, duration)
+--      :AddAnimation(point, animation, delay, groupId, description, alwaysShow)
+--      :AddColor(point, gl_color, duration, alwaysShow)
+--      :AddDamage(spaceDamage, duration, alwaysShow)
 --      :AddDelay(duration)
---      :AddDesc(point, desc, flag, duration)
---      :AddEmitter(point, emitter, duration)
---      :AddFlashing(point, flag, duration)
---      :AddImage(point, path, gl_color, duration)
---      :AddSimpleColor(point, gl_color, duration)
+--      :AddDesc(point, desc, flag, duration, alwaysShow)
+--      :AddEmitter(point, emitter, duration, alwaysShow)
+--      :AddFlashing(point, flag, duration, alwaysShow)
+--      :AddImage(point, path, gl_color, duration, alwaysShow)
+--      :AddSimpleColor(point, gl_color, duration, alwaysShow)
 --      :ClearMarks()
 --      :SetLooping(flag)
+--
+--  Queued marks are stored by attacker pawn id. They fully display while
+--  hovering that attacker, or while hovering any tile that has one of that
+--  attack's marks (e.g. the attack target). alwaysShow (optional bool on mark
+--  methods above): if true, that queued mark stays visible without hover
+--  (default false).
 --
 --  The following methods can be used at any time to gain information
 --  about what is being currently previewed.
@@ -71,7 +77,26 @@ local VERSION = "4.1.0"
 --      :events.onQueuedSkillEffectShown()
 --      :events.onQueuedSkillEffectHidden()
 --
+--  If tooltips is enabled, tooltips will be shown for the highlighted
+--  tile when you hold H. If attacking with a pawn, G will show the
+--  attacking pawn's tooltip.
+--
 ----------------------------------------------------------------------
+
+local WP_DEBUG = false
+local wpLogLast = nil
+local function wpDebugLog(fmt, ...)
+	if not WP_DEBUG then
+		return
+	end
+	local msg = string.format(fmt, ...)
+	-- Skip duplicate logs for hot loops (i.e. on hover logs)
+	if msg == wpLogLast then
+		return
+	end
+	wpLogLast = msg
+	LOG("[WP] " .. msg)
+end
 
 
 if Assert.TypeGLColor == nil then
@@ -113,18 +138,22 @@ local INT_MAX = 2147483647
 -- Tooltip key configuration
 local TOOLTIP_KEY = SDLKeycodes.h
 local TOOLTIP_KEY_TEXT = "H"
+-- Tooltip key config for selected pawn
+local SHOW_SELECTED_ICONS_KEY = SDLKeycodes.g
+local SHOW_SELECTED_ICONS_KEY_TEXT = "G"
 
 -- Group consolidation support
 local DEFAULT_MULTI_ICON = nil  -- Will be initialized during finalizeInit
 local DEFAULT_MULTI_ICON_MARK_DATA = nil  -- Will be initialized after createAnim is available
 local groupRegistry = {}  -- Maps groupId -> {offset = Point, multiIcon = string, multiIconMarkData = {duration, delay, loop}, groupMultiIconKey = string}
-local pendingGroupAnimations = {}  -- Tracks animations by group: [state][groupId][loc_hash] = {loc, anims = {{anim, duration, delay, loop}, ...}}
 local animationDescriptions = {}  -- Maps anim name -> description string
 
 -- Track state for tooltip key display
 local isTooltipKeyHeld = false
 local lastTooltipKeyState = false
-local lastHighlightedTile = nil
+local isShowSelectedIconsKeyHeld = false
+local lastShowSelectedKeyState = false
+local lastTipLoc = nil
 
 -- TutorialTips library
 local tutorialTips
@@ -319,7 +348,7 @@ local function getGroupMultiIcon(groupId)
 	return DEFAULT_MULTI_ICON
 end
 
-local function addAnimation(self, p, anim, delay, groupId, description)
+local function addAnimation(self, p, anim, delay, groupId, description, alwaysShow)
 	if isPreviewerUnavailable() then return end
 
 	Assert.TypePoint(p, "Argument #1")
@@ -327,11 +356,15 @@ local function addAnimation(self, p, anim, delay, groupId, description)
 	Assert.NotEquals('nil', type(ANIMS[anim]), "Argument #2")
 	Assert.Equals({'nil', 'string'}, type(groupId), "Argument #4 (groupId)")
 	Assert.Equals({'nil', 'string'}, type(description), "Argument #5 (description)")
+	Assert.Equals({'nil', 'boolean'}, type(alwaysShow), "Argument #6 (alwaysShow)")
+
+	alwaysShow = alwaysShow == true
 
 	-- Store the original animation name before any group modifications
 	local originalAnimName = anim
 
-	-- Store description if provided
+	-- Global map is a fallback when only one tip is used per anim.
+	-- Prefer per mark description so the same anim can tip differently by tile.
 	if description then
 		animationDescriptions[originalAnimName] = description
 	end
@@ -366,30 +399,33 @@ local function addAnimation(self, p, anim, delay, groupId, description)
 		delay = nil
 	end
 
-	-- Track grouped animations for consolidation
+	-- Track grouped animations for consolidation on this marks list only
 	if groupId then
-		if not pendingGroupAnimations[previewState] then
-			pendingGroupAnimations[previewState] = {}
+		local marks = previewMarks[previewState]
+		if not marks._pendingGroups then
+			marks._pendingGroups = {}
 		end
-		if not pendingGroupAnimations[previewState][groupId] then
-			pendingGroupAnimations[previewState][groupId] = {}
+		if not marks._pendingGroups[groupId] then
+			marks._pendingGroups[groupId] = {}
 		end
 
 		local locHash = p.x * 10 + p.y
-		if not pendingGroupAnimations[previewState][groupId][locHash] then
-			pendingGroupAnimations[previewState][groupId][locHash] = {
+		if not marks._pendingGroups[groupId][locHash] then
+			marks._pendingGroups[groupId][locHash] = {
 				loc = Point(p),
 				anims = {}
 			}
 		end
 
 		-- Add animation to array with its mark data, storing the original animation name
-		table.insert(pendingGroupAnimations[previewState][groupId][locHash].anims, {
+		table.insert(marks._pendingGroups[groupId][locHash].anims, {
 			anim = anim,  -- Store the adjusted animation name with group offset
 			duration = duration,
 			delay = delay,
 			loop = base.Loop,
-			originalAnim = originalAnimName  -- Store original anim name for description lookup
+			originalAnim = originalAnimName,  -- Store original anim name for description lookup
+			description = description,
+			alwaysShow = alwaysShow
 		})
 
 		-- Don't add grouped animations to marks yet - consolidation will handle it
@@ -404,35 +440,41 @@ local function addAnimation(self, p, anim, delay, groupId, description)
 		duration = duration,
 		delay = delay,
 		loop = base.Loop,
-		originalAnim = originalAnimName  -- Store original anim name for description lookup
+		originalAnim = originalAnimName,  -- Store original anim name for description lookup
+		description = description,
+		alwaysShow = alwaysShow
 	})
 end
 
-local function addColor(self, p, gl_color, duration)
+local function addColor(self, p, gl_color, duration, alwaysShow)
 	if isPreviewerUnavailable() then return end
 
 	Assert.TypePoint(p, "Argument #1")
 	Assert.TypeGLColor(gl_color, "Argument #2")
 	Assert.Equals({'nil', 'number'}, type(duration), "Argument #3")
+	Assert.Equals({'nil', 'boolean'}, type(alwaysShow), "Argument #4 (alwaysShow)")
 
 	table.insert(previewMarks[previewState], {
 		fn = 'MarkSpaceColor',
 		data = {Point(p), gl_color},
-		duration = duration
+		duration = duration,
+		alwaysShow = alwaysShow == true
 	})
 end
 
-local function addDamage(self, d, duration)
+local function addDamage(self, d, duration, alwaysShow)
 	if isPreviewerUnavailable() then return end
 
 	Assert.Equals({'userdata', 'table'}, type(d), "Argument #1")
 	Assert.Equals({'nil', 'number'}, type(duration), "Argument #2")
+	Assert.Equals({'nil', 'boolean'}, type(alwaysShow), "Argument #3 (alwaysShow)")
 	Assert.TypePoint(d.loc, "Argument #1 - Field 'loc'")
 
 	table.insert(previewMarks[previewState], {
 		fn = 'MarkSpaceDamage',
 		data = {shallow_copy(d)},
-		duration = duration
+		duration = duration,
+		alwaysShow = alwaysShow == true
 	})
 end
 
@@ -446,30 +488,33 @@ local function addDelay(self, duration)
 	})
 end
 
-local function addDesc(self, p, desc, flag, duration)
+local function addDesc(self, p, desc, flag, duration, alwaysShow)
 	if isPreviewerUnavailable() then return end
 
 	Assert.TypePoint(p, "Argument #1")
 	Assert.Equals('string', type(desc), "Argument #2")
 	Assert.Equals({'nil', 'boolean'}, type(flag), "Argument #3")
 	Assert.Equals({'nil', 'number'}, type(duration), "Argument #4")
+	Assert.Equals({'nil', 'boolean'}, type(alwaysShow), "Argument #5 (alwaysShow)")
 
 	flag = flag ~= false
 
 	table.insert(previewMarks[previewState], {
 		fn = 'MarkSpaceDesc',
 		data = {Point(p), desc, flag},
-		duration = duration
+		duration = duration,
+		alwaysShow = alwaysShow == true
 	})
 end
 
-local function addEmitter(self, p, emitter, duration)
+local function addEmitter(self, p, emitter, duration, alwaysShow)
 	if isPreviewerUnavailable() then return end
 
 	Assert.TypePoint(p, "Argument #1")
 	Assert.Equals('string', type(emitter), "Argument #2")
 	Assert.NotEquals('nil', type(_G[emitter]), "Argument #2")
 	Assert.Equals({'nil', 'number'}, type(duration), "Argument #3")
+	Assert.Equals({'nil', 'boolean'}, type(alwaysShow), "Argument #4 (alwaysShow)")
 
 	local base = _G[emitter]
 
@@ -485,52 +530,59 @@ local function addEmitter(self, p, emitter, duration)
 		loc = Point(p),
 		emitter = emitter,
 		data = {},
-		duration = duration
+		duration = duration,
+		alwaysShow = alwaysShow == true
 	})
 end
 
-local function addFlashing(self, p, flag, duration)
+local function addFlashing(self, p, flag, duration, alwaysShow)
 	if isPreviewerUnavailable() then return end
 
 	Assert.TypePoint(p, "Argument #1")
 	Assert.Equals({'nil', 'boolean'}, type(flag), "Argument #2")
 	Assert.Equals({'nil', 'number'}, type(duration), "Argument #3")
+	Assert.Equals({'nil', 'boolean'}, type(alwaysShow), "Argument #4 (alwaysShow)")
 
 	flag = flag ~= false
 
 	table.insert(previewMarks[previewState], {
 		fn = 'MarkFlashing',
 		data = {Point(p), flag},
-		duration = duration
+		duration = duration,
+		alwaysShow = alwaysShow == true
 	})
 end
 
-local function addImage(self, p, path, gl_color, duration)
+local function addImage(self, p, path, gl_color, duration, alwaysShow)
 	if isPreviewerUnavailable() then return end
 
 	Assert.TypePoint(p, "Argument #1")
 	Assert.Equals('string', type(path), "Argument #2")
 	Assert.TypeGLColor(gl_color, "Argument #3")
 	Assert.Equals({'nil', 'number'}, type(duration), "Argument #4")
+	Assert.Equals({'nil', 'boolean'}, type(alwaysShow), "Argument #5 (alwaysShow)")
 
 	table.insert(previewMarks[previewState], {
 		fn = 'MarkSpaceImage',
 		data = {Point(p), path, gl_color},
-		duration = duration
+		duration = duration,
+		alwaysShow = alwaysShow == true
 	})
 end
 
-local function addSimpleColor(self, p, gl_color, duration)
+local function addSimpleColor(self, p, gl_color, duration, alwaysShow)
 	if isPreviewerUnavailable() then return end
 
 	Assert.TypePoint(p, "Argument #1")
 	Assert.TypeGLColor(gl_color, "Argument #2")
 	Assert.Equals({'nil', 'number'}, type(duration), "Argument #3")
+	Assert.Equals({'nil', 'boolean'}, type(alwaysShow), "Argument #4 (alwaysShow)")
 
 	table.insert(previewMarks[previewState], {
 		fn = 'MarkSpaceSimpleColor',
 		data = {Point(p), gl_color},
-		duration = duration
+		duration = duration,
+		alwaysShow = alwaysShow == true
 	})
 end
 
@@ -550,12 +602,10 @@ end
 local function clearMarks(state)
 	if state then
 		previewMarks[state] = {}
-		pendingGroupAnimations[state] = {}
 	else
 		for _, s in ipairs({STATE_TARGET_AREA, STATE_SECOND_TARGET_AREA, STATE_SKILL_EFFECT,
 				STATE_FINAL_EFFECT, STATE_QUEUED_SKILL, STATE_QUEUED_FINAL_EFFECT}) do
 			previewMarks[s] = {}
-			pendingGroupAnimations[s] = {}
 		end
 	end
 end
@@ -578,15 +628,18 @@ local function registerGroup(self, groupId, offset, multiIcon, multiIconMarkData
 	-- Only register if not already registered
 	if not groupRegistry[groupId] then
 		local finalMultiIcon = multiIcon or DEFAULT_MULTI_ICON
+		local groupMultiIconKey = nil
 
-		-- Create group specific multi-icon with offset applied
-		local groupMultiIconKey = finalMultiIcon .. "_group_" .. groupId
-		if ANIMS[finalMultiIcon] and not ANIMS[groupMultiIconKey] then
-			ANIMS[groupMultiIconKey] = ANIMS[finalMultiIcon]:new{
-				PosX = offset.x,
-				PosY = offset.y
-			}
-			createAnim(groupMultiIconKey)
+		-- Create group specific multi-icon with offset applied when a multi-icon is available
+		if finalMultiIcon and ANIMS[finalMultiIcon] then
+			groupMultiIconKey = finalMultiIcon .. "_group_" .. groupId
+			if not ANIMS[groupMultiIconKey] then
+				ANIMS[groupMultiIconKey] = ANIMS[finalMultiIcon]:new{
+					PosX = offset.x,
+					PosY = offset.y
+				}
+				createAnim(groupMultiIconKey)
+			end
 		end
 
 		groupRegistry[groupId] = {
@@ -598,30 +651,53 @@ local function registerGroup(self, groupId, offset, multiIcon, multiIconMarkData
 	end
 end
 
+local function addGroupedAnimMark(marks, loc, animData)
+	table.insert(marks, {
+		fn = 'AddAnimation',
+		anim = animData.anim,
+		data = {Point(loc), animData.anim, ANIM_NO_DELAY},
+		duration = animData.duration,
+		delay = animData.delay,
+		loop = animData.loop,
+		originalAnim = animData.originalAnim,
+		description = animData.description,
+		alwaysShow = animData.alwaysShow
+	})
+end
+
 -- Consolidate grouped animations - add individual or multi-icon marks as appropriate
 -- This function ONLY processes animations that were added with a groupId parameter.
 -- Normal animations (without groupId) are added directly to marks and bypass this entirely.
+-- Pending groups live on the marks table (keyed by attacker for queued display) and
+-- combine by space (locHash) within that list — not by which skill wrote them.
 local function consolidateGroupedAnimations(marks, state)
-	if not pendingGroupAnimations[state] then
+	local pending = marks and marks._pendingGroups
+	if not pending then
 		return
 	end
 
 	-- Process each group
-	for groupId, locations in pairs(pendingGroupAnimations[state]) do
+	for groupId, locations in pairs(pending) do
 		for locHash, data in pairs(locations) do
 			-- Consolidate if there are multiple icons
 			if #data.anims > 1 then
 				local groupData = getGroupData(groupId)
-				local groupMultiIconKey = groupData.groupMultiIconKey
+				local groupMultiIconKey = groupData and groupData.groupMultiIconKey
+				local markData = (groupData and groupData.multiIconMarkData) or DEFAULT_MULTI_ICON_MARK_DATA
 
-				if groupMultiIconKey and ANIMS[groupMultiIconKey] then
-					-- Use mark data from group registration or fall back to defaults
-					local markData = groupData.multiIconMarkData or DEFAULT_MULTI_ICON_MARK_DATA
-
-					-- Collect original animation names for tooltip support
+				if groupMultiIconKey and ANIMS[groupMultiIconKey] and markData then
+					-- Collect original animation names/per icon tips for tooltips
+					-- multi-icon alwaysShows if any one of the marks making it up does
 					local combinedAnims = {}
+					local combinedDescriptions = {}
+					local alwaysShow = false
 					for _, animData in ipairs(data.anims) do
 						table.insert(combinedAnims, animData.originalAnim)
+						table.insert(combinedDescriptions, animData.description
+								or animationDescriptions[animData.originalAnim])
+						if animData.alwaysShow then
+							alwaysShow = true
+						end
 					end
 
 					table.insert(marks, {
@@ -632,27 +708,25 @@ local function consolidateGroupedAnimations(marks, state)
 						delay = markData.delay,
 						loop = markData.loop,
 						isMultiIcon = true,
-						combinedAnims = combinedAnims  -- Store list of original animations for tooltips
+						combinedAnims = combinedAnims,
+						combinedDescriptions = combinedDescriptions,
+						alwaysShow = alwaysShow
 					})
+				else
+					-- No multi-icon available - show each grouped icon individually
+					for _, animData in ipairs(data.anims) do
+						addGroupedAnimMark(marks, data.loc, animData)
+					end
 				end
 			elseif #data.anims == 1 then
 				-- Single animation - add it normally
-				local animData = data.anims[1]
-				table.insert(marks, {
-					fn = 'AddAnimation',
-					anim = animData.anim,
-					data = {Point(data.loc), animData.anim, ANIM_NO_DELAY},
-					duration = animData.duration,
-					delay = animData.delay,
-					loop = animData.loop,
-					originalAnim = animData.originalAnim
-				})
+				addGroupedAnimMark(marks, data.loc, data.anims[1])
 			end
 		end
 	end
 
-	-- Clear pending animations for this state after consolidation
-	pendingGroupAnimations[state] = nil
+	-- Clear pending animations for this marks list after consolidation
+	marks._pendingGroups = nil
 end
 
 local function setLooping(self, flag)
@@ -747,11 +821,32 @@ local function executeWithState(newPreviewState, fn, queuedPawnId)
 		return
 	end
 
-	-- If its a queued state, we need the queued pawn id arg and we need to make sure the
-	-- queued preview marks are set up for the pawn
-	if newPreviewState == STATE_QUEUED_SKILL or newPreviewState == STATE_QUEUED_FINAL_EFFECT then
+	-- Already inside a matching GetSkillEffect capture - keep writing to that list.
+	-- Do not consolidate here. Pending groups accumulate by locHash so multiple
+	-- icons on the same tile can merge into one multi-icon.
+	if previewState == newPreviewState
+			and (previewState == STATE_QUEUED_SKILL or previewState == STATE_QUEUED_FINAL_EFFECT) then
+		local captureState = previewState
+		local writeList = previewMarks[captureState]
+		if writeList then
+			fn()
+			if queuedPawnId then
+				if not queuedPreviewMarks[captureState] then
+					queuedPreviewMarks[captureState] = {}
+				end
+				queuedPreviewMarks[captureState][queuedPawnId] = writeList
+			end
+			wpDebugLog("queued write (capture) state=%s pawn=%s pending=%s marks=%d",
+					tostring(captureState), tostring(queuedPawnId),
+					tostring(writeList._pendingGroups ~= nil), #writeList)
+			return
+		end
+	end
+
+	local isQueuedState = newPreviewState == STATE_QUEUED_SKILL or newPreviewState == STATE_QUEUED_FINAL_EFFECT
+
+	if isQueuedState then
 		Assert.NotEquals('nil', type(queuedPawnId), "Argument #3 can't be nil if preview state is for queued skill")
-		-- Initialize queued marks structure if needed
 		if not queuedPreviewMarks[newPreviewState] then
 			queuedPreviewMarks[newPreviewState] = {}
 		end
@@ -760,16 +855,38 @@ local function executeWithState(newPreviewState, fn, queuedPawnId)
 		end
 	end
 
-	-- Set the state and call the fn
 	local prevState = previewState
 	previewState = newPreviewState
+
+	-- Queued overlays key by attacker for hover display. Within that list,
+	-- grouped icons combine by space so multiple sources on the same tile
+	-- will still group together
+	local writeList = nil
+	if isQueuedState then
+		if prevState == newPreviewState and previewMarks[newPreviewState] then
+			writeList = previewMarks[newPreviewState]
+		else
+			writeList = queuedPreviewMarks[newPreviewState][queuedPawnId]
+		end
+		previewMarks[newPreviewState] = writeList
+	elseif not previewMarks[newPreviewState] then
+		previewMarks[newPreviewState] = {}
+	end
+
+	local activeList = writeList or previewMarks[newPreviewState]
+
 	fn()
 
-	-- If it was a queued skill, we need to reset the queued preview marks to match
-	if newPreviewState == STATE_QUEUED_SKILL or newPreviewState == STATE_QUEUED_FINAL_EFFECT then
-		queuedPreviewMarks[previewState][queuedPawnId] = previewMarks[previewState]
+	if isQueuedState then
+		-- Keep the list we opened. Do not reread previewMarks after fn.
+		-- (a nested build can retarget previewMarks).
+		queuedPreviewMarks[previewState][queuedPawnId] = writeList
 	end
-	-- Set the state back
+
+	wpDebugLog("queued write state=%s pawn=%s pending=%s marks=%d",
+			tostring(newPreviewState), tostring(queuedPawnId),
+			tostring(activeList and activeList._pendingGroups ~= nil), #(activeList or {}))
+
 	previewState = prevState
 end
 
@@ -937,18 +1054,20 @@ local function getFinalEffect(self, p1, p2, p3, ...)
 	return result or oldGetFinalEffects[skillId](self, p1, p2, p3, ...)
 end
 
-local function getPreviewLength(marks)
+local function getPreviewLength(marks, markFilter)
 	local delay = 0
 	local length = 0
 
 	for _, mark in ipairs(marks) do
-		if mark.duration then
-			length = math.max(length, delay + mark.duration)
-		end
+		if not markFilter or markFilter(mark) then
+			if mark.duration then
+				length = math.max(length, delay + mark.duration)
+			end
 
-		if mark.delay then
-			delay = delay + mark.delay
-			length = math.max(length, delay)
+			if mark.delay then
+				delay = delay + mark.delay
+				length = math.max(length, delay)
+			end
 		end
 	end
 
@@ -974,12 +1093,13 @@ local function getAnimFrame(mark, time_start, time_curr)
 	end
 end
 
-local function markSpaces(marks, time_curr)
+-- markFilter: optional function(mark) -> bool - when set, only matching marks are drawn
+local function markSpaces(marks, time_curr, markFilter)
 	local time_start = 0
 	local looping = marks.loop
 
 	if looping ~= false then
-		local length = getPreviewLength(marks)
+		local length = getPreviewLength(marks, markFilter)
 		if length > 0 then
 			time_curr = time_curr % length
 		else
@@ -988,7 +1108,8 @@ local function markSpaces(marks, time_curr)
 	end
 
 	for _, mark in ipairs(marks) do
-		if mark.fn then
+		local include = not markFilter or markFilter(mark)
+		if include and mark.fn then
 			local duration = mark.duration or INT_MAX
 			if mark.fn == "AddAnimation" then
 				mark.data[2] = getAnimFrame(mark, time_start, time_curr)
@@ -1006,7 +1127,9 @@ local function markSpaces(marks, time_curr)
 			end
 		end
 
-		time_start = time_start + (mark.delay or 0)
+		if include then
+			time_start = time_start + (mark.delay or 0)
+		end
 	end
 end
 
@@ -1014,53 +1137,61 @@ local function onMissionChanged(mission, missionOld)
 	time_prev = os.clock()
 end
 
--- Collect and show tooltip with descriptions when tooltip key is pressed for highlighted tile
--- Also clear tooltips when key is released or tile changes
-local function checkAndShowTooltipKey(highlighted)
-	if not highlighted or highlighted == OUT_OF_BOUNDS then return end
+-- Collect and show tooltip when the hover tip key or selected pawn tip key is held.
+-- Selected tip wins if both are held (hover is ignored entirely in that case).
+local function checkAndShowTooltipKey(highlighted, selected)
+	local hoverHeld = isTooltipKeyHeld
+	local selectedHeld = isShowSelectedIconsKeyHeld
+	local hoverPressed = hoverHeld and not lastTooltipKeyState
+	local hoverReleased = (not hoverHeld) and lastTooltipKeyState
+	local selectedPressed = selectedHeld and not lastShowSelectedKeyState
+	local selectedReleased = (not selectedHeld) and lastShowSelectedKeyState
 
-	-- Check if the key state or highlighted tile changed
-	local currentTooltipKeyState = isTooltipKeyHeld
-	local tileChanged = lastHighlightedTile ~= highlighted
-	local tooltipKeyPressed = currentTooltipKeyState and not lastTooltipKeyState
-	local tooltipKeyReleased = not currentTooltipKeyState and lastTooltipKeyState
+	lastTooltipKeyState = hoverHeld
+	lastShowSelectedKeyState = selectedHeld
 
-	-- Update tracking
-	lastTooltipKeyState = currentTooltipKeyState
-	lastHighlightedTile = highlighted
+	local tipLoc = nil
+	local showNow = false
 
-	-- Clear tips if key was released
-	if tooltipKeyReleased then
-		Game:ClearTips()
+	if selectedHeld and selected then
+		-- Selected tip only. Do not clear/recheck hover while this key is held
+		tipLoc = selected:GetSpace()
+		showNow = selectedPressed or tipLoc ~= lastTipLoc
+	elseif hoverHeld and highlighted and highlighted ~= OUT_OF_BOUNDS then
+		tipLoc = highlighted
+		showNow = hoverPressed or tipLoc ~= lastTipLoc
+	else
+		if hoverReleased or selectedReleased then
+			Game:ClearTips()
+			lastTipLoc = nil
+		end
 		return
 	end
 
-	-- Only show tooltip if key was just pressed or if tile changed while the key is held
-	if not (tooltipKeyPressed or (tileChanged and currentTooltipKeyState)) then
+	if not showNow or not tipLoc or tipLoc == OUT_OF_BOUNDS then
 		return
 	end
 
-	-- Don't show if the key is not currently down
-	if not currentTooltipKeyState then return end
-
-	-- If tile changed clear the old tooltip first to avoid stacking
-	if tileChanged then
+	if tipLoc ~= lastTipLoc then
 		Game:ClearTips()
 	end
+	lastTipLoc = tipLoc
 
 	local descriptions = {}
 
 	-- Helper function to collect descriptions from marks at location
+	-- Prefer per mark description (same anim can tip differently by tile)
 	local function collectDescriptions(marks)
 		if not marks then return end
 
 		for _, mark in ipairs(marks) do
-			if mark.fn == 'AddAnimation' and mark.data and mark.data[1] == highlighted then
+			if mark.fn == 'AddAnimation' and mark.data and mark.data[1] == tipLoc then
 				-- Check if this is a multi icon mark
 				if mark.isMultiIcon and mark.combinedAnims then
 					-- Collect descriptions from all combined animations
-					for _, originalAnim in ipairs(mark.combinedAnims) do
-						local desc = animationDescriptions[originalAnim]
+					for i, originalAnim in ipairs(mark.combinedAnims) do
+						local desc = (mark.combinedDescriptions and mark.combinedDescriptions[i])
+								or animationDescriptions[originalAnim]
 						if desc and not list_contains(descriptions, desc) then
 							table.insert(descriptions, desc)
 						end
@@ -1068,7 +1199,7 @@ local function checkAndShowTooltipKey(highlighted)
 				else
 					-- Add just its description for a single icon
 					local originalAnim = mark.originalAnim or mark.anim
-					local desc = animationDescriptions[originalAnim]
+					local desc = mark.description or animationDescriptions[originalAnim]
 					if desc and not list_contains(descriptions, desc) then
 						table.insert(descriptions, desc)
 					end
@@ -1115,7 +1246,7 @@ local function checkAndShowTooltipKey(highlighted)
 
 		Global_Texts["WeaponPreview_TempExplanation_Title"] = "Space Effects Details"
 		Global_Texts["WeaponPreview_TempExplanation_Text"] = desc
-		Game:AddTip("WeaponPreview_TempExplanation", highlighted)
+		Game:AddTip("WeaponPreview_TempExplanation", tipLoc)
 		Global_Texts["WeaponPreview_TempExplanation_Title"] = nil
 		Global_Texts["WeaponPreview_TempExplanation_Text"] = nil
 	end
@@ -1135,17 +1266,25 @@ local function checkAndShowFirstTimeNotifications(marks, loc)
 			if mark.isMultiIcon then
 				hasMultiIcon = true
 				-- Multi icons with descriptions
-				if mark.combinedAnims then
+				if mark.combinedDescriptions then
+					for _, desc in ipairs(mark.combinedDescriptions) do
+						if desc then
+							hasDescriptions = true
+							break
+						end
+					end
+				elseif mark.combinedAnims then
 					for _, originalAnim in ipairs(mark.combinedAnims) do
 						if animationDescriptions[originalAnim] then
 							hasDescriptions = true
+							break
 						end
 					end
 				end
 			else
 				-- Regular animation with description
 				local originalAnim = mark.originalAnim or mark.anim
-				if animationDescriptions[originalAnim] then
+				if mark.description or animationDescriptions[originalAnim] then
 					hasDescriptions = true
 				end
 			end
@@ -1255,28 +1394,128 @@ local function onMissionUpdate()
 		actingMarker:clear()
 	end
 
-	-- Display all queued marks
-	if queuedPreviewMarks[STATE_QUEUED_SKILL] then
-		for pawnId, marks in pairs(queuedPreviewMarks[STATE_QUEUED_SKILL]) do
-			consolidateGroupedAnimations(marks, STATE_QUEUED_SKILL)
-			markSpaces(marks, queuedMarker.ticker)
-			-- Check for first time notifications when displaying marks
-			checkAndShowFirstTimeNotifications(marks, highlighted)
+	-- Hover based queued markers (alwaysShow icons still draw without hover later)
+	if queuedMarker ~= actingMarker then
+		if queuedMarker:isActive() then
+			events.onQueuedSkillEffectHidden:dispatch(queuedMarker:unpack())
+			queuedMarker:clear()
 		end
+
+		queuedMarker:copy(actingMarker)
+
+		if queuedMarker:isActive() then
+			events.onQueuedSkillEffectShown:dispatch(queuedMarker:unpack())
+		end
+	end
+
+	-- Hover based queued markers (alwaysShow icons still draw without hover later)
+	if queuedFinalEffectMarker ~= actingMarker then
+		if queuedFinalEffectMarker:isActive() then
+			events.onQueuedFinalEffectHidden:dispatch(queuedFinalEffectMarker:unpack())
+			queuedFinalEffectMarker:clear()
+		end
+
+		queuedFinalEffectMarker:copy(actingMarker)
+
+		if queuedFinalEffectMarker:isActive() then
+			events.onQueuedFinalEffectShown:dispatch(queuedFinalEffectMarker:unpack())
+		end
+	end
+
+	local function getMarkLoc(mark)
+		if not mark or not mark.data or not mark.data[1] then
+			return nil
+		end
+		local d = mark.data[1]
+		-- MarkSpaceDamage stores a SpaceDamage copy; most others store a Point
+		if type(d) == "userdata" and d.loc then
+			return d.loc
+		end
+		return d
+	end
+
+	-- True if this attack's mark list paints the highlighted tile (target hover).
+	local function markListTouchesPoint(marks, point)
+		if not marks or not point or point == OUT_OF_BOUNDS then
+			return false
+		end
+		for _, mark in ipairs(marks) do
+			local loc = getMarkLoc(mark)
+			if loc and loc == point then
+				return true
+			end
+		end
+		local pending = marks._pendingGroups
+		if pending then
+			for _, locations in pairs(pending) do
+				for _, data in pairs(locations) do
+					if data.loc and data.loc == point then
+						return true
+					end
+				end
+			end
+		end
+		return false
+	end
+
+	local function displayQueuedMarks(state, marker)
+		local pawnMarks = queuedPreviewMarks[state]
+		if not pawnMarks then
+			return false
+		end
+
+		-- Selected pawn tip key focuses the selected pawn. If none, the highlighted pawn.
+		-- Match by attacker id or by marks that land on that pawn's tile
+		local focusPawn = selected or highlightedPawn
+		local focusPawnId = focusPawn and focusPawn:GetId() or nil
+		local focusLoc = focusPawn and focusPawn:GetSpace() or nil
+
+		local displayed = false
+		local drawn = {}
+		for pawnId, marks in pairs(pawnMarks) do
+			if marks and not drawn[marks] then
+				consolidateGroupedAnimations(marks, state)
+				local isSourceHovered = marker:isActive() and pawnId == marker.pawnId
+				local isTargetHovered = markListTouchesPoint(marks, highlighted)
+				local isFocusHotkey = isShowSelectedIconsKeyHeld and focusPawnId and (
+						pawnId == focusPawnId or markListTouchesPoint(marks, focusLoc))
+				if isSourceHovered or isTargetHovered or isFocusHotkey then
+					wpDebugLog("queued display pawn=%s source=%s target=%s hotkey=%s marks=%d",
+							tostring(pawnId), tostring(isSourceHovered),
+							tostring(isTargetHovered), tostring(isFocusHotkey), #marks)
+					markSpaces(marks, marker.ticker)
+					checkAndShowFirstTimeNotifications(marks, highlighted)
+					drawn[marks] = true
+					displayed = true
+				else
+					local hasAlwaysShow = false
+					for _, mark in ipairs(marks) do
+						if mark.alwaysShow then
+							hasAlwaysShow = true
+							break
+						end
+					end
+					if hasAlwaysShow then
+						markSpaces(marks, marker.ticker, function(m) return m.alwaysShow end)
+						drawn[marks] = true
+						displayed = true
+					end
+				end
+			end
+		end
+		return displayed
+	end
+
+	if displayQueuedMarks(STATE_QUEUED_SKILL, queuedMarker) then
 		queuedMarker.ticker = queuedMarker.ticker + time_delta
 	end
 
-	if queuedPreviewMarks[STATE_QUEUED_FINAL_EFFECT] then
-		for pawnId, marks in pairs(queuedPreviewMarks[STATE_QUEUED_FINAL_EFFECT]) do
-			consolidateGroupedAnimations(marks, STATE_QUEUED_FINAL_EFFECT)
-			markSpaces(marks, queuedFinalEffectMarker.ticker)
-			-- Check for first time notifications when displaying marks
-			checkAndShowFirstTimeNotifications(marks, highlighted)
-		end
+	if displayQueuedMarks(STATE_QUEUED_FINAL_EFFECT, queuedFinalEffectMarker) then
 		queuedFinalEffectMarker.ticker = queuedFinalEffectMarker.ticker + time_delta
 	end
-	-- Check every frame if the key is pressed and show tooltip for highlighted tile
-	checkAndShowTooltipKey(highlighted)
+
+	-- Hover tip key tips the highlighted tile. Selected tip key tips the selected pawn
+	checkAndShowTooltipKey(highlighted, selected)
 end
 
 local function onQueuedSkillEnd(pawn, state)
@@ -1391,41 +1630,74 @@ end
 local path = GetParentPath(...)
 
 local function initTutorialTips()
-	tutorialTips = require(path .. "tutorialTips")
+	-- tutorial tiips is optional. Skip quietly if its missing or fails to load
+	local ok, tips = pcall(require, path .. "tutorialTips")
+	if not ok or not tips then
+		tutorialTips = nil
+		LOG("[WP] Tutorial tips unavailable (require failed) - first time tip notifications disabled. " .. tostring(tips))
+		return
+	end
 
-	-- Initialize with a specific root ID so it can be shared/reset by other mods
-	tutorialTips:Init("WeaponPreviewLib")
+	local setupOk, setupErr = pcall(function()
+		-- Initialize with a specific root ID so it can be shared/reset by other mods
+		tips:Init("WeaponPreviewLib")
 
-	-- Add tutorial tips
-	tutorialTips:Add{
-		id = "WeaponPreview_MultiIconNotification",
-		title = "Multi-Icon Indicator",
-		text = "This icon indicates multiple effects are active on this tile.",
-	}
+		tips:Add{
+			id = "WeaponPreview_MultiIconNotification",
+			title = "Multi-Icon Indicator",
+			text = "This icon indicates multiple effects are active on this tile.",
+		}
 
-	tutorialTips:Add{
-		id = "WeaponPreview_DescriptionNotification",
-		title = "Extra Effects Preview Tips",
-		text = "Hold " .. TOOLTIP_KEY_TEXT .. " while hovering to see detailed information (if available) about the effects.",
-	}
+		tips:Add{
+			id = "WeaponPreview_DescriptionNotification",
+			title = "Extra Effects Preview Tips",
+			text = "Hold " .. TOOLTIP_KEY_TEXT .. " while hovering to see detailed information (if available) about the effects.",
+		}
+	end)
+
+	if setupOk then
+		tutorialTips = tips
+	else
+		tutorialTips = nil
+		LOG("[WP] Tutorial tips unavailable (setup failed) - first time tip notifications disabled. " .. tostring(setupErr))
+	end
 end
 
 local function initMultiIcon()
-	DEFAULT_MULTI_ICON = "weaponPreview_icon_multihit"
-	local DEFAULT_MULTI_ICON_IMG = DEFAULT_MULTI_ICON .. "_glow.png"
-	modApi:appendAsset("img/combat/icons/" .. DEFAULT_MULTI_ICON_IMG, path.."/"..DEFAULT_MULTI_ICON_IMG)
-	ANIMS[DEFAULT_MULTI_ICON] = ANIMS.Animation:new{
-		Image = "combat/icons/".. DEFAULT_MULTI_ICON .. "_glow.png",
-		NumFrames = 1,
-		Time = 1,
-		Loop = true,
-	}
-	createAnim(DEFAULT_MULTI_ICON)
-	DEFAULT_MULTI_ICON_MARK_DATA = {
-		duration = sum(ANIMS[PREFIX_ANIM..DEFAULT_MULTI_ICON].__Lengths),
-		delay = nil,
-		loop = true
-	}
+	-- Multihit icon is optional. Only enable multi-icon consolidation when the asset is present
+	local iconKey = "weaponPreview_icon_multihit"
+	local iconImg = iconKey .. "_glow.png"
+	local iconPath = path .. "/" .. iconImg
+
+	if not modApi:fileExists(iconPath) then
+		DEFAULT_MULTI_ICON = nil
+		DEFAULT_MULTI_ICON_MARK_DATA = nil
+		LOG("[WP] Multi-icon asset missing (" .. iconPath .. ") - grouped icons will show individually.")
+		return
+	end
+
+	local ok, err = pcall(function()
+		modApi:appendAsset("img/combat/icons/" .. iconImg, iconPath)
+		ANIMS[iconKey] = ANIMS.Animation:new{
+			Image = "combat/icons/" .. iconImg,
+			NumFrames = 1,
+			Time = 1,
+			Loop = true,
+		}
+		createAnim(iconKey)
+		DEFAULT_MULTI_ICON = iconKey
+		DEFAULT_MULTI_ICON_MARK_DATA = {
+			duration = sum(ANIMS[PREFIX_ANIM .. iconKey].__Lengths),
+			delay = nil,
+			loop = true
+		}
+	end)
+
+	if not ok then
+		DEFAULT_MULTI_ICON = nil
+		DEFAULT_MULTI_ICON_MARK_DATA = nil
+		LOG("[WP] Multi-icon failed to load - grouped icons will show individually. " .. tostring(err))
+	end
 end
 
 local function initGlobals()
@@ -1536,16 +1808,20 @@ if isNewestVersion then
 		modapiext.events.onQueuedSkillEnd:subscribe(function(mission, pawn, weaponId) onQueuedSkillEnd(pawn, STATE_QUEUED_SKILL) end)
 		modapiext.events.onQueuedFinalEffectEnd:subscribe(function(mission, pawn, weaponId) onQueuedSkillEnd(pawn, STATE_QUEUED_FINAL_EFFECT) end)
 
-		-- Track the key state for tooltip display
+		-- Track the key state for tooltip display/selected pawn icon reveal
 		modApi.events.onKeyPressed:subscribe(function(keycode)
 			if keycode == TOOLTIP_KEY then
 				isTooltipKeyHeld = true
+			elseif keycode == SHOW_SELECTED_ICONS_KEY then
+				isShowSelectedIconsKeyHeld = true
 			end
 		end)
 
 		modApi.events.onKeyReleased:subscribe(function(keycode)
 			if keycode == TOOLTIP_KEY then
 				isTooltipKeyHeld = false
+			elseif keycode == SHOW_SELECTED_ICONS_KEY then
+				isShowSelectedIconsKeyHeld = false
 			end
 		end)
 	end

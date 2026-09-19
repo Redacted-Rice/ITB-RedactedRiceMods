@@ -28,9 +28,8 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 	-- Add boost icon with group ID for automatic consolidation
 	more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
 		function()
-			more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc, more_plus.commonIcons.boost.key, nil,  -- delay
-					more_plus.WEAPON_PREVIEW_GROUP_ID, GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
-		end, targetId
+			more_plus.addWeaponPreviewIcon(phase, spaceDamage.loc, more_plus.commonIcons.boost.key, GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
+		end, attackingPawn:GetId()
 	)
 	-- Apply boosted status
 	spaceDamage.sScript = spaceDamage.sScript .. string.format("Board:GetPawn(%d):SetBoosted(true)", targetId)

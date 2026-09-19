@@ -8,7 +8,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
 		-- Despite not being able to heal, zoltan can still be healed by an effect and get this
 		pilotExclusions = {"Pilot_Arrogant", "Pilot_Chemical"},
 	},
-	priority = 180, -- Go after everything else including vampire
+	priority = 200, -- Go after everything else including vampire
 	modifiesKillDamage = false,
 }
 
@@ -19,7 +19,7 @@ local SUBMODULE = logger.register("More+", "Vigor", customSkill.DEBUG)
 more_plus:addCustomTraitIcon(customSkill)
 
 function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage, indexes, targetPawn)
-	if source ~= self.SOURCE_TARGET or spaceDamage.iDamage >= 0 or
+	if source ~= self.SOURCE_TARGET or not attackingPawn or spaceDamage.iDamage >= 0 or
 			spaceDamage.iDamage == DAMAGE_ZERO or spaceDamage.iDamage == DAMAGE_DEATH then
 		return
 	end
@@ -34,9 +34,8 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 			spaceDamage.loc:GetString())
 	more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
 		function()
-			more_plus.libs.weaponPreview:AddAnimation(spaceDamage.loc, more_plus.commonIcons.boost.key, nil,  -- delay
-					more_plus.WEAPON_PREVIEW_GROUP_ID, GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
-		end, targetId
+			more_plus.addWeaponPreviewIcon(phase, spaceDamage.loc, more_plus.commonIcons.boost.key, GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
+		end, attackingPawn:GetId()
 	)
 	spaceDamage.sScript = spaceDamage.sScript .. string.format(
 			"modApi:runLater(function() Board:GetPawn(%d):SetBoosted(true) end)", targetId)
