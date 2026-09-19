@@ -85,7 +85,7 @@ local VERSION = "4.1.1"
 
 local WP_DEBUG = false
 local wpLogLast = nil
-local function wpLog(fmt, ...)
+local function wpDebugLog(fmt, ...)
 	if not WP_DEBUG then
 		return
 	end
@@ -628,15 +628,18 @@ local function registerGroup(self, groupId, offset, multiIcon, multiIconMarkData
 	-- Only register if not already registered
 	if not groupRegistry[groupId] then
 		local finalMultiIcon = multiIcon or DEFAULT_MULTI_ICON
+		local groupMultiIconKey = nil
 
-		-- Create group specific multi-icon with offset applied
-		local groupMultiIconKey = finalMultiIcon .. "_group_" .. groupId
-		if ANIMS[finalMultiIcon] and not ANIMS[groupMultiIconKey] then
-			ANIMS[groupMultiIconKey] = ANIMS[finalMultiIcon]:new{
-				PosX = offset.x,
-				PosY = offset.y
-			}
-			createAnim(groupMultiIconKey)
+		-- Create group specific multi-icon with offset applied when a multi-icon is available
+		if finalMultiIcon and ANIMS[finalMultiIcon] then
+			groupMultiIconKey = finalMultiIcon .. "_group_" .. groupId
+			if not ANIMS[groupMultiIconKey] then
+				ANIMS[groupMultiIconKey] = ANIMS[finalMultiIcon]:new{
+					PosX = offset.x,
+					PosY = offset.y
+				}
+				createAnim(groupMultiIconKey)
+			end
 		end
 
 		groupRegistry[groupId] = {
@@ -646,6 +649,20 @@ local function registerGroup(self, groupId, offset, multiIcon, multiIconMarkData
 			groupMultiIconKey = groupMultiIconKey
 		}
 	end
+end
+
+local function addGroupedAnimMark(marks, loc, animData)
+	table.insert(marks, {
+		fn = 'AddAnimation',
+		anim = animData.anim,
+		data = {Point(loc), animData.anim, ANIM_NO_DELAY},
+		duration = animData.duration,
+		delay = animData.delay,
+		loop = animData.loop,
+		originalAnim = animData.originalAnim,
+		description = animData.description,
+		alwaysShow = animData.alwaysShow
+	})
 end
 
 -- Consolidate grouped animations - add individual or multi-icon marks as appropriate
@@ -665,12 +682,10 @@ local function consolidateGroupedAnimations(marks, state)
 			-- Consolidate if there are multiple icons
 			if #data.anims > 1 then
 				local groupData = getGroupData(groupId)
-				local groupMultiIconKey = groupData.groupMultiIconKey
+				local groupMultiIconKey = groupData and groupData.groupMultiIconKey
+				local markData = (groupData and groupData.multiIconMarkData) or DEFAULT_MULTI_ICON_MARK_DATA
 
-				if groupMultiIconKey and ANIMS[groupMultiIconKey] then
-					-- Use mark data from group registration or fall back to defaults
-					local markData = groupData.multiIconMarkData or DEFAULT_MULTI_ICON_MARK_DATA
-
+				if groupMultiIconKey and ANIMS[groupMultiIconKey] and markData then
 					-- Collect original animation names/per icon tips for tooltips
 					-- multi-icon alwaysShows if any one of the marks making it up does
 					local combinedAnims = {}
@@ -697,21 +712,15 @@ local function consolidateGroupedAnimations(marks, state)
 						combinedDescriptions = combinedDescriptions,
 						alwaysShow = alwaysShow
 					})
+				else
+					-- No multi-icon available - show each grouped icon individually
+					for _, animData in ipairs(data.anims) do
+						addGroupedAnimMark(marks, data.loc, animData)
+					end
 				end
 			elseif #data.anims == 1 then
 				-- Single animation - add it normally
-				local animData = data.anims[1]
-				table.insert(marks, {
-					fn = 'AddAnimation',
-					anim = animData.anim,
-					data = {Point(data.loc), animData.anim, ANIM_NO_DELAY},
-					duration = animData.duration,
-					delay = animData.delay,
-					loop = animData.loop,
-					originalAnim = animData.originalAnim,
-					description = animData.description,
-					alwaysShow = animData.alwaysShow
-				})
+				addGroupedAnimMark(marks, data.loc, data.anims[1])
 			end
 		end
 	end
@@ -827,7 +836,7 @@ local function executeWithState(newPreviewState, fn, queuedPawnId)
 				end
 				queuedPreviewMarks[captureState][queuedPawnId] = writeList
 			end
-			wpLog("queued write (capture) state=%s pawn=%s pending=%s marks=%d",
+			wpDebugLog("queued write (capture) state=%s pawn=%s pending=%s marks=%d",
 					tostring(captureState), tostring(queuedPawnId),
 					tostring(writeList._pendingGroups ~= nil), #writeList)
 			return
@@ -874,7 +883,7 @@ local function executeWithState(newPreviewState, fn, queuedPawnId)
 		queuedPreviewMarks[previewState][queuedPawnId] = writeList
 	end
 
-	wpLog("queued write state=%s pawn=%s pending=%s marks=%d",
+	wpDebugLog("queued write state=%s pawn=%s pending=%s marks=%d",
 			tostring(newPreviewState), tostring(queuedPawnId),
 			tostring(activeList and activeList._pendingGroups ~= nil), #(activeList or {}))
 
@@ -1471,7 +1480,7 @@ local function onMissionUpdate()
 				local isFocusHotkey = isShowSelectedIconsKeyHeld and focusPawnId and (
 						pawnId == focusPawnId or markListTouchesPoint(marks, focusLoc))
 				if isSourceHovered or isTargetHovered or isFocusHotkey then
-					wpLog("queued display pawn=%s source=%s target=%s hotkey=%s marks=%d",
+					wpDebugLog("queued display pawn=%s source=%s target=%s hotkey=%s marks=%d",
 							tostring(pawnId), tostring(isSourceHovered),
 							tostring(isTargetHovered), tostring(isFocusHotkey), #marks)
 					markSpaces(marks, marker.ticker)
@@ -1621,41 +1630,74 @@ end
 local path = GetParentPath(...)
 
 local function initTutorialTips()
-	tutorialTips = require(path .. "tutorialTips")
+	-- tutorial tiips is optional. Skip quietly if its missing or fails to load
+	local ok, tips = pcall(require, path .. "tutorialTips")
+	if not ok or not tips then
+		tutorialTips = nil
+		LOG("[WP] Tutorial tips unavailable (require failed) - first time tip notifications disabled. " .. tostring(tips))
+		return
+	end
 
-	-- Initialize with a specific root ID so it can be shared/reset by other mods
-	tutorialTips:Init("WeaponPreviewLib")
+	local setupOk, setupErr = pcall(function()
+		-- Initialize with a specific root ID so it can be shared/reset by other mods
+		tips:Init("WeaponPreviewLib")
 
-	-- Add tutorial tips
-	tutorialTips:Add{
-		id = "WeaponPreview_MultiIconNotification",
-		title = "Multi-Icon Indicator",
-		text = "This icon indicates multiple effects are active on this tile.",
-	}
+		tips:Add{
+			id = "WeaponPreview_MultiIconNotification",
+			title = "Multi-Icon Indicator",
+			text = "This icon indicates multiple effects are active on this tile.",
+		}
 
-	tutorialTips:Add{
-		id = "WeaponPreview_DescriptionNotification",
-		title = "Extra Effects Preview Tips",
-		text = "Hold " .. TOOLTIP_KEY_TEXT .. " while hovering to see detailed information (if available) about the effects.",
-	}
+		tips:Add{
+			id = "WeaponPreview_DescriptionNotification",
+			title = "Extra Effects Preview Tips",
+			text = "Hold " .. TOOLTIP_KEY_TEXT .. " while hovering to see detailed information (if available) about the effects.",
+		}
+	end)
+
+	if setupOk then
+		tutorialTips = tips
+	else
+		tutorialTips = nil
+		LOG("[WP] Tutorial tips unavailable (setup failed) - first time tip notifications disabled. " .. tostring(setupErr))
+	end
 end
 
 local function initMultiIcon()
-	DEFAULT_MULTI_ICON = "weaponPreview_icon_multihit"
-	local DEFAULT_MULTI_ICON_IMG = DEFAULT_MULTI_ICON .. "_glow.png"
-	modApi:appendAsset("img/combat/icons/" .. DEFAULT_MULTI_ICON_IMG, path.."/"..DEFAULT_MULTI_ICON_IMG)
-	ANIMS[DEFAULT_MULTI_ICON] = ANIMS.Animation:new{
-		Image = "combat/icons/".. DEFAULT_MULTI_ICON .. "_glow.png",
-		NumFrames = 1,
-		Time = 1,
-		Loop = true,
-	}
-	createAnim(DEFAULT_MULTI_ICON)
-	DEFAULT_MULTI_ICON_MARK_DATA = {
-		duration = sum(ANIMS[PREFIX_ANIM..DEFAULT_MULTI_ICON].__Lengths),
-		delay = nil,
-		loop = true
-	}
+	-- Multihit icon is optional. Only enable multi-icon consolidation when the asset is present
+	local iconKey = "weaponPreview_icon_multihit"
+	local iconImg = iconKey .. "_glow.png"
+	local iconPath = path .. "/" .. iconImg
+
+	if not modApi:fileExists(iconPath) then
+		DEFAULT_MULTI_ICON = nil
+		DEFAULT_MULTI_ICON_MARK_DATA = nil
+		LOG("[WP] Multi-icon asset missing (" .. iconPath .. ") - grouped icons will show individually.")
+		return
+	end
+
+	local ok, err = pcall(function()
+		modApi:appendAsset("img/combat/icons/" .. iconImg, iconPath)
+		ANIMS[iconKey] = ANIMS.Animation:new{
+			Image = "combat/icons/" .. iconImg,
+			NumFrames = 1,
+			Time = 1,
+			Loop = true,
+		}
+		createAnim(iconKey)
+		DEFAULT_MULTI_ICON = iconKey
+		DEFAULT_MULTI_ICON_MARK_DATA = {
+			duration = sum(ANIMS[PREFIX_ANIM .. iconKey].__Lengths),
+			delay = nil,
+			loop = true
+		}
+	end)
+
+	if not ok then
+		DEFAULT_MULTI_ICON = nil
+		DEFAULT_MULTI_ICON_MARK_DATA = nil
+		LOG("[WP] Multi-icon failed to load - grouped icons will show individually. " .. tostring(err))
+	end
 end
 
 local function initGlobals()
