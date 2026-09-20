@@ -12,17 +12,17 @@ local mod = {
 }
 
 function mod:init()
-	local legendary_plus = require(self.scriptPath .. "legendary_plus")
+	self.legendary_plus = require(self.scriptPath .. "legendary_plus")
 
 	for libId, lib in pairs(mod_loader.mods.redactedrice_libs.libs) do
-		legendary_plus.libs[libId] = lib
+		self.legendary_plus.libs[libId] = lib
 	end
 
-	legendary_plus:init()
+	self.legendary_plus:init()
 end
 
 function mod:load(options, version)
-	legendary_plus:load()
+	self.legendary_plus:load()
 end
 
 return mod
