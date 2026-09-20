@@ -56,9 +56,8 @@ Latest release: 1.9
 * Invulnerable+ revive group exclusion and multi phase mission reset fix
 * BoardUtils path caching and unified terrain movement helpers
 * DamageModifierLib added for modifying weapon damage during skill builds
-* TutorialTips code updated to match 1.5.0 release
 
-Released: 9/XX/2026
+Released: 9/19/2026
 
 Squads:
 * Moon Walkers  1.0.0
