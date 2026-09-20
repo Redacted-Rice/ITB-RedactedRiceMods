@@ -24,7 +24,7 @@ Released: 05/04/2026
 Current Release: 1.8.0
 
 ### 1.8.0
-Released: 9/XX/2026
+Released: 9/19/2026
 
 * Added path caching for move previews and reachable tiles
 * Unified terrain movement helpers with makeAllowIf and makeAllowIfHasSkill
@@ -74,7 +74,7 @@ Initial release to keep in sync with other libs
 Current Release: 1.0.0
 
 ### 1.0.0
-Released: 9/XX/2026
+Released: 9/19/2026
 
 * Initial release for modifying weapon SpaceDamage during skill builds and deadly checks
 * Supports priority events, push/move tracking, and GetModifiedDamage helpers
