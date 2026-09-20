@@ -388,7 +388,7 @@ if isNewestVersion then
 		local queue = { start }
 		local dist = { [BoardUtils.getSpaceHash(start)] = 0 }
 
-		local size = 8
+		local boardSize = Board:GetSize()
 		while #queue > 0 do
 			local cur = table.remove(queue, 1)
 			local curDist = dist[BoardUtils.getSpaceHash(cur)]
@@ -397,7 +397,7 @@ if isNewestVersion then
 				for idx = 0, 3 do
 					local adj = cur + DIR_VECTORS[idx]
 
-					if adj.x >= 0 and adj.x < size and adj.y >= 0 and adj.y < size then
+					if adj.x >= 0 and adj.x < boardSize.x and adj.y >= 0 and adj.y < boardSize.y then
 						local adjHash = BoardUtils.getSpaceHash(adj)
 
 						if not visited[adjHash] then
@@ -438,7 +438,7 @@ if isNewestVersion then
 	end
 
 	function BoardUtils.findBfsPath(p1, p2, predicatePassable, predicateStoppable, asPointList)
-		local size = 8
+		local boardSize = Board:GetSize()
 		local queue = {p1}
 		local head = 1
 
@@ -472,7 +472,7 @@ if isNewestVersion then
 			for idx = 0, 3 do
 				local adj = cur + DIR_VECTORS[idx]
 
-				if adj.x >= 0 and adj.x < size and adj.y >= 0 and adj.y < size then
+				if adj.x >= 0 and adj.x < boardSize.x and adj.y >= 0 and adj.y < boardSize.y then
 					local h = BoardUtils.getSpaceHash(adj)
 					if cameFrom[h] == nil then
 						-- Same rules as getReachableInRange: passable for traversal,

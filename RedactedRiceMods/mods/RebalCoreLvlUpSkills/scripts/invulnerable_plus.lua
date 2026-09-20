@@ -11,7 +11,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	}
 }
 
-customSkill.DEBUG = true
+customSkill.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("RebalCore+", "InvulnerablePlus", customSkill.DEBUG)
 
