@@ -36,7 +36,7 @@ a.StarWars_DeathStarLaunch = Animation:new{
 }
 
 -- Death Star custom repair: Orbital Strike that recharges weapons
-StarWars_DeathStarRepair = Skill:new{
+StarWars_DeathStar_Repair = Skill:new{
 	Name = "Priming Laser",
 	Description = "Deal 1 damage to any tile on the board and gain a charge for the Auxiliary Superlaser.",
 	Icon = "weapons/repair.png",
@@ -54,7 +54,7 @@ StarWars_DeathStarRepair = Skill:new{
 	Projectile = "effects/shot_sw_superlaser",
 }
 
-function StarWars_DeathStarRepair:GetTargetArea(point)
+function StarWars_DeathStar_Repair:GetTargetArea(point)
 	local ret = PointList()
 
 	-- Can target any valid space on the board
@@ -70,7 +70,7 @@ function StarWars_DeathStarRepair:GetTargetArea(point)
 	return ret
 end
 
-function StarWars_DeathStarRepair:GetSkillEffect(p1, p2)
+function StarWars_DeathStar_Repair:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
 
 	-- Deal 1 damage to the target
@@ -105,8 +105,8 @@ end
 ReplaceRepair:addSkill{
 	name = "Priming Laser",
 	description = "Deal 1 damage to any tile and recharge weapons.",
-	weapon = "StarWars_DeathStarRepair",
-	icon = "weapons/repair",
+	weapon = "StarWars_DeathStar_Repair",
+	icon = "img/weapons/deathstar_repair.png",
 	mechType = "StarWars_DeathStarMech",
 }
 
