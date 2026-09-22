@@ -116,7 +116,7 @@ function this:onMissionEnd(mission)
 					end
 				end
 			else
-				logger.logDebug(SUBMODULE, "Pilot %s already has a skill from Sgt. Drake, skipping", pilotId)
+				logger.logInfo(SUBMODULE, "Pilot %s already has a skill from Sgt. Drake, skipping", pilotId)
 			end
 		end
 	end

@@ -1,5 +1,6 @@
 
 local VERSION = "3.0.1"
+local DEBUG = false
 ---------------------------------------------------------------------
 -- Trait v3.0.1 - code library
 --
@@ -349,9 +350,9 @@ local function tryGetTraitsFromSelectedPawn(targetId)
 			end
 		end
 
-		LOG("Warning: Trait tooltip requested for trait "..targetId.." but selected pawn does not have this trait active")
+		if DEBUG then LOG("Warning: Trait tooltip requested for trait "..targetId.." but selected pawn does not have this trait active") end
 	else
-		LOG("Warning: Trait tooltip requested for trait "..targetId.." but no pawn is selected")
+		if DEBUG then LOG("Warning: Trait tooltip requested for trait "..targetId.." but no pawn is selected") end
 	end
 	return nil
 end

@@ -155,7 +155,7 @@ function this:load(options, version)
 			if pilotId == pilot.Id and value ~= nil then
 				self:initGameSaveData()
 				GAME.pilots_plus.warbot.added_count = value
-				logger.logInfo(SUBMODULE, "Restored warbot added_count from time travel: %d", value)
+				logger.logDebug(SUBMODULE, "Restored warbot added_count from time travel: %d", value)
 			end
 		end
 	)
