@@ -51,6 +51,21 @@ local mod = modApi:getCurrentMod()
 local modApiExt = modapiext or require(mod.scriptPath.."modApiExt/modApiExt")
 local isMemeditAvailable = memedit ~= nil
 
+local function isAbsoluteOrModRootPath(iconPath)
+	return iconPath:find("^mods[/\\]")
+		or iconPath:find("^/")
+		or iconPath:find("^%a:")
+end
+
+local function resolveIconFilePath(iconPath)
+	if isAbsoluteOrModRootPath(iconPath) then
+		return iconPath
+	end
+	local modRef = mod_loader.mods[modApi.currentMod]
+	local basePath = (modRef and modRef.resourcePath) or mod.scriptPath
+	return basePath .. iconPath
+end
+
 local function isManagedTrait(id)
 	local prefix = id:sub(1,5)
 	local number = id:sub(6,-1)
@@ -448,8 +463,9 @@ local function add(self, trait)
 				modApi:copyAsset(icon, "img/"..path)
 			end
 		else
-			if modApi:fileExists(icon) then
-				modApi:appendAsset("img/"..path, icon)
+			local iconPath = resolveIconFilePath(icon)
+			if modApi:fileExists(iconPath) then
+				modApi:appendAsset("img/"..path, iconPath)
 			end
 		end
 	else
@@ -465,8 +481,9 @@ local function add(self, trait)
 				modApi:copyAsset(icon_glow, "img/"..pathGlow)
 			end
 		else
-			if modApi:fileExists(icon_glow) then
-				modApi:appendAsset("img/"..pathGlow, icon_glow)
+			local iconGlowPath = resolveIconFilePath(icon_glow)
+			if modApi:fileExists(iconGlowPath) then
+				modApi:appendAsset("img/"..pathGlow, iconGlowPath)
 			end
 		end
 

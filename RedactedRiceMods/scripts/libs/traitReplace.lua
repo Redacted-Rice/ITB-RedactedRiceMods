@@ -21,6 +21,18 @@ local DEBUG = false
 local mod_path = mod_loader.mods[modApi.currentMod]
 local path = mod_path.scriptPath
 
+local function isAbsoluteOrModRootPath(iconPath)
+	return iconPath:find("^mods[/\\]")
+		or iconPath:find("^/")
+		or iconPath:find("^%a:")
+end
+
+local function resolveIconFilePath(iconPath, basePath)
+	if isAbsoluteOrModRootPath(iconPath) then
+		return iconPath
+	end
+	return basePath .. iconPath
+end
 
 local function parseVersion(versionStr)
 	if not versionStr then return 0, 0, 0 end
@@ -751,10 +763,7 @@ local function addTraitInternal(trait)
 		end
 	else
 		-- Relative mod asset path
-		local fullPath = iconPath
-		if not iconPath:find("^/") and not iconPath:find("^%a:") then
-			fullPath = path .. iconPath
-		end
+		local fullPath = resolveIconFilePath(iconPath, path)
 
 		if modApi:fileExists(fullPath) then
 			surface = sdlext.getSurface({ path = fullPath })
