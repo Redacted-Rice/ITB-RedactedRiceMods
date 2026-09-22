@@ -18,6 +18,10 @@ the inspiration/starting point for this
 local VERSION = "0.9.2"
 local DEBUG = false
 
+local function logDebug(...)
+	if DEBUG then LOG(...) end
+end
+
 local mod_path = mod_loader.mods[modApi.currentMod]
 local path = mod_path.scriptPath
 
@@ -292,7 +296,7 @@ end
 local function getIconSurface(iconId, replaceTraitId, supressNil)
 	if not iconId or not replaceTraitId then
 		if not supressNil then
-			LOG("getIconSurface: nil params - iconId="..tostring(iconId)..
+			logDebug("getIconSurface: nil params - iconId="..tostring(iconId)..
 					", replaceTraitId="..tostring(replaceTraitId))
 		end
 		return nil
@@ -300,7 +304,7 @@ local function getIconSurface(iconId, replaceTraitId, supressNil)
 
 	local traitData = traitRegistry[replaceTraitId]
 	if not traitData then
-		LOG("getIconSurface: traitData not found for replaceTraitId="..replaceTraitId)
+		logDebug("getIconSurface: traitData not found for replaceTraitId="..replaceTraitId)
 		return nil
 	end
 
@@ -311,8 +315,8 @@ local function getIconSurface(iconId, replaceTraitId, supressNil)
 		for k, v in pairs(traitData.surfaces) do
 			table.insert(availableKeys, k)
 		end
-		LOG("getIconSurface: Surface not found for replaceTraitId="..replaceTraitId..", iconId="..iconId)
-		LOG("  Available surfaces: "..table.concat(availableKeys, ", "))
+		logDebug("getIconSurface: Surface not found for replaceTraitId="..replaceTraitId..", iconId="..iconId)
+		logDebug("  Available surfaces: "..table.concat(availableKeys, ", "))
 	end
 	return surface
 end
