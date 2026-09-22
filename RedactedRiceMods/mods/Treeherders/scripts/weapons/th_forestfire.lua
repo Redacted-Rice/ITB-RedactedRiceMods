@@ -28,6 +28,7 @@ Treeherders_ForestFire = Skill:new{
 	BounceOuterAmount = 2,
 	BounceCenterAmount = 2,
 	BuildingDamage = true,
+	Debug = false,
 
 	--TipImage
     TipImage = {
@@ -97,7 +98,7 @@ function Treeherders_ForestFire:AddBurrowMove(skillFx, p1, p2)
 	
 	-- todo get path through forest
 	local forestTiles = forestUtils:getGroupingOfSpaces(p1, forestUtils.isAForest)
-	LOG("Checking path from ".. p1:GetString() .. " to ".. p2:GetString())
+	if self.Debug then LOG("Checking path from ".. p1:GetString() .. " to ".. p2:GetString()) end
 	local path = forestUtils:FindBfsPath(p1, p2, forestTiles.group)
 	local wait = 0.1
 	for _, p in pairs(path) do
