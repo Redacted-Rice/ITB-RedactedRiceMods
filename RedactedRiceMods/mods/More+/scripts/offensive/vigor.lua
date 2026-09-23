@@ -4,7 +4,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
 	description = "Gain Boost when piloted mech is healed (even if already at full health).",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 	constraints = {
-		groups = {more_plus.GROUPS.BOOST},
+		groups = {PlusHelper.GROUPS.BOOST},
 		-- Despite not being able to heal, zoltan can still be healed by an effect and get this
 		pilotExclusions = {"Pilot_Arrogant", "Pilot_Chemical"},
 	},
@@ -32,7 +32,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 	local targetId = targetPawn:GetId()
 	logger.logDebug(SUBMODULE, "Adding boost icon for healed mech at %s",
 			spaceDamage.loc:GetString())
-	more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
+	more_plus.libs.weaponPreview.ExecuteWithState(PlusHelper.convertPhase(phase),
 		function()
 			more_plus.addWeaponPreviewIcon(phase, spaceDamage.loc, more_plus.commonIcons.boost.key, GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
 		end, attackingPawn:GetId()

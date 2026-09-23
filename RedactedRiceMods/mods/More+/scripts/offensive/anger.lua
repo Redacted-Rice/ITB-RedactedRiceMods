@@ -4,7 +4,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
 	description = "Gain boosted when piloted mech is directly damaged by an enemy.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 	constraints = {
-		groups = {more_plus.GROUPS.BOOST},
+		groups = {PlusHelper.GROUPS.BOOST},
 		pilotExclusions = {"Pilot_Arrogant", "Pilot_Chemical", "Pilot_Zoltan"},
 	},
 	priority = 200, -- go after any adjustments
@@ -26,7 +26,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 
 	local targetId = targetPawn:GetId()
 	-- Add boost icon with group ID for automatic consolidation
-	more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
+	more_plus.libs.weaponPreview.ExecuteWithState(PlusHelper.convertPhase(phase),
 		function()
 			more_plus.addWeaponPreviewIcon(phase, spaceDamage.loc, more_plus.commonIcons.boost.key, GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
 		end, attackingPawn:GetId()

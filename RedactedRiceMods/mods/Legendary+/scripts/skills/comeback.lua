@@ -6,7 +6,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	name = "Comeback",
 	description = "+".. GRID_DEF_BONUS.. " Grid Defense after the first building is damaged each mission.",
 	constraints = {
-		groups = {legendary_plus.GROUPS.ADD_GRID_DEF},
+		groups = {PlusHelper.GROUPS.ADD_GRID_DEF},
 	},
 	reusabilityLimit = cplus_plus_ex.REUSABLILITY.REUSABLE,
 }

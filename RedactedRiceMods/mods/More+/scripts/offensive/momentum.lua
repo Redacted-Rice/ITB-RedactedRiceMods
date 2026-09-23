@@ -7,7 +7,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 	reentrant = false,
 	constraints = {
-		groups = {more_plus.GROUPS.BOOST},
+		groups = {PlusHelper.GROUPS.BOOST},
 		pilotExclusions = {"Pilot_Arrogant", "Pilot_Chemical"},
 	}
 }

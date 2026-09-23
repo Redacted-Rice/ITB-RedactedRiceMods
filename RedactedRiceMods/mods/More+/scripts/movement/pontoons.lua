@@ -7,7 +7,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	-- Prospero already has flying so it doesn't help at all
 	-- Flying cyborgs (Hornet) also don't benefit from pontoons
 	constraints = {
-		groups = {more_plus.GROUPS.MOVE_TYPE},
+		groups = {PlusHelper.GROUPS.MOVE_TYPE},
 		pilotExclusions = {"Pilot_Recycler", cplus_plus_ex.isFlyingCyborg},
 		squadExclusions = {"knight_ChessPawns"},
 	}

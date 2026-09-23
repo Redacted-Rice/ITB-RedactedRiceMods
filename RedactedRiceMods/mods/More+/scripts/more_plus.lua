@@ -6,13 +6,6 @@ more_plus.config_options = {
 	alwaysShowQueuedPreviewIcons = true,
 }
 
--- Weapon preview groups. Active skill icons at pos1, queued attack icons at pos2
--- This will allow both to be displayed without overlapping
-more_plus.WEAPON_PREVIEW_GROUP_ID = "more_plus_levelup_skills"
-more_plus.WEAPON_PREVIEW_QUEUED_GROUP_ID = "more_plus_levelup_skills_queued"
-more_plus.WEAPON_PREVIEW_GROUP_OFFSET = Point(-25, 11)
-more_plus.WEAPON_PREVIEW_QUEUED_GROUP_OFFSET = Point(-18, -4)
-
 local path = GetParentPath(...)
 
 -- Initialize logger
@@ -20,83 +13,15 @@ more_plus.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Core", more_plus.DEBUG)
 
--- Convert DamageModifierLib phase enum to weaponPreview STATE_*.
--- Always use the shared lib from redactedrice_libs (via more_plus.libs),
--- not anything on cplus_plus_ex — CPLUS+ only owns the skill base classes.
-function more_plus.convertPhase(phase)
-	local damageModifierLib = more_plus.libs.damageModifierLib
-	local weaponPreview = more_plus.libs.weaponPreview
-
-	if phase == damageModifierLib.PHASE_NONE then
-		return weaponPreview.STATE_NONE
-	elseif phase == damageModifierLib.PHASE_SKILL_EFFECT then
-		return weaponPreview.STATE_SKILL_EFFECT
-	elseif phase == damageModifierLib.PHASE_TARGET_AREA then
-		return weaponPreview.STATE_TARGET_AREA
-	elseif phase == damageModifierLib.PHASE_QUEUED_SKILL then
-		return weaponPreview.STATE_QUEUED_SKILL
-	elseif phase == damageModifierLib.PHASE_SECOND_TARGET_AREA then
-		return weaponPreview.STATE_SECOND_TARGET_AREA
-	elseif phase == damageModifierLib.PHASE_FINAL_EFFECT then
-		return weaponPreview.STATE_FINAL_EFFECT
-	elseif phase == damageModifierLib.PHASE_QUEUED_FINAL_EFFECT then
-		return weaponPreview.STATE_QUEUED_FINAL_EFFECT
-	end
-
-	-- Phases are numeric and already aligned with STATE_*; pass through
-	if type(phase) == "number" then
-		return phase
-	end
-
-	logger.logWarn(SUBMODULE, "Unknown phase: %s", tostring(phase))
-	return weaponPreview.STATE_NONE
-end
-
--- Active vs queued use separate group offsets so icons on the same tile don't overlap.
-function more_plus.getWeaponPreviewGroupId(phase)
-	local state = more_plus.convertPhase(phase)
-	local weaponPreview = more_plus.libs.weaponPreview
-	if state == weaponPreview.STATE_QUEUED_SKILL
-			or state == weaponPreview.STATE_QUEUED_FINAL_EFFECT then
-		return more_plus.WEAPON_PREVIEW_QUEUED_GROUP_ID
-	end
-	return more_plus.WEAPON_PREVIEW_GROUP_ID
-end
-
-function more_plus.isQueuedWeaponPreview(phase)
-	local state = more_plus.convertPhase(phase)
-	return state == more_plus.libs.weaponPreview.STATE_QUEUED_SKILL
-			or state == more_plus.libs.weaponPreview.STATE_QUEUED_FINAL_EFFECT
-end
-
--- Read from modcontent.lua (not GAME.modOptions) so this can change mid run.
 function more_plus.refreshConfigOptions()
-	local globalOptions = nil
-	sdlext.config("modcontent.lua", function(obj)
-		if obj.modOptions and obj.modOptions["redactedrice_More+"] then
-			globalOptions = obj.modOptions["redactedrice_More+"].options
-		end
-	end)
-
-	more_plus.config_options = more_plus.config_options or {}
-	if globalOptions and globalOptions.alwaysShowQueuedPreviewIcons then
-		more_plus.config_options.alwaysShowQueuedPreviewIcons =
-				globalOptions.alwaysShowQueuedPreviewIcons.enabled == true
-	else
-		more_plus.config_options.alwaysShowQueuedPreviewIcons = true
-	end
+	more_plus.config_options.alwaysShowQueuedPreviewIcons =
+			PlusHelper.readAlwaysShowQueuedPreviewIcons("redactedrice_More+", true)
 end
 
--- Queued icons can alwaysShow so they stay visible without source/target hover.
 function more_plus.addWeaponPreviewIcon(phase, loc, animKey, description)
-	local alwaysShow = false
-	if more_plus.isQueuedWeaponPreview(phase) then
-		alwaysShow = more_plus.config_options.alwaysShowQueuedPreviewIcons
-	end
-	more_plus.libs.weaponPreview:AddAnimation(loc, animKey, nil,
-			more_plus.getWeaponPreviewGroupId(phase), description, alwaysShow)
+	PlusHelper.addWeaponPreviewIconForMod(phase, loc, animKey, description,
+			more_plus.config_options.alwaysShowQueuedPreviewIcons)
 end
-
 
 more_plus.DISABLED_BY_DEFAULT = {
 	-- Vanilla skills to disable
@@ -134,49 +59,6 @@ more_plus.DISABLED_BY_DEFAULT = {
 	"RrShatterstep",
 	"RrVindictive",
 }
-
--- Define group names as constants for easy reference
-more_plus.GROUPS = {
-	ADD_HEALTH = "Add Health",
-	ADD_MOVE = "Add Move",
-	ADD_GRID_DEF = "Add Grid Def",
-	ADD_REACTOR = "Add Reactor",
-	MOVE_TYPE = "Move Type",
-	BOOST = "Boost",
-	SHIELD = "Shield",
-	ADD_DAMAGE = "Add Damage",
-	STATUS_BASED = "Status Based",
-}
-
--- Add vanilla skills to groups
-function more_plus:addVanillaSkillsToGroups()
-	logger.logDebug(SUBMODULE, "Adding vanilla skills to groups...")
-
-	-- Add Health group
-	cplus_plus_ex:registerSkillToGroup("Health", self.GROUPS.ADD_HEALTH)
-	cplus_plus_ex:registerSkillToGroup("Skilled", self.GROUPS.ADD_HEALTH)
-
-	-- Add Move group
-	cplus_plus_ex:registerSkillToGroup("Move", self.GROUPS.ADD_MOVE)
-	cplus_plus_ex:registerSkillToGroup("Skilled", self.GROUPS.ADD_MOVE)
-	cplus_plus_ex:registerSkillToGroup("Adrenaline", self.GROUPS.ADD_MOVE)
-
-	-- Add Grid Def group
-	cplus_plus_ex:registerSkillToGroup("Grid", self.GROUPS.ADD_GRID_DEF)
-
-	-- Add Reactor group
-	cplus_plus_ex:registerSkillToGroup("Reactor", self.GROUPS.ADD_REACTOR)
-
-	-- Boost group
-	cplus_plus_ex:registerSkillToGroup("Opener", self.GROUPS.BOOST)
-	cplus_plus_ex:registerSkillToGroup("Closer", self.GROUPS.BOOST)
-
-	-- Status based group
-	cplus_plus_ex:registerSkillToGroup("Thick", self.GROUPS.STATUS_BASED)
-	cplus_plus_ex:registerPilotSkillExclusions("Pilot_Rock", {"Thick"})
-
-	logger.logDebug(SUBMODULE, "Vanilla skills added to groups")
-end
 
 function more_plus:scanAndReadSkillFiles()
 	logger.logDebug(SUBMODULE, "Scanning subdirs in dir %s", path)
@@ -247,23 +129,11 @@ more_plus.commonIcons = {
 	vampire = {key = "rr_vampire", img = "combat/icons/icon_mp_RrVampire_glow.png"},
 }
 
-function more_plus:addCommonCustomImages()
-	for _, iconData in pairs(self.commonIcons) do
-		-- Create base version without position since it comes from the group
-		ANIMS[iconData.key] = ANIMS.Animation:new{
-			Image = iconData.img,
-			NumFrames = 1,
-			Time = 1,
-			Loop = true,
-		}
-	end
-end
-
 function more_plus:addCustomTraitIcon(skill)
-	local iconImg = "img/combat/icons/icon_mp_"..skill.id..".png"
+	local iconImg = "img/combat/icons/icon_mp_" .. skill.id .. ".png"
 	skill.icon = iconImg
 	logger.logDebug(SUBMODULE, "Adding trait icon %s at %s", skill.id, iconImg)
-	more_plus.libs.traitReplace:add{
+	self.libs.traitReplace:add{
 		targetTrait = "massive",
 		func = function(trait, pawn)
 			if cplus_plus_ex:isSkillOnPawn(skill.id, pawn) then
@@ -272,7 +142,6 @@ function more_plus:addCustomTraitIcon(skill)
 			return false
 		end,
 		icon = iconImg,
-		--icon_offset = Point(0,9),
 		desc_title = skill.fullName or skill.name,
 		desc_text = skill.description,
 	}
@@ -280,7 +149,7 @@ end
 
 function more_plus:init()
 	modApi:appendAssets("img/combat/icons/", "img/combat/icons/")
-	self:addCommonCustomImages()
+	PlusHelper.registerIconList(self.commonIcons)
 
 	logger.logDebug(SUBMODULE, "Loading libraries...")
 	require(path .. "libs/customAnim")
@@ -367,17 +236,7 @@ function more_plus:disableDefaultSkills()
 end
 
 function more_plus:load()
-	-- Config options that can change mid run
-	self:refreshConfigOptions()
-
-	-- Register active and queued preview groups
-	WeaponPreview:RegisterGroup(self.WEAPON_PREVIEW_GROUP_ID, self.WEAPON_PREVIEW_GROUP_OFFSET)
-	WeaponPreview:RegisterGroup(self.WEAPON_PREVIEW_QUEUED_GROUP_ID, self.WEAPON_PREVIEW_QUEUED_GROUP_OFFSET)
-	logger.logDebug(SUBMODULE, "Registered More+ weapon preview groups with WeaponPreview")
-
-	-- Add vanilla skills to groups after CPLUS+_Ex has registered them
-	logger.logDebug(SUBMODULE, "Adding vanilla skills to groups...")
-	self:addVanillaSkillsToGroups()
+	more_plus.refreshConfigOptions()
 
 	-- Disable skills that should be disabled by default
 	self:disableDefaultSkills()

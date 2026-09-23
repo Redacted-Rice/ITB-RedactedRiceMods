@@ -7,7 +7,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 	constraints = {
 		pilotExclusions = {cplus_plus_ex.isCyborg},
-		groups = {"Revive"},
+		groups = {PlusHelper.GROUPS.REVIVE},
 	}
 }
 

@@ -10,7 +10,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	bonuses = {move = BASE_MOVE},
 	-- Alot of overlap with lily's skill
 	constraints = {
-		groups = {more_plus.GROUPS.ADD_MOVE},
+		groups = {cplus_plus_ex.GROUPS.ADD_MOVE},
 		pilotExclusions = {"Pilot_Youth"},
 	}
 }
