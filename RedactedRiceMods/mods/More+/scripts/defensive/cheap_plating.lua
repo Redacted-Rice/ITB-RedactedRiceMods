@@ -93,7 +93,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 	end
 
 	initGameSaveData()
-	local pawnId = targetPawn:GetId()
+	local targetId = targetPawn:GetId()
 	more_plus.libs.weaponPreview.ExecuteWithState(PlusHelper.convertPhase(phase),
 		function()
 			more_plus.addWeaponPreviewIcon(phase, spaceDamage.loc, more_plus.commonIcons.armor3.key, GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
@@ -104,10 +104,10 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 	spaceDamage.iDamage = newDamage
 	-- Mark that this pawn has used their first attack reduction
 	spaceDamage.sScript = spaceDamage.sScript .. [[
-			GAME.more_plus.cheap_plating.used[]].. pawnId ..[[] = true
+			GAME.more_plus.cheap_plating.used[]].. targetId ..[[] = true
 	]]
 	logger.logDebug(SUBMODULE, "Pawn %d using first attack reduction, reducing damage from %d to %d",
-			pawnId, oldDamage, spaceDamage.iDamage)
+			targetId, oldDamage, spaceDamage.iDamage)
 end
 
 function customSkill:setupEffect()
