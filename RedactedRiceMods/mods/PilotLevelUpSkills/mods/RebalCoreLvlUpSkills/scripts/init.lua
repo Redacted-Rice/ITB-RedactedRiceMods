@@ -72,7 +72,6 @@ function mod:init(options)
 		fullName = "RebalCorePlus_HealthPlus_FullName",
 		description = "RebalCorePlus_HealthPlus_Description",
 		bonuses = {health = 3},
-		saveVal = 0,
 		reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 		-- Respect the vanilla health exclusions
 		constraints = {
@@ -89,7 +88,6 @@ function mod:init(options)
 		fullName = "RebalCorePlus_MovePlus_FullName",
 		description = "RebalCorePlus_MovePlus_Description",
 		bonuses = {move = 1, grid = halfRounded},
-		saveVal = 1,
 		reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 		constraints = {
 			skillExclusions = "Move",
@@ -104,7 +102,6 @@ function mod:init(options)
 		fullName = "RebalCorePlus_GridPlus_FullName",
 		description = "RebalCorePlus_GridPlus_Description",
 		bonuses = {grid = gridDef},
-		saveVal = 2,
 		reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 		constraints = {
 			skillExclusions = "Grid",
