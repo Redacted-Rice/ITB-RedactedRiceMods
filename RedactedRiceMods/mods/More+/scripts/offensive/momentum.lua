@@ -89,8 +89,9 @@ function customSkill:momentumTriggered(pawnId, p1, p2, effect, builtEffect)
 		initGameSaveData()
 		more_plus.libs.weaponPreview.ExecuteWithState(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
 			function()
-				more_plus.libs.weaponPreview:AddAnimation(p2, more_plus.commonIcons.boost.key, nil,  -- delay
-						more_plus.WEAPON_PREVIEW_GROUP_ID, GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
+				more_plus.addWeaponPreviewIcon(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
+						p2, more_plus.commonIcons.boost.key,
+						GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
 			end, pawnId
 		)
 		effect:AddScript([[

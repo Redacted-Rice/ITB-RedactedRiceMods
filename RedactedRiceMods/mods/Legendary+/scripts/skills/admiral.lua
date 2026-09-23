@@ -133,7 +133,13 @@ end
 
 function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage, indexes, targetPawn)
 	if targetPawn and targetPawn:IsEnemy() and self.shouldBonus(source, attackingPawn, spaceDamage.iDamage) then
-		legendary_plus:previewExtraDamage(phase, spaceDamage.loc, attackingPawn:GetId(), customSkill)
+		legendary_plus.libs.weaponPreview.ExecuteWithState(legendary_plus.convertPhase(phase),
+			function()
+				legendary_plus.addWeaponPreviewIcon(phase, spaceDamage.loc,
+						legendary_plus.commonIcons.extraDamage.key,
+						GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
+			end, attackingPawn:GetId()
+		)
 		spaceDamage.iDamage = spaceDamage.iDamage + 1
 		logger.logDebug(SUBMODULE, "Admiral +1 on liquid at %s", spaceDamage.loc:GetString())
 	end
