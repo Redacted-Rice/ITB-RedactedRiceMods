@@ -63,7 +63,9 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 		elseif Board:IsValid(adj) then
 			legendary_plus.libs.weaponPreview.ExecuteWithState(legendary_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
 				function()
-					legendary_plus.libs.weaponPreview:AddAnimation(adj, customSkill.NO_CRACK_ANIM, nil, nil,
+					legendary_plus.addWeaponPreviewIcon(
+							legendary_plus.libs.weaponPreview.STATE_SKILL_EFFECT, adj,
+							customSkill.NO_CRACK_ANIM,
 							GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
 				end, pawnId
 			)
