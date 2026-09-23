@@ -77,32 +77,32 @@ function this:onMissionEnd(mission)
 
 	-- Track missions and grant skills for each other pilot
 	for _, pilotStruct in ipairs(pilots) do
-		local pilotId = pilotStruct:getIdStr()
+		local pilotUid = pilotStruct:getUidStr()
 		local pilotSkill = pilotStruct:getSkill():get()
 
 		-- Skip Sgt. Drake themselves
 		if pilotSkill ~= pilot.Skill then
 			-- Initialize tracking structures
-			if not GAME.pilots_plus.sgt_drake.trained_skills[pilotId] then
-				GAME.pilots_plus.sgt_drake.trained_skills[pilotId] = {}
+			if not GAME.pilots_plus.sgt_drake.trained_skills[pilotUid] then
+				GAME.pilots_plus.sgt_drake.trained_skills[pilotUid] = {}
 			end
-			if not GAME.pilots_plus.sgt_drake.mission_count[pilotId] then
-				GAME.pilots_plus.sgt_drake.mission_count[pilotId] = 0
+			if not GAME.pilots_plus.sgt_drake.mission_count[pilotUid] then
+				GAME.pilots_plus.sgt_drake.mission_count[pilotUid] = 0
 			end
 
 			-- Check if pilot already has a skill from Sgt. Drake
-			local alreadyHasSkill = #GAME.pilots_plus.sgt_drake.trained_skills[pilotId] > 0
+			local alreadyHasSkill = #GAME.pilots_plus.sgt_drake.trained_skills[pilotUid] > 0
 
 			if not alreadyHasSkill then
 				-- Increment mission count
-				GAME.pilots_plus.sgt_drake.mission_count[pilotId] = GAME.pilots_plus.sgt_drake.mission_count[pilotId] + 1
-				local missionCount = GAME.pilots_plus.sgt_drake.mission_count[pilotId]
+				GAME.pilots_plus.sgt_drake.mission_count[pilotUid] = GAME.pilots_plus.sgt_drake.mission_count[pilotUid] + 1
+				local missionCount = GAME.pilots_plus.sgt_drake.mission_count[pilotUid]
 
-				logger.logInfo(SUBMODULE, "Pilot %s trained with Sgt. Drake (%d/3 missions)", pilotId, missionCount)
+				logger.logInfo(SUBMODULE, "Pilot %s trained with Sgt. Drake (%d/3 missions)", pilotUid, missionCount)
 
 				-- Grant skill after 3 missions
 				if missionCount >= 3 then
-					logger.logInfo(SUBMODULE, "Pilot %s completed training, teaching combat trick", pilotId)
+					logger.logInfo(SUBMODULE, "Pilot %s completed training, teaching combat trick", pilotUid)
 
 					-- Add one random virtual skill with sgt_drake source and get the selected skills
 					local successCount, selectedSkills = cplus_plus_ex:addRandomVirtualSkillsToPilot(pilotStruct, 1, "sgt_drake")
@@ -110,13 +110,13 @@ function this:onMissionEnd(mission)
 					-- Track the granted skills
 					if successCount > 0 and #selectedSkills > 0 then
 						for _, skillId in ipairs(selectedSkills) do
-							table.insert(GAME.pilots_plus.sgt_drake.trained_skills[pilotId], skillId)
-							logger.logInfo(SUBMODULE, "Pilot %s learned combat trick %s from Sgt. Drake", pilotId, skillId)
+							table.insert(GAME.pilots_plus.sgt_drake.trained_skills[pilotUid], skillId)
+							logger.logInfo(SUBMODULE, "Pilot %s learned combat trick %s from Sgt. Drake", pilotUid, skillId)
 						end
 					end
 				end
 			else
-				logger.logInfo(SUBMODULE, "Pilot %s already has a skill from Sgt. Drake, skipping", pilotId)
+				logger.logInfo(SUBMODULE, "Pilot %s already has a skill from Sgt. Drake, skipping", pilotUid)
 			end
 		end
 	end
@@ -149,7 +149,7 @@ function this:onExtraInfoSelectedChanged(uiObj, pawn, pilotStruct)
 		return
 	end
 
-	local pilotId = pilotStruct:getIdStr()
+	local pilotUid = pilotStruct:getUidStr()
 	local pilotSkill = pilotStruct:getSkill():get()
 
 	-- Don't show for Sgt. Drake himself
@@ -159,8 +159,9 @@ function this:onExtraInfoSelectedChanged(uiObj, pawn, pilotStruct)
 
 	self:initGameSaveData()
 
-	local missionCount = GAME.pilots_plus.sgt_drake.mission_count[pilotId] or 0
-	local hasSkill = GAME.pilots_plus.sgt_drake.trained_skills[pilotId] and #GAME.pilots_plus.sgt_drake.trained_skills[pilotId] > 0
+	local missionCount = GAME.pilots_plus.sgt_drake.mission_count[pilotUid] or 0
+	local hasSkill = GAME.pilots_plus.sgt_drake.trained_skills[pilotUid]
+		and #GAME.pilots_plus.sgt_drake.trained_skills[pilotUid] > 0
 
 	-- Check if Sgt. Drake is in the squad
 	local drakePresent = false
@@ -192,7 +193,7 @@ function this:onExtraInfoSelectedChanged(uiObj, pawn, pilotStruct)
 	-- Add icon to UI
 	local iconPath = mod.resourcePath .. "img/combat/icons/icon_sgt_drake_training.png"
 	uiObj:addIcon(iconPath, title, description)
-	logger.logDebug(SUBMODULE, "Added training status icon for pilot %s: %s", pilotId, description)
+	logger.logDebug(SUBMODULE, "Added training status icon for pilot %s: %s", pilotUid, description)
 end
 
 function this:load(options, version)
@@ -212,29 +213,27 @@ function this:load(options, version)
 	cplus_plus_ex:registerTimeTravelerData(
 		"pilots_plus",
 		"sgt_drake_training",
-		function(pilotId)
-			-- Save any training data for the pilots
-			local trainingData = nil
-			if GAME and GAME.pilots_plus and GAME.pilots_plus.sgt_drake and
-					GAME.pilots_plus.sgt_drake.mission_count[pilotId] then
-				-- Save both trained_skills and mission_count for all pilots
-				trainingData = {
-					trained_skills = GAME.pilots_plus.sgt_drake.trained_skills[pilotId],
-					mission_count = GAME.pilots_plus.sgt_drake.mission_count[pilotId]
+		function(pilotStruct)
+			local pilotUid = pilotStruct:getUidStr()
+			if GAME and GAME.pilots_plus and GAME.pilots_plus.sgt_drake
+					and GAME.pilots_plus.sgt_drake.mission_count[pilotUid] then
+				local trainingData = {
+					trained_skills = GAME.pilots_plus.sgt_drake.trained_skills[pilotUid],
+					mission_count = GAME.pilots_plus.sgt_drake.mission_count[pilotUid],
 				}
+				logger.logDebug(SUBMODULE, "Saving Sgt Drake training data for pilot %s", pilotUid)
+				return trainingData
 			end
-			logger.logDebug(SUBMODULE, "Saving Sgt Drake training data for %d pilots",
-				(function() local n = 0 for _ in pairs(trainingData or {}) do n = n + 1 end return n end)())
-			return trainingData
+			return nil
 		end,
-		function(pilotId, value)
-			-- Restore training data for the specified pilot
+		function(pilotStruct, value)
 			if value ~= nil and type(value) == "table" then
 				self:initGameSaveData()
-				GAME.pilots_plus.sgt_drake.trained_skills[pilotId] = value.trained_skills or {}
-				GAME.pilots_plus.sgt_drake.mission_count[pilotId] = value.mission_count or 0
+				local pilotUid = pilotStruct:getUidStr()
+				GAME.pilots_plus.sgt_drake.trained_skills[pilotUid] = value.trained_skills or {}
+				GAME.pilots_plus.sgt_drake.mission_count[pilotUid] = value.mission_count or 0
 				logger.logInfo(SUBMODULE, "Restored Sgt Drake training data for pilot %s: %d missions, %d skills",
-						pilotId, value.mission_count or 0, (value.trained_skills and #value.trained_skills) or 0)
+						pilotUid, value.mission_count or 0, (value.trained_skills and #value.trained_skills) or 0)
 			end
 		end
 	)
