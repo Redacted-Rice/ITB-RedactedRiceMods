@@ -41,7 +41,6 @@ function mod:init(options)
 		fullName = "SkillChoices_PendingSelection_Full",
 		description = "SkillChoices_PendingSelection_Desc",
 		bonuses = {},
-		saveVal = 13,
 		reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 		internalSkill = true,
 	})
