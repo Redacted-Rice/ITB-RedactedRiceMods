@@ -9,7 +9,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	slotRestriction = cplus_plus_ex.SLOT_RESTRICTION.FIRST,
 	pawnWasKilled = false,
 	constraints = {
-		groups = {more_plus.GROUPS.BOOST},
+		groups = {PlusHelper.GROUPS.BOOST},
 		pilotExclusions = {"Pilot_Arrogant", "Pilot_Chemical"},
 	}
 }

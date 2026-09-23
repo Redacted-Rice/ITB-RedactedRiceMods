@@ -95,7 +95,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 			.. ": Taking half (rounded up) damage from attacking pawn with reflect"
 	logger.logDebug(SUBMODULE, "Adding reflect damage icon from %s to attacker %s",
 			targetStartLoc:GetString(), attackerStartLoc:GetString())
-	more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
+	more_plus.libs.weaponPreview.ExecuteWithState(PlusHelper.convertPhase(phase),
 		function()
 			more_plus.addWeaponPreviewIcon(phase, attackerStartLoc,
 					more_plus.commonIcons.reflect.key, attackerTip)
@@ -143,7 +143,7 @@ function customSkill:SkillEffectEvaluated(phase)
 			-- Apply via script so damage is not part of the enemy attack effect
 			-- We need to use weapon preview to apply the damage preview since
 			-- we use a script
-			more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
+			more_plus.libs.weaponPreview.ExecuteWithState(PlusHelper.convertPhase(phase),
 				function()
 					more_plus.libs.weaponPreview:AddDamage(SpaceDamage(currentLoc, reflectData.totalDamage))
 				end, attackerId

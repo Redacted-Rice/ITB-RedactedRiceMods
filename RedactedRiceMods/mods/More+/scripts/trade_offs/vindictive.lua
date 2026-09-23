@@ -4,7 +4,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
 	description = "+1 damage to enemies for each negative status effect on piloted mech.",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 	constraints = {
-		groups = {more_plus.GROUPS.ADD_DAMAGE, more_plus.GROUPS.STATUS_BASED},
+		groups = {PlusHelper.GROUPS.ADD_DAMAGE, PlusHelper.GROUPS.STATUS_BASED},
 		pilotExclusions = {"Pilot_Rock", "Pilot_Zoltan"},
 	},
 	priority = 80, -- go after doubling
@@ -74,7 +74,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 	local statusCount = newDamage - spaceDamage.iDamage
 	local _, activeStatuses = countAdverseStatuses(attackingPawn)
 	-- Add vindictive damage icon with group ID
-	more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
+	more_plus.libs.weaponPreview.ExecuteWithState(PlusHelper.convertPhase(phase),
 		function()
 			more_plus.addWeaponPreviewIcon(phase, spaceDamage.loc, more_plus.commonIcons.extraDamage.key, GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
 		end, attackingPawn:GetId()
