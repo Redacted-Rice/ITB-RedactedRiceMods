@@ -1651,7 +1651,9 @@ local function initTutorialTips()
 		tips:Add{
 			id = "WeaponPreview_DescriptionNotification",
 			title = "Extra Effects Preview Tips",
-			text = "Hold " .. TOOLTIP_KEY_TEXT .. " while hovering to see detailed information (if available) about the effects.",
+			text = "Hold " .. TOOLTIP_KEY_TEXT .. " while hovering a tile, or "
+					.. SHOW_SELECTED_ICONS_KEY_TEXT .. " while attacking, to see detailed "
+					.. "information (if available) about the effects.",
 		}
 	end)
 

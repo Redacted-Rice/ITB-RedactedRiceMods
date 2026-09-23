@@ -39,12 +39,23 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 	end
 
 	if source == self.SOURCE_ATTACKER and targetPawn and targetPawn:IsEnemy() then
-		legendary_plus:previewExtraDamage(phase, spaceDamage.loc, attackingPawn:GetId(), customSkill)
+		legendary_plus.libs.weaponPreview.ExecuteWithState(legendary_plus.convertPhase(phase),
+			function()
+				legendary_plus.addWeaponPreviewIcon(phase, spaceDamage.loc,
+						legendary_plus.commonIcons.extraDamage.key,
+						GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
+			end, attackingPawn:GetId()
+		)
 		spaceDamage.iDamage = spaceDamage.iDamage + 1
 		logger.logDebug(SUBMODULE, "Reckless +1 dealt at %s", spaceDamage.loc:GetString())
 	elseif source == self.SOURCE_TARGET and attackingPawn and attackingPawn:IsEnemy() and targetPawn then
-		-- Use attacker id so queued enemy previews attach marks to the acting pawn's queue
-		legendary_plus:previewExtraDamage(phase, spaceDamage.loc, attackingPawn:GetId(), customSkill)
+		legendary_plus.libs.weaponPreview.ExecuteWithState(legendary_plus.convertPhase(phase),
+			function()
+				legendary_plus.addWeaponPreviewIcon(phase, spaceDamage.loc,
+						legendary_plus.commonIcons.extraDamage.key,
+						GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
+			end, attackingPawn:GetId()
+		)
 		spaceDamage.iDamage = spaceDamage.iDamage + 1
 		logger.logDebug(SUBMODULE, "Reckless +1 taken at %s", spaceDamage.loc:GetString())
 	end

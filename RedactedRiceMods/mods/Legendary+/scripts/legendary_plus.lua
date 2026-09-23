@@ -7,9 +7,11 @@ local logger = memhack.logger
 local SUBMODULE = logger.register("Legendary+", "Core", legendary_plus.DEBUG)
 
 legendary_plus.libs = legendary_plus.libs or {}
+legendary_plus.config_options = {
+	alwaysShowQueuedPreviewIcons = true,
+}
 
--- Use same group IDs as More+ (active + queued offsets). Right now we
--- only use the active but do it the same just in case I add queued later.
+-- Use same group IDs and offsets as More+ so icons consolidate together.
 legendary_plus.WEAPON_PREVIEW_GROUP_ID = "more_plus_levelup_skills"
 legendary_plus.WEAPON_PREVIEW_QUEUED_GROUP_ID = "more_plus_levelup_skills_queued"
 legendary_plus.WEAPON_PREVIEW_GROUP_OFFSET = Point(-25, 11)
@@ -62,25 +64,80 @@ function legendary_plus:addCommonCustomImages()
 	end
 end
 
-function legendary_plus:previewExtraDamage(phase, loc, pawnId, skill)
-	if not self.libs.weaponPreview then
-		return
-	end
-	local weaponPreview = self.libs.weaponPreview
-	local groupId = self.WEAPON_PREVIEW_GROUP_ID
-	if phase == weaponPreview.STATE_QUEUED_SKILL
-			or phase == weaponPreview.STATE_QUEUED_FINAL_EFFECT then
-		groupId = self.WEAPON_PREVIEW_QUEUED_GROUP_ID
+-- Convert DamageModifierLib phase enum to weaponPreview STATE_*.
+function legendary_plus.convertPhase(phase)
+	local damageModifierLib = legendary_plus.libs.damageModifierLib
+	local weaponPreview = legendary_plus.libs.weaponPreview
+
+	if phase == damageModifierLib.PHASE_NONE then
+		return weaponPreview.STATE_NONE
+	elseif phase == damageModifierLib.PHASE_SKILL_EFFECT then
+		return weaponPreview.STATE_SKILL_EFFECT
+	elseif phase == damageModifierLib.PHASE_TARGET_AREA then
+		return weaponPreview.STATE_TARGET_AREA
+	elseif phase == damageModifierLib.PHASE_QUEUED_SKILL then
+		return weaponPreview.STATE_QUEUED_SKILL
+	elseif phase == damageModifierLib.PHASE_SECOND_TARGET_AREA then
+		return weaponPreview.STATE_SECOND_TARGET_AREA
+	elseif phase == damageModifierLib.PHASE_FINAL_EFFECT then
+		return weaponPreview.STATE_FINAL_EFFECT
+	elseif phase == damageModifierLib.PHASE_QUEUED_FINAL_EFFECT then
+		return weaponPreview.STATE_QUEUED_FINAL_EFFECT
 	end
 
-	local tipName = skill._name or skill.name or ""
-	local tipDesc = skill._description or ""
-	weaponPreview.ExecuteWithState(phase,
-		function()
-			weaponPreview:AddAnimation(loc, self.commonIcons.extraDamage.key, nil,
-					groupId, tipName .. ": " .. tipDesc)
-		end, pawnId
-	)
+	-- Phases are numeric and already aligned with STATE_*; pass through
+	if type(phase) == "number" then
+		return phase
+	end
+
+	logger.logWarn(SUBMODULE, "Unknown phase: %s", tostring(phase))
+	return weaponPreview.STATE_NONE
+end
+
+-- Active vs queued use separate group offsets so icons on the same tile don't overlap.
+function legendary_plus.getWeaponPreviewGroupId(phase)
+	local state = legendary_plus.convertPhase(phase)
+	local weaponPreview = legendary_plus.libs.weaponPreview
+	if state == weaponPreview.STATE_QUEUED_SKILL
+			or state == weaponPreview.STATE_QUEUED_FINAL_EFFECT then
+		return legendary_plus.WEAPON_PREVIEW_QUEUED_GROUP_ID
+	end
+	return legendary_plus.WEAPON_PREVIEW_GROUP_ID
+end
+
+function legendary_plus.isQueuedWeaponPreview(phase)
+	local state = legendary_plus.convertPhase(phase)
+	return state == legendary_plus.libs.weaponPreview.STATE_QUEUED_SKILL
+			or state == legendary_plus.libs.weaponPreview.STATE_QUEUED_FINAL_EFFECT
+end
+
+-- Read from modcontent.lua (not GAME.modOptions) so this can change mid run.
+-- Uses the More+ mod option since both mods share the same preview groups.
+function legendary_plus.refreshConfigOptions()
+	local globalOptions = nil
+	sdlext.config("modcontent.lua", function(obj)
+		if obj.modOptions and obj.modOptions["redactedrice_More+"] then
+			globalOptions = obj.modOptions["redactedrice_More+"].options
+		end
+	end)
+
+	legendary_plus.config_options = legendary_plus.config_options or {}
+	if globalOptions and globalOptions.alwaysShowQueuedPreviewIcons then
+		legendary_plus.config_options.alwaysShowQueuedPreviewIcons =
+				globalOptions.alwaysShowQueuedPreviewIcons.enabled == true
+	else
+		legendary_plus.config_options.alwaysShowQueuedPreviewIcons = true
+	end
+end
+
+-- Queued icons can alwaysShow so they stay visible without source/target hover.
+function legendary_plus.addWeaponPreviewIcon(phase, loc, animKey, description)
+	local alwaysShow = false
+	if legendary_plus.isQueuedWeaponPreview(phase) then
+		alwaysShow = legendary_plus.config_options.alwaysShowQueuedPreviewIcons
+	end
+	legendary_plus.libs.weaponPreview:AddAnimation(loc, animKey, nil,
+			legendary_plus.getWeaponPreviewGroupId(phase), description, alwaysShow)
 end
 
 function legendary_plus:addCustomTraitIcon(skill)
@@ -219,6 +276,9 @@ function legendary_plus:disableDefaultSkills()
 end
 
 function legendary_plus:load()
+	-- Config options that can change mid run (shared More+ mod option)
+	self:refreshConfigOptions()
+
 	-- Register active + queued preview groups (same offsets as More+)
 	WeaponPreview:RegisterGroup(self.WEAPON_PREVIEW_GROUP_ID, self.WEAPON_PREVIEW_GROUP_OFFSET)
 	WeaponPreview:RegisterGroup(self.WEAPON_PREVIEW_QUEUED_GROUP_ID, self.WEAPON_PREVIEW_QUEUED_GROUP_OFFSET)

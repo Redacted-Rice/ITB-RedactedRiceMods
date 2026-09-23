@@ -79,8 +79,9 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 						movingPawnId, p2:GetString(), adjacentId, adjacentLoc:GetString())
 				more_plus.libs.weaponPreview.ExecuteWithState(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
 					function()
-						more_plus.libs.weaponPreview:AddAnimation(adjacentLoc, more_plus.commonIcons.boost.key, nil,  -- delay
-								more_plus.WEAPON_PREVIEW_GROUP_ID, GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
+						more_plus.addWeaponPreviewIcon(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
+								adjacentLoc, more_plus.commonIcons.boost.key,
+								GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
 					end, movingPawnId
 				)
 
@@ -109,8 +110,9 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 			logger.logDebug(SUBMODULE, "Pawn %d moving adjacent to Rally pawn, boosting", pawnId)
 			more_plus.libs.weaponPreview.ExecuteWithState(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
 				function()
-					more_plus.libs.weaponPreview:AddAnimation(p2, more_plus.commonIcons.boost.key, nil,  -- delay
-						more_plus.WEAPON_PREVIEW_GROUP_ID, GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
+					more_plus.addWeaponPreviewIcon(more_plus.libs.weaponPreview.STATE_SKILL_EFFECT,
+							p2, more_plus.commonIcons.boost.key,
+							GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
 				end, pawnId
 			)
 
