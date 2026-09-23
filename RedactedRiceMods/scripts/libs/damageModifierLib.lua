@@ -57,7 +57,7 @@ Priority guidance (lower runs first):
   180-200 - late follow-ups / post pass (skill effect evaluated)
 ]]
 
-local VERSION = "1.0.0"
+local VERSION = "1.0.1"
 
 local DEBUG = false
 
