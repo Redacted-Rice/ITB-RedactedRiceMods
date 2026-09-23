@@ -4,7 +4,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
 	description = "+1 damage to enemies that would be killed by the extra damage.",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 	constraints = {
-		groups = {more_plus.GROUPS.ADD_DAMAGE},
+		groups = {PlusHelper.GROUPS.ADD_DAMAGE},
 	},
 	priority = 150, -- go after other calculations
 	modifiesKillDamage = true,
@@ -58,7 +58,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 	end
 
 	logger.logDebug(SUBMODULE, "Adding icon for %s", spaceDamage.loc:GetString())
-	more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
+	more_plus.libs.weaponPreview.ExecuteWithState(PlusHelper.convertPhase(phase),
 		function()
 			more_plus.addWeaponPreviewIcon(phase, spaceDamage.loc, more_plus.commonIcons.extraDamage.key, GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
 		end, attackingPawn:GetId()

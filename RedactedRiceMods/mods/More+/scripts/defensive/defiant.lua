@@ -6,7 +6,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	description = "+"..GRID_DEF_PER_ENEMY.." grid defense per enemy on the board.",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 	constraints = {
-		groups = {more_plus.GROUPS.ADD_GRID_DEF},
+		groups = {PlusHelper.GROUPS.ADD_GRID_DEF},
 	}
 }
 

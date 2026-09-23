@@ -30,7 +30,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 	end
 
 	-- Show icon
-	more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
+	more_plus.libs.weaponPreview.ExecuteWithState(PlusHelper.convertPhase(phase),
 		function()
 			more_plus.addWeaponPreviewIcon(phase, spaceDamage.loc, more_plus.commonIcons.noDamage.key, GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
 		end, attackingPawn:GetId()

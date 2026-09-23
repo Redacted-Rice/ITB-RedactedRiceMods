@@ -3,7 +3,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
 	name = "Ace",
 	description = "Piloted mech gains Flying. +1 damage to Flying enemies.",
 	constraints = {
-		groups = {legendary_plus.GROUPS.MOVE_TYPE, legendary_plus.GROUPS.ADD_DAMAGE},
+		groups = {PlusHelper.GROUPS.MOVE_TYPE, PlusHelper.GROUPS.ADD_DAMAGE},
 		pilotExclusions = {"Pilot_Recycler", cplus_plus_ex.isFlyingCyborg},
 	},
 	priority = 80,
@@ -80,7 +80,7 @@ end
 
 function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage, indexes, targetPawn)
 	if self.shouldBonus(source, targetPawn, spaceDamage.iDamage) then
-		legendary_plus.libs.weaponPreview.ExecuteWithState(legendary_plus.convertPhase(phase),
+		legendary_plus.libs.weaponPreview.ExecuteWithState(PlusHelper.convertPhase(phase),
 			function()
 				legendary_plus.addWeaponPreviewIcon(phase, spaceDamage.loc,
 						legendary_plus.commonIcons.extraDamage.key,

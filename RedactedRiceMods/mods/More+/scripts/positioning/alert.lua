@@ -45,7 +45,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 
 	-- Show damage reduction icon
 	logger.logDebug(SUBMODULE, "Adding damage reduction icon for %s", spaceDamage.loc:GetString())
-	more_plus.libs.weaponPreview.ExecuteWithState(more_plus.convertPhase(phase),
+	more_plus.libs.weaponPreview.ExecuteWithState(PlusHelper.convertPhase(phase),
 		function()
 			more_plus.addWeaponPreviewIcon(phase, spaceDamage.loc, more_plus.commonIcons.armor1.key, GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
 		end, attackingPawn:GetId()

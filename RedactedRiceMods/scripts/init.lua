@@ -26,6 +26,7 @@ local libs = {
 	"damageModifierLib",
 	"pawnTypeUtils",
 	"passiveEffect",
+	"plusHelper",
 	"predictableRandom",
 	"trait",
 	"traitReplace",

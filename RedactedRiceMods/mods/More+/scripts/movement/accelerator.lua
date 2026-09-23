@@ -9,7 +9,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	-- Not strictly needed but makes more sense
 	bonuses = {move = BASE_MOVE},
 	constraints = {
-		groups = {more_plus.GROUPS.ADD_MOVE},
+		groups = {cplus_plus_ex.GROUPS.ADD_MOVE},
 	}
 }
 

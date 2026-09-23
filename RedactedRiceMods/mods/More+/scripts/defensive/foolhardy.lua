@@ -6,7 +6,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	description = "+"..GRID_DEF_BONUS.." grid defense if no buildings are damaged.",
 	reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 	constraints = {
-		groups = {more_plus.GROUPS.ADD_GRID_DEF},
+		groups = {PlusHelper.GROUPS.ADD_GRID_DEF},
 	}
 }
 

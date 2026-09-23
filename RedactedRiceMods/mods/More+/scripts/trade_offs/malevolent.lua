@@ -4,7 +4,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
 	description = "If piloted mech has a negative status, apply it to attacks that damage enemies.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 	constraints = {
-		groups = {more_plus.GROUPS.STATUS_BASED},
+		groups = {PlusHelper.GROUPS.STATUS_BASED},
 		pilotExclusions = {"Pilot_Rock", "Pilot_Zoltan"},
 	},
 	modifiesKillDamage = false,

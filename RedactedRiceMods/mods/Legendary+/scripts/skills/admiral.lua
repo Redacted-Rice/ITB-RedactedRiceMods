@@ -6,7 +6,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
 	-- Prospero already has flying so it doesn't help at all
 	-- Flying cyborgs (Hornet) also don't benefit from amphibious
 	constraints = {
-		groups = {legendary_plus.GROUPS.MOVE_TYPE, legendary_plus.GROUPS.ADD_DAMAGE},
+		groups = {PlusHelper.GROUPS.MOVE_TYPE, PlusHelper.GROUPS.ADD_DAMAGE},
 		pilotExclusions = {"Pilot_Recycler", cplus_plus_ex.isFlyingCyborg},
 		squadExclusions = {"knight_ChessPawns"},
 	},
@@ -133,7 +133,7 @@ end
 
 function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage, indexes, targetPawn)
 	if targetPawn and targetPawn:IsEnemy() and self.shouldBonus(source, attackingPawn, spaceDamage.iDamage) then
-		legendary_plus.libs.weaponPreview.ExecuteWithState(legendary_plus.convertPhase(phase),
+		legendary_plus.libs.weaponPreview.ExecuteWithState(PlusHelper.convertPhase(phase),
 			function()
 				legendary_plus.addWeaponPreviewIcon(phase, spaceDamage.loc,
 						legendary_plus.commonIcons.extraDamage.key,

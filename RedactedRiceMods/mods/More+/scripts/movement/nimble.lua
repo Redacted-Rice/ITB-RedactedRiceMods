@@ -4,7 +4,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	description = "Piloted mech can move onto and through buildings and mountains.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 	constraints = {
-		groups = {more_plus.GROUPS.MOVE_TYPE},
+		groups = {PlusHelper.GROUPS.MOVE_TYPE},
 		squadExclusions = {"knight_ChessPawns"},
 	}
 }

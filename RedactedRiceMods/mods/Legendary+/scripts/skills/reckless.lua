@@ -3,7 +3,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
 	name = "Reckless",
 	description = "+1 damage dealt and +1 damage taken.",
 	constraints = {
-		groups = {legendary_plus.GROUPS.ADD_DAMAGE},
+		groups = {PlusHelper.GROUPS.ADD_DAMAGE},
 	},
 	priority = 80,
 	reusabilityLimit = cplus_plus_ex.REUSABLILITY.REUSABLE,
@@ -39,7 +39,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 	end
 
 	if source == self.SOURCE_ATTACKER and targetPawn and targetPawn:IsEnemy() then
-		legendary_plus.libs.weaponPreview.ExecuteWithState(legendary_plus.convertPhase(phase),
+		legendary_plus.libs.weaponPreview.ExecuteWithState(PlusHelper.convertPhase(phase),
 			function()
 				legendary_plus.addWeaponPreviewIcon(phase, spaceDamage.loc,
 						legendary_plus.commonIcons.extraDamage.key,
@@ -49,7 +49,7 @@ function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage
 		spaceDamage.iDamage = spaceDamage.iDamage + 1
 		logger.logDebug(SUBMODULE, "Reckless +1 dealt at %s", spaceDamage.loc:GetString())
 	elseif source == self.SOURCE_TARGET and attackingPawn and attackingPawn:IsEnemy() and targetPawn then
-		legendary_plus.libs.weaponPreview.ExecuteWithState(legendary_plus.convertPhase(phase),
+		legendary_plus.libs.weaponPreview.ExecuteWithState(PlusHelper.convertPhase(phase),
 			function()
 				legendary_plus.addWeaponPreviewIcon(phase, spaceDamage.loc,
 						legendary_plus.commonIcons.extraDamage.key,

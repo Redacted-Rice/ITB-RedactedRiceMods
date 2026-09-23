@@ -4,7 +4,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	description = "Gain a shield when moving adjacent to a building.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 	constraints = {
-		groups = {more_plus.GROUPS.SHIELD},
+		groups = {PlusHelper.GROUPS.SHIELD},
 		pilotExclusions = {"Pilot_Zoltan"},
 	}
 }

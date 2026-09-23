@@ -3,7 +3,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	name = "Medic",
 	description = "When moving, mark your original tile for a repair pad to be deployed at turn end.",
 	constraints = {
-		groups = {legendary_plus.GROUPS.ITEM_DROP},
+		groups = {PlusHelper.GROUPS.ITEM_DROP},
 	},
 	reusabilityLimit = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }

@@ -11,6 +11,15 @@ local mod = {
 	}
 }
 
+function mod:metadata()
+	modApi:addGenerationOption(
+		"alwaysShowQueuedPreviewIcons",
+		"Always Show Queued Preview Icons",
+		"When enabled, Legendary+ effect icons for queued enemy attacks stay visible without hovering the attacker or target.",
+		{ enabled = false }
+	)
+end
+
 function mod:init()
 	self.legendary_plus = require(self.scriptPath .. "legendary_plus")
 

@@ -78,7 +78,7 @@ function mod:init(options)
 		constraints = {
 			pilotExclusions = {"Pilot_Zoltan", "Pilot_Rock"},
 			skillExclusions = "Health",
-			groups = {"Add Health"},
+			groups = {cplus_plus_ex.GROUPS.ADD_HEALTH},
 		}
 	}
 
@@ -93,7 +93,7 @@ function mod:init(options)
 		reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 		constraints = {
 			skillExclusions = "Move",
-			groups = {"Add Move", "Add Grid Def"},
+			groups = {cplus_plus_ex.GROUPS.ADD_MOVE, PlusHelper.GROUPS.ADD_GRID_DEF},
 		}
 	}
 
@@ -108,7 +108,7 @@ function mod:init(options)
 		reusability = cplus_plus_ex.REUSABLILITY.REUSABLE,
 		constraints = {
 			skillExclusions = "Grid",
-			groups = {"Add Grid Def"},
+			groups = {PlusHelper.GROUPS.ADD_GRID_DEF},
 		}
 	}
 
@@ -121,18 +121,9 @@ function mod:init(options)
 	cplus_plus_ex:registerSkill(cplusCategory, gridPlus)
 	cplus_plus_ex:registerSkill(cplusCategory, invulnerablePlus)
 
-	-- Some additional vanilla groups
-	cplus_plus_ex:registerSkillToGroup("Health", "Add Health")
-	cplus_plus_ex:registerSkillToGroup("Skilled", "Add Health")
-
-	cplus_plus_ex:registerSkillToGroup("Move", "Add Move")
-	cplus_plus_ex:registerSkillToGroup("Skilled", "Add Move")
-	cplus_plus_ex:registerSkillToGroup("Adrenaline", "Add Move")
-
-	cplus_plus_ex:registerSkillToGroup("Grid", "Add Grid Def")
-
 	-- These vanilla skills confict
 	cplus_plus_ex:registerSkillExclusion("Pain", "Regen")
+	cplus_plus_ex:registerPilotSkillExclusions("Pilot_Rock", {"Thick"})
 end
 
 function mod:load(options, version)
