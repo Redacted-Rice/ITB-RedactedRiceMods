@@ -41,8 +41,10 @@ function this:initGameSaveData()
 		GAME.pilots_plus.warbot = {}
 	end
 
-	if GAME.pilots_plus.warbot.added_count == nil then
-		GAME.pilots_plus.warbot.added_count = 0
+	if GAME.pilots_plus.warbot.added_count == nil
+			or type(GAME.pilots_plus.warbot.added_count) == "number" then
+		-- old saves used a single count for the whole run
+		GAME.pilots_plus.warbot.added_count = {}
 	end
 end
 
@@ -56,23 +58,23 @@ function this:addVirtualSkills(pilotStruct)
 
 	self:initGameSaveData()
 
-	local pilotId = pilotStruct:getIdStr()
+	local pilotUid = pilotStruct:getUidStr()
 	local targetSkillCount = pilotLevel == 1 and 1 or 3
-	local currentSkillCount = GAME.pilots_plus.warbot.added_count
+	local currentSkillCount = GAME.pilots_plus.warbot.added_count[pilotUid] or 0
 
 	-- Check if we already have the right number of skills
 	if currentSkillCount < targetSkillCount then
 		-- Add the missing skills
 		local skillsToAdd = targetSkillCount - currentSkillCount
 		logger.logDebug(SUBMODULE, "Warbot %s needs %d more virtual skills (current: %d, target: %d)",
-				pilotId, skillsToAdd, currentSkillCount, targetSkillCount)
+				pilotUid, skillsToAdd, currentSkillCount, targetSkillCount)
 		local addedCount, _ = cplus_plus_ex:addRandomVirtualSkillsToPilot(pilotStruct, skillsToAdd, "warbot")
-		GAME.pilots_plus.warbot.added_count = GAME.pilots_plus.warbot.added_count + addedCount
+		GAME.pilots_plus.warbot.added_count[pilotUid] = currentSkillCount + addedCount
 	else
 		logger.logDebug(SUBMODULE, "Warbot %s already has %d/%d virtual skills",
-				pilotId, currentSkillCount, targetSkillCount)
+				pilotUid, currentSkillCount, targetSkillCount)
 	end
-	for i, skillId in ipairs(cplus_plus_ex:getVirtualSkills(pilotId)) do
+	for i, skillId in ipairs(cplus_plus_ex:getVirtualSkills(pilotStruct)) do
 		logger.logDebug(SUBMODULE, "  Virtual Skill %d: %s", i, skillId)
 	end
 end
@@ -140,23 +142,25 @@ function this:load(options, version)
 	cplus_plus_ex:registerTimeTravelerData(
 		"pilots_plus",
 		"warbot_added_count",
-		function(pilotId)
-			-- Only save for Warbot pilot
-			if pilotId == pilot.Id then
-				-- We only need to store the count as virtual skills are handled by basic virtual logic
-				local count = (GAME and GAME.pilots_plus and GAME.pilots_plus.warbot and GAME.pilots_plus.warbot.added_count) or 0
-				logger.logDebug(SUBMODULE, "Saving warbot added_count for time traveler: %d", count)
-				return count
+		function(pilotStruct)
+			if pilotStruct:getIdStr() ~= pilot.Id then
+				return nil
 			end
-			return nil
+			local pilotUid = pilotStruct:getUidStr()
+			local count = (GAME and GAME.pilots_plus and GAME.pilots_plus.warbot
+				and GAME.pilots_plus.warbot.added_count
+				and GAME.pilots_plus.warbot.added_count[pilotUid]) or 0
+			logger.logDebug(SUBMODULE, "Saving warbot added_count for time traveler %s: %d", pilotUid, count)
+			return count
 		end,
-		function(pilotId, value)
-			-- Only restore for Warbot pilot
-			if pilotId == pilot.Id and value ~= nil then
-				self:initGameSaveData()
-				GAME.pilots_plus.warbot.added_count = value
-				logger.logDebug(SUBMODULE, "Restored warbot added_count from time travel: %d", value)
+		function(pilotStruct, value)
+			if pilotStruct:getIdStr() ~= pilot.Id or value == nil then
+				return
 			end
+			self:initGameSaveData()
+			local pilotUid = pilotStruct:getUidStr()
+			GAME.pilots_plus.warbot.added_count[pilotUid] = value
+			logger.logDebug(SUBMODULE, "Restored warbot added_count from time travel for %s: %d", pilotUid, value)
 		end
 	)
 end
