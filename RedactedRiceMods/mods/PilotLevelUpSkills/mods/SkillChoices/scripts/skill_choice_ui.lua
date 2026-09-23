@@ -22,7 +22,7 @@ local activeDialogEntry = nil
 local pausingForSelection = false
 local pauseAnimRegistered = false
 local deferredSkillIds = {}
--- Choices confirmed this run, keyed by pilotId -> slotIndex -> skillId.
+-- Choices confirmed this run, keyed by pilot UID -> slotIndex -> skillId.
 -- Survives delevel so re-earning a slot keeps the pick without re-prompting.
 local chosenSkillIds = {}
 
@@ -62,40 +62,43 @@ function skill_choice_ui:ensureGameStorage()
 	return GAME.redactedrice_SkillChoices
 end
 
-local function storePilotSlotMap(map, pilotId, slotIndex, skillId)
-	if not map[pilotId] then
-		map[pilotId] = {}
+local function storePilotSlotMap(map, pilotUid, slotIndex, skillId)
+	if not map[pilotUid] then
+		map[pilotUid] = {}
 	end
-	map[pilotId][slotIndex] = skillId
+	map[pilotUid][slotIndex] = skillId
 end
 
-local function clearPilotSlotMap(map, pilotId, slotIndex)
-	if not map[pilotId] then
+local function clearPilotSlotMap(map, pilotUid, slotIndex)
+	if not map[pilotUid] then
 		return
 	end
-	map[pilotId][slotIndex] = nil
-	if next(map[pilotId]) == nil then
-		map[pilotId] = nil
+	map[pilotUid][slotIndex] = nil
+	if next(map[pilotUid]) == nil then
+		map[pilotUid] = nil
 	end
 end
 
-local function getPilotSlotMapValue(localMap, gameMap, pilotId, slotIndex)
-	local localSlots = localMap[pilotId]
+local function getPilotSlotMapValue(localMap, gameMap, pilot, slotIndex)
+	local pilotUid = pilot:getUidStr()
+
+	local localSlots = localMap[pilotUid]
 	if localSlots and localSlots[slotIndex] then
 		return localSlots[slotIndex]
 	end
-	if gameMap and gameMap[pilotId] and gameMap[pilotId][slotIndex] then
-		return gameMap[pilotId][slotIndex]
+	if gameMap and gameMap[pilotUid] and gameMap[pilotUid][slotIndex] then
+		return gameMap[pilotUid][slotIndex]
 	end
 	return nil
 end
 
-function skill_choice_ui:storeDeferredSkill(pilotId, slotIndex, skillId)
-	storePilotSlotMap(deferredSkillIds, pilotId, slotIndex, skillId)
+function skill_choice_ui:storeDeferredSkill(pilot, slotIndex, skillId)
+	local pilotUid = pilot:getUidStr()
+	storePilotSlotMap(deferredSkillIds, pilotUid, slotIndex, skillId)
 
 	local gameStorage = self:ensureGameStorage()
 	if gameStorage then
-		storePilotSlotMap(gameStorage.deferredSkills, pilotId, slotIndex, skillId)
+		storePilotSlotMap(gameStorage.deferredSkills, pilotUid, slotIndex, skillId)
 	end
 end
 
@@ -104,17 +107,18 @@ function skill_choice_ui:getStoredSkillId(pilot, slotIndex)
 	return getPilotSlotMapValue(
 		deferredSkillIds,
 		gameStorage and gameStorage.deferredSkills,
-		pilot:getIdStr(),
+		pilot,
 		slotIndex
 	)
 end
 
-function skill_choice_ui:storeChosenSkill(pilotId, slotIndex, skillId)
-	storePilotSlotMap(chosenSkillIds, pilotId, slotIndex, skillId)
+function skill_choice_ui:storeChosenSkill(pilot, slotIndex, skillId)
+	local pilotUid = pilot:getUidStr()
+	storePilotSlotMap(chosenSkillIds, pilotUid, slotIndex, skillId)
 
 	local gameStorage = self:ensureGameStorage()
 	if gameStorage then
-		storePilotSlotMap(gameStorage.chosenSkills, pilotId, slotIndex, skillId)
+		storePilotSlotMap(gameStorage.chosenSkills, pilotUid, slotIndex, skillId)
 	end
 end
 
@@ -123,18 +127,18 @@ function skill_choice_ui:getChosenSkillId(pilot, slotIndex)
 	return getPilotSlotMapValue(
 		chosenSkillIds,
 		gameStorage and gameStorage.chosenSkills,
-		pilot:getIdStr(),
+		pilot,
 		slotIndex
 	)
 end
 
 function skill_choice_ui:clearChosenSkill(pilot, slotIndex)
-	local pilotId = pilot:getIdStr()
-	clearPilotSlotMap(chosenSkillIds, pilotId, slotIndex)
+	local pilotUid = pilot:getUidStr()
+	clearPilotSlotMap(chosenSkillIds, pilotUid, slotIndex)
 
 	local gameStorage = self:ensureGameStorage()
 	if gameStorage then
-		clearPilotSlotMap(gameStorage.chosenSkills, pilotId, slotIndex)
+		clearPilotSlotMap(gameStorage.chosenSkills, pilotUid, slotIndex)
 	end
 end
 
@@ -166,7 +170,7 @@ function skill_choice_ui:clearInvalidStoredSkill(pilot, slotIndex)
 	local stored = self:getStoredSkillId(pilot, slotIndex)
 	if stored and not self:isValidChoiceSkillId(stored) then
 		logger.logWarn(LOG_ID, "clearInvalidStoredSkill pilot=%s slot=%d skill=%s",
-			pilot:getIdStr(), slotIndex, tostring(stored))
+			pilot:getUidStr(), slotIndex, tostring(stored))
 		self:clearStoredSkill(pilot, slotIndex)
 		return true
 	end
@@ -189,13 +193,13 @@ function skill_choice_ui:filterValidChoiceSkillIds(skillIds)
 end
 
 function skill_choice_ui:clearStoredSkill(pilot, slotIndex)
-	local pilotId = pilot:getIdStr()
+	local pilotUid = pilot:getUidStr()
 	local stored = self:getStoredSkillId(pilot, slotIndex)
 
-	clearPilotSlotMap(deferredSkillIds, pilotId, slotIndex)
+	clearPilotSlotMap(deferredSkillIds, pilotUid, slotIndex)
 	local gameStorage = self:ensureGameStorage()
 	if gameStorage then
-		clearPilotSlotMap(gameStorage.deferredSkills, pilotId, slotIndex)
+		clearPilotSlotMap(gameStorage.deferredSkills, pilotUid, slotIndex)
 	end
 
 	-- Deferred rolls stay marked as per_run until cleared so other pilots cannot take them.
@@ -203,7 +207,7 @@ function skill_choice_ui:clearStoredSkill(pilot, slotIndex)
 	if stored then
 		cplus_plus_ex:unmarkPerRunSkill(stored)
 		logger.logDebug(LOG_ID, "clearStoredSkill released per_run claim pilot=%s slot=%d skill=%s",
-			pilotId, slotIndex, stored)
+			pilotUid, slotIndex, stored)
 	end
 end
 
@@ -237,7 +241,7 @@ function skill_choice_ui:withDeferredClaimReleased(pilot, slotIndex, fn)
 	if deferred then
 		cplus_plus_ex:unmarkPerRunSkill(deferred)
 		logger.logDebug(LOG_ID, "withDeferredClaimReleased unmark pilot=%s slot=%d skill=%s",
-			pilot:getIdStr(), slotIndex, deferred)
+			pilot:getUidStr(), slotIndex, deferred)
 	end
 
 	local result = fn()
@@ -247,7 +251,7 @@ function skill_choice_ui:withDeferredClaimReleased(pilot, slotIndex, fn)
 	if stillDeferred then
 		cplus_plus_ex:markPerRunSkillAsUsed(stillDeferred)
 		logger.logDebug(LOG_ID, "withDeferredClaimReleased remark pilot=%s slot=%d skill=%s",
-			pilot:getIdStr(), slotIndex, stillDeferred)
+			pilot:getUidStr(), slotIndex, stillDeferred)
 	end
 
 	return result
@@ -262,12 +266,11 @@ local function copySelectedSkills(selectedSkills)
 end
 
 function skill_choice_ui:deferSkillForChoice(pilot, slotIndex, skillId)
-	local pilotId = pilot:getIdStr()
 	skillId = skillId or self:getResolvedSlotSkillId(pilot, slotIndex)
 
 	if not self:isValidChoiceSkillId(skillId) then
 		logger.logWarn(LOG_ID, "deferSkillForChoice skip pilot=%s slot=%d: invalid or internal skill",
-			pilotId, slotIndex)
+			pilot:getUidStr(), slotIndex)
 		return false
 	end
 
@@ -275,7 +278,7 @@ function skill_choice_ui:deferSkillForChoice(pilot, slotIndex, skillId)
 		return false
 	end
 
-	self:storeDeferredSkill(pilotId, slotIndex, skillId)
+	self:storeDeferredSkill(pilot, slotIndex, skillId)
 	local skillIds = self:getPilotSlotSkillIds(pilot)
 	skillIds[slotIndex] = PENDING_SELECTION_SKILL_ID
 	return cplus_plus_ex:applySkillIdsToPilot(pilot, skillIds, false)
@@ -331,7 +334,7 @@ function skill_choice_ui:getDisplayEarnedSkillIds(pilot, excludeSlotIndexes)
 				table.insert(skillIds, resolvedId)
 			end
 		else
-			local virtualSkills = cplus_plus_ex:getVirtualSkills(pilot:getIdStr())
+			local virtualSkills = cplus_plus_ex:getVirtualSkills(pilot)
 			local virtIndex = skillIndex - cplus_plus_ex.MAX_SKILL_SLOTS
 			local virtualId = virtualSkills[virtIndex]
 			if virtualId and virtualId ~= "" then
@@ -364,7 +367,7 @@ function skill_choice_ui:buildConstraintContext(pilot, slotIndex)
 		selectedSkills[2] = self:getResolvedSlotSkillId(pilot, 2)
 	end
 
-	for virtIndex, skillId in ipairs(cplus_plus_ex:getVirtualSkills(pilot:getIdStr())) do
+	for virtIndex, skillId in ipairs(cplus_plus_ex:getVirtualSkills(pilot)) do
 		selectedSkills[cplus_plus_ex.MAX_SKILL_SLOTS + virtIndex] = skillId
 	end
 	return selectedSkills
@@ -400,7 +403,7 @@ end
 -- enabled non-conflicting skill.
 function skill_choice_ui:generateChoices(pilot, slotIndex, count)
 	logger.logDebug(LOG_ID, "generateChoices pilot=%s slot=%d count=%s stored=%s",
-		pilot:getIdStr(),
+		pilot:getUidStr(),
 		slotIndex,
 		tostring(count),
 		tostring(self:getValidStoredSkillId(pilot, slotIndex)))
@@ -435,7 +438,7 @@ function skill_choice_ui:generateChoices(pilot, slotIndex, count)
 		end
 
 		logger.logDebug(LOG_ID, "generateChoices pilot=%s slot=%d result=[%s]",
-			pilot:getIdStr(), slotIndex, table.concat(choices, ", "))
+			pilot:getUidStr(), slotIndex, table.concat(choices, ", "))
 		return self:filterValidChoiceSkillIds(choices)
 	end)
 end
@@ -680,7 +683,7 @@ end
 function skill_choice_ui:applyChosenSkill(pilot, slotIndex, skillId)
 	if not self:isValidChoiceSkillId(skillId) then
 		logger.logWarn(LOG_ID, "applyChosenSkill skip pilot=%s slot=%d: invalid skill=%s",
-			pilot:getIdStr(), slotIndex, tostring(skillId))
+			pilot:getUidStr(), slotIndex, tostring(skillId))
 		return false
 	end
 
@@ -688,7 +691,7 @@ function skill_choice_ui:applyChosenSkill(pilot, slotIndex, skillId)
 	local skill2 = slotIndex == 2 and skillId or self:resolveSlotSkillForApply(pilot, 2)
 	if not skill1 or not skill2 then
 		logger.logWarn(LOG_ID, "applyChosenSkill skip pilot=%s slot=%d: unresolved slots [%s, %s]",
-			pilot:getIdStr(), slotIndex, tostring(skill1), tostring(skill2))
+			pilot:getUidStr(), slotIndex, tostring(skill1), tostring(skill2))
 		return false
 	end
 
@@ -698,11 +701,11 @@ function skill_choice_ui:applyChosenSkill(pilot, slotIndex, skillId)
 	local appliedId = pilot:getLvlUpSkill(slotIndex):getIdStr()
 	if appliedId ~= skillId then
 		logger.logWarn(LOG_ID, "applyChosenSkill mismatch pilot=%s slot=%d wanted=%s got=%s",
-			pilot:getIdStr(), slotIndex, skillId, tostring(appliedId))
+			pilot:getUidStr(), slotIndex, skillId, tostring(appliedId))
 		return false
 	end
 
-	self:storeChosenSkill(pilot:getIdStr(), slotIndex, skillId)
+	self:storeChosenSkill(pilot, slotIndex, skillId)
 	return true
 end
 
@@ -713,7 +716,7 @@ end
 
 function skill_choice_ui:onSkillOptionClicked(session, btn, skillId)
 	logger.logDebug(LOG_ID, "onSkillOptionClicked pilot=%s slot=%d skill=%s",
-		session.pilot:getIdStr(), session.slotIndex, skillId)
+		session.pilot:getUidStr(), session.slotIndex, skillId)
 	session.selectedSkillId = skillId
 	for _, skillBtn in ipairs(session.skillButtons) do
 		self:applySkillButtonStyle(skillBtn, skillBtn == btn)
@@ -847,7 +850,7 @@ function skill_choice_ui:onConfirmClicked(session)
 	end
 
 	logger.logDebug(LOG_ID, "onConfirmClicked pilot=%s slot=%d skill=%s",
-		session.pilot:getIdStr(), session.slotIndex, session.selectedSkillId)
+		session.pilot:getUidStr(), session.slotIndex, session.selectedSkillId)
 	self:applyChosenSkill(session.pilot, session.slotIndex, session.selectedSkillId)
 	session.quit()
 end
@@ -876,7 +879,7 @@ end
 
 function skill_choice_ui:onDialogClosed(session)
 	logger.logDebug(LOG_ID, "onDialogClosed pilot=%s slot=%d",
-		session.pilot:getIdStr(), session.slotIndex)
+		session.pilot:getUidStr(), session.slotIndex)
 	dialogOpen = false
 	activeDialogEntry = nil
 	if session.onComplete then
@@ -888,7 +891,7 @@ function skill_choice_ui:showDialog(entry, onComplete)
 	local session = self:createDialogSession(entry, onComplete)
 
 	logger.logDebug(LOG_ID, "showDialog pilot=%s slot=%d choiceCount=%d choices=[%s]",
-		session.pilot:getIdStr(),
+		session.pilot:getUidStr(),
 		session.slotIndex,
 		#session.choices,
 		table.concat(session.choices, ", "))
@@ -896,7 +899,7 @@ function skill_choice_ui:showDialog(entry, onComplete)
 	if #session.choices == 0 then
 		local fallback = self:pickFallbackChoice(session.pilot, session.slotIndex)
 		logger.logWarn(LOG_ID, "showDialog no valid choices for pilot=%s slot=%d fallback=%s",
-			session.pilot:getIdStr(), session.slotIndex, tostring(fallback))
+			session.pilot:getUidStr(), session.slotIndex, tostring(fallback))
 		if fallback then
 			self:applyChosenSkill(session.pilot, session.slotIndex, fallback)
 		end
@@ -908,7 +911,7 @@ function skill_choice_ui:showDialog(entry, onComplete)
 
 	if #session.choices == 1 then
 		logger.logDebug(LOG_ID, "showDialog auto-applying only choice pilot=%s slot=%d skill=%s",
-			session.pilot:getIdStr(), session.slotIndex, session.choices[1])
+			session.pilot:getUidStr(), session.slotIndex, session.choices[1])
 		if not self:applyChosenSkill(session.pilot, session.slotIndex, session.choices[1]) then
 			local fallback = self:pickFallbackChoice(session.pilot, session.slotIndex)
 			if fallback then
@@ -923,10 +926,11 @@ function skill_choice_ui:showDialog(entry, onComplete)
 
 	dialogOpen = true
 	activeDialogEntry = {
-		pilotId = session.pilot:getIdStr(),
+		pilotUid = session.pilot:getUidStr(),
 		slotIndex = session.slotIndex,
 	}
-	logger.logDebug(LOG_ID, "showDialog opening UI pilot=%s slot=%d", session.pilot:getIdStr(), session.slotIndex)
+	logger.logDebug(LOG_ID, "showDialog opening UI pilot=%s slot=%d",
+		session.pilot:getUidStr(), session.slotIndex)
 
 	sdlext.showDialog(function(ui, quit)
 		session.quit = quit
@@ -950,22 +954,22 @@ function skill_choice_ui:processQueue()
 
 	local entry = table.remove(pendingQueue, 1)
 	logger.logDebug(LOG_ID, "processQueue dequeue pilot=%s slot=%d remaining=%d",
-		entry.pilot:getIdStr(), entry.slotIndex, #pendingQueue)
+		entry.pilot:getUidStr(), entry.slotIndex, #pendingQueue)
 	self:showDialog(entry, function()
 		self:processQueue()
 	end)
 end
 
 function skill_choice_ui:isPilotSlotPending(pilot, slotIndex)
-	local pilotId = pilot:getIdStr()
+	local pilotUid = pilot:getUidStr()
 	if activeDialogEntry
-		and activeDialogEntry.pilotId == pilotId
+		and activeDialogEntry.pilotUid == pilotUid
 		and activeDialogEntry.slotIndex == slotIndex then
 		return true
 	end
 
 	for _, entry in ipairs(pendingQueue) do
-		if entry.pilot:getIdStr() == pilotId and entry.slotIndex == slotIndex then
+		if entry.pilot:getUidStr() == pilotUid and entry.slotIndex == slotIndex then
 			return true
 		end
 	end
@@ -980,12 +984,12 @@ function skill_choice_ui:enqueue(pilot, slotIndex)
 	-- have the event in the queue before adding it.
 	if self:isPilotSlotPending(pilot, slotIndex) then
 		logger.logDebug(LOG_ID, "enqueue skip duplicate pilot=%s slot=%d queueLen=%d",
-			pilot:getIdStr(), slotIndex, #pendingQueue)
+			pilot:getUidStr(), slotIndex, #pendingQueue)
 		return
 	end
 
 	logger.logDebug(LOG_ID, "enqueue pilot=%s slot=%d queueLen=%d",
-		pilot:getIdStr(), slotIndex, #pendingQueue + 1)
+		pilot:getUidStr(), slotIndex, #pendingQueue + 1)
 	table.insert(pendingQueue, {
 		pilot = pilot,
 		slotIndex = slotIndex,
@@ -1002,12 +1006,12 @@ function skill_choice_ui:restoreChosenSkillIfNeeded(pilot, slotIndex, skillId)
 	local currentId = pilot:getLvlUpSkill(slotIndex):getIdStr()
 	if currentId == skillId then
 		logger.logDebug(LOG_ID, "restoreChosenSkillIfNeeded already present pilot=%s slot=%d skill=%s",
-			pilot:getIdStr(), slotIndex, skillId)
+			pilot:getUidStr(), slotIndex, skillId)
 		return true
 	end
 
 	logger.logDebug(LOG_ID, "restoreChosenSkillIfNeeded reapply pilot=%s slot=%d skill=%s (was %s)",
-		pilot:getIdStr(), slotIndex, skillId, tostring(currentId))
+		pilot:getUidStr(), slotIndex, skillId, tostring(currentId))
 	return self:applyChosenSkill(pilot, slotIndex, skillId)
 end
 
@@ -1029,11 +1033,11 @@ function skill_choice_ui:onPilotLevelChanged(pilot, changes)
 			and self:restoreChosenSkillIfNeeded(pilot, newLevel, previouslyChosen)
 			and pilot:getLvlUpSkill(newLevel):getIdStr() == previouslyChosen then
 			logger.logDebug(LOG_ID, "onPilotLevelChanged restored prior choice pilot=%s slot=%d skill=%s",
-				pilot:getIdStr(), newLevel, previouslyChosen)
+				pilot:getUidStr(), newLevel, previouslyChosen)
 			return
 		end
 		logger.logWarn(LOG_ID, "onPilotLevelChanged prior choice restore failed pilot=%s slot=%d skill=%s current=%s",
-			pilot:getIdStr(),
+			pilot:getUidStr(),
 			newLevel,
 			tostring(previouslyChosen),
 			tostring(pilot:getLvlUpSkill(newLevel):getIdStr()))
@@ -1045,7 +1049,7 @@ function skill_choice_ui:onPilotLevelChanged(pilot, changes)
 		local rolledSkillId = pilot:getLvlUpSkill(newLevel):getIdStr()
 		if not self:deferSkillForChoice(pilot, newLevel, rolledSkillId) then
 			logger.logWarn(LOG_ID, "defer failed pilot=%s slot=%d skill=%s",
-				pilot:getIdStr(), newLevel, tostring(rolledSkillId))
+				pilot:getUidStr(), newLevel, tostring(rolledSkillId))
 		end
 	end
 
