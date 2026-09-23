@@ -8,7 +8,7 @@ local SUBMODULE = logger.register("Legendary+", "Core", legendary_plus.DEBUG)
 
 legendary_plus.libs = legendary_plus.libs or {}
 legendary_plus.config_options = {
-	alwaysShowQueuedPreviewIcons = false,
+	alwaysShowQueuedPreviewIcons = true,
 }
 legendary_plus.CATEGORY = "Legendary+"
 legendary_plus.skills = {}
@@ -34,7 +34,7 @@ legendary_plus.DISABLED_BY_DEFAULT = {
 
 function legendary_plus.refreshConfigOptions()
 	legendary_plus.config_options.alwaysShowQueuedPreviewIcons =
-			PlusHelper.readAlwaysShowQueuedPreviewIcons("redactedrice_Legendary+", false)
+			PlusHelper.readAlwaysShowQueuedPreviewIcons("redactedrice_Legendary+", true)
 end
 
 function legendary_plus.addWeaponPreviewIcon(phase, loc, animKey, description)

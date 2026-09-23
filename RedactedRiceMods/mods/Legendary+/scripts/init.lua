@@ -16,7 +16,7 @@ function mod:metadata()
 		"alwaysShowQueuedPreviewIcons",
 		"Always Show Queued Preview Icons",
 		"When enabled, Legendary+ effect icons for queued enemy attacks stay visible without hovering the attacker or target.",
-		{ enabled = false }
+		{ enabled = true }
 	)
 end
 
