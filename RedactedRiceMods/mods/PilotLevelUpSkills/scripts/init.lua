@@ -1,5 +1,5 @@
 
-return {
+local mod = {
 	id = "redactedrice_pilot_level_up_skills",
 	name = "Pilot Level Up Skills",
 	description = "Custom pilot level up skills by Redacted Rice.",
@@ -8,6 +8,12 @@ return {
 	version = "1.0.0",
 	modApiVersion = "2.9.5",
 	gameVersion = "1.2.93",
-	init = function() end,
-	load = function() end,
 }
+
+function mod:init(options)
+end
+
+function mod:load(options, version)
+end
+
+return mod
