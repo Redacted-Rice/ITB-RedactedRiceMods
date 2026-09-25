@@ -18,9 +18,25 @@ the inspiration/starting point for this
 local VERSION = "0.9.2"
 local DEBUG = false
 
+local function logDebug(...)
+	if DEBUG then LOG(...) end
+end
+
 local mod_path = mod_loader.mods[modApi.currentMod]
 local path = mod_path.scriptPath
 
+local function isAbsoluteOrModRootPath(iconPath)
+	return iconPath:find("^mods[/\\]")
+		or iconPath:find("^/")
+		or iconPath:find("^%a:")
+end
+
+local function resolveIconFilePath(iconPath, basePath)
+	if isAbsoluteOrModRootPath(iconPath) then
+		return iconPath
+	end
+	return basePath .. iconPath
+end
 
 local function parseVersion(versionStr)
 	if not versionStr then return 0, 0, 0 end
@@ -280,7 +296,7 @@ end
 local function getIconSurface(iconId, replaceTraitId, supressNil)
 	if not iconId or not replaceTraitId then
 		if not supressNil then
-			LOG("getIconSurface: nil params - iconId="..tostring(iconId)..
+			logDebug("getIconSurface: nil params - iconId="..tostring(iconId)..
 					", replaceTraitId="..tostring(replaceTraitId))
 		end
 		return nil
@@ -288,7 +304,7 @@ local function getIconSurface(iconId, replaceTraitId, supressNil)
 
 	local traitData = traitRegistry[replaceTraitId]
 	if not traitData then
-		LOG("getIconSurface: traitData not found for replaceTraitId="..replaceTraitId)
+		logDebug("getIconSurface: traitData not found for replaceTraitId="..replaceTraitId)
 		return nil
 	end
 
@@ -299,8 +315,8 @@ local function getIconSurface(iconId, replaceTraitId, supressNil)
 		for k, v in pairs(traitData.surfaces) do
 			table.insert(availableKeys, k)
 		end
-		LOG("getIconSurface: Surface not found for replaceTraitId="..replaceTraitId..", iconId="..iconId)
-		LOG("  Available surfaces: "..table.concat(availableKeys, ", "))
+		logDebug("getIconSurface: Surface not found for replaceTraitId="..replaceTraitId..", iconId="..iconId)
+		logDebug("  Available surfaces: "..table.concat(availableKeys, ", "))
 	end
 	return surface
 end
@@ -751,10 +767,7 @@ local function addTraitInternal(trait)
 		end
 	else
 		-- Relative mod asset path
-		local fullPath = iconPath
-		if not iconPath:find("^/") and not iconPath:find("^%a:") then
-			fullPath = path .. iconPath
-		end
+		local fullPath = resolveIconFilePath(iconPath, path)
 
 		if modApi:fileExists(fullPath) then
 			surface = sdlext.getSurface({ path = fullPath })

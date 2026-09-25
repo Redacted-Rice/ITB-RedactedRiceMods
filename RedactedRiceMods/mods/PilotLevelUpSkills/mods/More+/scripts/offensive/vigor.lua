@@ -1,0 +1,46 @@
+local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
+	id = "RrVigor",
+	name = "Vigor",
+	description = "Gain Boost when piloted mech is healed (even if already at full health).",
+	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
+	constraints = {
+		groups = {PlusHelper.GROUPS.BOOST},
+		-- Despite not being able to heal, zoltan can still be healed by an effect and get this
+		pilotExclusions = {"Pilot_Arrogant", "Pilot_Chemical"},
+	},
+	priority = 200, -- Go after everything else including vampire
+	modifiesKillDamage = false,
+}
+
+customSkill.DEBUG = false
+local logger = memhack.logger
+local SUBMODULE = logger.register("More+", "Vigor", customSkill.DEBUG)
+
+more_plus:addCustomTraitIcon(customSkill)
+
+function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage, indexes, targetPawn)
+	if source ~= self.SOURCE_TARGET or not attackingPawn or spaceDamage.iDamage >= 0 or
+			spaceDamage.iDamage == DAMAGE_ZERO or spaceDamage.iDamage == DAMAGE_DEATH then
+		return
+	end
+	if targetPawn:IsBoosted() then
+		logger.logDebug(SUBMODULE, "Mech %d at %s already boosted, skipping",
+				targetPawn:GetId(), spaceDamage.loc:GetString())
+		return
+	end
+
+	local targetId = targetPawn:GetId()
+	logger.logDebug(SUBMODULE, "Adding boost icon for healed mech at %s",
+			spaceDamage.loc:GetString())
+	more_plus.libs.weaponPreview.ExecuteWithState(PlusHelper.convertPhase(phase),
+		function()
+			more_plus.addWeaponPreviewIcon(phase, spaceDamage.loc, more_plus.commonIcons.boost.key, GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
+		end, attackingPawn:GetId()
+	)
+	spaceDamage.sScript = spaceDamage.sScript .. string.format(
+			"modApi:runLater(function() Board:GetPawn(%d):SetBoosted(true) end)", targetId)
+	logger.logDebug(SUBMODULE, "Will grant boosted to healed mech %d at %s (heal amount: %d)",
+			targetId, spaceDamage.loc:GetString(), -spaceDamage.iDamage)
+end
+
+return customSkill
