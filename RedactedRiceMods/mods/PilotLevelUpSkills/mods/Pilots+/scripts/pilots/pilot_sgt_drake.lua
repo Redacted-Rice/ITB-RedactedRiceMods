@@ -57,31 +57,37 @@ function this:onMissionEnd(mission)
 	self:initGameSaveData()
 
 	local pilots = Game:GetSquadPilots()
-	local veteranPresent = false
-	local veteranPilotId = nil
+	local mentorUids = {}
 
-	-- Check if Sgt. Drake is in the squad
+	-- Collect every Combat Mentor instance in the squad
 	for _, pilotStruct in ipairs(pilots) do
-		local pilotSkill = pilotStruct:getSkill():get()
-		if pilotSkill == pilot.Skill then
-			veteranPresent = true
-			veteranPilotId = pilotStruct:getIdStr()
-			break
+		if pilotStruct:getSkill():get() == pilot.Skill then
+			table.insert(mentorUids, pilotStruct:getUidStr())
 		end
 	end
 
-	if not veteranPresent then
+	if #mentorUids == 0 then
 		logger.logDebug(SUBMODULE, "Sgt. Drake not present, skipping veteran training")
 		return
 	end
 
-	-- Track missions and grant skills for each other pilot
+	local function hasOtherMentor(pilotUid)
+		for _, mentorUid in ipairs(mentorUids) do
+			if mentorUid ~= pilotUid then
+				return true
+			end
+		end
+		return false
+	end
+
+	-- Track missions and grant skills for trainees.
+	-- A lone Drake does not train himself; a second Drake can train / be trained by the first.
 	for _, pilotStruct in ipairs(pilots) do
 		local pilotUid = pilotStruct:getUidStr()
-		local pilotSkill = pilotStruct:getSkill():get()
+		local isMentor = pilotStruct:getSkill():get() == pilot.Skill
+		local canReceiveTraining = (not isMentor) or hasOtherMentor(pilotUid)
 
-		-- Skip Sgt. Drake themselves
-		if pilotSkill ~= pilot.Skill then
+		if canReceiveTraining then
 			-- Initialize tracking structures
 			if not GAME.pilots_plus.sgt_drake.trained_skills[pilotUid] then
 				GAME.pilots_plus.sgt_drake.trained_skills[pilotUid] = {}
@@ -150,12 +156,7 @@ function this:onExtraInfoSelectedChanged(uiObj, pawn, pilotStruct)
 	end
 
 	local pilotUid = pilotStruct:getUidStr()
-	local pilotSkill = pilotStruct:getSkill():get()
-
-	-- Don't show for Sgt. Drake himself
-	if pilotSkill == pilot.Skill then
-		return
-	end
+	local isMentor = pilotStruct:getSkill():get() == pilot.Skill
 
 	self:initGameSaveData()
 
@@ -163,21 +164,22 @@ function this:onExtraInfoSelectedChanged(uiObj, pawn, pilotStruct)
 	local hasSkill = GAME.pilots_plus.sgt_drake.trained_skills[pilotUid]
 		and #GAME.pilots_plus.sgt_drake.trained_skills[pilotUid] > 0
 
-	-- Check if Sgt. Drake is in the squad
-	local drakePresent = false
+	-- Mentors only show trainee UI when another mentor is in the squad
+	local mentorAvailable = false
 	if Game then
 		local pilots = Game:GetSquadPilots()
 		for _, p in ipairs(pilots) do
-			local skill = p:getSkill():get()
-			if skill == pilot.Skill then
-				drakePresent = true
-				break
+			if p:getSkill():get() == pilot.Skill then
+				if not isMentor or p:getUidStr() ~= pilotUid then
+					mentorAvailable = true
+					break
+				end
 			end
 		end
 	end
 
-	-- Only show if Drake is present OR pilot has completed training
-	if not drakePresent and not hasSkill then
+	-- Only show if a mentor can train this pilot OR they already completed training
+	if not mentorAvailable and not hasSkill then
 		return
 	end
 
@@ -186,7 +188,7 @@ function this:onExtraInfoSelectedChanged(uiObj, pawn, pilotStruct)
 	local description = ""
 	if hasSkill then
 		description = "Training Complete"
-	elseif drakePresent then
+	elseif mentorAvailable then
 		description = string.format("Progress: %d/3 missions", missionCount)
 	end
 
