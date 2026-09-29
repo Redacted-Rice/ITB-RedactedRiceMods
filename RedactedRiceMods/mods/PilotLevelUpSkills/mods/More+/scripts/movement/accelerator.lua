@@ -30,12 +30,12 @@ end
 
 function customSkill:_internalSetMoveBonus(moveBonus, doPing)
 	for _, skillInfo in pairs(cplus_plus_ex:getMechsWithSkill(customSkill.id)) do
-		logger.logDebug(SUBMODULE, "setMoveBonus found %s", skillInfo.pilot:getIdStr())
+		logger.logDebug(SUBMODULE, "setMoveBonus found %s", skillInfo.pilot:getUidStr())
 		local pilot = skillInfo.pilot
 		local idxes = skillInfo.skillIndices
 		for _, idx in ipairs(idxes) do
 			local skill = pilot:getLvlUpSkill(idx)
-			logger.logDebug(SUBMODULE, "setMoveBonus for %s at idx %d to %d", skillInfo.pilot:getIdStr(), idx, moveBonus)
+			logger.logDebug(SUBMODULE, "setMoveBonus for %s at idx %d to %d", skillInfo.pilot:getUidStr(), idx, moveBonus)
 			skill:setMoveBonus(moveBonus)
 			if Board and doPing then
 				local pawn = Board:GetPawn(skillInfo.pawnId)
