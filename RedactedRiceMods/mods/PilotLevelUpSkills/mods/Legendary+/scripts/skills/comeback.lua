@@ -34,12 +34,12 @@ end
 local function foreachActiveInstance(fn)
 	for _, mechInfo in pairs(cplus_plus_ex:getMechsWithSkill(customSkill.id)) do
 		local pilot = mechInfo.pilot
-		local pilotId = pilot and pilot:getIdStr()
-		if pilot and pilotId then
+		local pilotUid = pilot and pilot:getUidStr()
+		if pilot and pilotUid then
 			for _, skillIndex in ipairs(mechInfo.skillIndices) do
 				local skill = pilot:getLvlUpSkill(skillIndex)
 				if skill then
-					fn(pilot, pilotId, skillIndex, skill)
+					fn(pilot, pilotUid, skillIndex, skill)
 				end
 			end
 		end
@@ -47,7 +47,7 @@ local function foreachActiveInstance(fn)
 end
 
 local function applyGridBonuses()
-	foreachActiveInstance(function(pilot, pilotId, skillIndex, skill)
+	foreachActiveInstance(function(pilot, pilotUid, skillIndex, skill)
 		if isBuildingDamaged() then
 			skill:setGridBonus(GRID_DEF_BONUS)
 		else
@@ -57,7 +57,7 @@ local function applyGridBonuses()
 end
 
 local function clearAllGridBonuses()
-	foreachActiveInstance(function(pilot, pilotId, skillIndex, skill)
+	foreachActiveInstance(function(pilot, pilotUid, skillIndex, skill)
 		skill:setGridBonus(0)
 	end)
 end
