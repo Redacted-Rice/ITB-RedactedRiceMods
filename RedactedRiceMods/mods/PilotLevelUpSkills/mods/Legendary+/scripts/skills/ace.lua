@@ -4,7 +4,11 @@ local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
 	description = "Piloted mech gains Flying. +1 damage to Flying enemies.",
 	constraints = {
 		groups = {PlusHelper.GROUPS.MOVE_TYPE, PlusHelper.GROUPS.ADD_DAMAGE},
-		pilotExclusions = {"Pilot_Recycler", cplus_plus_ex.isFlyingCyborg},
+		pilotExclusions = {
+			"Pilot_Recycler", 
+			cplus_plus_ex.isFlyingCyborg,
+			cplus_plus_ex.isBurrowerCyborg,
+		},
 	},
 	priority = 80,
 	appliedFlying = {},

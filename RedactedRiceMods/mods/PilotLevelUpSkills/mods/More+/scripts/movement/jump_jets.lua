@@ -5,10 +5,17 @@ local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 	-- Don't allow on kwan - its mostly duplicative with his skill
 	-- Propsero already has flying so it doesn't help at all either
-	-- Flying cyborgs (Hornet) also don't benefit from jump jets
+	-- Flying/jumper/teleporter cyborgs already have equal or better movement
 	constraints = {
 		groups = {PlusHelper.GROUPS.MOVE_TYPE},
-		pilotExclusions = {"Pilot_Hotshot", "Pilot_Recycler", cplus_plus_ex.isFlyingCyborg},
+		pilotExclusions = {
+			"Pilot_Hotshot",
+			"Pilot_Recycler",
+			cplus_plus_ex.isFlyingCyborg,
+			cplus_plus_ex.isJumperCyborg,
+			cplus_plus_ex.isTeleporterCyborg,
+			cplus_plus_ex.isBurrowerCyborg,
+		},
 	}
 }
 

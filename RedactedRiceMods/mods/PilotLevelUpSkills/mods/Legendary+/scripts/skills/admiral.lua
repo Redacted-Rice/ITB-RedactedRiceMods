@@ -7,7 +7,11 @@ local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
 	-- Flying cyborgs (Hornet) also don't benefit from amphibious
 	constraints = {
 		groups = {PlusHelper.GROUPS.MOVE_TYPE, PlusHelper.GROUPS.ADD_DAMAGE},
-		pilotExclusions = {"Pilot_Recycler", cplus_plus_ex.isFlyingCyborg},
+		pilotExclusions = {
+			"Pilot_Recycler", 
+			cplus_plus_ex.isFlyingCyborg,
+			cplus_plus_ex.isBurrowerCyborg,
+		},
 		squadExclusions = {"knight_ChessPawns"},
 	},
 	priority = 80,
