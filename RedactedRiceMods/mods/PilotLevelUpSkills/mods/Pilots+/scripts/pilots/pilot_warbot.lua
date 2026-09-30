@@ -87,7 +87,7 @@ function this:init(mod)
 
 	-- Use pilotSkill_tooltip for the base registration, then override for dynamic behavior
 	pilotSkill_tooltip.Add(pilot.Skill, PilotSkill(pilot.Skill,
-			"Gets two level up skills at level 1 and five at level 2."))
+			"Gets one level up skill at level 1 and three at level 2."))
 
 	-- Register as a virtual skill source. Not strictly needed since we re-roll anyways
 	cplus_plus_ex:registerVirtualSkillSource("warbot")
