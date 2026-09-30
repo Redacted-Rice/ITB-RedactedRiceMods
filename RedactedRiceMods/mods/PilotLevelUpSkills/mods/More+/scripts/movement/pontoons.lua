@@ -8,7 +8,11 @@ local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	-- Flying cyborgs (Hornet) also don't benefit from pontoons
 	constraints = {
 		groups = {PlusHelper.GROUPS.MOVE_TYPE},
-		pilotExclusions = {"Pilot_Recycler", cplus_plus_ex.isFlyingCyborg},
+		pilotExclusions = {
+			"Pilot_Recycler",
+			cplus_plus_ex.isFlyingCyborg,
+			cplus_plus_ex.isBurrowerCyborg,
+		},
 		squadExclusions = {"knight_ChessPawns"},
 	}
 }
