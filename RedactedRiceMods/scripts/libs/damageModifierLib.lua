@@ -25,9 +25,9 @@ API:
   DamageModifierLib.events.onSkillEffectEvaluated:subscribe(fn, priority)
       fn(phase, outEffects)
         phase      - one of DamageModifierLib.PHASE_*
-        outEffects - mutable array; append SpaceDamage entries to add to the
-                     skill effect. Appended effects are processed in a new
-                     pass (avoid infinite loops).
+        outEffects - mutable array; append SpaceDamage entries to queue for
+                     the skill effect. Derived effects are modifier processed
+                     and collected until the chain settles, then added
       Fired once after all SpaceDamages in a pass have been processed.
       Use this to emit aggregated/derived effects after seeing the full list
       (e.g. one heal for N kills). Priority alone is not enough for that.
@@ -57,7 +57,7 @@ Priority guidance (lower runs first):
   180-200 - late follow-ups / post pass (skill effect evaluated)
 ]]
 
-local VERSION = "1.0.0"
+local VERSION = "1.0.1"
 
 local DEBUG = false
 
@@ -331,33 +331,39 @@ local function processEffectsWithQueuedFlag(attackingPawn, skillEffect, effectsT
 		return
 	end
 
-	local damagesToProcess = effectsTable
 	-- Arbitrary max number of new space damages that can be added to prevent infinite loops
 	local maxPasses = 25
 	local currentPass = 0
 
-	while damagesToProcess and #damagesToProcess > 0 and currentPass < maxPasses do
-		local newEffects = processEffectByEffect(attackingPawn, damagesToProcess, phase)
+	-- effectsTable entries are already in skillEffect so we mutate them in place
+	-- and get any new space damages that were created
+	local pending = processEffectByEffect(attackingPawn, effectsTable, phase)
+	local toAdd = {}
 
-		if newEffects and #newEffects > 0 then
-			for _, newEffect in ipairs(newEffects) do
-				if isQueued then
-					skillEffect:AddQueuedDamage(newEffect)
-				else
-					skillEffect:AddDamage(newEffect)
-				end
-			end
-
-			damagesToProcess = newEffects
-			currentPass = currentPass + 1
-		else
-			break
+	-- These added space damages will be copied when we call add and then if we make
+	-- modifications, it won't be picked up. As such, we keep looping and settling here
+	-- first BEFORE adding so we can modify them if needed (e.g. Vigor + Vampire).
+	while pending and #pending > 0 and currentPass < maxPasses do
+		currentPass = currentPass + 1
+		local nextPending = processEffectByEffect(attackingPawn, pending, phase)
+		for _, effect in ipairs(pending) do
+			table.insert(toAdd, effect)
 		end
+		pending = nextPending
 	end
 
-	if currentPass >= maxPasses and damagesToProcess and #damagesToProcess > 0 then
+	if currentPass >= maxPasses and pending and #pending > 0 then
 		logDebug("Chaining effect limit reached (%d passes, phase=%s) with %d damages remaining. Attacker pawn %d",
-				maxPasses, tostring(phase), #damagesToProcess, attackingPawn:GetId())
+				maxPasses, tostring(phase), #pending, attackingPawn:GetId())
+	end
+
+	-- Once we settled, now add all the pending ones to space damage
+	for _, effect in ipairs(toAdd) do
+		if isQueued then
+			skillEffect:AddQueuedDamage(effect)
+		else
+			skillEffect:AddDamage(effect)
+		end
 	end
 end
 

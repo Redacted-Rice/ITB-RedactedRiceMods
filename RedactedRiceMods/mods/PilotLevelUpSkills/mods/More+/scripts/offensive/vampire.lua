@@ -1,0 +1,131 @@
+local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
+	id = "RrVampire",
+	name = "Vampire",
+	description = "Repair (regardless of pilot repair skill) piloted mech when you kill a vek.",
+	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
+	-- Zoltan only has 1 health
+	constraints = {
+		pilotExclusions = {"Pilot_Zoltan"},
+	},
+	priority = 180, -- go after kill shot
+	modifiesKillDamage = false,
+}
+
+customSkill.DEBUG = false
+local logger = memhack.logger
+local SUBMODULE = logger.register("More+", "Vampire", customSkill.DEBUG)
+
+more_plus:addCustomTraitIcon(customSkill)
+
+-- Track heals per pawn ID for aggregation
+customSkill.pendingHeals = {}
+
+local function wouldKillTarget(attackingPawn, targetPawn, damage)
+	if damage == DAMAGE_DEATH then
+		return true
+	end
+	if not (damage > 0 and damage ~= DAMAGE_DEATH and damage ~= DAMAGE_ZERO) then
+		return false
+	end
+	local resultDamage = damage
+	if attackingPawn:IsBoosted() then
+		resultDamage = resultDamage + 1
+	end
+	if targetPawn:IsAcid() then
+		-- Acid doubles ALL damage
+		resultDamage = resultDamage * 2
+	-- Armor only applies if not acid
+	elseif targetPawn:IsArmor() then
+		resultDamage = resultDamage - 1
+	end
+	return targetPawn:GetHealth() <= resultDamage
+end
+
+function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage, indexes, targetPawn)
+	local incomingDamage = spaceDamage.iDamage
+	if source ~= self.SOURCE_ATTACKER or not targetPawn or not targetPawn:IsEnemy() or
+			incomingDamage == DAMAGE_ZERO or not (incomingDamage == DAMAGE_DEATH or incomingDamage > 0) then
+		return
+	end
+	if not wouldKillTarget(attackingPawn, targetPawn, incomingDamage) then
+		return
+	end
+
+	local pawnId = attackingPawn:GetId()
+	-- Track this heal for aggregation (by pawn ID)
+	if not self.pendingHeals[pawnId] then
+		self.pendingHeals[pawnId] = {
+			pawnId = pawnId,
+			count = 0
+		}
+	end
+	self.pendingHeals[pawnId].count = self.pendingHeals[pawnId].count + 1
+
+	local attackerLoc = self:getPawnSpace(attackingPawn)
+	local targetLoc = self:getPawnSpace(targetPawn)
+
+	-- Use a different tooltip for attacker and target to be more clear
+	local attackerTip = GetText(customSkill.name) .. ": " .. GetText(customSkill.description)
+	local targetTip = GetText(customSkill.name)
+			.. ": Will be killed by the attacking pawn with Vampire, triggering attacker to repair"
+
+	more_plus.libs.weaponPreview.ExecuteWithState(PlusHelper.convertPhase(phase),
+		function()
+			more_plus.addWeaponPreviewIcon(phase, attackerLoc,
+					more_plus.commonIcons.vampire.key, attackerTip)
+			more_plus.addWeaponPreviewIcon(phase, targetLoc,
+					more_plus.commonIcons.vampire.key, targetTip)
+		end, pawnId
+	)
+
+	logger.logDebug(SUBMODULE, "Added vampire icons at attacker %s and target %s (heal #%d for pawn %d)",
+			attackerLoc:GetString(), targetLoc:GetString(),
+			self.pendingHeals[pawnId].count, pawnId)
+end
+
+function customSkill:SkillEffectEvaluated(phase)
+	if not next(self.pendingHeals) then
+		return nil
+	end
+	local results = {}
+
+	-- Add a delay before applying heals
+	local delayDamage = SpaceDamage(Point(0, 0), 0)
+	delayDamage.bHide = true
+	delayDamage.fDelay = 0.5
+	table.insert(results, delayDamage)
+
+	-- Loop through all pawn IDs and apply the summed heal
+	for pawnId, healData in pairs(self.pendingHeals) do
+		local pawn = Board:GetPawn(pawnId)
+		if pawn then
+			-- Get pawn's current location
+			local currentLoc = self:getPawnSpace(pawn)
+
+			logger.logDebug(SUBMODULE, "Creating aggregated heal (%d kills) for pawn %d at current location %s",
+					healData.count, pawnId, currentLoc:GetString())
+
+			-- Adding an alert doesn't work and seems to be overriden by
+			-- the repair alert
+
+			-- Create a single aggregated heal for all kills
+			local repairDamage = SpaceDamage(currentLoc, -healData.count)
+			repairDamage.iFire = EFFECT_REMOVE
+			repairDamage.iAcid = EFFECT_REMOVE
+			table.insert(results, repairDamage)
+			logger.logDebug(SUBMODULE, "Added aggregated repair effect (x%d) at %s",
+					healData.count, currentLoc:GetString())
+		else
+			logger.logWarn(SUBMODULE, "Pawn %d not found when applying vampire heal", pawnId)
+		end
+	end
+
+	-- Clear for next evaluation
+	self.pendingHeals = {}
+
+	if #results > 0 then
+		return results
+	end
+end
+
+return customSkill

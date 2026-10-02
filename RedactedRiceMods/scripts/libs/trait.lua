@@ -1,5 +1,6 @@
 
 local VERSION = "3.0.1"
+local DEBUG = false
 ---------------------------------------------------------------------
 -- Trait v3.0.1 - code library
 --
@@ -50,6 +51,21 @@ local TRAIT_CYCLE_INTERVAL = 1.25
 local mod = modApi:getCurrentMod()
 local modApiExt = modapiext or require(mod.scriptPath.."modApiExt/modApiExt")
 local isMemeditAvailable = memedit ~= nil
+
+local function isAbsoluteOrModRootPath(iconPath)
+	return iconPath:find("^mods[/\\]")
+		or iconPath:find("^/")
+		or iconPath:find("^%a:")
+end
+
+local function resolveIconFilePath(iconPath)
+	if isAbsoluteOrModRootPath(iconPath) then
+		return iconPath
+	end
+	local modRef = mod_loader.mods[modApi.currentMod]
+	local basePath = (modRef and modRef.resourcePath) or mod.scriptPath
+	return basePath .. iconPath
+end
 
 local function isManagedTrait(id)
 	local prefix = id:sub(1,5)
@@ -334,9 +350,9 @@ local function tryGetTraitsFromSelectedPawn(targetId)
 			end
 		end
 
-		LOG("Warning: Trait tooltip requested for trait "..targetId.." but selected pawn does not have this trait active")
+		if DEBUG then LOG("Warning: Trait tooltip requested for trait "..targetId.." but selected pawn does not have this trait active") end
 	else
-		LOG("Warning: Trait tooltip requested for trait "..targetId.." but no pawn is selected")
+		if DEBUG then LOG("Warning: Trait tooltip requested for trait "..targetId.." but no pawn is selected") end
 	end
 	return nil
 end
@@ -448,8 +464,9 @@ local function add(self, trait)
 				modApi:copyAsset(icon, "img/"..path)
 			end
 		else
-			if modApi:fileExists(icon) then
-				modApi:appendAsset("img/"..path, icon)
+			local iconPath = resolveIconFilePath(icon)
+			if modApi:fileExists(iconPath) then
+				modApi:appendAsset("img/"..path, iconPath)
 			end
 		end
 	else
@@ -465,8 +482,9 @@ local function add(self, trait)
 				modApi:copyAsset(icon_glow, "img/"..pathGlow)
 			end
 		else
-			if modApi:fileExists(icon_glow) then
-				modApi:appendAsset("img/"..pathGlow, icon_glow)
+			local iconGlowPath = resolveIconFilePath(icon_glow)
+			if modApi:fileExists(iconGlowPath) then
+				modApi:appendAsset("img/"..pathGlow, iconGlowPath)
 			end
 		end
 
