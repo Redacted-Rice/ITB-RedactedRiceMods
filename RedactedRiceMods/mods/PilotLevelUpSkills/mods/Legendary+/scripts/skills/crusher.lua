@@ -27,31 +27,6 @@ if not ANIMS[customSkill.NO_CRACK_ANIM] then
 	}
 end
 
-function customSkill.isHealthTerrain(loc)
-	local terrain = Board:GetTerrain(loc)
-	return terrain == TERRAIN_MOUNTAIN or terrain == TERRAIN_ICE
-end
-
-function customSkill.isFullHealth(loc)
-	return Board:GetHealth(loc) >= Board:GetMaxHealth(loc)
-end
-
-function customSkill.canCrack(loc)
-	if not Board:IsValid(loc) or Board:IsBuilding(loc) or
-			Board:IsPod(loc) or Board:IsItem(loc) or Board:IsCracked(loc) or
-			Board:GetTerrain(loc) == TERRAIN_WATER or Board:GetTerrain(loc) == TERRAIN_LAVA or
-			Board:GetTerrain(loc) == TERRAIN_ACID or Board:GetTerrain(loc) == TERRAIN_HOLE then
-		return false
-	end
-
-	-- Mountains/ice take damage from crack instead of cracking so only affect undamaged ones
-	if customSkill.isHealthTerrain(loc) then
-		return customSkill.isFullHealth(loc)
-	end
-
-	return true
-end
-
 function customSkill:setupEffect()
 	table.insert(customSkill.events, modapiext.events.onSkillBuild:subscribe(customSkill.moveSkillBuild))
 	table.insert(customSkill.events, modapiext.events.onPawnUndoMove:subscribe(customSkill.undoCracked))
@@ -72,7 +47,7 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 
 	for dir = DIR_START, DIR_END do
 		local adj = p2 + DIR_VECTORS[dir]
-		if customSkill.canCrack(adj) then
+		if BoardUtils.canCrack(adj) then
 			local damageC = SpaceDamage(adj, 0)
 			damageC.iCrack = EFFECT_CREATE
 			skillEffect:AddDamage(damageC)
@@ -111,13 +86,8 @@ function customSkill.undoCracked(mission, pawn, undonePosition)
 	end
 
 	for _, loc in ipairs(cracked) do
-		if customSkill.isHealthTerrain(loc) then
-			local maxHp = Board:GetMaxHealth(loc)
-			Board:SetHealth(loc, maxHp, maxHp)
-			logger.logDebug(SUBMODULE, "Restored health on %s for pawn %d (undo)", loc:GetString(), pawnId)
-		elseif Board:IsCracked(loc) then
-			Board:SetCracked(loc, false)
-			logger.logDebug(SUBMODULE, "Uncracked %s for pawn %d (undo)", loc:GetString(), pawnId)
+		if BoardUtils.undoCrack(loc) then
+			logger.logDebug(SUBMODULE, "Undid crack on %s for pawn %d (undo)", loc:GetString(), pawnId)
 		end
 	end
 	customSkill.crackedByMove[pawnId] = nil
