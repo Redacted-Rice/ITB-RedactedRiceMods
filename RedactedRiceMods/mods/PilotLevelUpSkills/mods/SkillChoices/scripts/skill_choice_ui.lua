@@ -1121,8 +1121,8 @@ function skill_choice_ui:load()
 		self:onPilotLevelChanged(pilot, changes)
 	end, -100)
 
-	cplus_plus_ex:addPostAssigningLvlUpSkillsHook(function()
-		self:onPostAssigningSkills()
+	cplus_plus_ex:addSkillsSelectedHook(function(pilot, skill1Id, skill2Id)
+		self:onSkillsSelected(pilot, skill1Id, skill2Id)
 	end)
 
 	modApi.events.onFrameDrawn:subscribe(function()
