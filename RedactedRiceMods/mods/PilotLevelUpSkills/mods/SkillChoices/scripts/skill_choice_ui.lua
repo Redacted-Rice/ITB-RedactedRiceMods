@@ -317,6 +317,11 @@ function skill_choice_ui:resolveSlotSkillForApply(pilot, slotIndex)
 	end
 
 	local memId = pilot:getLvlUpSkill(slotIndex):getIdStr()
+	-- Keep pending skill in case we somehow accidentally get in a place where we have
+	-- two pending skills
+	if memId == PENDING_SELECTION_SKILL_ID then
+		return PENDING_SELECTION_SKILL_ID
+	end
 	if not memId or memId == "" or cplus_plus_ex:isInternalSkill(memId) then
 		return nil
 	end
@@ -696,7 +701,11 @@ function skill_choice_ui:applyChosenSkill(pilot, slotIndex, skillId)
 	end
 
 	self:clearStoredSkill(pilot, slotIndex)
-	cplus_plus_ex:applySkillIdsToPilot(pilot, { skill1, skill2 }, true)
+	if not cplus_plus_ex:applySkillIdsToPilot(pilot, { skill1, skill2 }, true) then
+		logger.logWarn(LOG_ID, "applyChosenSkill apply failed pilot=%s slot=%d skills=[%s, %s]",
+			pilot:getUidStr(), slotIndex, tostring(skill1), tostring(skill2))
+		return false
+	end
 
 	local appliedId = pilot:getLvlUpSkill(slotIndex):getIdStr()
 	if appliedId ~= skillId then
@@ -850,8 +859,11 @@ function skill_choice_ui:onConfirmClicked(session)
 	end
 
 	logger.logDebug(LOG_ID, "onConfirmClicked pilot=%s slot=%d skill=%s",
-		session.pilot:getUidStr(), session.slotIndex, session.selectedSkillId)
-	self:applyChosenSkill(session.pilot, session.slotIndex, session.selectedSkillId)
+			session.pilot:getUidStr(), session.slotIndex, session.selectedSkillId)
+	if not self:applyChosenSkill(session.pilot, session.slotIndex, session.selectedSkillId) then
+		logger.logWarn(LOG_ID, "onConfirmClicked apply failed pilot=%s slot=%d skill=%s",
+				session.pilot:getUidStr(), session.slotIndex, session.selectedSkillId)
+	end
 	session.quit()
 end
 
@@ -994,7 +1006,7 @@ function skill_choice_ui:enqueue(pilot, slotIndex)
 		pilot = pilot,
 		slotIndex = slotIndex,
 	})
-	
+
 	-- Delay it slightly
 	pausingForSelection = true
 	modApi:scheduleHook(OPEN_CLOSE_DELAY_MS, function()
@@ -1056,6 +1068,20 @@ function skill_choice_ui:onPilotLevelChanged(pilot, changes)
 	self:enqueue(pilot, newLevel)
 end
 
+-- When CPLUS+ is about to apply skills recheck for any pending slots
+-- so we can try again for any pending skills
+function skill_choice_ui:onSkillsSelected(pilot, skill1Id, skill2Id)
+	if not pilot then
+		return
+	end
+	if skill1Id == PENDING_SELECTION_SKILL_ID then
+		self:enqueue(pilot, 1)
+	end
+	if skill2Id == PENDING_SELECTION_SKILL_ID then
+		self:enqueue(pilot, 2)
+	end
+end
+
 function skill_choice_ui:clearPendingDialogs()
 	logger.logDebug(LOG_ID, "clearPendingDialogs")
 	pendingQueue = {}
@@ -1094,6 +1120,10 @@ function skill_choice_ui:load()
 	memhack:addPilotChangedHook(function(pilot, changes)
 		self:onPilotLevelChanged(pilot, changes)
 	end, -100)
+
+	cplus_plus_ex:addPostAssigningLvlUpSkillsHook(function()
+		self:onPostAssigningSkills()
+	end)
 
 	modApi.events.onFrameDrawn:subscribe(function()
 		self:retriggerBoardBusyHold()
