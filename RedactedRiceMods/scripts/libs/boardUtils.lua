@@ -7,7 +7,7 @@ Author: Das Keifer of Redacted Rice
 Discord Server: https://discord.gg/CNjTVrpN4v
 ]]
 
-local VERSION = "1.8.0"
+local VERSION = "1.8.1"
 
 -- Version check
 local isNewestVersion = false
@@ -316,6 +316,42 @@ if isNewestVersion then
 
 	function BoardUtils.isLiquid(terrain)
 		return terrain == TERRAIN_WATER or terrain == TERRAIN_LAVA or terrain == TERRAIN_ACID
+	end
+
+	-- Mountains/ice take HP damage from crack instead of becoming cracked terrain.
+	function BoardUtils.isCrackHealthTerrain(loc)
+		local terrain = Board:GetTerrain(loc)
+		return terrain == TERRAIN_MOUNTAIN or terrain == TERRAIN_ICE
+	end
+
+	function BoardUtils.canCrack(loc)
+		local terrain = Board:GetTerrain(loc)
+		if not Board:IsValid(loc) or Board:IsBuilding(loc) or
+				Board:IsPod(loc) or Board:IsItem(loc) or Board:IsCracked(loc) or
+				BoardUtils.isLiquid(terrain) or terrain == TERRAIN_HOLE then
+			return false
+		end
+
+		-- Mountains/ice take damage from crack instead of cracking so only affect undamaged ones
+		if BoardUtils.isCrackHealthTerrain(loc) then
+			return Board:GetHealth(loc) >= Board:GetMaxHealth(loc)
+		end
+
+		return true
+	end
+
+	-- Undo a crack or restore mountain/ice health
+	function BoardUtils.undoCrack(loc)
+		if BoardUtils.isCrackHealthTerrain(loc) then
+			local maxHp = Board:GetMaxHealth(loc)
+			Board:SetHealth(loc, maxHp, maxHp)
+			return true
+		end
+		if Board:IsCracked(loc) then
+			Board:SetCracked(loc, false)
+			return true
+		end
+		return false
 	end
 
 	-- pawnCheckType "none", "default", "any"
