@@ -1,7 +1,7 @@
 local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	id = "RrCrusher",
 	name = "Crusher",
-	description = "When moving, crack all eligible tiles adjacent to your destination. Will not crack building, item, uncrackable, or already cracked tiles.",
+	description = "When moving, crack all eligible tiles adjacent to your destination. Will not crack building, item, uncrackable, already cracked, or damaged mountain/ice tiles.",
 	crackedByMove = {},
 	reusabilityLimit = cplus_plus_ex.REUSABLILITY.PER_PILOT,
 }
@@ -27,11 +27,29 @@ if not ANIMS[customSkill.NO_CRACK_ANIM] then
 	}
 end
 
+function customSkill.isHealthTerrain(loc)
+	local terrain = Board:GetTerrain(loc)
+	return terrain == TERRAIN_MOUNTAIN or terrain == TERRAIN_ICE
+end
+
+function customSkill.isFullHealth(loc)
+	return Board:GetHealth(loc) >= Board:GetMaxHealth(loc)
+end
+
 function customSkill.canCrack(loc)
-	return Board:IsValid(loc) and not Board:IsBuilding(loc) and
-			not Board:IsPod(loc) and not Board:IsItem(loc) and not Board:IsCracked(loc) and
-			Board:GetTerrain(loc) ~= TERRAIN_WATER and Board:GetTerrain(loc) ~= TERRAIN_LAVA and
-			Board:GetTerrain(loc) ~= TERRAIN_ACID and Board:GetTerrain(loc) ~= TERRAIN_HOLE
+	if not Board:IsValid(loc) or Board:IsBuilding(loc) or
+			Board:IsPod(loc) or Board:IsItem(loc) or Board:IsCracked(loc) or
+			Board:GetTerrain(loc) == TERRAIN_WATER or Board:GetTerrain(loc) == TERRAIN_LAVA or
+			Board:GetTerrain(loc) == TERRAIN_ACID or Board:GetTerrain(loc) == TERRAIN_HOLE then
+		return false
+	end
+
+	-- Mountains/ice take damage from crack instead of cracking so only affect undamaged ones
+	if customSkill.isHealthTerrain(loc) then
+		return customSkill.isFullHealth(loc)
+	end
+
+	return true
 end
 
 function customSkill:setupEffect()
@@ -93,7 +111,11 @@ function customSkill.undoCracked(mission, pawn, undonePosition)
 	end
 
 	for _, loc in ipairs(cracked) do
-		if Board:IsCracked(loc) then
+		if customSkill.isHealthTerrain(loc) then
+			local maxHp = Board:GetMaxHealth(loc)
+			Board:SetHealth(loc, maxHp, maxHp)
+			logger.logDebug(SUBMODULE, "Restored health on %s for pawn %d (undo)", loc:GetString(), pawnId)
+		elseif Board:IsCracked(loc) then
 			Board:SetCracked(loc, false)
 			logger.logDebug(SUBMODULE, "Uncracked %s for pawn %d (undo)", loc:GetString(), pawnId)
 		end
