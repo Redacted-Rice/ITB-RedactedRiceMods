@@ -10,8 +10,7 @@ StarWars_DualCannons = Skill:new{
 	TwoClick = true,
 	MoveRange = 3,
 	TargetRange = 1,
-	LaunchSound = "/weapons/ricochet",
-	ImpactSound = "/impact/generic/ricochet",
+	FireSound = "/impact/generic/ricochet",
 	TipImage = {
 		CustomPawn = "StarWars_TIEFighterMech",
 		Unit = Point(2,3),
@@ -233,6 +232,7 @@ function StarWars_DualCannons:FireFromPositionInDirection(ret, fromPos, fireDir)
 			local damage = shot == self.Shots and self.Damage or 0
 			local delay = shot == self.Shots and FULL_DELAY or self.ShotsDelay
 			local sd = SpaceDamage(target, damage)
+			ret:AddSound(self.FireSound)
 			ret:AddProjectile(fromPos, sd, projectile, delay)
 		end
 	end
