@@ -10,8 +10,7 @@ StarWars_CannonArray = Skill:new{
 	TwoClick = true,
 	MoveRange = 2,
 	TargetRange = 1,
-	LaunchSound = "/weapons/ricochet",
-	ImpactSound = "/impact/generic/ricochet",
+	FireSound = "/impact/generic/ricochet",
 	Projectile1 = "effects/shot_sw_dual_red_split_1",
 	Projectile2 = "effects/shot_sw_dual_red_split_2",
 	TipImage = {
@@ -223,6 +222,7 @@ function StarWars_CannonArray:FireFromPositionInDirection(ret, fromPos, fireDir)
 				local projectile = (laser % 2 == 1) and self.Projectile1 or self.Projectile2
 				-- Only do damage on the last laser
 				local damage = SpaceDamage(target, laser == 4 and self.Damage or 0)
+				ret:AddSound(self.FireSound)
 				ret:AddProjectile(fromPos, damage, projectile, laser == 1 and NO_DELAY or 0.05)
 			end
 
