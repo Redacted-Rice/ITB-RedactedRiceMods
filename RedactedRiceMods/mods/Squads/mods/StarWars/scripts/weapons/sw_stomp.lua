@@ -1,0 +1,80 @@
+StarWars_Stomp = Skill:new{
+	Name = "Stomp",
+	Description = "Damages and pushes all adjacent tiles.",
+	Class = "Ranged",
+	Damage = 1,
+	Push = true,
+	PowerCost = 1,
+	Upgrades = 2,
+	UpgradeCost = {2, 1},
+	Icon = "weapons/artillery_sw_stomp.png",
+	LaunchSound = "/impact/generic/mech",
+	ImpactSound = "/impact/generic/explosion",
+	TipImage = {
+		Unit = Point(2, 2),
+		Enemy = Point(2, 1),
+		Enemy2 = Point(3, 2),
+		Target = Point(2, 2),
+	},
+	Crack = false
+}
+
+Weapon_Texts.StarWars_Stomp_Upgrade1 = "Spikes"
+Weapon_Texts.StarWars_Stomp_A_UpgradeDescription = "+1 damage"
+StarWars_Stomp_A = StarWars_Stomp:new{
+	Damage = 2,
+}
+
+Weapon_Texts.StarWars_Stomp_Upgrade2 = "Heavy Stomp"
+Weapon_Texts.StarWars_Stomp_B_UpgradeDescription = "Cracks adjacent tiles"
+StarWars_Stomp_B = StarWars_Stomp:new{
+	Crack = true,
+}
+
+StarWars_Stomp_AB = StarWars_Stomp_A:new{
+	Crack = true,
+}
+
+function StarWars_Stomp:GetTargetArea(point)
+	local ret = PointList()
+	ret:push_back(point)
+	for dir = DIR_START, DIR_END do
+		local target = point + DIR_VECTORS[dir]
+		if Board:IsValid(target) then
+			ret:push_back(target)
+		end
+	end
+	return ret
+end
+
+function StarWars_Stomp:GetSkillEffect(p1, p2)
+	local ret = SkillEffect()
+
+	ret:AddBounce(p1, 3)
+	ret:AddDelay(0.2)
+
+	-- Damage and crack all adjacent tiles
+	for dir = DIR_START, DIR_END do
+		local target = p1 + DIR_VECTORS[dir]
+		if Board:IsValid(target) then
+			local damage = SpaceDamage(target, self.Damage)
+			damage.sAnimation = "airpush_" .. dir
+
+			-- Crack the tile (not on holes, liquid, or lava)
+			if self.Crack and not Board:IsTerrain(target, TERRAIN_HOLE)
+				and not Board:IsTerrain(target, TERRAIN_WATER)
+				and not Board:IsTerrain(target, TERRAIN_LAVA) then
+				damage.iCrack = EFFECT_CREATE
+			end
+
+			if self.Push then
+				damage.iPush = dir
+			end
+
+			ret:AddDamage(damage)
+			ret:AddBounce(target, -1)
+		end
+	end
+	ret:AddDelay(0.3)
+	return ret
+end
