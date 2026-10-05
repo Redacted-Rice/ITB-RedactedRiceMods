@@ -9,7 +9,7 @@ StarWars_HeavyCannons = Skill:new{
 	Upgrades = 2,
 	UpgradeCost = {2, 2},
 	Icon = "weapons/artillery_sw_heavy_turbocannons.png",
-	LaunchSound = "/weapons/push_beam",
+	FireSound = "/weapons/push_beam",
 	ImpactSound = "/impact/generic/explosion",
 	TipImage = {
 		CustomPawn = "StarWars_ATATMech",
@@ -154,6 +154,7 @@ function StarWars_HeavyCannons:GetSkillEffect(p1, p2)
 		local damage = shot == self.Shots and self.Damage or 0
 		local delay = shot == self.Shots and FULL_DELAY or self.ShotsDelay
 		local sd = SpaceDamage(p2, damage)
+		ret:AddSound(self.FireSound)
 		ret:AddArtillery(sd, projectile, delay)
 	end
 	ret:AddBounce(p2, self.BouncePerDamage * self.Damage)
