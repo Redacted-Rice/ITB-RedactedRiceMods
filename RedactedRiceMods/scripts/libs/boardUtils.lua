@@ -183,6 +183,25 @@ if isNewestVersion then
 		return BoardUtils.hijackedPath
 	end
 
+	-- Returns the stored path only when it matches this pawn's move (start, end, owner).
+	-- Hijacked paths are global and can be left over from another pawn's move or an attack preview.
+	function BoardUtils.getHijackedPathForMove(pawnId, p1, p2)
+		local path = BoardUtils.hijackedPath
+		if not path or path:size() == 0 then
+			return nil
+		end
+
+		local pathStart = path:index(1)
+		local pathEnd = path:index(path:size())
+		local pathPawn = Board:GetPawn(pathStart)
+		if pathStart == p1 and pathEnd == p2
+				and pathPawn and pathPawn:GetId() == pawnId then
+			return path
+		end
+
+		return nil
+	end
+
 	function BoardUtils.clearHijackedPath()
 		BoardUtils.hijackedPath = nil
 	end
@@ -743,6 +762,7 @@ if isNewestVersion then
 		end)
 
 		modapiext.events.onPawnPositionChanged:subscribe(function()
+			BoardUtils.clearHijackedPath()
 			BoardUtils.clearMoveCaches()
 		end)
 

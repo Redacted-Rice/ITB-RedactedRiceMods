@@ -5,7 +5,6 @@ local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	name = "Momentum",
 	description = "Gain boosted after moving at least 4 tiles.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
-	reentrant = false,
 	constraints = {
 		groups = {PlusHelper.GROUPS.BOOST},
 		pilotExclusions = {"Pilot_Arrogant", "Pilot_Chemical"},
@@ -65,14 +64,11 @@ function customSkill:momentumTriggered(pawnId, p1, p2, effect, builtEffect)
 		distance = math.abs(p2.x - p1.x) + math.abs(p2.y - p1.y)
 		pathSource = "manhattan"
 	else
-		local path = nil
-
-		-- Check if there's a hijacked path and use it if so
-		path = boardUtils.getHijackedPath()
+		local path = boardUtils.getHijackedPathForMove(pawnId, p1, p2)
 		if path then
 			pathSource = "hijacked"
 		else
-			-- Otherwise use vanilla pathfinding
+			-- Otherwise use vanilla pathfinding (respects flying, burrow, etc.)
 			path = Board:GetPath(p1, p2, pawn:GetPathProf())
 			pathSource = "calculated"
 		end
@@ -105,15 +101,18 @@ function customSkill.checkMove(mission, pawn, weaponId, p1, p2, skillEffect)
 	if weaponId == "Move" then
 		local pilot = pawn:GetPilot()
 		if pilot and cplus_plus_ex:isSkillOnPilot(customSkill.id, pilot) then
-			if not customSkill.reentrant then
-				logger.logDebug(SUBMODULE, "First calculation pass, will recalculate pathing", pawn:GetId())
-				customSkill.reentrant = true
-				-- Recalculate so hijacked paths and skill-granted movement are resolved
+			local pawnId = pawn:GetId()
+			if customSkill.recalculatingForPawn ~= pawnId then
+				logger.logDebug(SUBMODULE, "First calculation pass, will recalculate pathing", pawnId)
+				customSkill.recalculatingForPawn = pawnId
+				-- Clear stale paths from other pawns, attacks, or prior move previews.
+				more_plus.libs.boardUtils.clearHijackedPath()
+				-- Recalculate so hijacked paths and skill granted movement are resolved.
 				local builtEffect = Move:GetSkillEffect(p1, p2)
-				customSkill:momentumTriggered(pawn:GetId(), p1, p2, skillEffect, builtEffect)
-				customSkill.reentrant = false
+				customSkill:momentumTriggered(pawnId, p1, p2, skillEffect, builtEffect)
+				customSkill.recalculatingForPawn = nil
 			else
-				logger.logDebug(SUBMODULE, "Second calculation pass - skipping logic", pawn:GetId())
+				logger.logDebug(SUBMODULE, "Second calculation pass - skipping logic", pawnId)
 			end
 		end
 	end
