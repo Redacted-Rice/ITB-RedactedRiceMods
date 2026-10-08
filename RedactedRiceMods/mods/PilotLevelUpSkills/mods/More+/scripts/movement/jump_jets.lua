@@ -121,27 +121,18 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 			end
 
 			-- Otherwise we get to leap there!
-			local replacedMovement = false
 			logger.logDebug(SUBMODULE, "Destination %s requires jump for pawn %d - blasting off!",
 					p2:GetString(), pawn:GetId())
-			for idx = 1, skillEffect.effect:size() do
-				local spaceDamage = skillEffect.effect:index(idx)
-				if spaceDamage:IsMovement() then
-					spaceDamage:SetMoveType(1) -- 1 == leap
-					logger.logDebug(SUBMODULE, "Set move type to Leap for space damage at %s", spaceDamage.loc:GetString())
-					replacedMovement = true
-				end
-			end
 
-			if not replacedMovement then
-				logger.logDebug(SUBMODULE, "No movement to modify; Adding jump from %s to %s",
-						p1:GetString(), p2:GetString())
-				-- Replace first movement with leap
-				local leapPath = PointList()
-				leapPath:push_back(p1)
-				leapPath:push_back(p2)
-				skillEffect:AddLeap(leapPath, FULL_DELAY)
-			end
+			-- Clear the existing move and add a leap, preserving any other
+			-- skill effect entries already added
+			local preservedDamages = BoardUtils.extractNonMoveSkillEffectEntries(skillEffect)
+			skillEffect.effect = SkillEffect().effect
+			local leapPath = PointList()
+			leapPath:push_back(p1)
+			leapPath:push_back(p2)
+			skillEffect:AddLeap(leapPath, FULL_DELAY)
+			BoardUtils.addSkillEffectEntries(skillEffect, preservedDamages)
 		end
 	end
 end
