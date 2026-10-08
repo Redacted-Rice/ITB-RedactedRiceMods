@@ -129,9 +129,12 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 			logger.logDebug(SUBMODULE, "Destination %s requires teleport for pawn %d - teleporting!",
 					p2:GetString(), pawn:GetId())
 
-			-- Clear the existing move and add a teleport
+			-- Clear the existing move and add a teleport, preserving any other
+			-- skill effect entries already added
+			local preservedDamages = BoardUtils.extractNonMoveSkillEffectEntries(skillEffect)
 			skillEffect.effect = SkillEffect().effect
 			skillEffect:AddTeleport(p1, p2, NO_DELAY)
+			BoardUtils.addSkillEffectEntries(skillEffect, preservedDamages)
 		end
 	end
 end

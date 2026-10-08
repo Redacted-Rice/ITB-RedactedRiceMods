@@ -8,7 +8,8 @@ local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	constraints = {
 		groups = {PlusHelper.GROUPS.BOOST},
 		pilotExclusions = {"Pilot_Arrogant", "Pilot_Chemical"},
-	}
+	},
+	priority = 120,
 }
 
 -- Initialize logger
@@ -90,9 +91,13 @@ function customSkill:momentumTriggered(pawnId, p1, p2, effect, builtEffect)
 						GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
 			end, pawnId
 		)
-		effect:AddScript([[
-				GAME.more_plus.momentum.boosted_by_effect[]].. pawnId ..[[] = true
-				Board:GetPawn(]].. pawnId ..[[):SetBoosted(true)]])
+		-- Use AddDamage + sScript (not AddScript) so the boost survives movement
+		-- skills that replace the move entry, including supporter teleports.
+		local boostDamage = SpaceDamage(p2, 0)
+		boostDamage.sScript = string.format([[
+				GAME.more_plus.momentum.boosted_by_effect[%d] = true
+				Board:GetPawn(%d):SetBoosted(true)]], pawnId, pawnId)
+		effect:AddDamage(boostDamage)
 		logger.logDebug(SUBMODULE, "Will apply boosted to pawn %d moving %d tiles", pawnId, distance)
 	end
 end

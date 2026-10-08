@@ -240,15 +240,11 @@ if isNewestVersion then
 		skillEffect:AddDamage(moveDamage)
 	end
 
-	function BoardUtils.addForcedMove(skillEffect, path, delay)
-		delay = delay or FULL_DELAY
-
-		-- Preserve any existing damage effects. This ended up not being the issue
-		-- with boosted not working with momentum and maneuverable but it seems a
-		-- useful and good change so I'm leaving it though its largely untested
+	-- Copy non-movement skill effect entries so movement can be replaced safely.
+	function BoardUtils.extractNonMoveSkillEffectEntries(skillEffect, startIndex)
+		startIndex = startIndex or 2
 		local preservedDamages = {}
-		-- skip the first one
-		for i = 2, skillEffect.effect:size() do
+		for i = startIndex, skillEffect.effect:size() do
 			-- This seems to get a reference that can be changed so
 			-- instead copy the data to a table
 			local spaceDamage = skillEffect.effect:index(i)
@@ -260,6 +256,26 @@ if isNewestVersion then
 			copy.loc = Point(spaceDamage.loc)
 			table.insert(preservedDamages, copy)
 		end
+		return preservedDamages
+	end
+
+	function BoardUtils.addSkillEffectEntries(skillEffect, preservedDamages)
+		for _, damage in ipairs(preservedDamages) do
+			local recreated = SpaceDamage()
+			for _, key in ipairs(BoardUtils.SPACE_DAMAGE_KEYS) do
+				recreated[key] = damage[key]
+			end
+			-- Already copied the point so don't need to again
+			recreated.loc = damage.loc
+			skillEffect:AddDamage(recreated)
+		end
+	end
+
+	function BoardUtils.addForcedMove(skillEffect, path, delay)
+		delay = delay or FULL_DELAY
+
+		-- Preserve any existing damage effects (e.g. momentum, rally, shatterstep).
+		local preservedDamages = BoardUtils.extractNonMoveSkillEffectEntries(skillEffect)
 
 		-- Clear the existing move from the skilleffect
 		skillEffect.effect = SkillEffect().effect
@@ -276,16 +292,7 @@ if isNewestVersion then
 		local lastSpace = path:index(path:size())
 		BoardUtils.addForcedSingleMove(skillEffect, pawnId, lastSpace)
 
-		-- Re-add any preserved damage effects
-		for _, damage in ipairs(preservedDamages) do
-			local recreated = SpaceDamage()
-			for _, key in ipairs(BoardUtils.SPACE_DAMAGE_KEYS) do
-				recreated[key] = damage[key]
-			end
-			-- Already copied the point so don't need to again
-			recreated.loc = damage.loc
-			skillEffect:AddDamage(recreated)
-		end
+		BoardUtils.addSkillEffectEntries(skillEffect, preservedDamages)
 	end
 
 	function BoardUtils.makeInSubsetMatcher(tiles)
