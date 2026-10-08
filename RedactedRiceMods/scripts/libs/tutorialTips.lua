@@ -1,5 +1,7 @@
 ---------------------------------------------------------------------
--- Tutorial Tips v1.5 - code library
+-- Tutorial Tips - code library
+--
+-- Wiki: https://github.com/Redacted-Rice/ITB-RedactedRiceMods/wiki/%5BLib%5D-TutorialTips
 --
 -- Originally by Lemonymous
 --

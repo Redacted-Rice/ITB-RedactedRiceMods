@@ -1,7 +1,7 @@
 --[[
 PlusHelper - Small shared helpers for Pilot Level Up Skills (PLUS)
 
-Libs Wiki: https://github.com/Redacted-Rice/ITB-RedactedRiceMods/wiki
+Wiki: https://github.com/Redacted-Rice/ITB-RedactedRiceMods/wiki/%5BLib%5D-PlusHelper
 
 Author: Das Keifer of Redacted Rice
 Discord Server: https://discord.gg/CNjTVrpN4v

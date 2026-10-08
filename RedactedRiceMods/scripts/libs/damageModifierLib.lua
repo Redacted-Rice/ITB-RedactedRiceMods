@@ -1,7 +1,7 @@
 --[[
 DamageModifierLib - Modify weapon SpaceDamage during skill builds and Board:IsDeadly.
 
-Libs Wiki: https://github.com/Redacted-Rice/ITB-RedactedRiceMods/wiki
+Wiki: https://github.com/Redacted-Rice/ITB-RedactedRiceMods/wiki/%5BLib%5D-DamageModifierLib
 
 Author: Das Keifer of Redacted Rice
 Discord Server: https://discord.gg/CNjTVrpN4v
