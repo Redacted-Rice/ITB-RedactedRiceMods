@@ -78,7 +78,7 @@ function customSkill.moveSkillBuild(mission, pawn, weaponId, p1, p2, skillEffect
 			if legendary_plus.libs.boardUtils.skillEffectUsesPathMovement(skillEffect) then
 				local path = legendary_plus.libs.boardUtils.findMovePath(pawn, p1, p2, "default", true)
 				if path then
-					legendary_plus.libs.boardUtils.addForcedMove(skillEffect, path)
+					legendary_plus.libs.boardUtils.addForcedMove(skillEffect, path, nil, pawn:GetId())
 				end
 			end
 		end
