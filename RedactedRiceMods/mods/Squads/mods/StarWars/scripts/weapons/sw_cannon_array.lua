@@ -137,7 +137,7 @@ function StarWars_CannonArray:GetSkillEffect(p1, p2)
 	end
 	
 	-- Show the path with no delay for preview
-	BoardUtils.addForcedMove(ret, path, NO_DELAY)
+	BoardUtils.addForcedMove(ret, path, NO_DELAY, pawn:GetId())
 	
 	return ret
 end
@@ -185,10 +185,10 @@ function StarWars_CannonArray:GetFinalEffect(p1, p2, p3)
 	end
 	
 	-- Show the path with no delay for preview
-	BoardUtils.addForcedMove(ret, path, NO_DELAY)
+	local pawnId = pawn:GetId()
+	BoardUtils.addForcedMove(ret, path, NO_DELAY, pawnId)
 	
 	-- Move through path one space at a time, firing at each position
-	local pawnId = pawn:GetId()
 	local lastPos = p1
 	for i = 1, path:size() do
 		local newPos = path:index(i)
