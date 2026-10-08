@@ -8,8 +8,7 @@ local customSkill = cplus_plus_ex.baseClasses.SkillActive:new{
 	constraints = {
 		groups = {PlusHelper.GROUPS.BOOST},
 		pilotExclusions = {"Pilot_Arrogant", "Pilot_Chemical"},
-	},
-	priority = 120,
+	}
 }
 
 -- Initialize logger
