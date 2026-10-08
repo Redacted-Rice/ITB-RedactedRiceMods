@@ -215,7 +215,7 @@ if isNewestVersion then
 		return not BoardUtils.skillEffectUsesPathMovement(skillEffect)
 	end
 
-	function BoardUtils.addForcedSigleMove(skillEffect, pawnId, dest)
+	function BoardUtils.addForcedSingleMove(skillEffect, pawnId, dest)
 		local moveDamage = SpaceDamage(dest, 0)
 		moveDamage.sScript = [[Board:GetPawn(]] .. pawnId .. [[):SetSpace(]] .. dest:GetString() .. [[)]]
 		skillEffect:AddDamage(moveDamage)
@@ -255,7 +255,7 @@ if isNewestVersion then
 		local pawnId = Board:GetPawn(path:index(1)):GetId()
 		local secondToLastSpace = path:index(path:size() - 1)
 		local lastSpace = path:index(path:size())
-		BoardUtils.addForcedSigleMove(skillEffect, pawnId, lastSpace)
+		BoardUtils.addForcedSingleMove(skillEffect, pawnId, lastSpace)
 
 		-- Re-add any preserved damage effects
 		for _, damage in ipairs(preservedDamages) do
