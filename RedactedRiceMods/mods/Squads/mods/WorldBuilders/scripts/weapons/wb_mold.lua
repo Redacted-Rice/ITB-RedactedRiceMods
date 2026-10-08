@@ -61,12 +61,26 @@ function WorldBuilders_Mold:CanTargetSpace(space, damage)
 end
 
 function WorldBuilders_Mold:NoPawnOrWillDie(p1, p2)
+	local targetPawn = Board:GetPawn(p2)
+	if targetPawn == nil then
+		return true
+	end
 	local actualDamage = self.Damage
-	if Board:GetPawn(p1):IsBoosted() then
+	local attackingPawn = Board:GetPawn(p1)
+	if attackingPawn and attackingPawn:IsBoosted() then
 		actualDamage = actualDamage + 1
 	end
-	local pawnTarget = Board:GetPawn(p1)
-	return not pawnTarget or Board:IsDeadly(SpaceDamage(p2, self.Damage), pawnTarget)
+	return Board:IsDeadly(SpaceDamage(p2, actualDamage), attackingPawn)
+end
+
+function WorldBuilders_Mold:CanThrowLandOn(landSpace)
+	if not self:TerrainCanBeOccupied(Board:GetTerrain(landSpace)) then
+		return false
+	end
+	if Board:IsPawnSpace(landSpace) then
+		return false
+	end
+	return not Board:IsBlocked(landSpace, PATH_FLYER)
 end
 
 function WorldBuilders_Mold:GetTargetArea(p1)
@@ -84,8 +98,9 @@ function WorldBuilders_Mold:GetSecondTargetArea(p1, p2)
 	local ret = PointList()
 
 	local isPawnTargeted = Board:IsPawnSpace(p2)
+	local pawnWillDie = self:NoPawnOrWillDie(p1, p2)
 	-- if the pawn will die, allow any adj target
-	local anyValid = self:NoPawnOrWillDie(p1, p2) or (isPawnTargeted and Board:GetPawn(p2):IsGuarding())
+	local anyValid = pawnWillDie or (isPawnTargeted and Board:GetPawn(p2):IsGuarding())
 	if anyValid then
 		ret:push_back(p2)
 	end
@@ -101,8 +116,7 @@ function WorldBuilders_Mold:GetSecondTargetArea(p1, p2)
 		local dist = math.abs(diff.x) + math.abs(diff.y)
 		-- If the space is not an invalid target (multispace, non pushable pawn)
 		if dist <= size and Board:IsValid(p) and
-				(anyValid or
-					(not isPawnTargeted or not Board:IsBlocked(p, PATH_FLYER))) then
+				(anyValid or self:CanThrowLandOn(p)) then
 			ret:push_back(p)
 		end
 		p = p + VEC_RIGHT
@@ -167,12 +181,15 @@ function WorldBuilders_Mold:GetFinalEffect(p1,p2,p3)
 	ret:AddDelay(0.3)
 	ret:AddBounce(p1, 1)
 
+	local isThrowingASurvivingPawn = isPawnTargeted and not isUnpushablePawn and not pawnWillDie
 	if self.AdjRocks then
 		for dir = DIR_START, DIR_END do
 			local adjSpace = p2 + DIR_VECTORS[dir]
 			local adjDamage = SpaceDamage(adjSpace, 0)
-			local terrain = Board:GetTerrain(adjSpace)
-			if (pawnWillDie or isUnpushablePawn or not isPawnTargeted or p3 ~= adjSpace) and terrain ~= TERRAIN_BUILDING and terrain ~= TERRAIN_MOUNTAIN and Board:GetPawn(adjSpace) == nil then
+			local pawnBeingThrownHere = isThrowingASurvivingPawn and p3 == adjSpace
+			-- If we aren't throwing the pawn here, there isn't already a pawn, and we can put a pawn
+			-- there, then we will add a rock
+			if not pawnBeingThrownHere and not Board:IsPawnSpace(adjSpace) and self:TerrainCanBeOccupied(Board:GetTerrain(adjSpace)) then
 				self:AddRock(adjDamage, adjSpace)
 				ret:AddBounce(adjSpace, -3)
 			end
@@ -183,7 +200,6 @@ function WorldBuilders_Mold:GetFinalEffect(p1,p2,p3)
 	return ret
 end
 
--- Remove
 function WorldBuilders_Mold:TerrainCanBeOccupied(terrain)
 	return terrain ~= TERRAIN_BUILDING and terrain ~= TERRAIN_MOUNTAIN
 end
