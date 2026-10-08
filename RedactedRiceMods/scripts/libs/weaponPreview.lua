@@ -2,13 +2,12 @@
 local VERSION = "4.1.1"
 ----------------------------------------------------------------------
 -- Weapon Preview - code library
--- https://github.com/Lemonymous/ITB-LemonymousMods/wiki/weaponPreview
+--
+-- Wiki: https://github.com/Redacted-Rice/ITB-RedactedRiceMods/wiki/%5BLib%5D-WeaponPreview
 --
 -- by Lemonymous
 -- Enhanced by Das Keifer to allow usage in skill build events and
 -- for two click weapon support
---
--- Wiki (4.x): https://github.com/Redacted-Rice/ITB-RedactedRiceMods/wiki
 ----------------------------------------------------------------------
 --  A library for
 --   - enhancing preview of weapons/move/repair skills with
