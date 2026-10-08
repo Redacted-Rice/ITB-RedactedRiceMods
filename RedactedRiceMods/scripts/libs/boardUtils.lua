@@ -277,7 +277,7 @@ if isNewestVersion then
 		end
 	end
 
-	function BoardUtils.addForcedMove(skillEffect, path, delay)
+	function BoardUtils.addForcedMove(skillEffect, path, delay, pawnId)
 		delay = delay or FULL_DELAY
 
 		-- Preserve any existing damage effects (e.g. momentum, rally, shatterstep).
@@ -289,9 +289,10 @@ if isNewestVersion then
 		-- Add move for display purposes. This won't let us move onto unmovable spaces reliably
 		skillEffect:AddMove(path, delay)
 
-		local pathStart = path:index(1)
-		local pathPawn = Board:GetPawn(pathStart)
-		local pawnId = pathPawn and pathPawn:GetId()
+		if not pawnId then
+			local pathPawn = Board:GetPawn(path:index(1))
+			pawnId = pathPawn and pathPawn:GetId()
+		end
 
 		-- Store the hijacked path so other systems can use it
 		BoardUtils.setHijackedPath(path, pawnId)

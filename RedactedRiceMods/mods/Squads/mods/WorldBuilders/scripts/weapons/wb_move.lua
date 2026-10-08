@@ -85,7 +85,7 @@ function WorldBuilders_Passive_Move:GetPassiveSkillEffect_SkillBuildHook(mission
 			-- Board utils handles passable/stoppable checks already
 			local path = self.boardUtils.findMovePath(pawn, p1, p2, "none", true)
 			if path then
-				self.boardUtils.addForcedMove(skillEffect, path)
+				self.boardUtils.addForcedMove(skillEffect, path, nil, pawn:GetId())
 			end
 		end
 	end
@@ -165,12 +165,13 @@ end
 
 --only a preview for passive skills
 function WorldBuilders_Passive_Move:GetSkillEffect(p1, p2)
-	Board:GetPawn(p1):SetFlying(true)
+	local pawn = Board:GetPawn(p1)
+	pawn:SetFlying(true)
 	local ret = SkillEffect()
     local path = PointList()
 	path:push_back(p1)
 	path:push_back(p2)
-	self.boardUtils.addForcedMove(ret, path)
+	self.boardUtils.addForcedMove(ret, path, nil, pawn:GetId())
 	return ret
 end
 
