@@ -2,12 +2,12 @@
 local VERSION = "3.0.1"
 local DEBUG = false
 ---------------------------------------------------------------------
--- Trait v3.0.1 - code library
+-- Trait - code library
+--
+-- Wiki: https://github.com/Redacted-Rice/ITB-RedactedRiceMods/wiki/%5BLib%5D-PlusHelper
 --
 -- by Lemonymous
 -- Enhanced by Das Keifer to support multiple trait cycling and icons in move preview
---
--- Wiki (3.x): https://github.com/Redacted-Rice/ITB-RedactedRiceMods/wiki
 --
 ---------------------------------------------------------------------
 -- Provides functionality to add traits to pawns.

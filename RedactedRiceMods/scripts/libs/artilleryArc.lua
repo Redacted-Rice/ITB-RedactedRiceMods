@@ -3,9 +3,12 @@ local VERSION = "2.0.0"
 ---------------------------------------------------
 -- Artillery Arc - code library
 --
+-- Wiki: https://github.com/Redacted-Rice/ITB-RedactedRiceMods/wiki/%5BLib%5D-ArtilleryArc
+--
 -- by Lemonymous
 -- Enhanced by Redacted Rice to support two click
--- weapons and mutli shot effects
+-- weapons and mutli shot
+--
 ---------------------------------------------------
 -- When Artillery Arc has executed, skills can set
 -- the following fields to automatically adjust
