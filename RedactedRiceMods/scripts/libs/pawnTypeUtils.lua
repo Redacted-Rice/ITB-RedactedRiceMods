@@ -1,7 +1,7 @@
 --[[
 PawnTypeUtils - functions to allow determining more detailed pawn types
 
-Libs Wiki: https://github.com/Redacted-Rice/ITB-RedactedRiceMods/wiki
+Wiki: https://github.com/Redacted-Rice/ITB-RedactedRiceMods/wiki/%5BLib%5D-PawnTypeUtils
 
 Author: Das Keifer of Redacted Rice
 Discord Server: https://discord.gg/CNjTVrpN4v

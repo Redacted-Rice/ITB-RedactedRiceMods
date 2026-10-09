@@ -1,0 +1,40 @@
+local customSkill = cplus_plus_ex.baseClasses.SkillEffectModifier:new{
+	id = "RrAnger",
+	name = "Anger",
+	description = "Gain boosted when piloted mech is directly damaged by an enemy.",
+	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
+	constraints = {
+		groups = {PlusHelper.GROUPS.BOOST},
+		pilotExclusions = {"Pilot_Arrogant", "Pilot_Chemical", "Pilot_Zoltan"},
+	},
+	priority = 200, -- go after any adjustments
+	modifiesKillDamage = false,
+}
+
+customSkill.DEBUG = false
+local logger = memhack.logger
+local SUBMODULE = logger.register("More+", "Anger", customSkill.DEBUG)
+
+more_plus:addCustomTraitIcon(customSkill)
+
+function customSkill:modifySpaceDamage(source, attackingPawn, phase, spaceDamage, indexes, targetPawn)
+	-- Check if target is being damaged by an enemy
+	if source ~= self.SOURCE_TARGET or not attackingPawn or not attackingPawn:IsEnemy() or
+			not (spaceDamage.iDamage > 0 and spaceDamage.iDamage ~= DAMAGE_DEATH and spaceDamage.iDamage ~= DAMAGE_ZERO) or targetPawn:IsBoosted() then
+		return
+	end
+
+	local targetId = targetPawn:GetId()
+	-- Add boost icon with group ID for automatic consolidation
+	more_plus.libs.weaponPreview.ExecuteWithState(PlusHelper.convertPhase(phase),
+		function()
+			more_plus.addWeaponPreviewIcon(phase, spaceDamage.loc, more_plus.commonIcons.boost.key, GetText(customSkill.name) .. ": " .. GetText(customSkill.description))
+		end, attackingPawn:GetId()
+	)
+	-- Apply boosted status
+	spaceDamage.sScript = spaceDamage.sScript .. string.format("Board:GetPawn(%d):SetBoosted(true)", targetId)
+	logger.logDebug(SUBMODULE, "Will grant boosted to damaged mech %d at %s",
+			targetId, spaceDamage.loc:GetString())
+end
+
+return customSkill

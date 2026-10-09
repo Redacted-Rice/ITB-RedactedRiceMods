@@ -1,13 +1,13 @@
 --[[
 BoardUtils - Utilities related to board, pathing, and movement
 
-Libs Wiki: https://github.com/Redacted-Rice/ITB-RedactedRiceMods/wiki
+Wiki: https://github.com/Redacted-Rice/ITB-RedactedRiceMods/wiki/%5BLib%5D-BoardUtils
 
 Author: Das Keifer of Redacted Rice
 Discord Server: https://discord.gg/CNjTVrpN4v
 ]]
 
-local VERSION = "1.8.0"
+local VERSION = "1.8.1"
 
 -- Version check
 local isNewestVersion = false
@@ -24,6 +24,7 @@ if isNewestVersion then
 	-- Initialize data tables
 	BoardUtils.hijackedFlying = BoardUtils.hijackedFlying or {}
 	BoardUtils.hijackedPath = BoardUtils.hijackedPath
+	BoardUtils.hijackedPathPawnId = BoardUtils.hijackedPathPawnId
 	-- Caches pathing for performance reasons
 	BoardUtils.movePathCache = {}
 	BoardUtils.reachableCache = {}
@@ -101,7 +102,7 @@ if isNewestVersion then
 	end
 
 	-- Road Runner (Kwan): pilot can pass through enemy units while moving
-	-- So can flying and jumping but those currently are handled by the 
+	-- So can flying and jumping but those currently are handled by the
 	-- pawnCheckType setting. In the future maybe migrate to using this
 	-- instead?
 	function BoardUtils.canPassThroughEnemyPawns(pawn)
@@ -142,10 +143,10 @@ if isNewestVersion then
 	end
 
 	-- CanMoveThrough* below governs passing over terrain without landing on it,
-	-- distinct from CanMoveOn* above (ending movement). Jumpers and teleporters 
+	-- distinct from CanMoveOn* above (ending movement). Jumpers and teleporters
 	-- can pass over much unlandable terrain. Fliers can do so as well but are
-	-- already covered via the matching CanMoveOn* fallback (if you can land on 
-	-- it, you can pass  through it). Skills only need to override CanMoveOn* (eg. 
+	-- already covered via the matching CanMoveOn* fallback (if you can land on
+	-- it, you can pass  through it). Skills only need to override CanMoveOn* (eg.
 	-- Nimble, Pontoons/Admiral) and get the matching CanMoveThrough* for "free".
 	if not BoardUtils.CanMoveThroughHoles then
 		function BoardUtils.CanMoveThroughHoles(pawn)
@@ -175,16 +176,39 @@ if isNewestVersion then
 		end
 	end
 
-	function BoardUtils.setHijackedPath(path)
+	function BoardUtils.setHijackedPath(path, pawnId)
 		BoardUtils.hijackedPath = path
+		BoardUtils.hijackedPathPawnId = pawnId
 	end
 
 	function BoardUtils.getHijackedPath()
 		return BoardUtils.hijackedPath
 	end
 
+	-- Returns the stored path only when it matches this pawn's move (pawn, start, end).
+	-- Hijacked paths are global and can be left over from another pawn's move or an attack preview.
+	function BoardUtils.getHijackedPathForMove(pawnId, p1, p2)
+		local path = BoardUtils.hijackedPath
+		if not path or path:size() == 0 then
+			return nil
+		end
+
+		if BoardUtils.hijackedPathPawnId ~= pawnId then
+			return nil
+		end
+
+		local pathStart = path:index(1)
+		local pathEnd = path:index(path:size())
+		if pathStart == p1 and pathEnd == p2 then
+			return path
+		end
+
+		return nil
+	end
+
 	function BoardUtils.clearHijackedPath()
 		BoardUtils.hijackedPath = nil
+		BoardUtils.hijackedPathPawnId = nil
 	end
 
 	-- Move types from memedit constants.lua (SPACE_DAMAGE_PLIST_TYPE_*)
@@ -215,49 +239,33 @@ if isNewestVersion then
 		return not BoardUtils.skillEffectUsesPathMovement(skillEffect)
 	end
 
-	function BoardUtils.addForcedSigleMove(skillEffect, pawnId, dest)
+	function BoardUtils.addForcedSingleMove(skillEffect, pawnId, dest)
 		local moveDamage = SpaceDamage(dest, 0)
 		moveDamage.sScript = [[Board:GetPawn(]] .. pawnId .. [[):SetSpace(]] .. dest:GetString() .. [[)]]
 		skillEffect:AddDamage(moveDamage)
 	end
 
-	function BoardUtils.addForcedMove(skillEffect, path, delay)
-		delay = delay or FULL_DELAY
-
-		-- Preserve any existing damage effects. This ended up not being the issue
-		-- with boosted not working with momentum and maneuverable but it seems a
-		-- useful and good change so I'm leaving it though its largely untested
+	-- Copy non-movement skill effect entries so movement can be replaced safely.
+	function BoardUtils.extractNonMoveSkillEffectEntries(skillEffect)
 		local preservedDamages = {}
-		-- skip the first one
-		for i = 2, skillEffect.effect:size() do
-			-- This seems to get a reference that can be changed so
-			-- instead copy the data to a table
+		for i = 1, skillEffect.effect:size() do
 			local spaceDamage = skillEffect.effect:index(i)
-			local copy = {}
-			for _, key in ipairs(BoardUtils.SPACE_DAMAGE_KEYS) do
-				copy[key] = spaceDamage[key]
+			if not spaceDamage:IsMovement() then
+				-- This seems to get a reference that can be changed so
+				-- instead copy the data to a table
+				local copy = {}
+				for _, key in ipairs(BoardUtils.SPACE_DAMAGE_KEYS) do
+					copy[key] = spaceDamage[key]
+				end
+				-- Point is userdata and needs to be copied too
+				copy.loc = Point(spaceDamage.loc)
+				table.insert(preservedDamages, copy)
 			end
-			-- Point is userdata and needs to be copied too
-			copy.loc = Point(spaceDamage.loc)
-			table.insert(preservedDamages, copy)
 		end
+		return preservedDamages
+	end
 
-		-- Clear the existing move from the skilleffect
-		skillEffect.effect = SkillEffect().effect
-
-		-- Add move for display purposes. This won't let us move onto unmovable spaces reliably
-		skillEffect:AddMove(path, delay)
-
-		-- Store the hijacked path so other systems can use it
-		BoardUtils.setHijackedPath(path)
-
-		--maybe needs to be p1?
-		local pawnId = Board:GetPawn(path:index(1)):GetId()
-		local secondToLastSpace = path:index(path:size() - 1)
-		local lastSpace = path:index(path:size())
-		BoardUtils.addForcedSigleMove(skillEffect, pawnId, lastSpace)
-
-		-- Re-add any preserved damage effects
+	function BoardUtils.addSkillEffectEntries(skillEffect, preservedDamages)
 		for _, damage in ipairs(preservedDamages) do
 			local recreated = SpaceDamage()
 			for _, key in ipairs(BoardUtils.SPACE_DAMAGE_KEYS) do
@@ -267,6 +275,32 @@ if isNewestVersion then
 			recreated.loc = damage.loc
 			skillEffect:AddDamage(recreated)
 		end
+	end
+
+	function BoardUtils.addForcedMove(skillEffect, path, delay, pawnId)
+		delay = delay or FULL_DELAY
+
+		-- Preserve any existing damage effects (e.g. momentum, rally, shatterstep).
+		local preservedDamages = BoardUtils.extractNonMoveSkillEffectEntries(skillEffect)
+
+		-- Clear the existing move from the skilleffect
+		skillEffect.effect = SkillEffect().effect
+
+		-- Add move for display purposes. This won't let us move onto unmovable spaces reliably
+		skillEffect:AddMove(path, delay)
+
+		if not pawnId then
+			local pathPawn = Board:GetPawn(path:index(1))
+			pawnId = pathPawn and pathPawn:GetId()
+		end
+
+		-- Store the hijacked path so other systems can use it
+		BoardUtils.setHijackedPath(path, pawnId)
+		local secondToLastSpace = path:index(path:size() - 1)
+		local lastSpace = path:index(path:size())
+		BoardUtils.addForcedSingleMove(skillEffect, pawnId, lastSpace)
+
+		BoardUtils.addSkillEffectEntries(skillEffect, preservedDamages)
 	end
 
 	function BoardUtils.makeInSubsetMatcher(tiles)
@@ -318,6 +352,42 @@ if isNewestVersion then
 		return terrain == TERRAIN_WATER or terrain == TERRAIN_LAVA or terrain == TERRAIN_ACID
 	end
 
+	-- Mountains/ice take HP damage from crack instead of becoming cracked terrain.
+	function BoardUtils.isCrackHealthTerrain(loc)
+		local terrain = Board:GetTerrain(loc)
+		return terrain == TERRAIN_MOUNTAIN or terrain == TERRAIN_ICE
+	end
+
+	function BoardUtils.canCrack(loc)
+		local terrain = Board:GetTerrain(loc)
+		if not Board:IsValid(loc) or Board:IsBuilding(loc) or
+				Board:IsPod(loc) or Board:IsItem(loc) or Board:IsCracked(loc) or
+				BoardUtils.isLiquid(terrain) or terrain == TERRAIN_HOLE then
+			return false
+		end
+
+		-- Mountains/ice take damage from crack instead of cracking so only affect undamaged ones
+		if BoardUtils.isCrackHealthTerrain(loc) then
+			return Board:GetHealth(loc) >= Board:GetMaxHealth(loc)
+		end
+
+		return true
+	end
+
+	-- Undo a crack or restore mountain/ice health
+	function BoardUtils.undoCrack(loc)
+		if BoardUtils.isCrackHealthTerrain(loc) then
+			local maxHp = Board:GetMaxHealth(loc)
+			Board:SetHealth(loc, maxHp, maxHp)
+			return true
+		end
+		if Board:IsCracked(loc) then
+			Board:SetCracked(loc, false)
+			return true
+		end
+		return false
+	end
+
 	-- pawnCheckType "none", "default", "any"
 	-- Normal move end space: respects CanMoveOnHoles/CanMoveOnWater/CanMoveOnBuildings/
 	-- CanMoveOnMountains
@@ -333,7 +403,7 @@ if isNewestVersion then
 
 	-- pawnCheckType "none", "default", "any"
 	-- Normal move path through spaces: respects CanMoveThroughHoles/CanMoveThroughWater/
-	-- CanMoveThroughBuildings/CanMoveThroughMountains (which each respect the *CanMoveOn* 
+	-- CanMoveThroughBuildings/CanMoveThroughMountains (which each respect the *CanMoveOn*
 	-- versions)
 	function BoardUtils.makeMovePassableMatcher(pawn, pawnCheckType)
 		return BoardUtils.makeTerrainBasedMatcher(pawn, pawnCheckType, function(point)
@@ -707,6 +777,7 @@ if isNewestVersion then
 		end)
 
 		modapiext.events.onPawnPositionChanged:subscribe(function()
+			BoardUtils.clearHijackedPath()
 			BoardUtils.clearMoveCaches()
 		end)
 

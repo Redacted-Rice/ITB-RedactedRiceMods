@@ -1,0 +1,205 @@
+WorldBuilders_Mold = Skill:new{
+	Name = "Mold",
+	Description = "Uplift the terrain to deal damage, throw the target and create a barrier. Target unit must die or be able to be moved to adj space",
+	Class = "Prime",
+	Icon = "weapons/prime_wb_mold.png",
+	Rarity = 1,
+	LaunchSound = "/weapons/shift",
+
+	Range = 1,
+	ThrowRange = 1,
+	PathSize = 1,
+	Projectile = false,
+    Damage = 1,
+    SplashDamage = 0,
+    PowerCost = 0,
+    Upgrades = 2,
+    UpgradeCost = { 2, 1 },
+
+	TwoClick = true,
+
+	-- custom
+	MakeMountains = false,
+	Erupt = false,
+	AdjRocks = false,
+
+    TipImage = {
+		Unit = Point(2,3),
+		Target = Point(2,2),
+		Enemy = Point(2,2),
+		Second_Click = Point(1,2),
+	},
+}
+
+Weapon_Texts.WorldBuilders_Mold_Upgrade1 = "Permanence"
+WorldBuilders_Mold_A = WorldBuilders_Mold:new
+{
+	UpgradeDescription = "Increase damage 1 and creates mountains instead of rocks",
+	MakeMountains = true,
+	Damage = 2,
+}
+
+Weapon_Texts.WorldBuilders_Mold_Upgrade2 = "Greater Uplift"
+WorldBuilders_Mold_B = WorldBuilders_Mold:new
+{
+	UpgradeDescription = "Create rocks on adjacent, unoccupied tiles to the target",
+	AdjRocks = true
+}
+
+WorldBuilders_Mold_AB = WorldBuilders_Mold_B:new
+{
+	MakeMountains = true,
+	Damage = 2,
+}
+
+-- not used. We handle the cases in damage effect
+function WorldBuilders_Mold:CanTargetSpace(space, damage)
+	-- if its not a pawn, if the pawn is pushable, or if the pawn would die, we can target it
+	local pushablePawn = not Board:IsPawnSpace(space) or not Board:GetPawn(space):IsGuarding() or damage >= Board:GetPawn(space):GetHealth()
+	local okTerrain = not Board:IsTerrain(space, TERRAIN_BUILDING)
+	return okTerrain and pushablePawn
+end
+
+function WorldBuilders_Mold:NoPawnOrWillDie(p1, p2)
+	local targetPawn = Board:GetPawn(p2)
+	if targetPawn == nil then
+		return true
+	end
+	local actualDamage = self.Damage
+	local attackingPawn = Board:GetPawn(p1)
+	if attackingPawn and attackingPawn:IsBoosted() then
+		actualDamage = actualDamage + 1
+	end
+	return Board:IsDeadly(SpaceDamage(p2, actualDamage), attackingPawn)
+end
+
+function WorldBuilders_Mold:CanThrowLandOn(landSpace)
+	if not self:TerrainCanBeOccupied(Board:GetTerrain(landSpace)) then
+		return false
+	end
+	if Board:IsPawnSpace(landSpace) then
+		return false
+	end
+	return not Board:IsBlocked(landSpace, PATH_FLYER)
+end
+
+function WorldBuilders_Mold:GetTargetArea(p1)
+	local ret = PointList()
+	for dir = DIR_START, DIR_END do
+		local targetSpace = p1 + DIR_VECTORS[dir]
+		if Board:IsValid(targetSpace) and self:GetSecondTargetArea(p1, targetSpace):size() > 0 then
+			ret:push_back(targetSpace)
+		end
+	end
+	return ret
+end
+
+function WorldBuilders_Mold:GetSecondTargetArea(p1, p2)
+	local ret = PointList()
+
+	local isPawnTargeted = Board:IsPawnSpace(p2)
+	local pawnWillDie = self:NoPawnOrWillDie(p1, p2)
+	-- if the pawn will die, allow any adj target
+	local anyValid = pawnWillDie or (isPawnTargeted and Board:GetPawn(p2):IsGuarding())
+	if anyValid then
+		ret:push_back(p2)
+	end
+
+	-- "borrowed" from general_DiamondTarget and modified to not
+	-- include point
+	local size = self.ThrowRange
+	local corner = p2 - Point(size, size)
+	local p = Point(corner)
+
+	for i = 0, ((size*2+1)*(size*2+1)) do
+		local diff = p2 - p
+		local dist = math.abs(diff.x) + math.abs(diff.y)
+		-- If the space is not an invalid target (multispace, non pushable pawn)
+		if dist <= size and Board:IsValid(p) and
+				(anyValid or self:CanThrowLandOn(p)) then
+			ret:push_back(p)
+		end
+		p = p + VEC_RIGHT
+		if math.abs(p.x - corner.x) == (size*2+1) then
+			p.x = p.x - (size*2+1)
+			p = p + VEC_DOWN
+		end
+	end
+	return ret
+end
+
+function WorldBuilders_Mold:GetSkillEffect(p1, p2)
+	return self:GetFinalEffect(p1, p2, p2)
+end
+
+function WorldBuilders_Mold:AddRock(effect, point)
+	-- automagically does the animation
+	effect.sPawn = "Wall"
+	local terrain = Board:GetTerrain(point)
+	if terrain == TERRAIN_HOLE or terrain == TERRAIN_WATER or terrain == TERRAIN_ACID or terrain == TERRAIN_LAVA then
+		effect.iTerrain = TERRAIN_ROAD
+	end
+end
+
+function WorldBuilders_Mold:GetFinalEffect(p1,p2,p3)
+	local ret = SkillEffect()
+
+	local damage = SpaceDamage(p2, self.Damage)
+	local terrain = SpaceDamage(p2, 0)
+	local pawnTarget = Board:GetPawn(p2)
+	local isPawnTargeted = pawnTarget ~= nil
+
+	-- is it a building or is it an unpushable pawn that won
+	local isUnpushablePawn = isPawnTargeted and Board:GetPawn(p2):IsGuarding()
+	local pawnWillDie = self:NoPawnOrWillDie(p1, p2)
+	local unTerraformable = Board:IsTerrain(p2, TERRAIN_BUILDING) or
+			(isUnpushablePawn and not pawnWillDie)
+
+	local bounce = -3
+	if self.MakeMountains then
+		if not unTerraformable then
+			terrain.iTerrain = TERRAIN_MOUNTAIN
+			damage.sImageMark = "combat/icons/icon_wb_mountain.png"
+		end
+		bounce = -6
+	elseif not unTerraformable then
+		self:AddRock(terrain, p2)
+		damage.sImageMark = "combat/icons/icon_wb_rock.png"
+	end
+
+	ret:AddDamage(damage)
+	ret:AddBounce(p2, bounce)
+
+	if isPawnTargeted and not isUnpushablePawn then
+		local move = PointList()
+		move:push_back(p2)
+		move:push_back(p3)
+		ret:AddLeap(move, NO_DELAY)
+	end
+
+	ret:AddDamage(terrain)
+	ret:AddDelay(0.3)
+	ret:AddBounce(p1, 1)
+
+	local isThrowingASurvivingPawn = isPawnTargeted and not isUnpushablePawn and not pawnWillDie
+	if self.AdjRocks then
+		for dir = DIR_START, DIR_END do
+			local adjSpace = p2 + DIR_VECTORS[dir]
+			local adjDamage = SpaceDamage(adjSpace, 0)
+			local pawnBeingThrownHere = isThrowingASurvivingPawn and p3 == adjSpace
+			-- If we aren't throwing the pawn here, there isn't already a pawn, and we can put a pawn
+			-- there, then we will add a rock
+			if not pawnBeingThrownHere and not Board:IsPawnSpace(adjSpace) and self:TerrainCanBeOccupied(Board:GetTerrain(adjSpace)) then
+				self:AddRock(adjDamage, adjSpace)
+				ret:AddBounce(adjSpace, -3)
+			end
+			ret:AddDamage(adjDamage)
+		end
+	end
+
+	return ret
+end
+
+function WorldBuilders_Mold:TerrainCanBeOccupied(terrain)
+	return terrain ~= TERRAIN_BUILDING and terrain ~= TERRAIN_MOUNTAIN
+end
