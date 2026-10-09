@@ -5,13 +5,13 @@
 local mod = {
 	id = "redactedrice_Pilots+",
 	name = "Pilots+",
-	version = "1.0.1",
+	version = "1.1.0",
 	modApiVersion = "2.9.5",
 	gameVersion = "1.2.93",
 	icon = "mod_icon.png",
 	dependencies = {
-		redactedrice_cplus_plus = "1.3.0",
-		redactedrice_memhack = "1.3.0",
+		redactedrice_cplus_plus = "2.0.0",
+		redactedrice_memhack = "1.4.1",
 	}
 }
 

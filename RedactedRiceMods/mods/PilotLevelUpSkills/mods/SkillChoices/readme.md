@@ -15,7 +15,20 @@ Please enjoy and contact us if you run into any issues!
 - Skill buttons show the short name. Hover to see full name and description
 
 # Releases
-Latest release: 1.1.0
+Latest release: 1.2.0
+
+## 1.2.0
+Released: 10/XX/2026
+
+compatible with:
+* ItB AE        1.2.93
+* ModLoader     2.9.5
+* memhack       1.4.1
+* CPLUS+        2.0.0
+
+### Notes
+* Updated for CPLUS+ 2.0 Pilot UID
+* Fixed stuck pending level up skill selection in some cases
 
 ## 1.1.0
 Released: 9/19/2026

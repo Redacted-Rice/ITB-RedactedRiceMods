@@ -21,7 +21,13 @@ Released: 05/04/2026
 * Brought in from Lemonymous' repo and enhanced to support two click weapons and mutli shot effects
 
 ## BoardUtils
-Current Release: 1.8.0
+Current Release: 1.8.1
+
+### 1.8.1
+Released: 10/XX/2026
+
+* Crack tile helpers shared by movement skills (Shatterstep, Crusher, etc.) to better handle them
+* addForcedMove accepts optional pawn id and added stale hijacked path guards that were messing up momentum logic
 
 ### 1.8.0
 Released: 9/19/2026
@@ -71,13 +77,26 @@ Released: 01/10/2026
 Initial release to keep in sync with other libs
 
 ## DamageModifierLib
-Current Release: 1.0.0
+Current Release: 1.0.1
+
+### 1.0.1
+Released: 10/XX/2026
+
+* Fixed chaining multiple effects in one skill build
 
 ### 1.0.0
 Released: 9/19/2026
 
 * Initial release for modifying weapon SpaceDamage during skill builds and deadly checks
 * Supports priority events, push/move tracking, and GetModifiedDamage helpers
+
+## PlusHelper
+Current Release: 1.0.0
+
+### 1.0.0
+Released: 10/XX/2026
+
+* Shared CPLUS+ skill group constants and helpers for pilot skill mods
 
 ## PassiveEffect
 Current Release: 2.0.0
@@ -151,7 +170,13 @@ Released: ?
 Initial Release.
 
 ## Trait
-Current Release: 3.0.1
+Current Release: 3.0.2
+
+### 3.0.2
+Released: 10/XX/2026
+
+* Resolve relative icon paths against the loading mod resource path
+* Reduces extra logging
 
 ### 3.0.1
 Released: 04/10/2026
@@ -217,7 +242,15 @@ Current Release: 2.1.0
 Brough in from Lemonymous' repo in support of ArtilleryArc. No changes
 
 ## WeaponPreview
-Current Release: 4.1.0
+Current Release: 4.2.0
+
+### 4.2.0
+Released: 10/XX/2026
+
+* Reverted queued attack preview icons to be keyed by pawn with options to always display icons
+* Fixed issue with hovering showing the icons on wrong pawns, icons being delayed before adding, and icons getting stuck
+* Added new keybind for G key that shows selected pawn while viewing attack tooltips
+* Made it work without tooltips or the default multihit icon
 
 ### 4.1.0
 Released: 6/11/2026

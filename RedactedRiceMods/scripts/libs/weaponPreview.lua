@@ -1,5 +1,5 @@
 
-local VERSION = "4.1.1"
+local VERSION = "4.2.0"
 ----------------------------------------------------------------------
 -- Weapon Preview - code library
 --

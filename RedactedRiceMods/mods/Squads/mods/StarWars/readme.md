@@ -11,7 +11,18 @@ Please enjoy and contact us if you run into any issues!
 * Email: RedactedRice@gmail.com
 
 # Releases
-Latest release: 1.0.3
+Latest release: 1.0.4
+
+## 1.0.4
+Released: 10/XX/2026
+
+compatible with:
+* ItB AE        1.2.93
+* ModLoader     2.9.5
+* ModLoaderExt  1.24
+
+### Notes
+* Cannon Array move preview uses skill build hooks for movement skills
 
 ## 1.0.3
 Released: 7/16/2026
