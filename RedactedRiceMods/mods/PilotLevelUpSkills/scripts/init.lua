@@ -5,9 +5,14 @@ local mod = {
 	description = "Custom pilot level up skills by Redacted Rice.",
 	icon = "scripts/icon.png",
 	submodFolders = {"mods/"},
-	version = "1.0.0",
-	modApiVersion = "2.9.5",
+	version = "5.0.0",
+	modApiVersion = "2.9.6",
 	gameVersion = "1.2.93",
+	dependencies = {
+		modApiExt = "1.25",
+		redactedrice_memhack = "1.4.1",
+		redactedrice_cplus_plus = "2.0.0",
+	}
 }
 
 function mod:init(options)

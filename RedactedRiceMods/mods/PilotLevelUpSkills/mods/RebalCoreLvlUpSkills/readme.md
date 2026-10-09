@@ -21,7 +21,20 @@ Please enjoy and contact us if you run into any issues.
 * Invulnerable is not very applicable in mission and easily forgotten. This makes it more in mission applicable
 
 # Releases
-Latest release: 1.1.1
+Latest release: 1.2.0
+
+## 1.2.0
+Released: 10/XX/2026
+
+compatible with:
+* ItB AE 	1.2.93
+* ModLoader 2.9.6
+* memhack	1.4.1
+* CPLUS+ Ex	2.0.0
+
+### Notes
+* Uses CPLUS+ and PlusHelper group constants instead of custom saveVal fields
+* Added Rock pilot exclusion for Thick Skinned
 
 ## 1.1.1
 Released: 9/19/2026

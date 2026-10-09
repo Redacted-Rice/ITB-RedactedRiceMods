@@ -12,31 +12,32 @@ Please enjoy and contact us if you run into any issues!
 * ItB Discord: Das Keifer
 * Email: RedactedRice@gmail.com
 
-# Squads
+# Squads v4.0.0
 * Moon Walkers - v1.0.0 - They seem so familiar... but backwards. Yin and Yang, push and pull, Rift Walkers and Moon Walkers. A somewhat joke squad build on the idea of Rift Walkers but backwards.
-* Star Wars - v1.0.3 - Play as your favorite iconic rebel starships and Luke to fight back against the evil vek empire. This squad can hit hard but has less board control options at the start. Luke can focus on the force to deal massive damage the next turn.
-* Treeherders - v3.1.3 - Inspired by ents, this squad focuses on using forests tiles to increase their power. The flagship entborg mech gets stronger as the forests get destroyed
-* WorldBuilders - v1.3.4 - This squad focuses on terrain manipulation to block and avoid damage. It has some strong single target effects but you can easily get overwhelmed by numbers if not strategically manipulating the terrain
+* Star Wars - v1.0.4 - Play as your favorite iconic rebel starships and Luke to fight back against the evil vek empire. This squad can hit hard but has less board control options at the start. Luke can focus on the force to deal massive damage the next turn.
+* Treeherders - v3.1.4 - Inspired by ents, this squad focuses on using forests tiles to increase their power. The flagship entborg mech gets stronger as the forests get destroyed
+* WorldBuilders - v1.3.5 - This squad focuses on terrain manipulation to block and avoid damage. It has some strong single target effects but you can easily get overwhelmed by numbers if not strategically manipulating the terrain
 
-# Other
-* More+ - v2.3.0 - 35 custom pilot level up skills across 5 categories with Status Library integration
-* Legendary+ - v1.0.0 - Rare, powerful pilot level up skills that appear less often and only in the second skill slot
-* RebalanceCore+ - v1.1.1 - Reblances the core vanilla level up skills (other than reactor) so they are not strictly worse than the AE ones
-* Pilots+ - v1.0.1 - A few pilots focused around adding bonus level up skills beyond the standard two per pilot on level up
-* SkillChoices - v1.1.0 - Allows for selecting between a configurable amount of pilot level up skills on leveling up pilots
+# Pilot Level Up Skills v5.0.0
+* More+ - v2.4.0 - 35 custom pilot level up skills across 5 categories with Status Library integration
+* Legendary+ - v1.1.0 - Rare, powerful pilot level up skills that appear less often and only in the second skill slot
+* RebalanceCore+ - v1.2.0 - Reblances the core vanilla level up skills (other than reactor) so they are not strictly worse than the AE ones
+* Pilots+ - v1.1.0 - A few pilots focused around adding bonus level up skills beyond the standard two per pilot on level up
+* SkillChoices - v1.2.0 - Allows for selecting between a configurable amount of pilot level up skills on leveling up pilots
 
-# Libs
+# Libs - v12.0.0
 * ArtilleryArc - v2.0.0 - Originally created by Lemonymous to customize aritllery height. Updated to handle multishot arcs and two click weapons
-* BoardUtils - v1.8.0 - Board related functions and pathing
-* DamageModifierLib - v1.0.0 - Modify weapon SpaceDamage during skill builds and deadly checks
+* BoardUtils - v1.8.1 - Board related functions and pathing
+* DamageModifierLib - v1.0.1 - Modify weapon SpaceDamage during skill builds and deadly checks
 * PassiveEffect - v2.0.0 - Helps with adding passive weapons to the game. This will handle automatically detecting if the weapon is powered and only call hooks when it is
+* PlusHelper - v1.0.0 - Shared helpers for CPLUS+ skill groups and pilot skill mod utilities
 * PawnTypeUtils - v1.1.1 - Functions to allow determining more detailed pawn types (using EasyEdit)
 * PredictableRandom - v1.3.0 - Get random numbers in a way that is repeatable for when undoing moves or resetting turns
-* Trait - v3.0.1 - Add traits to pawns & the board. Originally created by Lemonymous and updated to v3.x.x to support multiple traits via appending text and cycling images as well as showing icons for move previews
+* Trait - v3.0.2 - Add traits to pawns & the board. Originally created by Lemonymous and updated to v3.x.x to support multiple traits via appending text and cycling images as well as showing icons for move previews
 * TraitReplace - v0.9.2 - Allows adding custom UI traits that cycle with vanilla traits
 * TutorialTips - v1.5.0 - Based on Lemonymous v1.4 with profile-aware storage; keeps custom rootId Init support for WeaponPreview/shared lib usage
 * WeaponArmed - v2.1.0 - Created by Lemonymous and incorporated due to dependencies. No changes made
-* WeaponPreview - v4.1.0 - Add icons to weapon previews. Originally created by Lemonymous and updated to v4.x.x to support use in skill build hooks and two click weapons and group icons and display tool tips for icons with descriptions
+* WeaponPreview - v4.2.0 - Add icons to weapon previews. Originally created by Lemonymous and updated to v4.x.x to support use in skill build hooks and two click weapons and group icons and display tool tips for icons with descriptions
 
 # Install
 - Unzip the release folder
@@ -46,7 +47,58 @@ Please enjoy and contact us if you run into any issues!
 To uninstall, delete the folder in mods
 
 # Releases
-Latest release: 1.9
+Latest release: 2.0
+
+## 2.0
+* Restructured mods under Squads and Pilot Level Up Skills parent mods and added more and more consistent icons for a cleaner overall look
+* Updated pilot skill mods for CPLUS+ 2.0 Pilot UID
+* PlusHelper lib for shared CPLUS+ groups and utilities
+* WeaponPreview queued effect icons keyed by pawn with optional always visible queued icons and G key shows selected pawn in attack tooltips
+* BoardUtils crack tile helpers
+* DamageModifierLib effect chaining fix
+* More+ movement and preview fixes (jump jets, momentum + supporter + pontoons, movement exclusions, queued icons option)
+* SkillChoices fix for stuck pending level up selections
+* RebalCore+ uses CPLUS+ group constants
+* WorldBuilders mold issue with pawn death checks
+* Reduced extra logging
+
+Released: 10/XX/2026
+
+Squads v4.0.0:
+* Moon Walkers   1.0.0
+* Star Wars      1.0.4
+* Treeherders    3.1.4
+* WorldBuilders  1.3.5
+
+Pilot Level Up Skills v5.0.0:
+* More+                  2.4.0
+* Legendary+             1.1.0
+* RebalanceCore+         1.2.0
+* Pilots+                1.1.0
+* Skill Choices          1.2.0
+
+Libs v12.0.0:
+* ArtilleryArc       2.0.0
+* BoardUtils         1.8.1
+* DamageModifierLib  1.0.1
+* PassiveEffect      2.0.0
+* PlusHelper         1.0.0
+* PawnTypeUtils      1.1.1
+* PredictableRandom  1.3.0
+* Trait              3.0.2
+* TraitReplace       0.9.2
+* TutorialTips       1.5.0
+* WeaponArmed        2.1.0
+* WeaponPreview      4.2.0
+
+Dependencies:
+* ItB AE        1.2.93
+* ModLoader     2.9.6
+* ModLoaderExt  1.25
+* Memedit       1.2.1
+* EasyEdit      2.0.8
+* Memhack       1.4.1
+* CPLUS+ Ex     2.0.0
 
 ## 1.9
 * Initial release of Legendary+ with 10 rare pilot level up skills

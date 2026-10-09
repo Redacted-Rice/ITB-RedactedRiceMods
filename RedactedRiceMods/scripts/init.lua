@@ -2,20 +2,20 @@
 local mod =  {
 	id = "redactedrice_libs",
 	name = "Redacted Rice Mods",
-	version = "1.9",
+	version = "2.0",
 	icon = "icon.png",
 	description = "A Collection of mods made by Redacted Rice",
 	submodFolders = {"mods/"},
-	modApiVersion = "2.9.5",
+	modApiVersion = "2.9.6",
 	gameVersion = "1.2.93",
 	-- include all dependencies here to make sure they enable right
 	-- when enabling all mods at once with the group checkbox
 	dependencies = {
-        modApiExt = "1.24",
+        modApiExt = "1.25",
         memedit = "1.2.1",
         easyEdit = "2.0.8",
-        redactedrice_memhack = "1.4.0",
-        redactedrice_cplus_plus = "1.4.0",
+        redactedrice_memhack = "1.4.1",
+        redactedrice_cplus_plus = "2.0.0",
     }
 }
 

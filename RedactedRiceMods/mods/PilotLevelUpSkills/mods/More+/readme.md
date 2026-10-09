@@ -74,7 +74,25 @@ These are skills that have a stronger than typical positive effect but also incl
 * Vindictive - +1 damage to enemies for each negative status effect on piloted mech.
 
 # Releases
-Latest release: 2.3.0
+Latest release: 2.4.0
+
+## 2.4.0
+Released: 10/XX/2026
+
+compatible with:
+* ItB AE 	1.2.93
+* ModLoader 2.9.6
+* ModLoaderExt 1.25
+* memhack	1.4.1
+* CPLUS+ Ex	2.0.0
+
+### Notes
+* Updated for CPLUS+ 2.0 Pilot UID across skills
+* Updated Jump Jets to work like Nimble for correct visual displaying and fixed conflict between these and momentum, supporter, and pontoons
+* Fixed crusher and Shatterstep to not break mountains/ice if already damaged and undoing will revert cracking these tiles
+* Add option for always show queued icons
+* Per icon descriptions for skills like Reflect and Vampire based on if its the target or attacker
+* Assorted pawn id fixes
 
 ## 2.3.0
 Released: 9/19/2026

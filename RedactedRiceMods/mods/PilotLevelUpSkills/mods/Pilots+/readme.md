@@ -26,7 +26,20 @@ Skill: Combat Mentor - After completing 3 missions with a pilot, the pilot will 
 
 
 # Releases
-Latest release: 1.0.1
+Latest release: 1.1.0
+
+## 1.1.0
+Released: 10/XX/2026
+
+compatible with:
+* ItB AE        1.2.93
+* ModLoader     2.9.5
+* memhack       1.4.1
+* CPLUS+        2.0.0
+
+### Notes
+* Sgt Drake and Warbot updated for CPLUS+ 2.0 Pilot UID
+* Warbot description corrected
 
 ## 1.0.1
 Released: 7/7/2026
