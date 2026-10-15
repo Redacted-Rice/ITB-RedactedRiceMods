@@ -62,7 +62,7 @@ Latest release: 2.0
 * WorldBuilders mold issue with pawn death checks
 * Reduced extra logging
 
-Released: 10/XX/2026
+Released: 10/15/2026
 
 Squads v4.0.0:
 * Moon Walkers   1.0.0

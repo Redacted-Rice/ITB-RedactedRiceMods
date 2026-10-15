@@ -29,7 +29,7 @@ Skill: Combat Mentor - After completing 3 missions with a pilot, the pilot will 
 Latest release: 1.1.0
 
 ## 1.1.0
-Released: 10/XX/2026
+Released: 10/15/2026
 
 compatible with:
 * ItB AE        1.2.93
