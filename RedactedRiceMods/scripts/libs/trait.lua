@@ -4,7 +4,7 @@ local DEBUG = false
 ---------------------------------------------------------------------
 -- Trait - code library
 --
--- Wiki: https://github.com/Redacted-Rice/ITB-RedactedRiceMods/wiki/%5BLib%5D-PlusHelper
+-- Wiki: https://github.com/Redacted-Rice/ITB-RedactedRiceMods/wiki/%5BLib%5D-Trait
 --
 -- by Lemonymous
 -- Enhanced by Das Keifer to support multiple trait cycling and icons in move preview

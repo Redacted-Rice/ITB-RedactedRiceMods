@@ -24,7 +24,7 @@ Released: 05/04/2026
 Current Release: 1.8.1
 
 ### 1.8.1
-Released: 10/XX/2026
+Released: 10/15/2026
 
 * Crack tile helpers shared by movement skills (Shatterstep, Crusher, etc.) to better handle them
 * addForcedMove accepts optional pawn id and added stale hijacked path guards that were messing up momentum logic
@@ -80,7 +80,7 @@ Initial release to keep in sync with other libs
 Current Release: 1.0.1
 
 ### 1.0.1
-Released: 10/XX/2026
+Released: 10/15/2026
 
 * Fixed chaining multiple effects in one skill build
 
@@ -94,7 +94,7 @@ Released: 9/19/2026
 Current Release: 1.0.0
 
 ### 1.0.0
-Released: 10/XX/2026
+Released: 10/15/2026
 
 * Shared CPLUS+ skill group constants and helpers for pilot skill mods
 
@@ -173,7 +173,7 @@ Initial Release.
 Current Release: 3.0.2
 
 ### 3.0.2
-Released: 10/XX/2026
+Released: 10/15/2026
 
 * Resolve relative icon paths against the loading mod resource path
 * Reduces extra logging
@@ -245,7 +245,7 @@ Brough in from Lemonymous' repo in support of ArtilleryArc. No changes
 Current Release: 4.2.0
 
 ### 4.2.0
-Released: 10/XX/2026
+Released: 10/15/2026
 
 * Reverted queued attack preview icons to be keyed by pawn with options to always display icons
 * Fixed issue with hovering showing the icons on wrong pawns, icons being delayed before adding, and icons getting stuck

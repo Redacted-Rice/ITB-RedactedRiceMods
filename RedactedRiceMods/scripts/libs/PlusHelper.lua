@@ -93,10 +93,12 @@ if isNewestVersion then
 	end
 
 	function PlusHelper.addWeaponPreviewIconForMod(phase, loc, animKey, description, alwaysShowQueued)
-		local alwaysShow = PlusHelper.isQueuedWeaponPreview(phase) and alwaysShowQueued
+		local alwaysShow = PlusHelper.isQueuedWeaponPreview(phase)
+				and alwaysShowQueued == true
 		PlusHelper.addWeaponPreviewIcon(phase, loc, animKey, description, alwaysShow)
 	end
 
+	-- defaultEnabled is false when omitted
 	function PlusHelper.readAlwaysShowQueuedPreviewIcons(modId, defaultEnabled)
 		local enabled = defaultEnabled == true
 		sdlext.config("modcontent.lua", function(obj)

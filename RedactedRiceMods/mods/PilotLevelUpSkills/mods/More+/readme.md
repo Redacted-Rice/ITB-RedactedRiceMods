@@ -77,7 +77,7 @@ These are skills that have a stronger than typical positive effect but also incl
 Latest release: 2.4.0
 
 ## 2.4.0
-Released: 10/XX/2026
+Released: 10/15/2026
 
 compatible with:
 * ItB AE 	1.2.93
