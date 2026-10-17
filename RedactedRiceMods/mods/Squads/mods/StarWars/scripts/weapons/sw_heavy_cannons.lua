@@ -22,7 +22,7 @@ StarWars_HeavyCannons = Skill:new{
 	},
 	BouncePerDamage = 1,
 	ExtraRange = false,
-	MinRange = 2,
+	MinRange = 1,
 	MaxRange = 5,
 
 	ArtilleryHeight = 0,
@@ -52,91 +52,22 @@ StarWars_HeavyCannons_AB = StarWars_HeavyCannons_A:new{
 	ExtraRange = true,
 }
 
--- Calculate manhattan distance between two points
-local function manhattanDistance(p1, p2)
-	return math.abs(p1.x - p2.x) + math.abs(p1.y - p2.y)
-end
-
-local function addConeToList(pointsList, origin, direction, startRadius, minRange, maxRange)
-	local basePoint = origin + DIR_VECTORS[direction]
-	local currRadius = startRadius or 1
-
-	-- A cone includes the main direction and both diagonal directions adjacent to it
-	local leftDir = (direction + 1) % 4
-	local rightDir = (direction + 3) % 4
-
-	local leftVec = DIR_VECTORS[leftDir]
-	local rightVec = DIR_VECTORS[rightDir]
-
-	while Board:IsValid(basePoint) do
-		local baseDistance = manhattanDistance(origin, basePoint)
-		if baseDistance > maxRange then
-			-- Stop if we've exceeded max range even on the main axis as this will be the "furthest" point
-			-- in our algorithm
-			break
-		elseif baseDistance >= minRange then
-			-- Otherwise add this point as long as its in range
-			pointsList:push_back(basePoint)
-		end
-
-		for i = 1, currRadius do
-			local leftTarget = basePoint + leftVec * i
-			local rightTarget = basePoint + rightVec * i
-			local sidewaysDistance = manhattanDistance(origin, leftTarget)
-			-- Only try to add if this point is above our min range
-			if sidewaysDistance >= minRange then
-				if sidewaysDistance > maxRange then
-					-- Stop if we've exceeded max range even on the main axis as this will be the "furthest" point
-					-- in our algorithm
-					break
-				end
-				if Board:IsValid(leftTarget) then
-					pointsList:push_back(leftTarget)
-				end
-				if Board:IsValid(rightTarget) then
-					pointsList:push_back(rightTarget)
-				end
-			end
-		end
-
-		basePoint = basePoint + DIR_VECTORS[direction]
-		currRadius = currRadius + 1
-	end
-end
-
--- TODO: Doesn't work right. Duplicates some and misses some forward
-local function create3QuartersArc(origin, direction, minRange, maxRange)
-	local ret = PointList()
-	local basePoint = origin + DIR_VECTORS[direction]
-
-	-- A 3/4 arc includes the main direction and both diagonal directions adjacent to it
-	local leftDir = (direction + 1) % 4
-	local rightDir = (direction + 3) % 4
-
-	addConeToList(ret, basePoint, leftDir, 2, minRange, maxRange)
-	addConeToList(ret, basePoint, rightDir, 2, minRange, maxRange)
-	addConeToList(ret, basePoint, direction, 1, minRange, maxRange)
-	return ret
-end
-
-local function createCone(origin, direction, startRadius, minRange, maxRange)
-	local ret = PointList()
-	addConeToList(ret, origin, direction, startRadius, minRange, maxRange)
-	return ret
-end
-
 function StarWars_HeavyCannons:GetTargetArea(point)
 	local ret = PointList()
-
-	-- Get the mech's facing direction
-	local pawn = Board:GetPawn(point)
 	local direction = DIR_RIGHT
 
 	if not self.ExtraRange then
-		return createCone(point, direction, math.max(Board:GetSize().x, Board:GetSize().y), self.MinRange, self.MaxRange)
+		local seen = {}
+		BoardUtils.addForwardConeToList(ret, seen, point, direction, 1, self.MinRange, self.MaxRang)
 	else
-		return create3QuartersArc(point, direction, self.MinRange, self.MaxRange)
+		local dirVec = DIR_VECTORS[direction]
+		BoardUtils.getReachableInRange(ret, self.MaxRange, point, nil, function(adj)
+			local diff = adj - point
+			local forward = diff.x * dirVec.x + diff.y * dirVec.y
+			return BoardUtils.getManhattanDistance(point, adj) >= self.MinRange and forward >= 0
+		end)
 	end
+	return ret
 end
 
 function StarWars_HeavyCannons:GetSkillEffect(p1, p2)
