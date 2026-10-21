@@ -1,4 +1,11 @@
 local PASS_DELAY = 0.06
+
+-- Outward shockwave (center -> board edge)
+local PRIMARY_BOUNCE_BASE = 30
+
+-- Inward ripple (edge -> center)
+local SECONDARY_BOUNCE_BASE = -12
+
 StarWars_AuxiliarySuperlaser = Skill:new{
 	Name = "Aux. Superlaser",
 	Description = "Instakills center tile and turns it to lava. Deals 3 damage adjacent, 1 damage beyond. Recharged by repair.",
@@ -12,8 +19,8 @@ StarWars_AuxiliarySuperlaser = Skill:new{
 	SplashFurtherDamage = 1,
 	ShakeBaseVal = 0.4,
 	BounceBaseVal = 30,
-	BounceDecay = 0.80,
-	IntroFrames = 5,
+	BounceDecay = 0.92,
+	IntroFrames = 6,
 	PassDelay = PASS_DELAY,
 	TotalPasses = 16,
 	Icon = "weapons/science_sw_auxiliary_laser.png",
@@ -71,6 +78,20 @@ function StarWars_AuxiliarySuperlaser:GetTargetArea(point)
 	return ret
 end
 
+local function getMaxManhattanDistanceFrom(center)
+	local size = Board:GetSize()
+	local maxDist = 0
+	for x = 0, size.x - 1 do
+		for y = 0, size.y - 1 do
+			local dist = center:Manhattan(Point(x, y))
+			if dist > maxDist then
+				maxDist = dist
+			end
+		end
+	end
+	return maxDist
+end
+
 local function getValidSpacesAtDistance(center, distance)
 	local tiles = {}
 	if distance == 0 then
@@ -86,6 +107,12 @@ local function getValidSpacesAtDistance(center, distance)
 		end
 	end
 	return tiles
+end
+
+local function addShockwaveRing(ret, center, distance, bounce)
+	for _, space in ipairs(getValidSpacesAtDistance(center, distance)) do
+		ret:AddBounce(space, bounce)
+	end
 end
 
 local function addCenterEffect(ret, center, damage)
@@ -123,7 +150,6 @@ end
 
 function StarWars_AuxiliarySuperlaser:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
-	local explosion = self.Explosion
 
 	-- Delay firing for effect
 	ret:AddSound(self.LaunchSound)
@@ -138,33 +164,37 @@ function StarWars_AuxiliarySuperlaser:GetSkillEffect(p1, p2)
 	ret:AddDelay(self.IntroFrames * self.PassDelay)
 	ret:AddBoardShake(self.ShakeBaseVal * self.SplashDamage)
 
-	local bounce = self.BounceBaseVal
-
 	local adjacentSpaces = getValidSpacesAtDistance(p2, 1)
 	local furtherSpaces = getValidSpacesAtDistance(p2, 2)
+	local maxDist = getMaxManhattanDistanceFrom(p2)
 
 	local CENTER = 1
 	local ADJACENT = 2
 	local FURTHER = 3
 	local addDamageInPass = {1, 3, 5}
 	local explosionsInPasses = {{1,3,5,7,9}, {3,5,7}, {5}}
+	local maxExplosionPass = 9
+	local primaryPasses = math.max(maxDist + 1, maxExplosionPass)
 
-	for pass = 1, self.TotalPasses do
-		if list_contains(explosionsInPasses[CENTER], pass) then
+	local primaryBounce = PRIMARY_BOUNCE_BASE
+	for pass = 1, primaryPasses do
+		local ring = pass - 1
+
+		if pass <= maxExplosionPass and list_contains(explosionsInPasses[CENTER], pass) then
 			local damage = nil
 			if pass == addDamageInPass[CENTER] then
 				damage = DAMAGE_DEATH
 			end
 			addCenterEffect(ret, p2, damage)
 		end
-		if list_contains(explosionsInPasses[ADJACENT], pass) then
+		if pass <= maxExplosionPass and list_contains(explosionsInPasses[ADJACENT], pass) then
 			local damage = nil
 			if pass == addDamageInPass[ADJACENT] then
 				damage = self.SplashDamage
 			end
 			addExplosionEffects(ret, adjacentSpaces, damage, true)
 		end
-		if list_contains(explosionsInPasses[FURTHER], pass) then
+		if pass <= maxExplosionPass and list_contains(explosionsInPasses[FURTHER], pass) then
 			local damage = nil
 			if pass == addDamageInPass[FURTHER] then
 				damage = self.SplashFurtherDamage
@@ -172,18 +202,35 @@ function StarWars_AuxiliarySuperlaser:GetSkillEffect(p1, p2)
 			addExplosionEffects(ret, furtherSpaces, damage, false)
 		end
 
-		-- Add shockwave
-		for _, space in ipairs(getValidSpacesAtDistance(p2, pass - 1)) do
-			ret:AddBounce(space, bounce)
+		if ring <= maxDist then
+			addShockwaveRing(ret, p2, ring, primaryBounce)
+			primaryBounce = primaryBounce * self.BounceDecay
 		end
-		bounce = bounce * self.BounceDecay
 		ret:AddSound(self.ImpactSounds[math.random(1, #self.ImpactSounds)])
 		ret:AddDelay(self.PassDelay)
 	end
 
-	
+	ret:AddDelay(0.48)
+
+	local secondaryBounce = SECONDARY_BOUNCE_BASE
+	for ring = maxDist, 0, -1 do
+		addShockwaveRing(ret, p2, ring, secondaryBounce)
+		secondaryBounce = math.min(-1, secondaryBounce * self.BounceDecay)
+		ret:AddDelay(self.PassDelay)
+	end
+
+	-- Let bounces finish before we start the next
+	ret:AddDelay(0.36)
+
+	local tertiaryBounce = math.min(-1, secondaryBounce * self.BounceDecay)
+	for ring = 0, maxDist do
+		addShockwaveRing(ret, p2, ring, tertiaryBounce)
+		tertiaryBounce = math.min(-1, tertiaryBounce * self.BounceDecay)
+		ret:AddDelay(self.PassDelay)
+	end
+
 	-- Pause after for effect
-	ret:AddDelay(self.IntroFrames * 2 * self.PassDelay)
+	ret:AddDelay(self.IntroFrames * self.PassDelay)
 
 	return ret
 end
