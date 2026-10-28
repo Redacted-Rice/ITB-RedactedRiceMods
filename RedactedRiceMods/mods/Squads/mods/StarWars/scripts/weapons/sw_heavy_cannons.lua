@@ -58,7 +58,7 @@ function StarWars_HeavyCannons:GetTargetArea(point)
 
 	if not self.ExtraRange then
 		local seen = {}
-		BoardUtils.addForwardConeToList(ret, seen, point, direction, 1, self.MinRange, self.MaxRang)
+		BoardUtils.addForwardConeToList(ret, seen, point, direction, 1, self.MinRange, self.MaxRange)
 	else
 		local dirVec = DIR_VECTORS[direction]
 		BoardUtils.getReachableInRange(ret, self.MaxRange, point, nil, function(adj)
