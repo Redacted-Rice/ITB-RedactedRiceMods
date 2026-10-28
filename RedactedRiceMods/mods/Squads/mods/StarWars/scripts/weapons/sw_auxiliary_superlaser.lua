@@ -17,9 +17,13 @@ StarWars_AuxiliarySuperlaser = Skill:new{
 	Limited = 1,
 	SplashDamage = 3,
 	SplashFurtherDamage = 1,
-	ShakeBaseVal = 0.4,
+	ShakeBaseVal = 0.7,
 	BounceBaseVal = 30,
 	BounceDecay = 0.92,
+	-- Some magic numbers to make it line up nicely with sfx
+	ExplosionSfxDelay = PASS_DELAY * 35,
+	SecondaryShockwaveSfxDelay = PASS_DELAY * 27,
+	TertiaryShockwaveSfxDelay = PASS_DELAY * 12,
 	IntroFrames = 6,
 	PassDelay = PASS_DELAY,
 	TotalPasses = 16,
@@ -153,20 +157,17 @@ function StarWars_AuxiliarySuperlaser:GetSkillEffect(p1, p2)
 
 	-- Delay firing for effect
 	ret:AddSound(self.LaunchSound)
-	ret:AddDelay(self.IntroFrames * 2 * self.PassDelay)
-
 	ret:AddSound(self.MainImpactSound)
-	ret:AddDelay(self.IntroFrames * self.PassDelay)
+	ret:AddDelay(self.ExplosionSfxDelay)
 
 	ret:AddScript([[
 		Board:AddAnimation(]] .. p2:GetString() .. [[, "StarWars_AuxSuperlaser_Anim", 1)
 	]])
 	ret:AddDelay(self.IntroFrames * self.PassDelay)
-	ret:AddBoardShake(self.ShakeBaseVal * self.SplashDamage)
+	ret:AddBoardShake(self.ShakeBaseVal * 2)
 
 	local adjacentSpaces = getValidSpacesAtDistance(p2, 1)
 	local furtherSpaces = getValidSpacesAtDistance(p2, 2)
-	local maxDist = getMaxManhattanDistanceFrom(p2)
 
 	local CENTER = 1
 	local ADJACENT = 2
@@ -174,7 +175,7 @@ function StarWars_AuxiliarySuperlaser:GetSkillEffect(p1, p2)
 	local addDamageInPass = {1, 3, 5}
 	local explosionsInPasses = {{1,3,5,7,9}, {3,5,7}, {5}}
 	local maxExplosionPass = 9
-	local primaryPasses = math.max(maxDist + 1, maxExplosionPass)
+	local primaryPasses = 14
 
 	local primaryBounce = PRIMARY_BOUNCE_BASE
 	for pass = 1, primaryPasses do
@@ -202,28 +203,31 @@ function StarWars_AuxiliarySuperlaser:GetSkillEffect(p1, p2)
 			addExplosionEffects(ret, furtherSpaces, damage, false)
 		end
 
-		if ring <= maxDist then
+		if ring <= primaryPasses then
 			addShockwaveRing(ret, p2, ring, primaryBounce)
 			primaryBounce = primaryBounce * self.BounceDecay
 		end
-		ret:AddSound(self.ImpactSounds[math.random(1, #self.ImpactSounds)])
+		if pass <= maxExplosionPass then
+			ret:AddSound(self.ImpactSounds[math.random(1, #self.ImpactSounds)])
+		end
 		ret:AddDelay(self.PassDelay)
 	end
 
-	ret:AddDelay(0.48)
+	ret:AddDelay(self.SecondaryShockwaveSfxDelay)
+	ret:AddBoardShake(self.ShakeBaseVal)
 
 	local secondaryBounce = SECONDARY_BOUNCE_BASE
-	for ring = maxDist, 0, -1 do
+	for ring = primaryPasses, 0, -1 do
 		addShockwaveRing(ret, p2, ring, secondaryBounce)
 		secondaryBounce = math.min(-1, secondaryBounce * self.BounceDecay)
 		ret:AddDelay(self.PassDelay)
 	end
 
 	-- Let bounces finish before we start the next
-	ret:AddDelay(0.36)
+	ret:AddDelay(self.TertiaryShockwaveSfxDelay)
 
 	local tertiaryBounce = math.min(-1, secondaryBounce * self.BounceDecay)
-	for ring = 0, maxDist do
+	for ring = 0, primaryPasses do
 		addShockwaveRing(ret, p2, ring, tertiaryBounce)
 		tertiaryBounce = math.min(-1, tertiaryBounce * self.BounceDecay)
 		ret:AddDelay(self.PassDelay)
