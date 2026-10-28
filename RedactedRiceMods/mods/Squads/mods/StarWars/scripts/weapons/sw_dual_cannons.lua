@@ -202,7 +202,7 @@ function StarWars_DualCannons:GetFinalEffect(p1, p2, p3)
 		local newPos = path:index(i)
 
 		-- Move to this position
-		BoardUtils.addForcedSigleMove(ret, pawnId, newPos)
+		BoardUtils.addForcedSingleMove(ret, pawnId, newPos)
 
 		-- Fire from current position at ALL adjacent spaces
 		self:FireFromPositionInDirection(ret, newPos, fireDir)
