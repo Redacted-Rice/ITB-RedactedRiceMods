@@ -23,7 +23,6 @@ StarWars_EmpireOfTerror = PassiveSkill:new{
 
 local mod = mod_loader.mods[modApi.currentMod]
 passiveEffect = mod_loader.mods[modApi.currentMod].libs.passiveEffect
-weaponPreview = mod_loader.mods[modApi.currentMod].libs.weaponPreview
 
 -- Initialize GAME save data structure
 local function initGameSaveData()

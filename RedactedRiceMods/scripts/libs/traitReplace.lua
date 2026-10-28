@@ -637,6 +637,14 @@ local function createUIWidgets(uiRoot)
 	end
 end
 
+local function traitDescForTooltip(field, pawn)
+	local resolved = type(field) == "function" and field(pawn) or field
+	if type(resolved) ~= "string" then
+		return tostring(resolved or "")
+	end
+	return GetText(resolved)
+end
+
 -- Override GetStatusTooltip to provide custom descriptions for all registered traits
 local function overrideGetStatusTooltip()
 	local oldGetStatusTooltip = GetStatusTooltip
@@ -657,8 +665,8 @@ local function overrideGetStatusTooltip()
 				elseif #activeTraits == 1 then
 					-- Just the single vanilla trait
 					return {
-						GetText(activeTraits[1].desc_title),
-						GetText(activeTraits[1].desc_text)
+						traitDescForTooltip(activeTraits[1].desc_title, pawn),
+						traitDescForTooltip(activeTraits[1].desc_text, pawn),
 					}
 				else
 					-- Multiple traits, combine descriptions
@@ -667,7 +675,8 @@ local function overrideGetStatusTooltip()
 						if i > 1 then
 							combinedText = combinedText .. "\n\n"
 						end
-						combinedText = combinedText .. GetText(trait.desc_title) .. "\n" .. GetText(trait.desc_text)
+						combinedText = combinedText .. traitDescForTooltip(trait.desc_title, pawn)
+							.. "\n" .. traitDescForTooltip(trait.desc_text, pawn)
 					end
 					return {
 						"Extra Pawn Traits",
@@ -818,8 +827,12 @@ local function addStatefulTraitInternal(statefulTrait)
 		end
 
 		Assert.Equals('string', type(state.icon), "Field 'states["..stateIndex.."].icon'")
-		Assert.Equals('string', type(state.desc_title), "Field 'states["..stateIndex.."].desc_title'")
-		Assert.Equals('string', type(state.desc_text), "Field 'states["..stateIndex.."].desc_text'")
+		Assert.True(
+			type(state.desc_title) == 'string' or type(state.desc_title) == 'function',
+			"Field 'states["..stateIndex.."].desc_title' must be string or function")
+		Assert.True(
+			type(state.desc_text) == 'string' or type(state.desc_text) == 'function',
+			"Field 'states["..stateIndex.."].desc_text' must be string or function")
 
 		-- Create a trait for this state
 		local stateTrait = {
