@@ -52,15 +52,19 @@ end
 function Vader_ForceChoke_Repair:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
 	local damage = SpaceDamage(p2, self.Damage)
-	ret:AddDamage(damage)
-	ret:AddBounce(p2, 1)
 
 	if Board:IsPawnSpace(p2) then
 		local targetId = Board:GetPawn(p2):GetId()
 		local casterId = Board:GetPawn(p1):GetId()
 
 		damage.sScript = (damage.sScript or "") .. string.format([[
-			Board:GetPawn(%d):AddMoveBonus(-99)
+			local target = Board:GetPawn(%d)
+			if target and not target:IsDead() then
+				target:AddMoveBonus(-target:GetMoveSpeed())
+			end
+			modApi:runLater(function()
+				Board:Ping(target:GetSpace(), GL_Color(0, 0, 0))
+			end)
 		]], targetId)
 
 		if not Board:IsTipImage() then
@@ -71,6 +75,8 @@ function Vader_ForceChoke_Repair:GetSkillEffect(p1, p2)
 		end
 	end
 
+	ret:AddDamage(damage)
+	ret:AddBounce(p2, 1)
 	BoardUtils.addCancelEffect(p2, ret)
 	return ret
 end
