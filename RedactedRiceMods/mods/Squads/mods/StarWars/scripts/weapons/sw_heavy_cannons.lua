@@ -82,9 +82,9 @@ function StarWars_HeavyCannons:GetSkillEffect(p1, p2)
 	-- Center tile damage - Fire 2 shots alternating projectiles, only second does damage
 	for shot = 1, self.Shots do
 		local projectile = (shot % 2 == 1) and self.Projectile1 or self.Projectile2
-		local damage = shot == self.Shots and self.Damage or 0
 		local delay = shot == self.Shots and FULL_DELAY or self.ShotsDelay
-		local sd = SpaceDamage(p2, damage)
+		-- Only visuals here - damage later so push order is correct
+		local sd = SpaceDamage(p2)
 		ret:AddSound(self.FireSound)
 		ret:AddArtillery(sd, projectile, delay)
 	end
@@ -95,17 +95,19 @@ function StarWars_HeavyCannons:GetSkillEffect(p1, p2)
 	-- space beyond the primary target
 	local behindPos = p2 + DIR_VECTORS[attackDir]
 	if Board:IsValid(behindPos) then
-		local splashDamage = SpaceDamage(behindPos, self.BehindSplashDamage)
+		local splashDamage = SpaceDamage(behindPos, self.BehindSplashDamage, attackDir)
 		ret:AddDamage(splashDamage)
 		ret:AddBounce(behindPos, self.BouncePerDamage * self.BehindSplashDamage)
 	end
+	local mainPush = SpaceDamage(p2, self.Damage, attackDir)
+	ret:AddDamage(mainPush)
 	ret:AddDelay(0.1)
 
 	-- Perpendicular left
 	local perpLeft = (attackDir + 1) % 4
 	local leftPos = p2 + DIR_VECTORS[perpLeft]
 	if Board:IsValid(leftPos) then
-		local splashDamage = SpaceDamage(leftPos, self.SideSplashDamage)
+		local splashDamage = SpaceDamage(leftPos, self.SideSplashDamage, attackDir)
 		ret:AddDamage(splashDamage)
 		ret:AddBounce(leftPos, self.BouncePerDamage * self.SideSplashDamage)
 	end
@@ -114,7 +116,7 @@ function StarWars_HeavyCannons:GetSkillEffect(p1, p2)
 	local perpRight = (attackDir + 3) % 4
 	local rightPos = p2 + DIR_VECTORS[perpRight]
 	if Board:IsValid(rightPos) then
-		local splashDamage = SpaceDamage(rightPos, self.SideSplashDamage)
+		local splashDamage = SpaceDamage(rightPos, self.SideSplashDamage, attackDir)
 		ret:AddDamage(splashDamage)
 		ret:AddBounce(rightPos, self.BouncePerDamage * self.SideSplashDamage)
 	end

@@ -1,12 +1,10 @@
-local MOVE_BONUS = 2
 StarWars_TieOverdrive = PassiveSkill:new{
 	Name = "TIE Overdrive",
-	Description = "Increased move by "..MOVE_BONUS.." for the rest of the mission.",
+	Description = "Each use: +1 move for the rest of the mission (stacks).",
 	Class = "Brute",
 	PowerCost = 0,
 	Upgrades = 2,
 	UpgradeCost = {1, 1},
-	Limited = 1,
 	Icon = "weapons/brute_sw_tie_engine.png",
 	Sound = "/weapons/area_shield",
 	WebImmune = false,
@@ -27,7 +25,7 @@ StarWars_TieOverdrive_A = StarWars_TieOverdrive:new{
 }
 
 Weapon_Texts.StarWars_TieOverdrive_Upgrade2 = "Combat Maneuvers"
-Weapon_Texts.StarWars_TieOverdrive_B_UpgradeDescription = "Mech also gains a " .. MOVE_BONUS .. " range bonus move after each attack"
+Weapon_Texts.StarWars_TieOverdrive_B_UpgradeDescription = "+1 move after each attack (stacks)"
 StarWars_TieOverdrive_B = StarWars_TieOverdrive:new{
 	BonusMoveAfterAttack = true,
 }
@@ -36,6 +34,25 @@ StarWars_TieOverdrive_AB = StarWars_TieOverdrive_A:new{
 	BonusMoveAfterAttack = true,
 }
 
+-- Initialize GAME save data structure
+local function initGameSaveData()
+	if GAME == nil then
+		GAME = {}
+	end
+	if GAME.starwars == nil then
+		GAME.starwars = {}
+	end
+	if GAME.starwars.tie_overdrive == nil then
+		GAME.starwars.tie_overdrive = {}
+	end
+	if GAME.starwars.tie_overdrive.move_stacks == nil then
+		GAME.starwars.tie_overdrive.move_stacks = {}
+	end
+	if GAME.starwars.tie_overdrive.web_immune_applied == nil then
+		GAME.starwars.tie_overdrive.web_immune_applied = {}
+	end
+end
+
 -- Helper function to check if a pawn has TIE Overdrive active
 local function pawnHasTieOverdrive(pawn)
 	if not pawn or not pawn:IsMech() then return false end
@@ -43,7 +60,8 @@ local function pawnHasTieOverdrive(pawn)
 
 	initGameSaveData()
 	local pawnId = pawn:GetId()
-	return GAME.starwars.tie_overdrive.active_pawns[pawnId] == true
+	local moveStacks = GAME.starwars.tie_overdrive.move_stacks[pawnId] or 0
+	return moveStacks > 0
 end
 
 -- Add stateful trait icon showing active vs inactive state
@@ -58,12 +76,13 @@ mod.libs.traitReplace:addStateful{
 	states = {
 		{
 			icon = "img/combat/icons/icon_accelerator.png",
-			desc_title = "TIE Overdrive (Active)",
+			desc_title = "TIE Overdrive",
 			desc_text = function(pawn)
-				local text = "Move +" .. MOVE_BONUS .. " for the rest of the mission."
-
 				initGameSaveData()
+
 				local pawnId = pawn:GetId()
+				local stacks = GAME.starwars.tie_overdrive.move_stacks[pawnId] or 0
+				local text = "Move +" .. stacks .. " from Overdrive and attack bonuses (each use stacks)."
 
 				-- Check for web immunity
 				if GAME.starwars.tie_overdrive.web_immune_applied[pawnId] then
@@ -76,25 +95,6 @@ mod.libs.traitReplace:addStateful{
 	}
 }
 
--- Initialize GAME save data structure
-local function initGameSaveData()
-	if GAME == nil then
-		GAME = {}
-	end
-	if GAME.starwars == nil then
-		GAME.starwars = {}
-	end
-	if GAME.starwars.tie_overdrive == nil then
-		GAME.starwars.tie_overdrive = {}
-	end
-	if GAME.starwars.tie_overdrive.active_pawns == nil then
-		GAME.starwars.tie_overdrive.active_pawns = {}
-	end
-	if GAME.starwars.tie_overdrive.web_immune_applied == nil then
-		GAME.starwars.tie_overdrive.web_immune_applied = {}
-	end
-end
-
 function StarWars_TieOverdrive:GetTargetArea(point)
 	local ret = PointList()
 	ret:push_back(point)
@@ -104,7 +104,18 @@ end
 function StarWars_TieOverdrive:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
 
-	local damage = SpaceDamage(p1, 0)
+	-- Push all adjacent tiles
+	local damage = SpaceDamage(p1)
+	for dir = DIR_START, DIR_END do
+		local target = p1 + DIR_VECTORS[dir]
+		if Board:IsValid(target) then
+			local push = SpaceDamage(target, 0, dir)
+			push.sAnimation = "airpush_" .. dir
+			ret:AddDamage(push)
+			ret:AddBounce(target, 1)
+		end
+	end
+
 	damage.sScript = [[
 		local pawn = Board:GetPawn(]] .. p1:GetString() .. [[)
 		if pawn then
@@ -113,10 +124,11 @@ function StarWars_TieOverdrive:GetSkillEffect(p1, p2)
 			-- Initialize save data
 			if GAME.starwars == nil then GAME.starwars = {} end
 			if GAME.starwars.tie_overdrive == nil then GAME.starwars.tie_overdrive = {} end
-			if GAME.starwars.tie_overdrive.active_pawns == nil then GAME.starwars.tie_overdrive.active_pawns = {} end
+			if GAME.starwars.tie_overdrive.move_stacks == nil then GAME.starwars.tie_overdrive.move_stacks = {} end
 		]]
 	if self.WebImmune then
 		damage.sScript = damage.sScript .. [[
+			if GAME.starwars.tie_overdrive.web_immune_applied == nil then GAME.starwars.tie_overdrive.web_immune_applied = {} end
 			GAME.starwars.tie_overdrive.web_immune_applied[pawnId] = true
 
 			local space = pawn:GetSpace()
@@ -127,13 +139,12 @@ function StarWars_TieOverdrive:GetSkillEffect(p1, p2)
 		]]
 	end
 	damage.sScript = damage.sScript .. [[
-			-- Mark this pawn as having overdrive active
-			GAME.starwars.tie_overdrive.active_pawns[pawnId] = true
+			-- Increase the move stacks
+			if GAME.starwars.tie_overdrive.move_stacks == nil then GAME.starwars.tie_overdrive.move_stacks = {} end
+			GAME.starwars.tie_overdrive.move_stacks[pawnId] = (GAME.starwars.tie_overdrive.move_stacks[pawnId] or 0) + 1
 			
 			Board:AddAlert(pawn:GetSpace(), "OVERDRIVE")
 			Board:Ping(pawn:GetSpace(), GL_Color(0, 0, 255))
-
-			LOG("SET PAWN " .. pawnId .. " TO OVERDRIVE")
 		end
 	]]
 	ret:AddSound(self.Sound)
@@ -152,9 +163,10 @@ function StarWars_TieOverdrive:maybeApplyExtraBonuses(pawn, weaponId)
 
 	-- Check if this pawn has overdrive active and the upgrade
 	local pawnId = pawn:GetId()
-	if GAME.starwars.tie_overdrive.active_pawns[pawnId] then
+	local moveStacks = GAME.starwars.tie_overdrive.move_stacks[pawnId] or 0
+	if moveStacks > 0 then
 		-- Grant bonus move
-		pawn:SetBonusMove(MOVE_BONUS)
+		pawn:SetBonusMove(moveStacks)
 		modApi:runLater(function()
 			pawn:SetActive(true)
 		end)
@@ -170,9 +182,10 @@ function StarWars_TieOverdrive:maybeApplyBaseSpeedBoosts()
 
 	-- Apply base speed boost
 	for pawnId = 0, 2 do
-		if GAME.starwars.tie_overdrive.active_pawns[pawnId] then
+		local moveStacks = GAME.starwars.tie_overdrive.move_stacks[pawnId] or 0
+		if moveStacks > 0 then
 			local pawn = Board:GetPawn(pawnId)
-			pawn:AddMoveBonus(MOVE_BONUS)
+			pawn:AddMoveBonus(moveStacks)
 			Board:AddAlert(pawn:GetSpace(), "OVERDRIVE")
 			Board:Ping(pawn:GetSpace(), GL_Color(0, 0, 255))
 		end
