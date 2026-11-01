@@ -50,6 +50,8 @@ function StarWars_DualCannons:GetTargetArea(point)
 	local pawn = Board:GetPawn(point)
 	if not pawn then return ret end
 
+	ret:push_back(point)
+
 	-- If MoveRange < 0, use the mech's actual move speed
 	local usingMoveSpeed = false
 	local attackRange = self.MoveRange
@@ -100,34 +102,41 @@ end
 
 function StarWars_DualCannons:GetSecondTargetArea(p1, p2)
 	local ret = PointList()
-	local moveDir = GetDirection(p2 - p1)
 
-	-- Get perpendicular directions
-	local perpDir1 = (moveDir + 1) % 4
-	local perpDir2 = (moveDir + 3) % 4
+	local dirs = {GetDirection(p2 - p1)}
+	if p1 == p2 then
+		dirs = {DIR_UP, DIR_LEFT}
+	end
 
-	-- Show the line of targets on each side along the entire move path
-	local current = p1
-	while true do
-		-- Add targets on both sides of current position
-		local side1 = current
-		local side2 = current
-		for i = 1, self.TargetRange do
-			side1 = side1 + DIR_VECTORS[perpDir1]
-			side2 = side2 + DIR_VECTORS[perpDir2]
-			if Board:IsValid(side1) then
-				ret:push_back(side1)
+	for dirIdx = 1, #dirs do
+		local moveDir = dirs[dirIdx]
+		-- Get perpendicular directions
+		local perpDir1 = (moveDir + 1) % 4
+		local perpDir2 = (moveDir + 3) % 4
+
+		-- Show the line of targets on each side along the entire move path
+		local current = p1
+		while true do
+			-- Add targets on both sides of current position
+			local side1 = current
+			local side2 = current
+			for i = 1, self.TargetRange do
+				side1 = side1 + DIR_VECTORS[perpDir1]
+				side2 = side2 + DIR_VECTORS[perpDir2]
+				if Board:IsValid(side1) then
+					ret:push_back(side1)
+				end
+				if Board:IsValid(side2) then
+					ret:push_back(side2)
+				end
 			end
-			if Board:IsValid(side2) then
-				ret:push_back(side2)
-			end
-		end
 
-		-- Move to next position along path
-		if current == p2 then
-			break
+			-- Move to next position along path
+			if current == p2 then
+				break
+			end
+			current = current + DIR_VECTORS[moveDir]
 		end
-		current = current + DIR_VECTORS[moveDir]
 	end
 
 	return ret
@@ -161,34 +170,39 @@ function StarWars_DualCannons:GetFinalEffect(p1, p2, p3)
 
 	local ret = SkillEffect()
 
-	-- Determine which side to fire based on p3
-	local moveDir = GetDirection(p2 - p1)
-	local perpDir1 = (moveDir + 1) % 4
-	local perpDir2 = (moveDir + 3) % 4
-	local fireDir = perpDir1
-
-	-- Build path and check which side p3 is on
 	local path = PointList()
-	local current = p1
-	path:push_back(current)
+	path:push_back(p1)
 
-	local testSide = current
-	for i = 1, self.TargetRange do
-		testSide = testSide + DIR_VECTORS[perpDir2]
-		if p3 == testSide then
-			fireDir = perpDir2
-		end
-	end
+	local fireDir
+	if p1 == p2 then
+		fireDir = GetDirection(p3 - p1)
+	else
+		-- Determine which side to fire based on p3
+		local moveDir = GetDirection(p2 - p1)
+		local perpDir1 = (moveDir + 1) % 4
+		local perpDir2 = (moveDir + 3) % 4
+		fireDir = perpDir1
 
-	while current ~= p2 do
-		current = current + DIR_VECTORS[moveDir]
-		path:push_back(current)
-
-		testSide = current
+		-- Determine which side to fire based on p3
+		local current = p1
+		local testSide = current
 		for i = 1, self.TargetRange do
 			testSide = testSide + DIR_VECTORS[perpDir2]
 			if p3 == testSide then
 				fireDir = perpDir2
+			end
+		end
+
+		while current ~= p2 do
+			current = current + DIR_VECTORS[moveDir]
+			path:push_back(current)
+
+			testSide = current
+			for i = 1, self.TargetRange do
+				testSide = testSide + DIR_VECTORS[perpDir2]
+				if p3 == testSide then
+					fireDir = perpDir2
+				end
 			end
 		end
 	end
