@@ -1,12 +1,12 @@
 StarWars_Stomp = Skill:new{
 	Name = "Stomp",
-	Description = "Damages and pushes all adjacent tiles.",
+	Description = "2 uses per turn: stomp an adjacent tile for 1 damage, push it, then step into the tile if empty. Grants a free action.",
 	Class = "Ranged",
 	Damage = 1,
-	Push = true,
 	PowerCost = 1,
 	Upgrades = 2,
 	UpgradeCost = {2, 1},
+	Limited = 2,
 	Icon = "weapons/artillery_sw_stomp.png",
 	LaunchSound = "/impact/generic/mech",
 	ImpactSound = "/impact/generic/explosion",
@@ -16,8 +16,9 @@ StarWars_Stomp = Skill:new{
 		Enemy2 = Point(3, 2),
 		Target = Point(2, 2),
 	},
-	Crack = false
 }
+
+local mod = mod_loader.mods[modApi.currentMod]
 
 Weapon_Texts.StarWars_Stomp_Upgrade1 = "Spikes"
 Weapon_Texts.StarWars_Stomp_A_UpgradeDescription = "+1 damage"
@@ -25,19 +26,18 @@ StarWars_Stomp_A = StarWars_Stomp:new{
 	Damage = 2,
 }
 
-Weapon_Texts.StarWars_Stomp_Upgrade2 = "Heavy Stomp"
-Weapon_Texts.StarWars_Stomp_B_UpgradeDescription = "Cracks adjacent tiles"
+Weapon_Texts.StarWars_Stomp_Upgrade2 = "+ Use"
+Weapon_Texts.StarWars_Stomp_B_UpgradeDescription = "3 uses per turn instead of 2"
 StarWars_Stomp_B = StarWars_Stomp:new{
-	Crack = true,
+	Limited = 3,
 }
 
 StarWars_Stomp_AB = StarWars_Stomp_A:new{
-	Crack = true,
+	Limited = 3,
 }
 
 function StarWars_Stomp:GetTargetArea(point)
 	local ret = PointList()
-	ret:push_back(point)
 	for dir = DIR_START, DIR_END do
 		local target = point + DIR_VECTORS[dir]
 		if Board:IsValid(target) then
@@ -53,28 +53,73 @@ function StarWars_Stomp:GetSkillEffect(p1, p2)
 	ret:AddBounce(p1, 3)
 	ret:AddDelay(0.2)
 
-	-- Damage and crack all adjacent tiles
-	for dir = DIR_START, DIR_END do
-		local target = p1 + DIR_VECTORS[dir]
-		if Board:IsValid(target) then
-			local damage = SpaceDamage(target, self.Damage)
-			damage.sAnimation = "airpush_" .. dir
-
-			-- Crack the tile (not on holes, liquid, or lava)
-			if self.Crack and not Board:IsTerrain(target, TERRAIN_HOLE)
-				and not Board:IsTerrain(target, TERRAIN_WATER)
-				and not Board:IsTerrain(target, TERRAIN_LAVA) then
-				damage.iCrack = EFFECT_CREATE
-			end
-
-			if self.Push then
-				damage.iPush = dir
-			end
-
-			ret:AddDamage(damage)
-			ret:AddBounce(target, -1)
-		end
+	-- Damage and push the target tile
+	local dir = GetDirection(p2 - p1)
+	if Board:IsValid(p2) then
+		local damage = SpaceDamage(p2, self.Damage)
+		damage.sAnimation = "airpush_" .. dir
+		damage.iPush = dir
+		ret:AddDamage(damage)
+		ret:AddBounce(p2, -1)
 	end
-	ret:AddDelay(0.3)
+
+	ret:AddDelay(0.5)
+
+
+	-- Move into the target if empty
+	local refund = SpaceDamage(p2)
+	refund.sScript = string.format([[
+		local p1 = %s
+		local p2 = %s
+
+		local pawn = Board:GetPawn(p1)
+		modApi:runLater(function()
+			if pawn and not pawn:IsDead() then
+				pawn:SetActive(true)
+			end
+		end)
+
+		local effect = SkillEffect()
+		local path = PointList()
+		path:push_back(p1)
+		path:push_back(p2)
+		effect:AddMove(path, FULL_DELAY)
+		Board:AddEffect(effect)
+		
+	]], p1:GetString(), p2:GetString())
+	ret:AddDamage(refund)
+
 	return ret
 end
+
+-- Restore uses each turn
+function StarWars_Stomp:GetPassiveSkillEffect_NextTurnHook(mission)
+	for pId = 0, 2 do
+		-- Board:GetPawn() is nil here for some reason
+		local pawn = Game:GetPawn(pId)
+		-- for some reason this is nil sometimes in a mission?
+		if pawn then
+			LOG("PID "..pId .. ", pawn " .. tostring(pawn:GetType()))
+			local weapons = pawn:GetBaseWeaponTypes()
+			for wIdx = 1, 2 do
+				local weaponId = weapons[wIdx]
+				if weaponId and weaponId:find("StarWars_Stomp") then
+					LOG("FOUND WEAPOIN ID " .. weaponId .. " for pawn " .. pId)
+					pawn:SetWeaponLimitedRemaining(wIdx, pawn:GetWeaponLimitedUses(wIdx))
+				end
+			end
+		else
+			LOG("PID "..pId .. ", pawn is nil")
+		end
+	end
+end
+
+-- Register the passive effect
+local passiveEffect = mod.libs.passiveEffect
+passiveEffect:addPassiveEffect(
+	"StarWars_Stomp",
+	{
+		"nextTurnHook",
+	},
+	true  -- Not passive only
+)
