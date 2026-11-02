@@ -64,7 +64,7 @@ if isNewestVersion then
 	end
 
 	function BoardUtils.isPawnFlying(pawn)
-		return pawn:IsFlying() and not BoardUtils.hijackedFlying[pawn:GetId()]
+		return pawn:IsFlying() and not BoardUtils.isPawnHijackedFlying(pawn)
 	end
 
 	-- Helper for building the common "allow this if a condition is met, otherwise

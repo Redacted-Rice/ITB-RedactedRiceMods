@@ -42,5 +42,6 @@ StarWars_ATATMech = Pawn:new{
 	Massive = true,
 	Armor = true,
 	Flying = false,
+	IgnoreLiquid = true,
 	IgnoreSmoke = true,
 }
