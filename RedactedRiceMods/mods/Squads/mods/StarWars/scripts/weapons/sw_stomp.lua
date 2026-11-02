@@ -36,6 +36,28 @@ StarWars_Stomp_AB = StarWars_Stomp_A:new{
 	Limited = 3,
 }
 
+function StarWars_Stomp:reactivateAfter(pawn)
+	if not pawn or pawn:IsDead() then
+		return
+	end
+
+	-- Set it to active so it can attack again and re-select it for convinence
+	pawn:SetActive(true)
+	Game:SetSelectedPawn(pawn)
+
+	-- If we have more uses left, set it to the active weapon too so we can easily
+	-- chain move + attack
+	local weapons = pawn:GetBaseWeaponTypes()
+	for wIdx = 1, 2 do
+		local weaponId = weapons[wIdx]
+		if weaponId and weaponId:find("StarWars_Stomp") then
+			if pawn:GetWeaponLimitedRemaining(wIdx) > 0 then
+				pawn:SetArmedWeaponId(wIdx)
+			end
+		end
+	end
+end
+
 function StarWars_Stomp:GetTargetArea(point)
 	local ret = PointList()
 	for dir = DIR_START, DIR_END do
@@ -74,9 +96,7 @@ function StarWars_Stomp:GetSkillEffect(p1, p2)
 
 		local pawn = Board:GetPawn(p1)
 		modApi:runLater(function()
-			if pawn and not pawn:IsDead() then
-				pawn:SetActive(true)
-			end
+			StarWars_Stomp:reactivateAfter(pawn)
 		end)
 
 		local effect = SkillEffect()
@@ -85,7 +105,7 @@ function StarWars_Stomp:GetSkillEffect(p1, p2)
 		path:push_back(p2)
 		effect:AddMove(path, FULL_DELAY)
 		Board:AddEffect(effect)
-		
+
 	]], p1:GetString(), p2:GetString())
 	ret:AddDamage(refund)
 
