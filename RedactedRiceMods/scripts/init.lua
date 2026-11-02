@@ -23,6 +23,7 @@ local libs = {
 	-- artilleryArc functions a bit differently and is intentionally excluded here
 	"weaponArmed",
 	"boardUtils",
+	"ignoreLiquid",
 	"damageModifierLib",
 	"pawnTypeUtils",
 	"passiveEffect",
