@@ -40,8 +40,40 @@ StarWars_ATATMech = Pawn:new{
 	DefaultTeam = TEAM_PLAYER,
 	ImpactMaterial = IMPACT_METAL,
 	Massive = true,
-	Armor = true,
+	Armor = false,
 	Flying = false,
 	IgnoreLiquid = true,
 	IgnoreSmoke = true,
+	-- Used for our custom mechFORGE upgrade
+	ArmoredType = "StarWars_ATATMech_Armored",
+	UnarmoredType = "StarWars_ATATMech",
 }
+
+-- Create the armored variation as the same as the original just with the
+-- Armor flag set to true. Note this points to the original pawn still so
+-- when we add the functions below, they will also be available to this
+-- copy
+StarWars_ATATMech_Armored = StarWars_ATATMech:new{
+	Armor = true,
+}
+
+function StarWars_ATATMech.SetArmoredPawnType(pawn, armored)
+	if not pawn then
+		return
+	end
+	pawn:SetType(armored and StarWars_ATATMech.ArmoredType or StarWars_ATATMech.UnarmoredType)
+end
+
+function StarWars_ATATMech.RegisterArmoredUpgrade(mechType)
+	mech_forge:registerMechUpgrade(mechType, mech_forge.VANILLA_UPGRADES.MOVE, "Armored",
+		function(_, pawn)
+			StarWars_ATATMech.SetArmoredPawnType(pawn, true)
+		end,
+		function(_, pawn)
+			StarWars_ATATMech.SetArmoredPawnType(pawn, false)
+		end
+	)
+end
+
+StarWars_ATATMech.RegisterArmoredUpgrade("StarWars_ATATMech")
+StarWars_ATATMech.RegisterArmoredUpgrade("StarWars_ATATMech_Armored")

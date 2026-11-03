@@ -6,8 +6,10 @@ local mod = {
 	modApiVersion = "2.9.5",
 	gameVersion = "1.2.93",
 	dependencies = {
-        modApiExt = "1.24",
-    },
+		modApiExt = "1.24",
+		redactedrice_mech_forge = "1.0.0",
+		redactedrice_memhack = "1.4.1",
+	},
 	libs = {}
 }
 
