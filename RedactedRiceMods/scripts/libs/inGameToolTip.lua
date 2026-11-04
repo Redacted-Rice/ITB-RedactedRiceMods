@@ -27,7 +27,7 @@ if isNewestVersion then
 	InGameToolTip.DEFAULT_BODY_FONT_PATH = "fonts/NunitoSans_Regular.ttf"
 
 	InGameToolTip._defaultWidget = nil
-	InGameToolTip._boxSpecs = {}
+	InGameToolTip._boxSpecs = InGameToolTip._boxSpecs or {}
 	InGameToolTip._boxUiByName = {}
 
 	-- Sets the font of a text widget
@@ -43,10 +43,6 @@ if isNewestVersion then
 
 	-- Creates a widget to use for the tool tip based on the passed options or defaults if not supplied
 	function InGameToolTip:createWidget(options)
-		if not UiTooltip or not UiWrappedText or not sdlext or not deco then
-			return nil
-		end
-
 		options = options or {}
 		local titlePt = options.titlePt or InGameToolTip.DEFAULT_TITLE_PT
 		local bodyPt = options.bodyPt or InGameToolTip.DEFAULT_BODY_PT
@@ -89,7 +85,8 @@ if isNewestVersion then
 		end
 	end
 
-	-- Sets the text of the tip and whether it is static (i.e. follows the cursor)
+	-- Sets the text of the tip and whether it is static (non-static follows the cursor)
+	-- static defaults to true
 	function InGameToolTip:_setTipContent(ui, body, title, static)
 		ui:settooltip(body or "", title or "", static ~= false)
 	end
@@ -177,17 +174,38 @@ if isNewestVersion then
 		return w, h
 	end
 
+	function InGameToolTip:_syncBoxesTable(spec, loc, w, h)
+		local sync = spec._boxesSync
+		if sync
+			and sync.x == loc.x
+			and sync.y == loc.y
+			and sync.w == w
+			and sync.h == h
+		then
+			return
+		end
+		Boxes[spec.box] = Rect2D(loc, Point(w, h))
+		spec._boxesSync = { x = loc.x, y = loc.y, w = w, h = h }
+	end
+
 	function InGameToolTip:_specScreenRect(spec)
 		if spec.loc and Location and Location[spec.loc] then
 			local loc = Location[spec.loc]
 			local w, h = InGameToolTip:_boxDimensions(spec.box)
 			w, h = w or 1, h or 1
-			if Boxes and Rect2D and Point then
-				Boxes[spec.box] = Rect2D(loc, Point(w, h))
-			end
+			InGameToolTip:_syncBoxesTable(spec, loc, w, h)
 			return loc.x, loc.y, w, h
 		end
 		return InGameToolTip:_getBoxScreenRect(spec.box)
+	end
+
+	function InGameToolTip:_findBoxSpec(boxName)
+		for _, spec in ipairs(InGameToolTip._boxSpecs) do
+			if spec.box == boxName then
+				return spec
+			end
+		end
+		return nil
 	end
 
 	function InGameToolTip:_rectOnScreen(x, y, w, h)
@@ -282,7 +300,7 @@ if isNewestVersion then
 		return true
 	end
 
-	-- body/title once, or getContent each sync (not both)
+	-- body/title once, or getContent each sync (not both). options.static defaults to true
 	function InGameToolTip.forBox(box, loc, options)
 		options = options or {}
 		if not box then
@@ -291,6 +309,13 @@ if isNewestVersion then
 		end
 		if options.body and options.getContent then
 			LOG("InGameToolTip.forBox: pass body or getContent, not both")
+			return
+		end
+
+		local existing = InGameToolTip:_findBoxSpec(box)
+		if existing then
+			LOG("InGameToolTip.forBox: Duplicate registration for box "
+				.. tostring(box) .. ". Ignoring duplicate")
 			return
 		end
 
@@ -306,7 +331,7 @@ if isNewestVersion then
 		InGameToolTip:_tryCreateBoxOverlay(spec)
 	end
 
-	-- body/title once, or getContent each draw (not both)
+	-- body/title once, or getContent each draw (not both). options.static defaults to true
 	function InGameToolTip.forUiElement(ui, options)
 		options = options or {}
 		if not ui then
@@ -337,7 +362,7 @@ if isNewestVersion then
 		end
 
 		InGameToolTip:_setTipContent(ui, body, title, static)
-		return body ~= nil and body ~= ""
+		return true
 	end
 
 	function InGameToolTip._subscribeToEvents()
