@@ -24,13 +24,14 @@ local libs = {
 	"weaponArmed",
 	"boardUtils",
 	"damageModifierLib",
+	"inGameToolTip",
 	"pawnTypeUtils",
 	"passiveEffect",
 	"plusHelper",
 	"predictableRandom",
 	"trait",
 	"traitReplace",
-	-- tutorialTips functions a bit differently and is intentionally excluded here
+	"tutorialTips",
 	"weaponPreview",
 }
 
@@ -42,9 +43,8 @@ function mod:init(options)
 		self.libs[libId] = require(path.."libs/"..libId)
 	end
 
-	-- ArtilleryArc and TutorialTip behave a bit differently
+	-- artilleryArc functions a bit differently and is intentionally excluded above
 	require(path.."libs/artilleryArc")
-	self.libs["tutorialTips"] = require(path.."libs/tutorialTips")
 
     -- add modApiExt as well
 	self.libs.modApiExt = modapiext
