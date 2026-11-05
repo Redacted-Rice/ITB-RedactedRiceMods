@@ -1,12 +1,13 @@
 StarWars_Stomp = Skill:new{
 	Name = "Stomp",
-	Description = "2 uses per turn: stomp an adjacent tile for 1 damage, push it, then step into the tile if empty. Grants a free action.",
+	Description = "Instead of moving, stomp across the battlefield dealing 1 damage and pushing up to move speed times per turn."
+			.. " Free action but must be used before other actions",
 	Class = "Ranged",
 	Damage = 1,
 	PowerCost = 1,
 	Upgrades = 2,
-	UpgradeCost = {2, 1},
-	Limited = 2,
+	UpgradeCost = {3, 1},
+	ExtraUses = 0,
 	Icon = "weapons/artillery_sw_stomp.png",
 	LaunchSound = "/impact/generic/mech",
 	ImpactSound = "/impact/generic/explosion",
@@ -27,14 +28,56 @@ StarWars_Stomp_A = StarWars_Stomp:new{
 }
 
 Weapon_Texts.StarWars_Stomp_Upgrade2 = "+ Use"
-Weapon_Texts.StarWars_Stomp_B_UpgradeDescription = "3 uses per turn instead of 2"
+Weapon_Texts.StarWars_Stomp_B_UpgradeDescription = "+1 Stomp use per turn"
 StarWars_Stomp_B = StarWars_Stomp:new{
-	Limited = 3,
+	ExtraUses = 1,
 }
 
 StarWars_Stomp_AB = StarWars_Stomp_A:new{
-	Limited = 3,
+	ExtraUses = 1,
 }
+
+function StarWars_Stomp:getStompUsesForPawn(pawn, weaponId)
+	local move = pawn:GetMoveSpeed()
+	if move < 0 then
+		move = 0
+	end
+	-- Pull the extra uses based on the full weapon id to get the right value
+	-- Guard it with a 0 fallback just to be safe
+	local weapon = _G[weaponId]
+	local extraUses = (weapon and weapon.ExtraUses) or 0
+	return move + extraUses
+end
+
+function StarWars_Stomp:syncStompForPawn(pawn)
+	if not pawn or pawn:IsDead() or not pawn:IsMech() then
+		return
+	end
+
+	local weapons = pawn:GetBaseWeaponTypes()
+	for wIdx = 1, 2 do
+		local weaponId = weapons[wIdx]
+		if weaponId and weaponId:find("StarWars_Stomp") and pawn:IsWeaponPowered(weaponId) then
+			local uses = self:getStompUsesForPawn(pawn, weaponId)
+			pawn:SetWeaponLimitedRemaining(wIdx, uses)
+			pawn:SetMovementSpent(true)
+		end
+	end
+end
+
+function StarWars_Stomp:syncStompForAllPlayerMechs()
+	if not Game or not Board or Board:IsTipImage() then
+		return
+	end
+	if Game:GetTeamTurn() ~= TEAM_PLAYER then
+		return
+	end
+
+	for pId = 0, 2 do
+		local pawn = Game:GetPawn(pId)
+		self:syncStompForPawn(pawn)
+	end
+end
 
 function StarWars_Stomp:reactivateAfter(pawn)
 	if not pawn or pawn:IsDead() then
@@ -112,26 +155,18 @@ function StarWars_Stomp:GetSkillEffect(p1, p2)
 	return ret
 end
 
--- Restore uses each turn
+function StarWars_Stomp:GetPassiveSkillEffect_MissionStartHook(mission)
+	self:syncStompForAllPlayerMechs()
+end
+
+function StarWars_Stomp:GetPassiveSkillEffect_OnMissionNextPhaseCreated(prevMission, nextMission)
+	modApi:runLater(function()
+		StarWars_Stomp:syncStompForAllPlayerMechs()
+	end)
+end
+
 function StarWars_Stomp:GetPassiveSkillEffect_NextTurnHook(mission)
-	for pId = 0, 2 do
-		-- Board:GetPawn() is nil here for some reason
-		local pawn = Game:GetPawn(pId)
-		-- for some reason this is nil sometimes in a mission?
-		if pawn then
-			LOG("PID "..pId .. ", pawn " .. tostring(pawn:GetType()))
-			local weapons = pawn:GetBaseWeaponTypes()
-			for wIdx = 1, 2 do
-				local weaponId = weapons[wIdx]
-				if weaponId and weaponId:find("StarWars_Stomp") then
-					LOG("FOUND WEAPOIN ID " .. weaponId .. " for pawn " .. pId)
-					pawn:SetWeaponLimitedRemaining(wIdx, pawn:GetWeaponLimitedUses(wIdx))
-				end
-			end
-		else
-			LOG("PID "..pId .. ", pawn is nil")
-		end
-	end
+	self:syncStompForAllPlayerMechs()
 end
 
 -- Register the passive effect
@@ -139,6 +174,8 @@ local passiveEffect = mod.libs.passiveEffect
 passiveEffect:addPassiveEffect(
 	"StarWars_Stomp",
 	{
+		"missionStartHook",
+		"onMissionNextPhaseCreated",
 		"nextTurnHook",
 	},
 	true  -- Not passive only
