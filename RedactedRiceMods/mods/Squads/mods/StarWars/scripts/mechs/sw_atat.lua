@@ -57,6 +57,8 @@ StarWars_ATATMech_Armored = StarWars_ATATMech:new{
 	Armor = true,
 }
 
+Weapon_Texts.StarWars_ATAT_Armored_Tooltip = "Mech gains Armor"
+
 function StarWars_ATATMech.SetArmoredPawnType(pawn, armored)
 	if not pawn then
 		return
@@ -65,14 +67,16 @@ function StarWars_ATATMech.SetArmoredPawnType(pawn, armored)
 end
 
 function StarWars_ATATMech.RegisterArmoredUpgrade(mechType)
-	mech_forge:registerMechUpgrade(mechType, mech_forge.VANILLA_UPGRADES.MOVE, "Armored",
-		function(_, pawn)
+	mech_forge:registerMechUpgrade(mechType, mech_forge.VANILLA_UPGRADES.MOVE, {
+		label = "Armored",
+		tooltip = "StarWars_ATAT_Armored_Tooltip",
+		onPowered = function(_, pawn)
 			StarWars_ATATMech.SetArmoredPawnType(pawn, true)
 		end,
-		function(_, pawn)
+		onUnpowered = function(_, pawn)
 			StarWars_ATATMech.SetArmoredPawnType(pawn, false)
-		end
-	)
+		end,
+	})
 end
 
 StarWars_ATATMech.RegisterArmoredUpgrade("StarWars_ATATMech")
