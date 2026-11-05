@@ -7,6 +7,7 @@ StarWars_Stomp = Skill:new{
 	PowerCost = 1,
 	Upgrades = 2,
 	UpgradeCost = {3, 1},
+	Limited = 1,
 	ExtraUses = 0,
 	Icon = "weapons/artillery_sw_stomp.png",
 	LaunchSound = "/impact/generic/mech",

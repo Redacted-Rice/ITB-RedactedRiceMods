@@ -136,7 +136,7 @@ local function addExplosionEffects(ret, spaces, damage, isAdj)
 			local terrain = Board:GetTerrain(space)
 			if isAdj then
 				-- if its not liquid, ice or a hole, we likely will make it rubble
-				if not BoardUtils.isLiquid(terrain) and terrain ~= TERRAIN_ICE and and terrain ~= TERRAIN_HOLE then
+				if not BoardUtils.isLiquid(terrain) and terrain ~= TERRAIN_ICE and terrain ~= TERRAIN_HOLE then
 					-- If its not a building, then make it mountain rubble. Either way make it have fire now
 					if terrain ~= TERRAIN_BUILDING then
 						sd.iTerrain = TERRAIN_RUBBLE
