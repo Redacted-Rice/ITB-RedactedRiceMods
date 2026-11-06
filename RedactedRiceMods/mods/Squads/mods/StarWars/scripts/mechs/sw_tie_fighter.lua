@@ -29,6 +29,23 @@ a.sw_tiefighter_broken =  a.MechUnit:new{Image = "units/player/sw_tie_fighter.pn
 a.sw_tiefighterw_broken = a.MechUnit:new{Image = "units/player/sw_tie_fighter.png", PosX = -19, PosY = -15 }
 a.sw_tiefighter_ns =      a.MechIcon:new{Image = "units/player/sw_tie_fighter_ns.png" }
 
+-- Create an animation for the tie fighter wreck on the ground
+-- TODO later: update when I make the image
+modApi:appendAsset(
+	"img/combat/sw_tie_fighter_rubble.png",
+	mod.resourcePath .. "img/mechs/sw_tie_fighter.png"
+)
+modApi:createAnimations{
+	sw_tie_fighter_rubble_anim = {
+		Image = "combat/sw_tie_fighter_rubble.png",
+		NumFrames = 1,
+		Loop = true,
+		Layer = LAYER_FLOOR,
+		-- TODO later: set these for the image I use
+		PosX = -28,
+		PosY = 1,
+	},
+}
 
 local baseType = "StarWars_TIEFighterMech"
 
@@ -48,7 +65,7 @@ StarWars_TIEFighterMech = Pawn:new{
 }
 
 Weapon_Texts.StarWars_TIEFighter_AssemblyLineA_Tooltip =
-		"When killed, deploy a new TIE Fighter to a random space (with the same pilot). Stacks"
+		"When killed, deploy a new TIE Fighter with a clone of the same pilot to a random space. Stacks"
 Weapon_Texts.StarWars_TIEFighter_AssemblyLineB_Tooltip =
 		Weapon_Texts.StarWars_TIEFighter_AssemblyLineA_Tooltip
 
@@ -101,6 +118,43 @@ function StarWars_TIEFighterMech.getAssemblyUsesRemaining(pawn)
 	return math.max(0, max - used)
 end
 
+-- Pilot names are only allowed to be 14. If you force it longer,
+-- it just shows the "second line" 
+StarWars_TIEFighterMech.MAX_PILOT_DISPLAY_NAME_LEN = 14
+
+function StarWars_TIEFighterMech.assemblyLineRenamePilotForNewChassis(pawn)
+	local pilot = pawn and pawn:GetPilot()
+	if not pilot then
+		return
+	end
+	local current = pilot:getNameStr() or ""
+	local base, numStr = string.match(current, "^(.*) #(%d+)$")
+	local newNum
+	if numStr then
+		newNum = tonumber(numStr, 10) + 1
+	else
+		base = current
+		newNum = 2
+	end
+
+	-- Add the suffix and see if it fits
+	local suffixPlain = string.format(" #%d", newNum)
+	local newName = base .. suffixPlain
+	if #newName <= StarWars_TIEFighterMech.MAX_PILOT_DISPLAY_NAME_LEN then
+		pilot:setName(newName)
+		return
+	end
+
+	-- if it doesn't fit, truncate the base down and add a "." too
+	local suffixDot = string.format(". #%d", newNums)
+	local maxBase = StarWars_TIEFighterMech.MAX_PILOT_DISPLAY_NAME_LEN - #suffixDot
+	if maxBase < 1 then
+		maxBase = 1
+	end
+	newName = string.sub(base, 1, maxBase) .. suffixDot
+	pilot:setName(newName)
+end
+
 function StarWars_TIEFighterMech.tryAssemblyLineRespawn(mission, pawn)
 	if not Board or Board:IsTipImage() then
 		return
@@ -142,15 +196,12 @@ function StarWars_TIEFighterMech.tryAssemblyLineRespawn(mission, pawn)
 		pawn:SetSpace(dest)
 		pawn:Fall(0)
 		pawn:SetHealth(pawn:GetMaxHealth())
+		StarWars_TIEFighterMech.assemblyLineRenamePilotForNewChassis(pawn)
 		Board:AddAlert(dest, "ASSEMBLY LINE")
 		Board:Ping(dest, GL_Color(180, 180, 180))
 
-		local wreck = PAWN_FACTORY:CreatePawn(baseType)
-		Board:AddPawn(wreck, deathTile)
-		-- Seems to default to no corpse on creation so set it
-		wreck:SetCorpse(true)
-		wreck:SetHealth(0)
-		wreck:SetMaxHealth(0)
+		-- Add a wreck to where it came from
+		Board:AddAnimation(deathTile, "sw_tie_fighter_rubble_anim", ANIM_NO_DELAY)
 	end)
 end
 
