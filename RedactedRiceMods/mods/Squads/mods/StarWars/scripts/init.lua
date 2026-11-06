@@ -142,6 +142,7 @@ function mod:load(options, version)
 	end
 
 	StarWarsAchievements:addHooks()
+	StarWars_TIEFighterMech.RegisterHooks()
 end
 
 return mod

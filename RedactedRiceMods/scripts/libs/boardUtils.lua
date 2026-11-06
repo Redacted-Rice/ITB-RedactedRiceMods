@@ -810,10 +810,26 @@ if isNewestVersion then
 		if Board:IsEnvironmentDanger(point) then
 			return false
 		end
+		if Board:IsFire(point) then
+			return false
+		end
 		if Board:IsAcid(point) then
 			return false
 		end
 		return true
+	end
+
+	function BoardUtils.pickRandomSafeSpawnTile(pathing, randSalt)
+		local choices = BoardUtils.getSafeSpawnTiles(pathing)
+		if #choices == 0 then
+			return nil
+		end
+		if randSalt ~= nil then
+			local index = PredictableRandom:getNextValue(
+				"BoardUtils.pickRandomSafeSpawnTile", 1, #choices, randSalt)
+			return choices[index]
+		end
+		return choices[math.random(#choices)]
 	end
 
 	function BoardUtils.getSafeSpawnTiles(pathing)
