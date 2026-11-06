@@ -3,6 +3,8 @@ local mechPath = resourcePath .. "img/mechs/"
 
 local scriptPath = mod_loader.mods[modApi.currentMod].scriptPath
 local mod = modApi:getCurrentMod()
+local modTable = mod_loader.mods[modApi.currentMod]
+local boardUtils = modTable.libs.boardUtils
 
 local squadColors = modApi:getPaletteImageOffset("starwars_empire_color")
 
@@ -28,6 +30,8 @@ a.sw_tiefighterw_broken = a.MechUnit:new{Image = "units/player/sw_tie_fighter.pn
 a.sw_tiefighter_ns =      a.MechIcon:new{Image = "units/player/sw_tie_fighter_ns.png" }
 
 
+local baseType = "StarWars_TIEFighterMech"
+
 StarWars_TIEFighterMech = Pawn:new{
 	Name = "TIE Fighter",
 	Class = "Brute",
@@ -42,3 +46,149 @@ StarWars_TIEFighterMech = Pawn:new{
 	Massive = true,
 	Flying = true,
 }
+
+Weapon_Texts.StarWars_TIEFighter_AssemblyLineA_Tooltip =
+		"When killed, deploy a new TIE Fighter to a random space (with the same pilot). Stacks"
+Weapon_Texts.StarWars_TIEFighter_AssemblyLineB_Tooltip =
+		Weapon_Texts.StarWars_TIEFighter_AssemblyLineA_Tooltip
+
+mech_forge:registerMechUpgrade(baseType, mech_forge.VANILLA_UPGRADES.HEALTH, {
+	label = "Assembly Line A",
+	tooltip = "StarWars_TIEFighter_AssemblyLineA_Tooltip",
+})
+mech_forge:registerMechUpgrade(baseType, mech_forge.VANILLA_UPGRADES.MOVE, {
+	label = "Assembly Line B",
+	tooltip = "StarWars_TIEFighter_AssemblyLineB_Tooltip",
+})
+
+function StarWars_TIEFighterMech.isTieFighter(pawn)
+	return pawn and pawn:GetType() == baseType
+end
+
+function StarWars_TIEFighterMech.initGameSaveData()
+	GAME = GAME or {}
+	GAME.starwars = GAME.starwars or {}
+	GAME.starwars.assembly_line = GAME.starwars.assembly_line or {}
+	GAME.starwars.assembly_line.uses = GAME.starwars.assembly_line.uses or {}
+end
+
+function StarWars_TIEFighterMech.resetAssemblyLineUses()
+	StarWars_TIEFighterMech.initGameSaveData()
+	GAME.starwars.assembly_line.uses = {}
+end
+
+function StarWars_TIEFighterMech.determinMaxAssemblyLineUses(pawn)
+	if not StarWars_TIEFighterMech.isTieFighter(pawn) then
+		return 0
+	end
+	local max = 0
+	if mech_forge:isMechUpgradePowered(pawn, mech_forge.VANILLA_UPGRADES.HEALTH) then
+		max = max + 1
+	end
+	if mech_forge:isMechUpgradePowered(pawn, mech_forge.VANILLA_UPGRADES.MOVE) then
+		max = max + 1
+	end
+	return max
+end
+
+function StarWars_TIEFighterMech.getAssemblyUsesRemaining(pawn)
+	if not pawn then
+		return 0
+	end
+	StarWars_TIEFighterMech.initGameSaveData()
+	local max = StarWars_TIEFighterMech.determinMaxAssemblyLineUses(pawn)
+	local used = GAME.starwars.assembly_line.uses[pawn:GetId()] or 0
+	return math.max(0, max - used)
+end
+
+function StarWars_TIEFighterMech.tryAssemblyLineRespawn(mission, pawn)
+	if not Board or Board:IsTipImage() then
+		return
+	end
+
+	if not StarWars_TIEFighterMech.isTieFighter(pawn) then
+		return
+	end
+
+	local pawnId = pawn:GetId()
+	StarWars_TIEFighterMech.initGameSaveData()
+	if StarWars_TIEFighterMech.getAssemblyUsesRemaining(pawn) <= 0 then
+		return
+	end
+
+	-- Delay so other death effects can resolve first (e.g. Rebel Hope)
+	modApi:runLater(function()
+		if not Board then
+			return
+		end
+		local deadPawn = Board:GetPawn(pawnId)
+		if not deadPawn or not deadPawn:IsDead() then
+			return
+		end
+		StarWars_TIEFighterMech.initGameSaveData()
+		if StarWars_TIEFighterMech.getAssemblyUsesRemaining(deadPawn) <= 0 then
+			return
+		end
+
+		local dest = BoardUtils.pickRandomSafeSpawnTile(PATH_FLYER, pawnId)
+		if not dest then
+			return
+		end
+
+		-- Save the location so we can add a wreck there
+		local deathTile = deadPawn:GetSpace()
+
+		GAME.starwars.assembly_line.uses[pawnId] = (GAME.starwars.assembly_line.uses[pawnId] or 0) + 1
+		pawn:SetSpace(dest)
+		pawn:Fall(0)
+		pawn:SetHealth(pawn:GetMaxHealth())
+		Board:AddAlert(dest, "ASSEMBLY LINE")
+		Board:Ping(dest, GL_Color(180, 180, 180))
+
+		local wreck = PAWN_FACTORY:CreatePawn(baseType)
+		Board:AddPawn(wreck, deathTile)
+		-- Seems to default to no corpse on creation so set it
+		wreck:SetCorpse(true)
+		wreck:SetHealth(0)
+		wreck:SetMaxHealth(0)
+	end)
+end
+
+modTable.libs.traitReplace:addStateful{
+	targetTrait = "massive",
+	func = function(trait, pawn)
+		if not StarWars_TIEFighterMech.isTieFighter(pawn) then
+			return 0
+		end
+		local max = StarWars_TIEFighterMech.determinMaxAssemblyLineUses(pawn)
+		if max <= 0 then
+			return 0
+		end
+		local remaining = StarWars_TIEFighterMech.getAssemblyUsesRemaining(pawn)
+		if remaining <= 0 then
+			return 2
+		end
+		return 1
+	end,
+	states = {
+		{
+			icon = "img/combat/icons/icon_sw_assembly_line.png",
+			desc_title = "Assembly Line",
+			desc_text = function(pawn)
+				local remaining = StarWars_TIEFighterMech.getAssemblyUsesRemaining(pawn)
+				return string.format("%d TIE Fighters on standby", remaining)
+			end,
+		},
+		{
+			icon = "img/combat/icons/icon_sw_assembly_line_used.png",
+			desc_title = "Assembly Line (Depleted)",
+			desc_text = "No more TIE Fighters remaining",
+		},
+	},
+}
+
+function StarWars_TIEFighterMech.RegisterHooks()
+	modApi:addMissionStartHook(StarWars_TIEFighterMech.resetAssemblyLineUses)
+	modApi:addMissionNextPhaseCreatedHook(StarWars_TIEFighterMech.resetAssemblyLineUses)
+	modapiext:addPawnKilledHook(StarWars_TIEFighterMech.tryAssemblyLineRespawn)
+end
