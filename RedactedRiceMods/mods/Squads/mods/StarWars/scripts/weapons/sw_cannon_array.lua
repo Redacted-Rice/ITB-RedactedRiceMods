@@ -195,12 +195,10 @@ function StarWars_CannonArray:GetFinalEffect(p1, p2, p3)
 		end
 	end
 	
-	-- Show the path with no delay for preview
 	local pawnId = pawn:GetId()
-	BoardUtils.addForcedMove(ret, path, NO_DELAY, pawnId)
+	local tileSnapshots, pawnSnapshot = MoveThrough.buildPathSnapshots(path, pawn)
 	
 	-- Move through path one space at a time, firing at each position
-	local lastPos = p1
 	for i = 1, path:size() do
 		local newPos = path:index(i)
 		
@@ -209,12 +207,16 @@ function StarWars_CannonArray:GetFinalEffect(p1, p2, p3)
 		
 		-- Fire from current position
 		self:FireFromPositionInDirection(ret, newPos, fireDir)
+
+		MoveThrough.afterStepLeaveTile(ret, pawnId, i > 1 and path:index(i - 1) or nil,
+				newPos, i == path:size(), pawnSnapshot, tileSnapshots)
 		
 		-- Add small delay between positions
 		if i < path:size() then
 			ret:AddDelay(0.1)
 		end
 	end
+
 	return ret
 end
 
