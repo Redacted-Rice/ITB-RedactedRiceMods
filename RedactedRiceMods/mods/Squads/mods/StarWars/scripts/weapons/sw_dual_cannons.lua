@@ -207,8 +207,7 @@ function StarWars_DualCannons:GetFinalEffect(p1, p2, p3)
 		end
 	end
 
-	-- Show the path
-	BoardUtils.addForcedMove(ret, path, NO_DELAY)
+	local tileSnapshots, pawnSnapshot = MoveThrough.buildPathSnapshots(path, pawn)
 
 	-- Move through path, firing at each position (ALWAYS fires, not just at enemies)
 	local pawnId = pawn:GetId()
@@ -221,11 +220,15 @@ function StarWars_DualCannons:GetFinalEffect(p1, p2, p3)
 		-- Fire from current position at ALL adjacent spaces
 		self:FireFromPositionInDirection(ret, newPos, fireDir)
 
+		MoveThrough.afterStepLeaveTile(ret, pawnId, i > 1 and path:index(i - 1) or nil,
+				newPos, i == path:size(), pawnSnapshot, tileSnapshots)
+
 		-- Add small delay between positions
 		if i < path:size() then
 			ret:AddDelay(0.1)
 		end
 	end
+
 	return ret
 end
 
