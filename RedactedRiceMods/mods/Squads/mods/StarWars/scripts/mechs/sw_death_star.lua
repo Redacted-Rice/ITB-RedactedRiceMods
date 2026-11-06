@@ -49,127 +49,6 @@ ANIMS.StarWars_PrimingLaser_Anim = Animation:new{
 		PASS_DELAY, PASS_DELAY, PASS_DELAY, PASS_DELAY, PASS_DELAY},
 }
 
--- Death Star custom repair: Orbital Strike that recharges weapons
-StarWars_DeathStar_Repair = Skill:new{
-	Name = "Priming Laser",
-	Description = "Deal 1 damage to any tile on the board and gain a charge for the Auxiliary Superlaser.",
-	Icon = "weapons/repair.png",
-	Class = "Science",
-	PowerCost = 0,
-	Upgrades = 0,
-	TipImage = {
-		CustomPawn = "StarWars_DeathStarMech",
-		Unit = Point(2, 2),
-		Enemy = Point(2, 1),
-		Target = Point(2, 1),
-	},
-	LaunchSound = "/weapons/confusion",
-	ImpactSound = "/weapons/localized_explosion",
-}
-
-function StarWars_DeathStar_Repair:GetTargetArea(point)
-	local ret = PointList()
-
-	-- Can target any valid space on the board
-	local size = Board:GetSize()
-	for x = 0, size.x - 1 do
-		for y = 0, size.y - 1 do
-			local p = Point(x, y)
-			if Board:IsValid(p) then
-				ret:push_back(p)
-			end
-		end
-	end
-	return ret
-end
-
-function StarWars_DeathStar_Repair:GetSkillEffect(p1, p2)
-	local ret = SkillEffect()
-
-	-- pause for effect
-
-	-- Turbo cannon
-	--mech_prime_skill_burst_beam.wav
-	--mech_brute_skill_ricochet.wav
-	-- TODO: Continue here
-	--mech_science_push_beam.wav
-	
-	--mech_brute_bulk_move_01.wav (overdrive)
-	-- mech_science_skill_area_shield.wav
-
-	-- Priming laser
-	--damage.sSound = "/impact/generic/tractor_beam"
-	--mech_science_skill_enhanced_tractor.wav
-	-- forceswap
-	--mech_support_skill_confusion.wav
-
-	--mech_science_skill_fire_beam.wav
-	--mech_science_skill_rainingfire.wav
-
-	--mech_support_skill_refrigerate.wav
-	--prop_final_ground_break.wav
-
-
-	ret:AddSound("/weapons/confusion")
-	ret:AddDelay(INTRO_FRAMES / 2 * PASS_DELAY)
-	ret:AddScript([[
-		Board:AddAnimation(]] .. p2:GetString() .. [[, "StarWars_PrimingLaser_Anim", 1)
-	]])
-	ret:AddDelay(INTRO_FRAMES * PASS_DELAY)
-
-	-- Deal 1 damage to the target
-	ret:AddSound(self.ImpactSound)
-	local damage = SpaceDamage(p2, 1)
-	damage.sAnimation = "ExploArt1"
-	ret:AddDamage(damage)
-	ret:AddBounce(p2, 2)
-	-- Recharge the Auxiliary Superlaser
-	for pId = 0, 2 do
-		-- Board:GetPawn() is nil here for some reason
-		local pawn = Game:GetPawn(pId)
-		-- for some reason this is nil sometimes in a mission?
-		if pawn then
-			LOG("PID "..pId .. ", pawn " .. tostring(pawn:GetType()))
-			local weapons = pawn:GetBaseWeaponTypes()
-			for wIdx = 1, 2 do
-				local weaponId = weapons[wIdx]
-				if weaponId and weaponId:find("StarWars_AuxiliarySuperlaser") then
-					LOG("FOUND WEAPOIN ID " .. weaponId .. " for pawn " .. pId)
-					ret:AddScript(string.format([[
-						local pawn = Board:GetPawn(%d)
-						local wIdx = %d
-						pawn:SetWeaponLimitedRemaining(wIdx, pawn:GetWeaponLimitedRemaining(wIdx) + 1)
-
-						for i = 0, 7 do
-							for j = 0, 7  do
-								local point = Point(i,j)
-								if Board:IsBuilding(point) and Board:GetHealth(point) > 0 then
-									Board:Ping(point, GL_Color(100, 100, 255))
-								end
-							end
-						end
-					]], pId, wIdx))
-					break
-				end
-			end
-		else
-			LOG("PID "..pId .. ", pawn is nil")
-		end
-	end
-	-- Pause for effect
-	ret:AddDelay(INTRO_FRAMES * PASS_DELAY)
-	return ret
-end
-
--- Register the custom repair skill for Death Star
-ReplaceRepair:addSkill{
-	name = "Priming Laser",
-	description = "Deal 1 damage to any tile and recharge weapons.",
-	weapon = "StarWars_DeathStar_Repair",
-	icon = "img/weapons/deathstar_repair.png",
-	mechType = "StarWars_DeathStarMech",
-}
-
 StarWars_DeathStarMech = Pawn:new{
 	Name = "Death Star",
 	Class = "Science",
@@ -188,4 +67,145 @@ StarWars_DeathStarMech = Pawn:new{
 	OrbitalAnim = "StarWars_DeathStarLaunch",
 	OrbitalSound = "/weapons/enhanced_tractor",
 	OrbitalIcon = true,
+
+	BASE_ALLY_RANGE = 2,
+}
+
+Weapon_Texts.StarWars_DeathStar_Capacitors_Tooltip =
+	"+1 damage to Priming Laser"
+Weapon_Texts.StarWars_DeathStar_Detectors_Tooltip =
+	"Doubles Priming Laser range from allies"
+
+mech_forge:registerMechUpgrade("StarWars_DeathStarMech", mech_forge.VANILLA_UPGRADES.HEALTH, {
+	label = "Capacitors",
+	tooltip = "StarWars_DeathStar_Capacitors_Tooltip",
+})
+mech_forge:registerMechUpgrade("StarWars_DeathStarMech", mech_forge.VANILLA_UPGRADES.MOVE, {
+	label = "Detectors",
+	tooltip = "StarWars_DeathStar_Detectors_Tooltip",
+})
+
+function StarWars_DeathStarMech.getPrimingDamage(pawn)
+	local damage = 1
+	if mech_forge:isMechUpgradePowered(pawn, mech_forge.VANILLA_UPGRADES.HEALTH) then
+		damage = damage + 1
+	end
+	return damage
+end
+
+function StarWars_DeathStarMech.getPrimingRange(pawn)
+	local move = 0
+	if pawn then
+		move = math.max(0, pawn:GetMoveSpeed())
+	end
+	local range = StarWars_DeathStarMech.BASE_ALLY_RANGE + move
+	if  mech_forge:isMechUpgradePowered(pawn, mech_forge.VANILLA_UPGRADES.MOVE) then
+		range = range * 2
+	end
+	return range
+end
+
+function StarWars_DeathStarMech.isTargetThatWillRecharge(point)
+	return Board:IsBuilding(point) or Board:IsPawnSpace(point)
+end
+
+StarWars_DeathStar_Repair = Skill:new{
+	Name = "Priming Laser",
+	Description = "Damage an object within 2 spaces of an ally (+ move) to recharge the Aux. Superlaser.",
+	Icon = "weapons/repair.png",
+	Class = "Science",
+	PowerCost = 0,
+	Upgrades = 0,
+	-- Not sure it matters but do it anyways
+	Orbital = true,
+	TipImage = {
+		CustomPawn = "StarWars_DeathStarMech",
+		Unit = Point(2, 2),
+		Enemy = Point(2, 1),
+		Target = Point(2, 1),
+	},
+	LaunchSound = "/weapons/confusion",
+	ImpactSound = "/weapons/localized_explosion",
+}
+
+function StarWars_DeathStar_Repair:GetTargetArea(point)
+	local ret = PointList()
+	local pawn = Board:GetPawn(point)
+	if not pawn then
+		return ret
+	end
+
+	-- Go through each ally and add any spaces within the range that aren't already present in the list
+	local range = StarWars_DeathStarMech.getPrimingRange(pawn)
+	local seen = {}
+	for _, allyId in ipairs(extract_table(Board:GetPawns(TEAM_PLAYER))) do
+		local ally = Board:GetPawn(allyId)
+		local allySpace = ally and ally:GetSpace()
+		if ally and allySpace and Board:IsValid(allySpace) and not ally:IsDead() then
+			for _, p in pairs(extract_table(general_DiamondTarget(allySpace, range))) do
+				BoardUtils.pushUniquePoint(ret, seen, p)
+			end
+		end
+	end
+	return ret
+end
+
+function StarWars_DeathStarMech.rechargeSuperlaserScript(pawnId, weaponIdx)
+	return string.format([[
+			local pawn = Board:GetPawn(%d)
+			if pawn then
+				local wIdx = %d
+				pawn:SetWeaponLimitedRemaining(wIdx, pawn:GetWeaponLimitedRemaining(wIdx) + 1)
+				for i = 0, 7 do
+					for j = 0, 7  do
+						local point = Point(i,j)
+						if Board:IsBuilding(point) and Board:GetHealth(point) > 0 then
+							Board:Ping(point, GL_Color(100, 100, 255))
+						end
+					end
+				end
+			end
+	]], pawnId, weaponIdx)
+end
+
+function StarWars_DeathStar_Repair:GetSkillEffect(p1, p2)
+	local ret = SkillEffect()
+	local pawn = Board:GetPawn(p1)
+	local damageAmount = StarWars_DeathStarMech.getPrimingDamage(pawn)
+
+	ret:AddSound("/weapons/confusion")
+	ret:AddDelay(INTRO_FRAMES / 2 * PASS_DELAY)
+	ret:AddScript([[
+		Board:AddAnimation(]] .. p2:GetString() .. [[, "StarWars_PrimingLaser_Anim", 1)
+	]])
+	ret:AddDelay(INTRO_FRAMES * PASS_DELAY)
+
+	ret:AddSound(self.ImpactSound)
+	local damage = SpaceDamage(p2, damageAmount)
+	damage.sAnimation = "ExploArt1"
+	ret:AddDamage(damage)
+	ret:AddBounce(p2, 2)
+
+	if StarWars_DeathStarMech.isTargetThatWillRecharge(p2) then
+		local weapons = pawn:GetBaseWeaponTypes()
+		for wIdx = 1, 2 do
+			local weaponId = weapons[wIdx]
+			if weaponId and weaponId:find("StarWars_AuxiliarySuperlaser") then
+				ret:AddScript(StarWars_DeathStarMech.rechargeSuperlaserScript(pawn:GetId(), wIdx))
+			end
+		end
+	end
+	-- Pause for effect
+
+	ret:AddDelay(INTRO_FRAMES * PASS_DELAY)
+	return ret
+end
+
+-- Register the custom repair skill for Death Star
+ReplaceRepair:addSkill{
+	name = "Priming Laser",
+	description = "Hit an object near an ally to recharge the Aux. Superlaser.",
+	weapon = "StarWars_DeathStar_Repair",
+	icon = "img/weapons/deathstar_repair.png",
+	mechType = "StarWars_DeathStarMech",
 }

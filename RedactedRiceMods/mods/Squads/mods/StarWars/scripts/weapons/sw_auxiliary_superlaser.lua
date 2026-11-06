@@ -8,15 +8,15 @@ local SECONDARY_BOUNCE_BASE = -12
 
 StarWars_AuxiliarySuperlaser = Skill:new{
 	Name = "Aux. Superlaser",
-	Description = "Instakills center tile and turns it to lava. Deals 3 damage adjacent, 1 damage beyond. Recharged by repair.",
+	Description = "Instakills center tile and turns it to lava. Adjacent splash is HP/3, outer splash is HP/7"
+			.. " (both round down). Recharged only if on Death Star by tis Priming Laser Replace Repair effect.",
 	Class = "Science",
 	PowerCost = 2,
 	Upgrades = 2,
 	UpgradeCost = {3, 2},
 	Orbital = true,
 	Limited = 1,
-	SplashDamage = 3,
-	SplashFurtherDamage = 1,
+	SplashBonus = 0,
 	ShakeBaseVal = 0.7,
 	BounceBaseVal = 30,
 	BounceDecay = 0.92,
@@ -57,8 +57,7 @@ local mod = mod_loader.mods[modApi.currentMod]
 Weapon_Texts.StarWars_AuxiliarySuperlaser_Upgrade1 = "+1 Damage"
 Weapon_Texts.StarWars_AuxiliarySuperlaser_A_UpgradeDescription = "+1 damage to all spaces"
 StarWars_AuxiliarySuperlaser_A = StarWars_AuxiliarySuperlaser:new{
-	SplashDamage = 4,
-	SplashFurtherDamage = 2,
+	SplashBonus = 1,
 }
 
 Weapon_Texts.StarWars_AuxiliarySuperlaser_Upgrade2 = "Extra Capacitors"
@@ -156,8 +155,16 @@ local function addExplosionEffects(ret, spaces, damage, isAdj)
 	end
 end
 
+function StarWars_AuxiliarySuperlaser:getSuperlaserSplashDamages(pawn)
+	local hp = pawn and pawn:GetMaxHealth() or 3
+	local bonus = self.SplashBonus
+	return math.floor(hp / 3) + bonus, math.floor(hp / 7) + bonus
+end
+
 function StarWars_AuxiliarySuperlaser:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
+	local pawn = Board:GetPawn(p1)
+	local splashAdj, splashFar = self:getSuperlaserSplash(pawn)
 
 	-- Delay firing for effect
 	ret:AddSound(self.LaunchSound)
@@ -195,14 +202,14 @@ function StarWars_AuxiliarySuperlaser:GetSkillEffect(p1, p2)
 		if pass <= maxExplosionPass and list_contains(explosionsInPasses[ADJACENT], pass) then
 			local damage = nil
 			if pass == addDamageInPass[ADJACENT] then
-				damage = self.SplashDamage
+				damage = splashAdj
 			end
 			addExplosionEffects(ret, adjacentSpaces, damage, true)
 		end
 		if pass <= maxExplosionPass and list_contains(explosionsInPasses[FURTHER], pass) then
 			local damage = nil
 			if pass == addDamageInPass[FURTHER] then
-				damage = self.SplashFurtherDamage
+				damage = splashFar
 			end
 			addExplosionEffects(ret, furtherSpaces, damage, false)
 		end
