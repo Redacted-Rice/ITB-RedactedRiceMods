@@ -12,6 +12,8 @@ local squadColors = modApi:getPaletteImageOffset("starwars_empire_color")
 local files = {
 	"sw_tie_fighter.png",
 	"sw_tie_fighter_a.png",
+	"sw_tie_fighterw_broken.png",
+	"sw_tie_fighter_broken.png",
 	"sw_tie_fighter_ns.png",
 	"sw_tie_fighter_h.png",
 }
@@ -25,8 +27,8 @@ end
 local a = ANIMS
 a.sw_tiefighter =         a.MechUnit:new{Image = "units/player/sw_tie_fighter.png", PosX = -19, PosY = -15 }
 a.sw_tiefightera =        a.MechUnit:new{Image = "units/player/sw_tie_fighter_a.png", PosX = -19, PosY = -15, NumFrames = 6 }
-a.sw_tiefighter_broken =  a.MechUnit:new{Image = "units/player/sw_tie_fighter.png", PosX = -19, PosY = -15 }
-a.sw_tiefighterw_broken = a.MechUnit:new{Image = "units/player/sw_tie_fighter.png", PosX = -19, PosY = -15 }
+a.sw_tiefighter_broken =  a.MechUnit:new{Image = "units/player/sw_tie_fighter_broken.png", PosX = -19, PosY = -15 }
+a.sw_tiefighterw_broken = a.MechUnit:new{Image = "units/player/sw_tie_fighterw_broken.png", PosX = -19, PosY = -15 }
 a.sw_tiefighter_ns =      a.MechIcon:new{Image = "units/player/sw_tie_fighter_ns.png" }
 
 -- Create an animation for the tie fighter wreck on the ground
