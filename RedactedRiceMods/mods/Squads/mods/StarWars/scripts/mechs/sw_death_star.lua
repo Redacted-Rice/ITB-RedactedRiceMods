@@ -71,18 +71,18 @@ StarWars_DeathStarMech = Pawn:new{
 	BASE_ALLY_RANGE = 2,
 }
 
-Weapon_Texts.StarWars_DeathStar_Capacitors_Tooltip =
-	"+1 damage to Priming Laser"
-Weapon_Texts.StarWars_DeathStar_Detectors_Tooltip =
-	"Doubles Priming Laser range from allies"
+modApi:setText("StarWars_DeathStar_Capacitors_Tooltip",
+		"When powered, Priming Laser deals 2 damage instead of 1 damage")
+modApi:setText("StarWars_DeathStar_Detectors_Tooltip",
+		"When powered, doubles Priming Laser range from allies. Applied after move bonuses")
 
 mech_forge:registerMechUpgrade("StarWars_DeathStarMech", mech_forge.VANILLA_UPGRADES.HEALTH, {
-	label = "Capacitors",
-	tooltip = "StarWars_DeathStar_Capacitors_Tooltip",
+		label = "Capacitors",
+		tooltip = "StarWars_DeathStar_Capacitors_Tooltip",
 })
 mech_forge:registerMechUpgrade("StarWars_DeathStarMech", mech_forge.VANILLA_UPGRADES.MOVE, {
-	label = "Detectors",
-	tooltip = "StarWars_DeathStar_Detectors_Tooltip",
+		label = "Detectors",
+		tooltip = "StarWars_DeathStar_Detectors_Tooltip",
 })
 
 function StarWars_DeathStarMech.getPrimingDamage(pawn)
@@ -109,9 +109,34 @@ function StarWars_DeathStarMech.isTargetThatWillRecharge(point)
 	return Board:IsBuilding(point) or Board:IsPawnSpace(point)
 end
 
+modApi:setText("StarWars_DeathStar_Repair_Description", memhack.getTextWrappers.basedOnSelectedPawn(function(pawn)
+	local damage = 1
+	local range = 2
+	local capacitors = false
+	local detectors = false
+	if pawn then
+		damage = StarWars_DeathStarMech.getPrimingDamage(pawn)
+		range = StarWars_DeathStarMech.getPrimingRange(pawn)
+		capacitors = mech_forge:isMechUpgradePowered(pawn, mech_forge.VANILLA_UPGRADES.HEALTH)
+		detectors = mech_forge:isMechUpgradePowered(pawn, mech_forge.VANILLA_UPGRADES.MOVE)
+	end
+	local desc = "Deal " .. damage .. " damage to a target within " .. range .. " spaces of an ally, draining"
+			.. " energy if its a pawn or building to recharge the Aux. Superlaser. Range scales with Mech's Move Speed."
+
+	if capacitors then
+		if detectors then
+			desc = desc .. " Currently boosted by Capacitors and Detectors."
+		else
+			desc = desc .. " Currently boosted by Capacitors."
+		end
+	elseif detectors then
+		desc = desc .. " Currently boosted by Detectors."
+	end
+	return desc
+end))
+
 StarWars_DeathStar_Repair = Skill:new{
 	Name = "Priming Laser",
-	Description = "Damage an object within 2 spaces of an ally (+ move) to recharge the Aux. Superlaser.",
 	Icon = "weapons/repair.png",
 	Class = "Science",
 	PowerCost = 0,
@@ -141,7 +166,7 @@ function StarWars_DeathStar_Repair:GetTargetArea(point)
 	for _, allyId in ipairs(extract_table(Board:GetPawns(TEAM_PLAYER))) do
 		local ally = Board:GetPawn(allyId)
 		local allySpace = ally and ally:GetSpace()
-		if ally and allySpace and Board:IsValid(allySpace) and not ally:IsDead() then
+		if ally and ally:GetId() ~= pawn:GetId() and allySpace and Board:IsValid(allySpace) and not ally:IsDead() then
 			for _, p in pairs(extract_table(general_DiamondTarget(allySpace, range))) do
 				BoardUtils.pushUniquePoint(ret, seen, p)
 			end

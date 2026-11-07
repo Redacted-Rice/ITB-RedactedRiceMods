@@ -76,8 +76,8 @@ _G[forgeTypes.Both] = _G[forgeTypes.Armored]:new{
 	IgnoreFire = true,
 }
 
-Weapon_Texts.StarWars_ATAT_Armored_Tooltip = "Mech gains Armor"
-Weapon_Texts.StarWars_ATAT_Insulated_Tooltip = "Mech is immune to fire"
+Weapon_Texts.StarWars_ATAT_Armored_Tooltip = "When Powered, AT-AT gains Armor"
+Weapon_Texts.StarWars_ATAT_Insulated_Tooltip = "When Powered, AT-AT is immune to fire"
 
 _G[baseType].isATATPawnType = function(mechType)
 	return mechType and mechType:sub(1, #baseType) == baseType

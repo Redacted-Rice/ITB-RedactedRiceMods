@@ -6,14 +6,22 @@ local PRIMARY_BOUNCE_BASE = 30
 -- Inward ripple (edge -> center)
 local SECONDARY_BOUNCE_BASE = -12
 
+modApi:setText("StarWars_AuxiliarySuperlaser_Description", memhack.getTextWrappers.basedOnSelectedPawn(function(pawn)
+	local hp = 10
+	if pawn then
+		hp = pawn:GetMaxHealth()
+	end
+	return "Instakills center tile and turns it to lava dealing splashdamage in a large area. Can be recharged by"
+			.. " Priming Laser when equipped on Death Star. Splash damage scales with Mech's HP."
+			.. " Adjacent splash damage is HP/3 (".. math.floor(hp / 3) .."), outer splash damage is HP/7 (".. math.floor(hp / 7) ..")"
+end))
+
 StarWars_AuxiliarySuperlaser = Skill:new{
 	Name = "Aux. Superlaser",
-	Description = "Instakills center tile and turns it to lava. Adjacent splash is HP/3, outer splash is HP/7"
-			.. " (both round down). Recharged only if on Death Star by tis Priming Laser Replace Repair effect.",
 	Class = "Science",
-	PowerCost = 2,
+	PowerCost = 1,
 	Upgrades = 2,
-	UpgradeCost = {3, 2},
+	UpgradeCost = {2, 2},
 	Orbital = true,
 	Limited = 1,
 	SplashBonus = 0,
@@ -79,20 +87,6 @@ function StarWars_AuxiliarySuperlaser:GetTargetArea(point)
 		end
 	end
 	return ret
-end
-
-local function getMaxManhattanDistanceFrom(center)
-	local size = Board:GetSize()
-	local maxDist = 0
-	for x = 0, size.x - 1 do
-		for y = 0, size.y - 1 do
-			local dist = center:Manhattan(Point(x, y))
-			if dist > maxDist then
-				maxDist = dist
-			end
-		end
-	end
-	return maxDist
 end
 
 local function getValidSpacesAtDistance(center, distance)
