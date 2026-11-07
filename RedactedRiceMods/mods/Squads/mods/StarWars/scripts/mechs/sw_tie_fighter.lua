@@ -27,15 +27,15 @@ end
 local a = ANIMS
 a.sw_tiefighter =         a.MechUnit:new{Image = "units/player/sw_tie_fighter.png", PosX = -19, PosY = -15 }
 a.sw_tiefightera =        a.MechUnit:new{Image = "units/player/sw_tie_fighter_a.png", PosX = -19, PosY = -15, NumFrames = 6 }
-a.sw_tiefighter_broken =  a.MechUnit:new{Image = "units/player/sw_tie_fighter_broken.png", PosX = -19, PosY = -15 }
-a.sw_tiefighterw_broken = a.MechUnit:new{Image = "units/player/sw_tie_fighterw_broken.png", PosX = -19, PosY = -15 }
+a.sw_tiefighter_broken =  a.MechUnit:new{Image = "units/player/sw_tie_fighter_broken.png", PosX = -20, PosY = -12 }
+a.sw_tiefighterw_broken = a.MechUnit:new{Image = "units/player/sw_tie_fighterw_broken.png", PosX = -21, PosY = -4 }
 a.sw_tiefighter_ns =      a.MechIcon:new{Image = "units/player/sw_tie_fighter_ns.png" }
 
 -- Create an animation for the tie fighter wreck on the ground
 -- TODO later: update when I make the image
 modApi:appendAsset(
 	"img/combat/sw_tie_fighter_rubble.png",
-	mod.resourcePath .. "img/mechs/sw_tie_fighter.png"
+	mod.resourcePath .. "img/combat/sw_tie_fighter_rubble.png"
 )
 modApi:createAnimations{
 	sw_tie_fighter_rubble_anim = {
@@ -44,8 +44,8 @@ modApi:createAnimations{
 		Loop = true,
 		Layer = LAYER_FLOOR,
 		-- TODO later: set these for the image I use
-		PosX = -28,
-		PosY = 1,
+		PosX = -18,
+		PosY = -5,
 	},
 }
 
