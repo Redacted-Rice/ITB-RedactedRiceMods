@@ -10,6 +10,8 @@ local squadColors = modApi:getPaletteImageOffset("starwars_empire_color")
 local files = {
 	"sw_atat.png",
 	"sw_atat_a.png",
+	"sw_atat_broken.png",
+	"sw_atatw_broken.png",
 	"sw_atat_ns.png",
 	"sw_atat_h.png",
 }
@@ -23,8 +25,8 @@ end
 local a = ANIMS
 a.sw_atat =         a.MechUnit:new{Image = "units/player/sw_atat.png", PosX = -14, PosY = -8 }
 a.sw_atata =        a.MechUnit:new{Image = "units/player/sw_atat_a.png", PosX = -14, PosY = -8, NumFrames = 6 }
-a.sw_atat_broken =  a.MechUnit:new{Image = "units/player/sw_atat.png", PosX = -14, PosY = -8 }
-a.sw_atatw_broken = a.MechUnit:new{Image = "units/player/sw_atat.png", PosX = -14, PosY = -8 }
+a.sw_atat_broken =  a.MechUnit:new{Image = "units/player/sw_atat_broken.png", PosX = -14, PosY = -8 }
+a.sw_atatw_broken = a.MechUnit:new{Image = "units/player/sw_atatw_broken.png", PosX = -14, PosY = -8 }
 a.sw_atat_ns =      a.MechIcon:new{Image = "units/player/sw_atat_ns.png" }
 
 
