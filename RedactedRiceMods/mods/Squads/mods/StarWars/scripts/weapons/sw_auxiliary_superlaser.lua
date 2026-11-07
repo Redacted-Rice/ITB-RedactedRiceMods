@@ -164,7 +164,7 @@ end
 function StarWars_AuxiliarySuperlaser:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
 	local pawn = Board:GetPawn(p1)
-	local splashAdj, splashFar = self:getSuperlaserSplash(pawn)
+	local splashAdj, splashFar = self:getSuperlaserSplashDamages(pawn)
 
 	-- Delay firing for effect
 	ret:AddSound(self.LaunchSound)

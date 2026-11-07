@@ -1,5 +1,5 @@
 StarWars_TieOverdrive = PassiveSkill:new{
-	Name = "TIE Overdrive",
+	Name = "TIE Tuning",
 	Description = "Each use: +1 move for the rest of the mission (stacks).",
 	Class = "Brute",
 	PowerCost = 0,
@@ -19,13 +19,13 @@ StarWars_TieOverdrive = PassiveSkill:new{
 local mod = mod_loader.mods[modApi.currentMod]
 
 Weapon_Texts.StarWars_TieOverdrive_Upgrade1 = "Evasive"
-Weapon_Texts.StarWars_TieOverdrive_A_UpgradeDescription = "Mech also becomes web immune"
+Weapon_Texts.StarWars_TieOverdrive_A_UpgradeDescription = "Mech becomes web immune after first use each mission"
 StarWars_TieOverdrive_A = StarWars_TieOverdrive:new{
 	WebImmune = true,
 }
 
 Weapon_Texts.StarWars_TieOverdrive_Upgrade2 = "Combat Maneuvers"
-Weapon_Texts.StarWars_TieOverdrive_B_UpgradeDescription = "+1 move after each attack (stacks)"
+Weapon_Texts.StarWars_TieOverdrive_B_UpgradeDescription = "Also grants +1 move after each attack (stacks)"
 StarWars_TieOverdrive_B = StarWars_TieOverdrive:new{
 	BonusMoveAfterAttack = true,
 }
@@ -47,6 +47,9 @@ local function initGameSaveData()
 	end
 	if GAME.starwars.tie_overdrive.move_stacks == nil then
 		GAME.starwars.tie_overdrive.move_stacks = {}
+	end
+	if GAME.starwars.tie_overdrive.after_attack_move == nil then
+		GAME.starwars.tie_overdrive.after_attack_move = {}
 	end
 	if GAME.starwars.tie_overdrive.web_immune_applied == nil then
 		GAME.starwars.tie_overdrive.web_immune_applied = {}
@@ -76,13 +79,18 @@ mod.libs.traitReplace:addStateful{
 	states = {
 		{
 			icon = "img/combat/icons/icon_accelerator.png",
-			desc_title = "TIE Overdrive",
+			desc_title = "TIE Tuning",
 			desc_text = function(pawn)
 				initGameSaveData()
 
 				local pawnId = pawn:GetId()
 				local stacks = GAME.starwars.tie_overdrive.move_stacks[pawnId] or 0
-				local text = "Move +" .. stacks .. " from Overdrive and attack bonuses (each use stacks)."
+				local text = "+" .. stacks.. " move "
+
+				if GAME.starwars.tie_overdrive.after_attack_move[pawnId] then
+					text = text .. " and +" .. stacks .. " move after each attack "
+				end
+				text = text .. "from TIE Tuning."
 
 				-- Check for web immunity
 				if GAME.starwars.tie_overdrive.web_immune_applied[pawnId] then
@@ -138,15 +146,21 @@ function StarWars_TieOverdrive:GetSkillEffect(p1, p2)
             end)
 		]]
 	end
+
+	if self.BonusMoveAfterAttack then
+		damage.sScript = damage.sScript .. [[
+			if GAME.starwars.tie_overdrive.after_attack_move == nil then GAME.starwars.tie_overdrive.after_attack_move = {} end
+			GAME.starwars.tie_overdrive.after_attack_move[pawnId] = true
+		]]
+	end
+	
 	damage.sScript = damage.sScript .. [[
 			-- Increase the move stacks
 			if GAME.starwars.tie_overdrive.move_stacks == nil then GAME.starwars.tie_overdrive.move_stacks = {} end
 			GAME.starwars.tie_overdrive.move_stacks[pawnId] = (GAME.starwars.tie_overdrive.move_stacks[pawnId] or 0) + 1
-			
-			Board:AddAlert(pawn:GetSpace(), "OVERDRIVE")
-			Board:Ping(pawn:GetSpace(), GL_Color(0, 0, 255))
 		end
 	]]
+
 	ret:AddSound(self.Sound)
 	ret:AddDamage(damage)
 	return ret
@@ -154,15 +168,17 @@ end
 
 -- Bonus move after attack if upgraded
 function StarWars_TieOverdrive:maybeApplyExtraBonuses(pawn, weaponId)
+	LOG("maybeApplyExtraBonuses")
 	if not pawn then return end
 	if not Game or not Board or Board:IsTipImage() then return end
-	if not self.BonusMoveAfterAttack then return end
 	if weaponId == "Move" then return end
 
 	initGameSaveData()
 
-	-- Check if this pawn has overdrive active and the upgrade
 	local pawnId = pawn:GetId()
+	if not GAME.starwars.tie_overdrive.after_attack_move[pawnId] then return end
+
+	-- Check if this pawn has overdrive active and the upgrade
 	local moveStacks = GAME.starwars.tie_overdrive.move_stacks[pawnId] or 0
 	if moveStacks > 0 then
 		-- Grant bonus move

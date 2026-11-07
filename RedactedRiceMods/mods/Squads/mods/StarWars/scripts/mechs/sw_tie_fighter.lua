@@ -70,11 +70,11 @@ Weapon_Texts.StarWars_TIEFighter_AssemblyLineB_Tooltip =
 		Weapon_Texts.StarWars_TIEFighter_AssemblyLineA_Tooltip
 
 mech_forge:registerMechUpgrade(baseType, mech_forge.VANILLA_UPGRADES.HEALTH, {
-	label = "Assembly Line A",
+	label = "Cloning Bay A",
 	tooltip = "StarWars_TIEFighter_AssemblyLineA_Tooltip",
 })
 mech_forge:registerMechUpgrade(baseType, mech_forge.VANILLA_UPGRADES.MOVE, {
-	label = "Assembly Line B",
+	label = "Cloning Bay B",
 	tooltip = "StarWars_TIEFighter_AssemblyLineB_Tooltip",
 })
 
