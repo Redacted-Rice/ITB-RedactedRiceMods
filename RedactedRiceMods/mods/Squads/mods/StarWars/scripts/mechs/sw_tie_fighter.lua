@@ -65,7 +65,7 @@ StarWars_TIEFighterMech = Pawn:new{
 }
 
 Weapon_Texts.StarWars_TIEFighter_AssemblyLineA_Tooltip =
-		"When killed, deploy a new TIE Fighter with a clone of the same pilot to a random space. Stacks"
+		"When powered, When the TIE Fighter is killed, deploy a new TIE Fighter with a clone of the same pilot to a random space. Stacks"
 Weapon_Texts.StarWars_TIEFighter_AssemblyLineB_Tooltip =
 		Weapon_Texts.StarWars_TIEFighter_AssemblyLineA_Tooltip
 

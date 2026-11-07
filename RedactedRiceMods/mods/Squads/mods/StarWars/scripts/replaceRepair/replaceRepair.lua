@@ -1,5 +1,5 @@
 
-local VERSION = "3.0.0"
+local VERSION = "3.0.1"
 local PRIORITY_CUSTOM = 0
 local PRIORITY_PILOT = 1
 local PRIORITY_MECH = 2

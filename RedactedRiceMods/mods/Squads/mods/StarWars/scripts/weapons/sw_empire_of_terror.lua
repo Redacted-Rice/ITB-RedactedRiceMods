@@ -4,6 +4,7 @@ StarWars_EmpireOfTerror = PassiveSkill:new{
 	PowerCost = 3,
 	Upgrades = 2,
 	UpgradeCost = {2, 1},
+	Orbital = true,
 	MaxGridRestored = 4,
 	HalvePopulation = false,
 	MitigateVek = false, -- not upgrade changeable ATM
