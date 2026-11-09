@@ -11,6 +11,11 @@ Discord Server: https://discord.gg/CNjTVrpN4v
 local VERSION = "1.0.0"
 local DEBUG = false
 
+-- Massive trait cycle slot for ignore defined here so we can overwrite it if desired (e.g. Admiral legendary+ skill)
+local REPLACE_NAME = "ignoreLiquid"
+local ICON_FILE = "icon_rr_ignore_liquid.png"
+local TRAIT_ICON = "img/combat/icons/" .. ICON_FILE
+
 local function logDebug(...)
 	if DEBUG then
 		LOG("IgnoreLiquid: " .. string.format(...))
@@ -27,6 +32,8 @@ if isNewestVersion then
 
 	IgnoreLiquid = IgnoreLiquid or {}
 	IgnoreLiquid.version = VERSION
+	IgnoreLiquid.REPLACE_NAME = REPLACE_NAME
+	IgnoreLiquid.TRAIT_ICON = TRAIT_ICON
 
 	-- Pawns that should ignore liquid dynamically (ones with the IgnoreLiquid unit flag
 	-- are not inlcuded here unless we override them to false)
@@ -200,6 +207,34 @@ if isNewestVersion then
 		end
 	end
 
+	function IgnoreLiquid._registerTraitReplaceIcon()
+		if not TraitReplace or not TraitReplace.add or not TraitReplace.registerTrait then
+			logDebug("TraitReplace unavailable, skip ignoreLiquid cycle icon")
+			return
+		end
+
+		local iconPath = mod_loader.mods.redactedrice_libs.scriptPath .. "libs/" .. ICON_FILE
+		if not modApi:fileExists(iconPath) then
+			logDebug("ignoreLiquid icon missing at %s", iconPath)
+			return
+		end
+
+		modApi:appendAsset(TRAIT_ICON, iconPath)
+
+		TraitReplace:add{
+			id = REPLACE_NAME,
+			targetTrait = "massive",
+			replaces = false,
+			func = function(_, pawn)
+				return IgnoreLiquid.pawnIgnoresLiquid(pawn)
+			end,
+			icon = TRAIT_ICON,
+			desc_title = "Ignore Liquid",
+			desc_text = "Mech is unaffected by liquid tiles.",
+		}
+		logDebug("Registered ignoreLiquid trait replace icon")
+	end
+
 	function IgnoreLiquid._installBoardUtilsOverrides()
 		if IgnoreLiquid._overrideBoardUtils or not BoardUtils then
 			return
@@ -228,6 +263,7 @@ if isNewestVersion then
 	function IgnoreLiquid:finalizeInit()
 		-- At this point the last BoardUtils will have already set its fns so its safe to override them here
 		IgnoreLiquid._installBoardUtilsOverrides()
+		IgnoreLiquid._registerTraitReplaceIcon()
 
 		-- Override move targetting so it won't allow moving on holes
 		modapiext.events.onTargetAreaBuild:subscribe(IgnoreLiquid._onMoveTargetArea)
