@@ -17,6 +17,7 @@ StarWars_TieOverdrive = PassiveSkill:new{
 }
 
 local mod = mod_loader.mods[modApi.currentMod]
+local traitReplace = mod.libs.traitReplace
 
 Weapon_Texts.StarWars_TieOverdrive_Upgrade1 = "Evasive"
 Weapon_Texts.StarWars_TieOverdrive_A_UpgradeDescription = "Mech becomes web immune after first use each mission"
@@ -67,41 +68,63 @@ local function pawnHasTieOverdrive(pawn)
 	return moveStacks > 0
 end
 
--- Add stateful trait icon showing active vs inactive state
-mod.libs.traitReplace:addStateful{
-	targetTrait = "massive",
-	func = function(trait, pawn)
-		if not pawnHasTieOverdrive(pawn) then
-			return 0  -- Don't display
-		end
-		return 1  -- Active state
-	end,
-	states = {
-		{
-			icon = "img/combat/icons/icon_sw_tie_overdrive.png",
-			desc_title = "TIE Tuning",
-			desc_text = function(pawn)
-				initGameSaveData()
+local function tieOverdriveStatusDesc(pawn)
+	initGameSaveData()
 
-				local pawnId = pawn:GetId()
-				local stacks = GAME.starwars.tie_overdrive.move_stacks[pawnId] or 0
-				local text = "+" .. stacks.. " move "
+	local pawnId = pawn:GetId()
+	local stacks = GAME.starwars.tie_overdrive.move_stacks[pawnId] or 0
+	local text = "+" .. stacks .. " move "
 
-				if GAME.starwars.tie_overdrive.after_attack_move[pawnId] then
-					text = text .. " and +" .. stacks .. " move after each attack "
-				end
-				text = text .. "from TIE Tuning."
+	if GAME.starwars.tie_overdrive.after_attack_move[pawnId] then
+		text = text .. " and +" .. stacks .. " move after each attack "
+	end
+	text = text .. "from TIE Tuning."
 
-				-- Check for web immunity
-				if GAME.starwars.tie_overdrive.web_immune_applied[pawnId] then
-					text = text .. " Web immune."
-				end
+	if GAME.starwars.tie_overdrive.web_immune_applied[pawnId] then
+		text = text .. " Web immune."
+	end
 
-				return text
-			end,
-		},
-	}
+	return text
+end
+
+traitReplace:registerTrait{
+	id = "kickoff",
+	checkMethod = pawnHasTieOverdrive,
+	iconFilename = "icon_kickoff.png",
+	descTitle = "Status_kickoff_Title",
+	descText = "Status_kickoff_Text",
 }
+
+traitReplace:registerTrait{
+	id = "shifty",
+	checkMethod = pawnHasTieOverdrive,
+	iconFilename = "icon_shifty.png",
+	descTitle = "Status_shifty_Title",
+	descText = "Status_shifty_Text",
+}
+
+local tieOverdriveStatusState = {
+	icon = "img/combat/icons/icon_sw_tie_overdrive.png",
+	desc_title = "TIE Tuning",
+	desc_text = tieOverdriveStatusDesc,
+}
+
+local function addTieOverdriveStatusReplace(targetTrait)
+	traitReplace:addStateful{
+		targetTrait = targetTrait,
+		replacesVanilla = true,
+		func = function(trait, pawn)
+			if not pawnHasTieOverdrive(pawn) then
+				return 0
+			end
+			return 1
+		end,
+		states = { tieOverdriveStatusState },
+	}
+end
+
+addTieOverdriveStatusReplace("kickoff")
+addTieOverdriveStatusReplace("shifty")
 
 function StarWars_TieOverdrive:GetTargetArea(point)
 	local ret = PointList()

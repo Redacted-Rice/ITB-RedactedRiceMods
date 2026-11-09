@@ -15,7 +15,7 @@ icons on top of flying and Lemonymous for the trait library which was
 the inspiration/starting point for this
 ]]
 
-local VERSION = "0.9.2"
+local VERSION = "0.9.3"
 local DEBUG = false
 
 local function logDebug(...)
@@ -95,6 +95,9 @@ end
 --   descTitle = "Status_massive_Title",
 --   descText = "Status_massive_Text",
 -- }
+--
+-- Custom traits may set replacesVanilla = true (or addStateful's replacesVanilla) to hide the
+-- original icon while that trait is active instead of cycling with it.
 local function registerTargetTrait(config)
 	if traitRegistry[config.id] then
 		LOG("Target trait '" .. config.id .. "' already registered, skipping.")
@@ -204,22 +207,19 @@ local function getActiveTraits(pawn, replaceTraitId)
 	local traitData = traitRegistry[replaceTraitId]
 	if not traitData then return {} end
 
-	local activeTraits = {}
-
-	-- Always include vanilla trait first
-	table.insert(activeTraits, traitData.vanillaTraitDef)
+	local customTraits = {}
 
 	-- Check func traits
 	for _, trait in ipairs(traitData.funcs) do
 		if trait.func and trait:func(pawn) then
-			table.insert(activeTraits, trait)
+			table.insert(customTraits, trait)
 		end
 	end
 
 	-- Check pilotSkill
 	for pilotSkill, trait in pairs(traitData.pilotSkills) do
 		if pawn:IsAbility(pilotSkill) then
-			table.insert(activeTraits, trait)
+			table.insert(customTraits, trait)
 		end
 	end
 
@@ -227,7 +227,25 @@ local function getActiveTraits(pawn, replaceTraitId)
 	local pawnType = pawn:GetType()
 	local pawnTrait = traitData.pawnTypes[pawnType]
 	if pawnTrait then
-		table.insert(activeTraits, pawnTrait)
+		table.insert(customTraits, pawnTrait)
+	end
+
+	-- Put vanilla first, but only if its not replaced by a custom trait
+	local activeTraits = {}
+	local hideVanilla = false
+	for _, trait in ipairs(customTraits) do
+		if trait.replacesVanilla then
+			hideVanilla = true
+			break
+		end
+	end
+
+	if not hideVanilla then
+		table.insert(activeTraits, traitData.vanillaTraitDef)
+	end
+
+	for _, trait in ipairs(customTraits) do
+		table.insert(activeTraits, trait)
 	end
 
 	return activeTraits
@@ -747,6 +765,7 @@ local function addTraitInternal(trait)
 	local totalCount = #traitData.allTraits + 1
 	local id = targetTrait .. "_custom_" .. totalCount
 	trait.id = id
+	trait.replacesVanilla = trait.replacesVanilla == true
 
 	if DEBUG then LOG("Adding custom trait '" .. id .. "' to target trait '" .. targetTrait .. "'") end
 
@@ -840,6 +859,7 @@ local function addStatefulTraitInternal(statefulTrait)
 			icon = state.icon,
 			desc_title = state.desc_title,
 			desc_text = state.desc_text,
+			replacesVanilla = statefulTrait.replacesVanilla == true,
 		}
 
 		-- Wrap the user's function to check for this specific state
