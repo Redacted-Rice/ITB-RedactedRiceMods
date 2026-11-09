@@ -177,6 +177,54 @@ function StarWars_TIEFighterMech.assemblyLineRenamePilotForNewChassis(pawn)
 	pilot:setName(newName)
 end
 
+function StarWars_TIEFighterMech.respawnTieFighterWhenNotBusy(pawn)
+	if Board:IsBusy() then
+		modApi:runLater(function()
+			StarWars_TIEFighterMech.respawnTieFighterWhenNotBusy(pawn)
+		end)
+		return
+	end
+
+	if not Board then
+		return
+	end
+
+	local pawnId = pawn:GetId()
+	local deadPawn = Board:GetPawn(pawnId)
+	if not deadPawn or not deadPawn:IsDead() then
+		return
+	end
+	StarWars_TIEFighterMech.initGameSaveData()
+	if StarWars_TIEFighterMech.getAssemblyUsesRemaining(deadPawn) <= 0 then
+		return
+	end
+
+	local dest = BoardUtils.pickRandomSafeSpawnTile(PATH_FLYER, pawnId)
+	if not dest then
+		return
+	end
+
+	-- Save the location so we can add a wreck there
+	local deathTile = deadPawn:GetSpace()
+
+	GAME.starwars.assembly_line.uses[pawnId] = (GAME.starwars.assembly_line.uses[pawnId] or 0) + 1
+	pawn:SetSpace(dest)
+	pawn:Fall(0)
+	pawn:SetHealth(pawn:GetMaxHealth())
+	if Game:GetTeamTurn() == TEAM_PLAYER then
+		pawn:SetActive(true)
+		pawn:SetMovementSpent(false)
+	end
+	StarWars_TIEFighterMech.assemblyLineRenamePilotForNewChassis(pawn)
+	Board:AddAlert(dest, "ASSEMBLY LINE")
+	Board:Ping(dest, GL_Color(180, 180, 180))
+
+	-- Add a wreck to where it came from
+	Board:AddAnimation(deathTile, "sw_tie_fighter_rubble_anim", ANIM_NO_DELAY)
+	local mission = GetCurrentMission()
+	customEmitter:Add(mission, deathTile, "Emitter_TIEWreck")
+end
+
 function StarWars_TIEFighterMech.tryAssemblyLineRespawn(mission, pawn)
 	if not Board or Board:IsTipImage() then
 		return
@@ -186,7 +234,6 @@ function StarWars_TIEFighterMech.tryAssemblyLineRespawn(mission, pawn)
 		return
 	end
 
-	local pawnId = pawn:GetId()
 	StarWars_TIEFighterMech.initGameSaveData()
 	if StarWars_TIEFighterMech.getAssemblyUsesRemaining(pawn) <= 0 then
 		return
@@ -194,40 +241,7 @@ function StarWars_TIEFighterMech.tryAssemblyLineRespawn(mission, pawn)
 
 	-- Delay so other death effects can resolve first (e.g. Rebel Hope)
 	modApi:runLater(function()
-		if not Board then
-			return
-		end
-		local deadPawn = Board:GetPawn(pawnId)
-		if not deadPawn or not deadPawn:IsDead() then
-			return
-		end
-		StarWars_TIEFighterMech.initGameSaveData()
-		if StarWars_TIEFighterMech.getAssemblyUsesRemaining(deadPawn) <= 0 then
-			return
-		end
-
-		local dest = BoardUtils.pickRandomSafeSpawnTile(PATH_FLYER, pawnId)
-		if not dest then
-			return
-		end
-
-		-- Save the location so we can add a wreck there
-		local deathTile = deadPawn:GetSpace()
-
-		GAME.starwars.assembly_line.uses[pawnId] = (GAME.starwars.assembly_line.uses[pawnId] or 0) + 1
-		pawn:SetSpace(dest)
-		pawn:Fall(0)
-		pawn:SetHealth(pawn:GetMaxHealth())
-		pawn:SetActive(true)
-		pawn:SetMovementSpent(false)
-		StarWars_TIEFighterMech.assemblyLineRenamePilotForNewChassis(pawn)
-		Board:AddAlert(dest, "ASSEMBLY LINE")
-		Board:Ping(dest, GL_Color(180, 180, 180))
-
-		-- Add a wreck to where it came from
-		Board:AddAnimation(deathTile, "sw_tie_fighter_rubble_anim", ANIM_NO_DELAY)
-		local mission = GetCurrentMission()
-		customEmitter:Add(mission, deathTile, "Emitter_TIEWreck")
+		StarWars_TIEFighterMech.respawnTieFighterWhenNotBusy(pawn)
 	end)
 end
 
