@@ -10,9 +10,9 @@ StarWars_EmpireOfTerror = PassiveSkill:new{
 	MitigateVek = false, -- not upgrade changeable ATM
 	Icon = "weapons/any_sw_empire_of_terror.png",
 	TipImage = {
-		CustomPawn = "StarWars_DeathStarMech",
-		Unit = Point(2, 2),
-		Building = Point(2, 3),
+		Unit = Point(5, 5),
+		Target = Point(2, 2),
+		Building = Point(2, 2),
 	},
 	TraitIcon = "icon_sw_empire_of_terror",
 	GridBoostTo = 6,
@@ -110,18 +110,18 @@ function StarWars_EmpireOfTerror:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
 
 	-- Show building taking damage (but not dying)
-	local buildingDamage = SpaceDamage(Point(2, 3), 2)
+	local buildingDamage = SpaceDamage(Point(2, 2), 2)
 	ret:AddDamage(buildingDamage)
 
 	ret:AddDelay(0.3)
 
 	-- Visual indication of Empire protection - green burst showing grid restoration
-	local protectEffect = SpaceDamage(Point(2, 3), 0)
+	local protectEffect = SpaceDamage(Point(2, 2), 0)
 	protectEffect.sScript = [[
 		local fx = SkillEffect()
-		fx:AddBurst(Point(2, 3), "Emitter_Burst_Heal", DIR_NONE)
+		fx:AddBurst(Point(2, 2), "Emitter_Burst_Heal", DIR_NONE)
 		Board:AddEffect(fx)
-		Board:Ping(Point(2, 3), GL_Color(0, 255, 0))
+		Board:Ping(Point(2, 2), GL_Color(0, 255, 0))
 	]]
 	ret:AddDamage(protectEffect)
 
@@ -130,7 +130,7 @@ function StarWars_EmpireOfTerror:GetSkillEffect(p1, p2)
 	-- Show text alert indicating grid restoration
 	local alertEffect = SpaceDamage(Point(2, 2), 0)
 	alertEffect.sScript = [[
-		Board:AddAlert(Point(2, 3), "GRID SAVED")
+		Board:AddAlert(Point(2, 2), "GRID SAVED")
 	]]
 	ret:AddDamage(alertEffect)
 

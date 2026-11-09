@@ -157,7 +157,8 @@ function StarWars_TieOverdrive:GetSkillEffect(p1, p2)
 			if GAME.starwars.tie_overdrive == nil then GAME.starwars.tie_overdrive = {} end
 			if GAME.starwars.tie_overdrive.move_stacks == nil then GAME.starwars.tie_overdrive.move_stacks = {} end
 		]]
-	if self.WebImmune then
+	-- Doesn't display right in tip image
+	if not Board:IsTipImage() and self.WebImmune then
 		damage.sScript = damage.sScript .. [[
 			if GAME.starwars.tie_overdrive.web_immune_applied == nil then GAME.starwars.tie_overdrive.web_immune_applied = {} end
 			GAME.starwars.tie_overdrive.web_immune_applied[pawnId] = true

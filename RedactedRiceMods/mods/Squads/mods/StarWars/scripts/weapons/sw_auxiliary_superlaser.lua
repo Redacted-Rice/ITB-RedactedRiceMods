@@ -42,6 +42,7 @@ StarWars_AuxiliarySuperlaser = Skill:new{
 	ImpactSounds = {"/impact/generic/explosion_large", "/impact/generic/explosion", "/weapons/localized_explosion"},
 	Projectile = "effects/shot_sw_superlaser",
 	TipImage = {
+		Unit = Point(5, 5),
 		Target = Point(2, 1),
 		Enemy = Point(2, 1),
 		Mountain = Point(2, 2),
