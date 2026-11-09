@@ -1,5 +1,6 @@
 local customSkill = cplus_plus_ex.baseClasses.SkillTrait:new{
 	id = "RrPontoons",
+	icon = IgnoreLiquid.TRAIT_ICON,
 	name = "Pontoons",
 	description = "Piloted mech floats on top of liquid tiles without being affected by them.",
 	reusability = cplus_plus_ex.REUSABLILITY.PER_PILOT,
@@ -20,8 +21,6 @@ local customSkill = cplus_plus_ex.baseClasses.SkillTrait:new{
 customSkill.DEBUG = false
 local logger = memhack.logger
 local SUBMODULE = logger.register("More+", "Pontoons", customSkill.DEBUG)
-
-more_plus:addCustomTraitIcon(customSkill)
 
 function customSkill:applyTrait(pawnId, pawn, isActive)
 	if isActive then

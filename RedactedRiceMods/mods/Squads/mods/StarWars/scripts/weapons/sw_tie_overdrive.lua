@@ -112,7 +112,7 @@ local tieOverdriveStatusState = {
 local function addTieOverdriveStatusReplace(targetTrait)
 	traitReplace:addStateful{
 		targetTrait = targetTrait,
-		replacesVanilla = true,
+		replaces = true,
 		func = function(trait, pawn)
 			if not pawnHasTieOverdrive(pawn) then
 				return 0
@@ -177,7 +177,7 @@ function StarWars_TieOverdrive:GetSkillEffect(p1, p2)
 			GAME.starwars.tie_overdrive.after_attack_move[pawnId] = true
 		]]
 	end
-	
+
 	damage.sScript = damage.sScript .. [[
 			-- Increase the move stacks
 			if GAME.starwars.tie_overdrive.move_stacks == nil then GAME.starwars.tie_overdrive.move_stacks = {} end

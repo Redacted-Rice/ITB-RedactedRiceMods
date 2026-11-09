@@ -69,8 +69,13 @@ if not TraitReplace then
 	}
 end
 
+-- Later added fields need to be added separately in case an old version is
+-- loaded first
+TraitReplace.customTraits = TraitReplace.customTraits or {}
+
 -- Local alias for the global version
 local traitRegistry = TraitReplace.traitRegistry
+local customTraits = TraitReplace.customTraits
 local iconPlaceholderFolder = path .. "libs/traitReplacePlaceholders/"
 
 -- Get next available placeholder filename
@@ -96,8 +101,11 @@ end
 --   descText = "Status_massive_Text",
 -- }
 --
--- Custom traits may set replacesVanilla = true (or addStateful's replacesVanilla) to hide the
--- original icon while that trait is active instead of cycling with it.
+-- Custom traits use targetTrait (registered slot, e.g. "massive") and an optional replaces flag.
+-- When replaces is true on that slot, vanilla and other customs on the same slot are hidden.
+--
+-- Pass id on add so that trait can be targeted later: targetTrait = id with replaces = true
+-- removes at most that one custom icon from the parent cycle (e.g. Admiral over ignoreLiquid on massive).
 local function registerTargetTrait(config)
 	if traitRegistry[config.id] then
 		LOG("Target trait '" .. config.id .. "' already registered, skipping.")
@@ -200,6 +208,38 @@ local function clip(base, widget, screen)
 	modApi.msDeltaTime = tmp
 end
 
+-- Apply vanilla and custom trait replace rules
+local function applyTraitReplaceRules(activeTraits, vanillaTraitDef)
+	local slotReplacers = {}
+	for _, trait in ipairs(activeTraits) do
+		if trait ~= vanillaTraitDef and trait.replaces and trait.targetTrait == trait.rootVanillaTrait then
+			table.insert(slotReplacers, trait)
+		end
+	end
+
+	if #slotReplacers > 0 then
+		return slotReplacers
+	end
+
+	local result = {}
+	for _, trait in ipairs(activeTraits) do
+		local hiddenByNamed = false
+		for _, replacer in ipairs(activeTraits) do
+			if replacer.replaces and replacer.targetTrait == trait.id
+					and replacer.targetTrait ~= replacer.rootVanillaTrait
+					and replacer ~= trait then
+				hiddenByNamed = true
+				break
+			end
+		end
+		if not hiddenByNamed then
+			table.insert(result, trait)
+		end
+	end
+
+	return result
+end
+
 -- Get all active traits for a pawn for a specific target trait
 local function getActiveTraits(pawn, replaceTraitId)
 	if not pawn then return {} end
@@ -207,19 +247,20 @@ local function getActiveTraits(pawn, replaceTraitId)
 	local traitData = traitRegistry[replaceTraitId]
 	if not traitData then return {} end
 
-	local customTraits = {}
+	-- Always include vanilla trait first
+	local activeTraits = { traitData.vanillaTraitDef }
 
 	-- Check func traits
 	for _, trait in ipairs(traitData.funcs) do
 		if trait.func and trait:func(pawn) then
-			table.insert(customTraits, trait)
+			table.insert(activeTraits, trait)
 		end
 	end
 
 	-- Check pilotSkill
 	for pilotSkill, trait in pairs(traitData.pilotSkills) do
 		if pawn:IsAbility(pilotSkill) then
-			table.insert(customTraits, trait)
+			table.insert(activeTraits, trait)
 		end
 	end
 
@@ -227,28 +268,10 @@ local function getActiveTraits(pawn, replaceTraitId)
 	local pawnType = pawn:GetType()
 	local pawnTrait = traitData.pawnTypes[pawnType]
 	if pawnTrait then
-		table.insert(customTraits, pawnTrait)
+		table.insert(activeTraits, pawnTrait)
 	end
 
-	-- Put vanilla first, but only if its not replaced by a custom trait
-	local activeTraits = {}
-	local hideVanilla = false
-	for _, trait in ipairs(customTraits) do
-		if trait.replacesVanilla then
-			hideVanilla = true
-			break
-		end
-	end
-
-	if not hideVanilla then
-		table.insert(activeTraits, traitData.vanillaTraitDef)
-	end
-
-	for _, trait in ipairs(customTraits) do
-		table.insert(activeTraits, trait)
-	end
-
-	return activeTraits
+	return applyTraitReplaceRules(activeTraits, traitData.vanillaTraitDef)
 end
 
 -- Get the current icon to display based on global cycling timer
@@ -738,8 +761,21 @@ local function addTraitInternal(trait)
 	local targetTrait = trait.targetTrait or "massive"
 	Assert.Equals('string', type(targetTrait), "Field 'targetTrait' (defaulting to 'massive' if not specified)")
 
-	local traitData = traitRegistry[targetTrait]
+	-- Convert target trait to its base vanilla trait it applies to. We register based on that
+	-- as that is the slot we need to evaluate this for
+	local customTarget = customTraits[targetTrait]
+	local registryTrait = targetTrait
+	if customTarget then
+		registryTrait = customTarget.rootVanillaTrait
+	end
+	trait.rootVanillaTrait = registryTrait
+
+	local traitData = traitRegistry[registryTrait]
 	if not traitData then
+		if not traitRegistry[targetTrait] then
+			error("ERROR: Custom trait '" .. targetTrait
+				.. "' is not registered. Add the host with traitReplace:add() and id first.")
+		end
 		error("ERROR: Target trait '" .. targetTrait .. "' is not registered! Call traitReplace:registerTrait() first.")
 	end
 
@@ -762,12 +798,16 @@ local function addTraitInternal(trait)
 	end
 
 	-- Generate unique ID based on total count for this specific trait
-	local totalCount = #traitData.allTraits + 1
-	local id = targetTrait .. "_custom_" .. totalCount
-	trait.id = id
-	trait.replacesVanilla = trait.replacesVanilla == true
+	-- if one is not specified
+	local hasId = trait.id ~= nil
+	if not hasId then
+		local totalCount = #traitData.allTraits + 1
+		trait.id = (targetTrait .. "_custom_" .. totalCount)
+	end
+	trait.targetTrait = targetTrait
+	trait.replaces = trait.replaces == true
 
-	if DEBUG then LOG("Adding custom trait '" .. id .. "' to target trait '" .. targetTrait .. "'") end
+	if DEBUG then LOG("Adding custom trait '" .. trait.id .. "' to target trait '" .. targetTrait .. "'") end
 
 	-- Load the icon surface
 	local iconPath = trait.icon:match(".-.png$") or trait.icon..".png"
@@ -807,7 +847,7 @@ local function addTraitInternal(trait)
 		return
 	end
 
-	traitData.surfaces[id] = surface
+	traitData.surfaces[trait.id] = surface
 
 	-- Add to appropriate collection for this specific trait
 	if func then
@@ -825,6 +865,13 @@ local function addTraitInternal(trait)
 
 	-- Keep track of all traits for this specific trait
 	table.insert(traitData.allTraits, trait)
+
+	-- If we specified an id, add it to the custom traits table so we can override it with others later
+	if hasId then
+		Assert.Equals('nil', type(customTraits[trait.id]),
+			"Duplicate replaceable trait id '" .. trait.id .. "'")
+		customTraits[trait.id] = trait
+	end
 
 end
 
@@ -859,7 +906,7 @@ local function addStatefulTraitInternal(statefulTrait)
 			icon = state.icon,
 			desc_title = state.desc_title,
 			desc_text = state.desc_text,
-			replacesVanilla = statefulTrait.replacesVanilla == true,
+			replaces = statefulTrait.replaces,
 		}
 
 		-- Wrap the user's function to check for this specific state
