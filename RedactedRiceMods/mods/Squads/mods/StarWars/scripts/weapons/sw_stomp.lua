@@ -15,8 +15,7 @@ StarWars_Stomp = Skill:new{
 	TipImage = {
 		Unit = Point(2, 2),
 		Enemy = Point(2, 1),
-		Enemy2 = Point(3, 2),
-		Target = Point(2, 2),
+		Target = Point(2, 1),
 	},
 }
 
