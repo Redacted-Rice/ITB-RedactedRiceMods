@@ -209,52 +209,54 @@ end
 function StarWars_EmpireOfTerror:skillEndRevertGrid(weaponId)
 	if weaponId == "Move" then return end
 
-	initGameSaveData()
+	modApi:runLater(function()
+		initGameSaveData()
 
-	-- Check if we should apply the effect based on MitigateVek flag
-	if not (GAME.starwars.empire_of_terror.player_acting or
-			(self.MitigateVek and Game:GetTeamTurn() == TEAM_PLAYER)) then
-		return
-	end
-
-	if GAME.starwars.empire_of_terror.uses_remaining > 0 and
-			GAME.starwars.empire_of_terror.prev_grid > 0 then
-		local currPower = Game:GetPower():GetValue()
-		local prevPower = GAME.starwars.empire_of_terror.prev_grid
-		GAME.starwars.empire_of_terror.prev_grid = -1
-		local gridLost = StarWars_EmpireOfTerror.GridBoostTo - currPower
-		if gridLost < 0 then
-			-- we restored grid via a weapon without damaging grid
-			-- An edge case but at least somewhat handle it since vanilla
-			-- gain grid on kill is a thing. This won't handle if grid is
-			-- destroyed AND gained as expected though but I think its
-			-- okay as that is not possible in vanilla and would be quite niche
-			LOG("Grid was restored during attack! Doing nothing")
+		-- Check if we should apply the effect based on MitigateVek flag
+		if not (GAME.starwars.empire_of_terror.player_acting or
+				(self.MitigateVek and Game:GetTeamTurn() == TEAM_PLAYER)) then
 			return
 		end
 
-		local gridLostAdj = 0
-		if gridLost >= GAME.starwars.empire_of_terror.uses_remaining then
-			gridLostAdj = gridLost - GAME.starwars.empire_of_terror.uses_remaining
-			LOG("Grid lost(".. gridLost ..") is >= uses remaining ("..
-					GAME.starwars.empire_of_terror.uses_remaining.."), adjusting grid lost to " .. gridLostAdj)
-			GAME.starwars.empire_of_terror.uses_remaining = 0
+		if GAME.starwars.empire_of_terror.uses_remaining > 0 and
+				GAME.starwars.empire_of_terror.prev_grid > 0 then
+			local currPower = Game:GetPower():GetValue()
+			local prevPower = GAME.starwars.empire_of_terror.prev_grid
+			GAME.starwars.empire_of_terror.prev_grid = -1
+			local gridLost = StarWars_EmpireOfTerror.GridBoostTo - currPower
+			if gridLost < 0 then
+				-- we restored grid via a weapon without damaging grid
+				-- An edge case but at least somewhat handle it since vanilla
+				-- gain grid on kill is a thing. This won't handle if grid is
+				-- destroyed AND gained as expected though but I think its
+				-- okay as that is not possible in vanilla and would be quite niche
+				LOG("Grid was restored during attack! Doing nothing")
+				return
+			end
+
+			local gridLostAdj = 0
+			if gridLost >= GAME.starwars.empire_of_terror.uses_remaining then
+				gridLostAdj = gridLost - GAME.starwars.empire_of_terror.uses_remaining
+				LOG("Grid lost(".. gridLost ..") is >= uses remaining ("..
+						GAME.starwars.empire_of_terror.uses_remaining.."), adjusting grid lost to " .. gridLostAdj)
+				GAME.starwars.empire_of_terror.uses_remaining = 0
+			else
+				LOG("Grid lost(".. gridLost ..") is < uses remaining ("..
+						GAME.starwars.empire_of_terror.uses_remaining.."). Reducing gridlost to " .. gridLostAdj)
+				GAME.starwars.empire_of_terror.uses_remaining = GAME.starwars.empire_of_terror.uses_remaining - gridLost
+			end
+
+			local targetGrid = prevPower - gridLostAdj
+			LOG("current grid is " .. currPower .. ", original grid was " .. prevPower .. ", adjusted lost grid is " ..
+					gridLostAdj .. ", target grid is " .. targetGrid)
+			Game:SetGridPower(targetGrid)
+
+			fxOnAllAliveBuildings(StarWars_EmpireOfTerror.GridReturnParticle, "GridReturnColor")
 		else
-			LOG("Grid lost(".. gridLost ..") is < uses remaining ("..
-					GAME.starwars.empire_of_terror.uses_remaining.."). Reducing gridlost to " .. gridLostAdj)
-			GAME.starwars.empire_of_terror.uses_remaining = GAME.starwars.empire_of_terror.uses_remaining - gridLost
+			LOG("Skipping end hook (remaining: ".. GAME.starwars.empire_of_terror.uses_remaining ..
+						", prevGrid: "..GAME.starwars.empire_of_terror.prev_grid .. ")")
 		end
-
-		local targetGrid = prevPower - gridLostAdj
-		LOG("current grid is " .. currPower .. ", original grid was " .. prevPower .. ", adjusted lost grid is " ..
-				gridLostAdj .. ", target grid is " .. targetGrid)
-		Game:SetGridPower(targetGrid)
-
-		fxOnAllAliveBuildings(StarWars_EmpireOfTerror.GridReturnParticle, "GridReturnColor")
-	else
-		LOG("Skipping end hook (remaining: ".. GAME.starwars.empire_of_terror.uses_remaining ..
-				", prevGrid: "..GAME.starwars.empire_of_terror.prev_grid .. ")")
-	end
+	end)
 end
 
 -- Regular skill hooks

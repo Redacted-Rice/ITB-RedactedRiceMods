@@ -218,6 +218,8 @@ function StarWars_TIEFighterMech.tryAssemblyLineRespawn(mission, pawn)
 		pawn:SetSpace(dest)
 		pawn:Fall(0)
 		pawn:SetHealth(pawn:GetMaxHealth())
+		pawn:SetActive(true)
+		pawn:SetMovementSpent(false)
 		StarWars_TIEFighterMech.assemblyLineRenamePilotForNewChassis(pawn)
 		Board:AddAlert(dest, "ASSEMBLY LINE")
 		Board:Ping(dest, GL_Color(180, 180, 180))
@@ -247,17 +249,17 @@ modTable.libs.traitReplace:addStateful{
 	end,
 	states = {
 		{
-			icon = "img/combat/icons/icon_sw_assembly_line.png",
-			desc_title = "Assembly Line",
+			icon = "img/combat/icons/icon_sw_cloning.png",
+			desc_title = "Cloning Bay",
 			desc_text = function(pawn)
 				local remaining = StarWars_TIEFighterMech.getAssemblyUsesRemaining(pawn)
-				return string.format("%d TIE Fighters on standby", remaining)
+				return string.format("%d Clones and TIE Fighters on standby", remaining)
 			end,
 		},
 		{
-			icon = "img/combat/icons/icon_sw_assembly_line_used.png",
-			desc_title = "Assembly Line (Depleted)",
-			desc_text = "No more TIE Fighters remaining",
+			icon = "img/combat/icons/icon_sw_cloning_depleted.png",
+			desc_title = "Cloning Bay (Depleted)",
+			desc_text = "No more Clones and TIE Fighters remaining",
 		},
 	},
 }
