@@ -1,10 +1,9 @@
 local resourcePath = mod_loader.mods[modApi.currentMod].resourcePath
 local mechPath = resourcePath .. "img/mechs/"
 
-local scriptPath = mod_loader.mods[modApi.currentMod].scriptPath
 local mod = modApi:getCurrentMod()
 local modTable = mod_loader.mods[modApi.currentMod]
-local boardUtils = modTable.libs.boardUtils
+local customEmitter = modTable.libs.customEmitter
 
 local squadColors = modApi:getPaletteImageOffset("starwars_empire_color")
 
@@ -43,10 +42,31 @@ modApi:createAnimations{
 		NumFrames = 1,
 		Loop = true,
 		Layer = LAYER_FLOOR,
-		-- TODO later: set these for the image I use
 		PosX = -18,
 		PosY = -5,
 	},
+}
+
+-- Smoke from wreck
+Emitter_TIEWreck = Emitter:new{
+	image = "combat/pod/pod_smoke.png",
+	max_alpha = 0.1,
+	x = 0,
+	y = 15,
+	variance_x = 1,
+	variance_y = 5,
+	angle = 255,
+	angle_variance = 10,
+	timer = 1,
+	birth_rate = 0.6,
+	burst_count = 0,
+	max_particles = 32,
+	speed = 0.50,
+	lifespan = 2.5,
+	rot_speed = 10,
+	gravity = false,
+	fade_in = true,
+	layer = LAYER_FRONT,
 }
 
 local baseType = "StarWars_TIEFighterMech"
@@ -204,6 +224,8 @@ function StarWars_TIEFighterMech.tryAssemblyLineRespawn(mission, pawn)
 
 		-- Add a wreck to where it came from
 		Board:AddAnimation(deathTile, "sw_tie_fighter_rubble_anim", ANIM_NO_DELAY)
+		local mission = GetCurrentMission()
+		customEmitter:Add(mission, deathTile, "Emitter_TIEWreck")
 	end)
 end
 
