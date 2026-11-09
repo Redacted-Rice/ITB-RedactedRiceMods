@@ -78,7 +78,7 @@ mod.libs.traitReplace:addStateful{
 	end,
 	states = {
 		{
-			icon = "img/combat/icons/icon_accelerator.png",
+			icon = "img/combat/icons/icon_sw_tie_overdrive.png",
 			desc_title = "TIE Tuning",
 			desc_text = function(pawn)
 				initGameSaveData()
