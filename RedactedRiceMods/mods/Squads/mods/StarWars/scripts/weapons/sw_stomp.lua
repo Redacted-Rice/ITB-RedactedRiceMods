@@ -54,13 +54,17 @@ function StarWars_Stomp:syncStompForPawn(pawn)
 		return
 	end
 
-	local weapons = pawn:GetBaseWeaponTypes()
+	local weapons = pawn:GetPoweredWeaponTypes()
 	for wIdx = 1, 2 do
 		local weaponId = weapons[wIdx]
 		if weaponId and weaponId:find("StarWars_Stomp") and pawn:IsWeaponPowered(weaponId) then
-			local uses = self:getStompUsesForPawn(pawn, weaponId)
-			pawn:SetWeaponLimitedRemaining(wIdx, uses)
-			pawn:SetMovementSpent(true)
+			
+			if Game:GetTeamTurn() == TEAM_ENEMY then
+				local uses = self:getStompUsesForPawn(pawn, weaponId)
+				pawn:SetWeaponLimitedRemaining(wIdx, uses)
+			else
+				pawn:SetMovementSpent(true)
+			end
 		end
 	end
 end
@@ -69,10 +73,6 @@ function StarWars_Stomp:syncStompForAllPlayerMechs()
 	if not Game or not Board or Board:IsTipImage() then
 		return
 	end
-	if Game:GetTeamTurn() ~= TEAM_PLAYER then
-		return
-	end
-
 	for pId = 0, 2 do
 		local pawn = Game:GetPawn(pId)
 		self:syncStompForPawn(pawn)
@@ -132,25 +132,27 @@ function StarWars_Stomp:GetSkillEffect(p1, p2)
 
 
 	-- Move into the target if empty
-	local refund = SpaceDamage(p2)
-	refund.sScript = string.format([[
-		local p1 = %s
-		local p2 = %s
+	if not Board:IsTipImage() then
+		local refund = SpaceDamage(p2)
+		refund.sScript = string.format([[
+			local p1 = %s
+			local p2 = %s
 
-		local pawn = Board:GetPawn(p1)
-		modApi:runLater(function()
-			StarWars_Stomp:reactivateAfter(pawn)
-		end)
+			local pawn = Board:GetPawn(p1)
+			modApi:runLater(function()
+				StarWars_Stomp:reactivateAfter(pawn)
+			end)
 
-		local effect = SkillEffect()
-		local path = PointList()
-		path:push_back(p1)
-		path:push_back(p2)
-		effect:AddMove(path, FULL_DELAY)
-		Board:AddEffect(effect)
+			local effect = SkillEffect()
+			local path = PointList()
+			path:push_back(p1)
+			path:push_back(p2)
+			effect:AddMove(path, FULL_DELAY)
+			Board:AddEffect(effect)
 
-	]], p1:GetString(), p2:GetString())
-	ret:AddDamage(refund)
+		]], p1:GetString(), p2:GetString())
+		ret:AddDamage(refund)
+	end
 
 	return ret
 end

@@ -1,11 +1,11 @@
 StarWars_EmpireOfTerror = PassiveSkill:new{
 	Name = "Empire of Terror",
-	Description = "The first 4 grid lost from buildings will be restored. Building populations are halved during player turns.",
+	Description = "The first 3 grid lost from buildings will be restored. Building populations are halved during player turns.",
 	PowerCost = 3,
 	Upgrades = 2,
 	UpgradeCost = {2, 1},
 	Orbital = true,
-	MaxGridRestored = 4,
+	MaxGridRestored = 3,
 	HalvePopulation = false,
 	MitigateVek = false, -- not upgrade changeable ATM
 	Icon = "weapons/any_sw_empire_of_terror.png",
@@ -90,9 +90,9 @@ mod.libs.traitReplace:addStateful{
 
 -- Weapon text definitions
 Weapon_Texts.StarWars_EmpireOfTerror_Upgrade1 = "Show of Force"
-Weapon_Texts.StarWars_EmpireOfTerror_A_UpgradeDescription = "Up to 6 grid can be restored without loss"
+Weapon_Texts.StarWars_EmpireOfTerror_A_UpgradeDescription = "Up to 5 grid can be restored without loss"
 StarWars_EmpireOfTerror_A = StarWars_EmpireOfTerror:new{
-	MaxGridRestored = 6,
+	MaxGridRestored = 5,
 }
 
 Weapon_Texts.StarWars_EmpireOfTerror_Upgrade2 = "Early Warning"

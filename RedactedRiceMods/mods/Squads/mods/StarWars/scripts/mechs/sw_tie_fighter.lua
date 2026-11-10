@@ -31,7 +31,6 @@ a.sw_tiefighterw_broken = a.MechUnit:new{Image = "units/player/sw_tie_fighterw_b
 a.sw_tiefighter_ns =      a.MechIcon:new{Image = "units/player/sw_tie_fighter_ns.png" }
 
 -- Create an animation for the tie fighter wreck on the ground
--- TODO later: update when I make the image
 modApi:appendAsset(
 	"img/combat/sw_tie_fighter_rubble.png",
 	mod.resourcePath .. "img/combat/sw_tie_fighter_rubble.png"
@@ -44,6 +43,14 @@ modApi:createAnimations{
 		Layer = LAYER_FLOOR,
 		PosX = -18,
 		PosY = -5,
+	},
+	sw_tie_fighter_rubblew_anim = {
+		Image = "combat/sw_tie_fighter_rubble.png",
+		NumFrames = 1,
+		Loop = true,
+		Layer = LAYER_FLOOR,
+		PosX = -18,
+		PosY = -2,
 	},
 }
 
@@ -168,7 +175,7 @@ function StarWars_TIEFighterMech.assemblyLineRenamePilotForNewChassis(pawn)
 	end
 
 	-- if it doesn't fit, truncate the base down and add a "." too
-	local suffixDot = string.format(". #%d", newNums)
+	local suffixDot = string.format(". #%d", newNum)
 	local maxBase = StarWars_TIEFighterMech.MAX_PILOT_DISPLAY_NAME_LEN - #suffixDot
 	if maxBase < 1 then
 		maxBase = 1
@@ -216,11 +223,16 @@ function StarWars_TIEFighterMech.respawnTieFighterWhenNotBusy(pawn)
 		pawn:SetMovementSpent(false)
 	end
 	StarWars_TIEFighterMech.assemblyLineRenamePilotForNewChassis(pawn)
-	Board:AddAlert(dest, "ASSEMBLY LINE")
+	Board:AddAlert(dest, "CLONING BAY")
 	Board:Ping(dest, GL_Color(180, 180, 180))
 
 	-- Add a wreck to where it came from
-	Board:AddAnimation(deathTile, "sw_tie_fighter_rubble_anim", ANIM_NO_DELAY)
+	local terrain = Board:GetTerrain(deathTile)
+	if BoardUtils.isLiquid(terrain) then
+		Board:AddAnimation(deathTile, "sw_tie_fighter_rubblew_anim", ANIM_NO_DELAY)
+	elseif terrain ~= TERRAIN_HOLE then
+		Board:AddAnimation(deathTile, "sw_tie_fighter_rubble_anim", ANIM_NO_DELAY)
+	end
 	local mission = GetCurrentMission()
 	customEmitter:Add(mission, deathTile, "Emitter_TIEWreck")
 end

@@ -228,7 +228,7 @@ if isNewestVersion then
 			func = function(_, pawn)
 				return IgnoreLiquid.pawnIgnoresLiquid(pawn)
 			end,
-			icon = TRAIT_ICON,
+			icon = "libs/" .. ICON_FILE,
 			desc_title = "Ignore Liquid",
 			desc_text = "Mech is unaffected by liquid tiles.",
 		}
