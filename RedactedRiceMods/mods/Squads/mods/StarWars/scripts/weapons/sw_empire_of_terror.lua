@@ -149,13 +149,12 @@ local function fxOnAllAliveBuildings(particle, selfColorVarName)
 	end
 end
 
--- Mission start hook - Initialize mission data
-function StarWars_EmpireOfTerror:GetPassiveSkillEffect_MissionStartHook(mission)
+-- Mission start/next phase reset
+function StarWars_EmpireOfTerror:resetMissionState()
 	if not Board then
 		return
 	end
 
-	LOG("=== MISSION START ===")
 	initGameSaveData()
 	GAME.starwars.empire_of_terror.prev_grid = -1
 	GAME.starwars.empire_of_terror.uses_remaining = self.MaxGridRestored
@@ -178,6 +177,14 @@ function StarWars_EmpireOfTerror:GetPassiveSkillEffect_MissionStartHook(mission)
 			end
 		end
 	end
+end
+
+function StarWars_EmpireOfTerror:GetPassiveSkillEffect_MissionStartHook(mission)
+	self:resetMissionState()
+end
+
+function StarWars_EmpireOfTerror:GetPassiveSkillEffect_OnMissionNextPhaseCreated(prevMission, nextMission)
+	self:resetMissionState()
 end
 
 function StarWars_EmpireOfTerror:skillStartBoostGrid(weaponId)
@@ -376,6 +383,7 @@ end
 -- Register the passive effect
 local passiveEffects = 	{
 	"missionStartHook",
+	"onMissionNextPhaseCreated",
 	-- Next turn hook doesn't really behave as expected... Vek attacking is part of the player turn
 	"nextTurnHook", "preEnvironmentHook",
 	"skillStartHook", "skillEndHook", "finalEffectStartHook", "finalEffectEndHook",

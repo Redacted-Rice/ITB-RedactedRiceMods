@@ -265,10 +265,18 @@ function StarWars_TieOverdrive:GetPassiveSkillEffect_OnPawnIsGrappled(mission, p
 	end
 end
 
-function StarWars_TieOverdrive:GetPassiveSkillEffect_MissionStartHook(mission)
+local function resetTieOverdriveMissionData()
 	initGameSaveData()
 	GAME.starwars.tie_overdrive = nil
 	initGameSaveData()
+end
+
+function StarWars_TieOverdrive:GetPassiveSkillEffect_MissionStartHook(mission)
+	resetTieOverdriveMissionData()
+end
+
+function StarWars_TieOverdrive:GetPassiveSkillEffect_OnMissionNextPhaseCreated(prevMission, nextMission)
+	resetTieOverdriveMissionData()
 end
 
 -- Register the passive effect
@@ -277,6 +285,7 @@ passiveEffect:addPassiveEffect(
 	"StarWars_TieOverdrive",
 	{
 		"missionStartHook",
+		"onMissionNextPhaseCreated",
 		"skillEndHook", "finalEffectEndHook",
 		"nextTurnHook", "onPawnIsGrappled"
 	},

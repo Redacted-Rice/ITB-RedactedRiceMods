@@ -219,6 +219,7 @@ function StarWars_TIEFighterMech.respawnTieFighterWhenNotBusy(pawn)
 	pawn:Fall(0)
 	pawn:SetHealth(pawn:GetMaxHealth())
 	if Game:GetTeamTurn() == TEAM_PLAYER then
+		pawn:SetBonusMove(0)
 		pawn:SetActive(true)
 		pawn:SetMovementSpent(false)
 	end
