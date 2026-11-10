@@ -892,14 +892,14 @@ local function linkTraitToRegistry(trait)
 	-- Convert target trait to its base vanilla trait it applies to. We register based on that
 	-- as that is the slot we need to evaluate this for
 	local vanillaTrait = getVanillaTraitForTarget(targetTrait)
-	if not vanillaTrait
+	if not vanillaTrait then
 		error("ERROR: Target trait '" .. targetTrait .. "' is not registered. Add the host with traitReplace:add() and id first.")
 	end
 
 	trait.rootVanillaTrait = vanillaTrait
 
 	local traitData = traitRegistry[vanillaTrait]
-	if not traitData
+	if not traitData then
 		error("ERROR: Target root vanilla trait '" .. vanillaTrait .. "' is not registered for target trait '"
 				.. targetTrait .. "! Call traitReplace:registerTrait() first.")
 	end
