@@ -19,6 +19,14 @@ StarWars_TieOverdrive = PassiveSkill:new{
 local mod = mod_loader.mods[modApi.currentMod]
 local traitReplace = mod.libs.traitReplace
 
+local DEBUG = false
+
+local function logDebug(...)
+	if DEBUG then
+		LOG(...)
+	end
+end
+
 Weapon_Texts.StarWars_TieOverdrive_Upgrade1 = "Evasive"
 Weapon_Texts.StarWars_TieOverdrive_A_UpgradeDescription = "Mech becomes web immune after first use each mission"
 StarWars_TieOverdrive_A = StarWars_TieOverdrive:new{
@@ -192,7 +200,7 @@ end
 
 -- Bonus move after attack if upgraded
 function StarWars_TieOverdrive:maybeApplyExtraBonuses(pawn, weaponId)
-	LOG("maybeApplyExtraBonuses")
+	logDebug("maybeApplyExtraBonuses")
 	if not pawn then return end
 	if not Game or not Board or Board:IsTipImage() then return end
 	if weaponId == "Move" then return end
