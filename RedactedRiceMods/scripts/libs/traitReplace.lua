@@ -930,7 +930,7 @@ local function linkTraitToRegistry(trait)
 
 	customTraits[trait.id] = trait
 	if DEBUG then
-		LOG("Linked custom trait '" .. trait.id .. "' to registry slot '" .. registryTrait .. "'")
+		LOG("Linked custom trait '" .. trait.id .. "' to registry slot '" .. vanillaTrait .. "'")
 	end
 	return true
 end
@@ -1082,7 +1082,7 @@ if isHighestVersion then
 				traitData.surfaces[config.id .. "_vanilla"] = traitData.targetOrigIcon
 
 				-- Log registration summary
-				if DEBUG then LOG("Registered target trait '" .. config.id .. "' with " .. #traitData.allTraits .. " custom traits") end
+				if DEBUG then LOG("Registered target trait '" .. config.id .. "'") end
 			end
 		end
 		self.queuedRegistrations = {}
