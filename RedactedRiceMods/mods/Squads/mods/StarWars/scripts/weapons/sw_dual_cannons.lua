@@ -52,7 +52,7 @@ function StarWars_DualCannons:GetTargetArea(point)
 
 	ret:push_back(point)
 
-	-- If MoveRange < 0, use the mech's actual move speed
+	-- If MoveRange < 0 (Fast Targeting powered), use the mech's actual move speed
 	local usingMoveSpeed = false
 	local attackRange = self.MoveRange
 	if attackRange < 0 and pawn:GetMoveSpeed() >= 3 then

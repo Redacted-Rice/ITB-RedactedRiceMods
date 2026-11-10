@@ -94,7 +94,7 @@ StarWars_TIEFighterMech = Pawn:new{
 }
 
 Weapon_Texts.StarWars_TIEFighter_AssemblyLineA_Tooltip =
-		"When powered, When the TIE Fighter is killed, deploy a new TIE Fighter with a clone of the same pilot to a random space. Stacks"
+		"When powered, when the TIE Fighter is killed, deploy a new TIE Fighter with a clone of the same pilot to a random space. Stacks"
 Weapon_Texts.StarWars_TIEFighter_AssemblyLineB_Tooltip =
 		Weapon_Texts.StarWars_TIEFighter_AssemblyLineA_Tooltip
 
@@ -148,7 +148,7 @@ function StarWars_TIEFighterMech.getAssemblyUsesRemaining(pawn)
 end
 
 -- Pilot names are only allowed to be 14. If you force it longer,
--- it just shows the "second line" 
+-- it just shows the "second line"
 StarWars_TIEFighterMech.MAX_PILOT_DISPLAY_NAME_LEN = 14
 
 function StarWars_TIEFighterMech.assemblyLineRenamePilotForNewChassis(pawn)
