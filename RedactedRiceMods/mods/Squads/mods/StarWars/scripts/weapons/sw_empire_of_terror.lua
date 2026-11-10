@@ -25,6 +25,14 @@ StarWars_EmpireOfTerror = PassiveSkill:new{
 local mod = mod_loader.mods[modApi.currentMod]
 passiveEffect = mod_loader.mods[modApi.currentMod].libs.passiveEffect
 
+local DEBUG = false
+
+local function logDebug(...)
+	if DEBUG then
+		LOG(...)
+	end
+end
+
 -- Initialize GAME save data structure
 local function initGameSaveData()
 	if GAME == nil then
@@ -173,7 +181,7 @@ function StarWars_EmpireOfTerror:resetMissionState()
 			if Board:IsBuilding(point) then
 				local key = point:GetString()
 				GAME.starwars.empire_of_terror.original_populations[key] = Board:GetPeoplePopulated(point)
-				LOG(string.format("Stored original population for %s: %d", key, GAME.starwars.empire_of_terror.original_populations[key]))
+				logDebug(string.format("Stored original population for %s: %d", key, GAME.starwars.empire_of_terror.original_populations[key]))
 			end
 		end
 	end
@@ -202,13 +210,13 @@ function StarWars_EmpireOfTerror:skillStartBoostGrid(weaponId)
 			GAME.starwars.empire_of_terror.prev_grid <= 0 then
 		local currPower = Game:GetGridPower()
 		GAME.starwars.empire_of_terror.prev_grid = currPower
-		LOG("Skill start boosting grid from " .. currPower .. " to " .. StarWars_EmpireOfTerror.GridBoostTo)
+		logDebug("Skill start boosting grid from " .. currPower .. " to " .. StarWars_EmpireOfTerror.GridBoostTo)
 		-- Increment one by one to ensure it works as expected for unfair difficulty
 		Game:SetGridPower(StarWars_EmpireOfTerror.GridBoostTo)
 
 		fxOnAllAliveBuildings(StarWars_EmpireOfTerror.GridBoostParticle, "GridBoostColor")
 	else
-		LOG("Skipping start hook (remaining: ".. GAME.starwars.empire_of_terror.uses_remaining ..
+		logDebug("Skipping start hook (remaining: ".. GAME.starwars.empire_of_terror.uses_remaining ..
 				", prevGrid: "..GAME.starwars.empire_of_terror.prev_grid .. ")")
 	end
 end
@@ -241,30 +249,30 @@ function StarWars_EmpireOfTerror:_revertGridWhenNotBusy()
 			-- gain grid on kill is a thing. This won't handle if grid is
 			-- destroyed AND gained as expected though but I think its
 			-- okay as that is not possible in vanilla and would be quite niche
-			LOG("Grid was restored during attack! Doing nothing")
+			logDebug("Grid was restored during attack! Doing nothing")
 			return
 		end
 
 		local gridLostAdj = 0
 		if gridLost >= GAME.starwars.empire_of_terror.uses_remaining then
 			gridLostAdj = gridLost - GAME.starwars.empire_of_terror.uses_remaining
-			LOG("Grid lost(".. gridLost ..") is >= uses remaining ("..
+			logDebug("Grid lost(".. gridLost ..") is >= uses remaining ("..
 					GAME.starwars.empire_of_terror.uses_remaining.."), adjusting grid lost to " .. gridLostAdj)
 			GAME.starwars.empire_of_terror.uses_remaining = 0
 		else
-			LOG("Grid lost(".. gridLost ..") is < uses remaining ("..
+			logDebug("Grid lost(".. gridLost ..") is < uses remaining ("..
 					GAME.starwars.empire_of_terror.uses_remaining.."). Reducing gridlost to " .. gridLostAdj)
 			GAME.starwars.empire_of_terror.uses_remaining = GAME.starwars.empire_of_terror.uses_remaining - gridLost
 		end
 
 		local targetGrid = prevPower - gridLostAdj
-		LOG("current grid is " .. currPower .. ", original grid was " .. prevPower .. ", adjusted lost grid is " ..
+		logDebug("current grid is " .. currPower .. ", original grid was " .. prevPower .. ", adjusted lost grid is " ..
 				gridLostAdj .. ", target grid is " .. targetGrid)
 		Game:SetGridPower(targetGrid)
 
 		fxOnAllAliveBuildings(StarWars_EmpireOfTerror.GridReturnParticle, "GridReturnColor")
 	else
-		LOG("Skipping end hook (remaining: ".. GAME.starwars.empire_of_terror.uses_remaining ..
+		logDebug("Skipping end hook (remaining: ".. GAME.starwars.empire_of_terror.uses_remaining ..
 					", prevGrid: "..GAME.starwars.empire_of_terror.prev_grid .. ")")
 	end
 end
@@ -325,7 +333,7 @@ function StarWars_EmpireOfTerror:GetPassiveSkillEffect_NextTurnHook()
 		end
 
 		-- Player turn: Halve populations
-		LOG("Player turn START - Halving populations")
+		logDebug("Player turn START - Halving populations")
 		local boardSize = Board:GetSize()
 		local totalRemoved = 0
 
@@ -341,7 +349,7 @@ function StarWars_EmpireOfTerror:GetPassiveSkillEffect_NextTurnHook()
 					Board:SetPeoplePopulated(point, newPop)
 					totalRemoved = totalRemoved + removed
 
-					LOG(string.format("  %s: %d -> %d (-%d)", key, currentPop, newPop, removed))
+					logDebug(string.format("  %s: %d -> %d (-%d)", key, currentPop, newPop, removed))
 				end
 			end
 		end
@@ -361,7 +369,7 @@ function StarWars_EmpireOfTerror:GetPassiveSkillEffect_PreEnvironmentHook()
 	end
 
 	-- Vek turn: Restore populations
-	LOG("Vek attacks START - Restoring populations")
+	logDebug("Vek attacks START - Restoring populations")
 	local boardSize = Board:GetSize()
 
 	for x = 0, boardSize.x - 1 do
@@ -372,11 +380,11 @@ function StarWars_EmpireOfTerror:GetPassiveSkillEffect_PreEnvironmentHook()
 				local originalPop = GAME.starwars.empire_of_terror.original_populations[key] or 0
 				Board:SetPeoplePopulated(point, originalPop)
 
-				LOG(string.format("  %s: restored to %d", key, originalPop))
+				logDebug(string.format("  %s: restored to %d", key, originalPop))
 			end
 		end
 	end
-	LOG("Populations restored")
+	logDebug("Populations restored")
 end
 
 

@@ -101,7 +101,6 @@ local function patheticSkillIsPrimingLaser(weaponId, pawn)
 	if repairSkill then
 		weaponId = repairSkill.weapon or repairSkill.Weapon
 	end
-	LOG("patheticSkillIsPrimingLaser:  resolved " .. tostring(weaponId))
 	return weaponIdStartsWith(weaponId, StarWarsAchievements.primingLaserWeaponPrefix)
 end
 
@@ -280,11 +279,9 @@ end
 
 function StarWarsAchievements.onSkillStartHook(mission, pawn, weaponId, p1, p2)
 	resetWeaponActiveFlags()
-	LOG("onSkillStartHook: " .. tostring(weaponId))
 
 	if isRightEmpireSquadInMission() and not achievements.pathetic:isComplete() then
 		if patheticSkillIsPrimingLaser(weaponId, pawn) then
-			LOG("onSkillStartHook: primingLaserWeaponPrefix set active")
 			StarWarsAchievements.primingLaserActive = true
 		end
 	end
@@ -331,9 +328,7 @@ end
 
 function StarWarsAchievements.onPawnKilledHook(mission, pawn)
 	if isRightEmpireSquadInMission() and not achievements.pathetic:isComplete() then
-		LOG("onPawnKilledHook: " .. tostring(StarWarsAchievements.primingLaserActive) .. " " .. tostring(pawn:IsEnemy()) .. " " .. tostring(pawnTypeUtils.isBoss(pawn)))
 		if StarWarsAchievements.primingLaserActive and pawn:IsEnemy() and pawnTypeUtils.isBoss(pawn) then
-			LOG("pathetic:trigger")
 			achievements.pathetic:trigger()
 		end
 	end
