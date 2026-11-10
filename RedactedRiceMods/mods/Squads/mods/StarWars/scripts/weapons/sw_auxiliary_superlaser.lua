@@ -136,8 +136,8 @@ local function addExplosionEffects(ret, spaces, damage, isAdj)
 						sd.iTerrain = TERRAIN_RUBBLE
 						sd.sScript = [[Board:SetRubbleType(]]..space:GetString()..[[, RUBBLE_MOUNTAIN)]]
 					end
-					sd.iFire = EFFECT_CREATE
 				end
+				sd.iFire = EFFECT_CREATE
 			end
 			-- melt ice for funsies
 			if Board:GetTerrain(space) == TERRAIN_ICE then

@@ -72,6 +72,9 @@ end
 -- Later added fields need to be added separately in case an old version is
 -- loaded first
 TraitReplace.customTraits = TraitReplace.customTraits or {}
+TraitReplace.pendingLinkTraits = TraitReplace.pendingLinkTraits or {}
+TraitReplace.traitsLinked = TraitReplace.traitsLinked or false
+TraitReplace.traitCount = TraitReplace.traitCount or 0
 
 -- Local alias for the global version
 local traitRegistry = TraitReplace.traitRegistry
@@ -141,7 +144,6 @@ local function registerTargetTrait(config)
 
 		-- Trait storage
 		surfaces = {},
-		allTraits = {},
 		queuedTraits = {},
 		funcs = {},
 		pilotSkills = {},
@@ -752,32 +754,58 @@ local function maybeCycleTraits(mission)
 	end
 end
 
--- Internal function to actually add a trait
-local function addTraitInternal(trait)
+-- Find a custom trait by id in either registered traits or pending link traits
+local function findTraitById(traitId)
+	if customTraits[traitId] then
+		return customTraits[traitId]
+	end
+	return TraitReplace.pendingLinkTraits[traitId]
+end
+
+-- Convert target trait to the base vanilla slot it applies to. Custom ids are walked
+-- through customTraits/pendingLinkTraits (e.g. Admiral -> ignoreLiquid -> massive).
+local function getVanillaTraitForTarget(targetTrait)
+	local current = targetTrait
+	-- Guard against infinite loops
+	local visited = {}
+
+	while current do
+		if visited[current] then
+			return nil
+		end
+		visited[current] = true
+
+		-- If the current trait is registered (i.e. its vanilla), return it
+		if traitRegistry[current] then
+			return current
+		end
+
+		-- If its a custom target look int he registered/pending traits for it
+		local customTarget = findTraitById(current)
+		if not customTarget then
+			return nil
+		end
+
+		-- If the custom target is already resolved, short cut with it
+		if customTarget.rootVanillaTrait then
+			return customTarget.rootVanillaTrait
+		end
+
+		-- Otherwise keep walkin
+		current = customTarget.targetTrait or "massive"
+	end
+	return nil
+end
+
+-- Internal function to register a trait. Does validation, id, and icon surfaces
+-- Wiring to the vanilla slot and skill/pawn tables happens later in linkTraitToRegistry.
+local function prepareTraitInternal(trait)
 	Assert.Equals('table', type(trait), "Argument #1")
 
 	-- targetTrait specifies which trait to add to (e.g., "massive", "flying")
 	-- Defaults to "massive"
 	local targetTrait = trait.targetTrait or "massive"
 	Assert.Equals('string', type(targetTrait), "Field 'targetTrait' (defaulting to 'massive' if not specified)")
-
-	-- Convert target trait to its base vanilla trait it applies to. We register based on that
-	-- as that is the slot we need to evaluate this for
-	local customTarget = customTraits[targetTrait]
-	local registryTrait = targetTrait
-	if customTarget then
-		registryTrait = customTarget.rootVanillaTrait
-	end
-	trait.rootVanillaTrait = registryTrait
-
-	local traitData = traitRegistry[registryTrait]
-	if not traitData then
-		if not traitRegistry[targetTrait] then
-			error("ERROR: Custom trait '" .. targetTrait
-				.. "' is not registered. Add the host with traitReplace:add() and id first.")
-		end
-		error("ERROR: Target trait '" .. targetTrait .. "' is not registered! Call traitReplace:registerTrait() first.")
-	end
 
 	if type(trait.desc) == 'table' then
 		trait.desc_title = trait.desc.title or trait.desc[1]
@@ -797,25 +825,32 @@ local function addTraitInternal(trait)
 		error("ERROR: Attempted to add an unlinked trait replacement! Trait must have func, pilotSkill, or pawnType.")
 	end
 
-	-- Generate unique ID based on total count for this specific trait
-	-- if one is not specified
+	-- Generate unique ID if one is not specified
 	local hasId = trait.id ~= nil
-	if not hasId then
-		local totalCount = #traitData.allTraits + 1
-		trait.id = (targetTrait .. "_custom_" .. totalCount)
+	if hasId then
+		Assert.Equals('nil', type(customTraits[trait.id]),
+			"Duplicate replaceable trait id '" .. trait.id .. "'")
+		Assert.Equals('nil', type(TraitReplace.pendingLinkTraits[trait.id]),
+			"Duplicate replaceable trait id '" .. trait.id .. "'")
 	end
+
+	if not hasId then
+		trait.id = targetTrait .. "_custom_" .. TraitReplace.traitCount
+		TraitReplace.traitCount = TraitReplace.traitCount + 1
+	end
+
 	trait.targetTrait = targetTrait
 	trait.replaces = trait.replaces == true
 
-	if DEBUG then LOG("Adding custom trait '" .. trait.id .. "' to target trait '" .. targetTrait .. "'") end
+	if DEBUG then LOG("Preparing custom trait '" .. trait.id .. "' for target trait '" .. targetTrait .. "'") end
 
 	-- Load the icon surface
-	local iconPath = trait.icon:match(".-.png$") or trait.icon..".png"
+	local iconPath = trait.icon:match(".-.png$") or trait.icon .. ".png"
 	local surface
 
 	if iconPath:find("^img/") then
 		-- Asset registered by some mod - search for actual file
-		for modId, mod in pairs(mod_loader.mods) do
+		for _, mod in pairs(mod_loader.mods) do
 			if mod.resourcePath then
 				local possiblePath = mod.resourcePath .. iconPath
 				if modApi:fileExists(possiblePath) then
@@ -836,7 +871,6 @@ local function addTraitInternal(trait)
 	else
 		-- Relative mod asset path
 		local fullPath = resolveIconFilePath(iconPath, path)
-
 		if modApi:fileExists(fullPath) then
 			surface = sdlext.getSurface({ path = fullPath })
 		end
@@ -844,10 +878,39 @@ local function addTraitInternal(trait)
 
 	if not surface or surface:w() == 0 or surface:h() == 0 then
 		LOG("Warning: Could not load valid icon for trait replacement (" .. targetTrait .. "): " .. iconPath)
-		return
+		return false
 	end
 
+	trait._preparedSurface = surface
+	return true
+end
+
+-- Tie a prepared trait to its vanilla slot and func/pilotSkill/pawnType tables
+local function linkTraitToRegistry(trait)
+	local targetTrait = trait.targetTrait or "massive"
+
+	-- Convert target trait to its base vanilla trait it applies to. We register based on that
+	-- as that is the slot we need to evaluate this for
+	local vanillaTrait = getVanillaTraitForTarget(targetTrait)
+	if not vanillaTrait
+		error("ERROR: Target trait '" .. targetTrait .. "' is not registered. Add the host with traitReplace:add() and id first.")
+	end
+
+	trait.rootVanillaTrait = vanillaTrait
+
+	local traitData = traitRegistry[vanillaTrait]
+	if not traitData
+		error("ERROR: Target root vanilla trait '" .. vanillaTrait .. "' is not registered for target trait '"
+				.. targetTrait .. "! Call traitReplace:registerTrait() first.")
+	end
+
+	local surface = trait._preparedSurface
+	Assert.True(surface ~= nil, "Trait '" .. trait.id .. "' was not prepared (missing icon surface)")
 	traitData.surfaces[trait.id] = surface
+
+	local func = trait.func
+	local pilotSkill = trait.pilotSkill
+	local pawnType = trait.pawnType
 
 	-- Add to appropriate collection for this specific trait
 	if func then
@@ -855,24 +918,51 @@ local function addTraitInternal(trait)
 		table.insert(traitData.funcs, trait)
 	elseif pilotSkill then
 		Assert.Equals('string', type(pilotSkill))
-		Assert.Equals('nil', type(traitData.pilotSkills[pilotSkill]), "Duplicate trait replacement for pilotSkill in " .. targetTrait)
+		Assert.Equals('nil', type(traitData.pilotSkills[pilotSkill]),
+			"Duplicate trait replacement for pilotSkill in " .. targetTrait)
 		traitData.pilotSkills[pilotSkill] = trait
 	elseif pawnType then
 		Assert.Equals('string', type(pawnType))
-		Assert.Equals('nil', type(traitData.pawnTypes[pawnType]), "Duplicate trait replacement for pawnType in " .. targetTrait)
+		Assert.Equals('nil', type(traitData.pawnTypes[pawnType]),
+			"Duplicate trait replacement for pawnType in " .. targetTrait)
 		traitData.pawnTypes[pawnType] = trait
 	end
 
-	-- Keep track of all traits for this specific trait
-	table.insert(traitData.allTraits, trait)
+	customTraits[trait.id] = trait
+	if DEBUG then
+		LOG("Linked custom trait '" .. trait.id .. "' to registry slot '" .. registryTrait .. "'")
+	end
+	return true
+end
 
-	-- If we specified an id, add it to the custom traits table so we can override it with others later
-	if hasId then
-		Assert.Equals('nil', type(customTraits[trait.id]),
-			"Duplicate replaceable trait id '" .. trait.id .. "'")
-		customTraits[trait.id] = trait
+-- Link traits queued during init/register once all mods have registered their hosts and skills.
+local function resolvePendingTraitsOnLoad()
+	for _, trait in pairs(TraitReplace.pendingLinkTraits) do
+		linkTraitToRegistry(trait)
 	end
 
+	-- Clear the pending. Any future will be loaded immediately
+	TraitReplace.pendingLinkTraits = {}
+	TraitReplace.traitsLinked = true
+end
+
+-- Internal function to actually add a trait
+local function addTraitInternal(trait)
+	if not prepareTraitInternal(trait) then
+		return false
+	end
+
+	-- if we already linked, link this immediately
+	-- Note: I am not sure this will work as intended since I think we can only load
+	-- images at init so trying to link later I don't think will work
+	if TraitReplace.traitsLinked then
+		linkTraitToRegistry(trait)
+		return true
+	end
+
+	-- Otherwise queue it for later linking
+	TraitReplace.pendingLinkTraits[trait.id] = trait
+	return true
 end
 
 local function addStatefulTraitInternal(statefulTrait)
@@ -1039,6 +1129,7 @@ if isHighestVersion then
 
 		-- Register hooks via onModsLoaded event
 		modApi.events.onModsLoaded:subscribe(function()
+			resolvePendingTraitsOnLoad()
 			modApi:addMissionUpdateHook(maybeCycleTraits)
 		end)
 

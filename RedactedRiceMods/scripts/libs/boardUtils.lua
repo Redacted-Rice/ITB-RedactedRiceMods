@@ -759,6 +759,8 @@ if isNewestVersion then
 		local smoked = Board:IsSmoke(p)
 		if not smoked then
 			local fireType = Board:GetFireType(p)
+			local pawn = Board:GetPawn(p)
+			local pawnFire = pawn and pawn:IsFire() or false
 			effect:AddScript([[Board:SetSmoke(]]..p:GetString()..[[, true, false)]])
 
 			local damage = SpaceDamage(p, DAMAGE_ZERO)
@@ -774,6 +776,9 @@ if isNewestVersion then
 				effect:AddScript([[Board:SetFire(]]..p:GetString()..[[, true)]])
 			else
 				effect:AddScript([[Board:SetSmoke(]]..p:GetString()..[[, false, false)]])
+			end
+			if pawnFire then
+				effect:AddScript([[Board:GetPawn(]] .. pawn:GetId() .. [[):SetFire(true)]])
 			end
 		end
 	end
