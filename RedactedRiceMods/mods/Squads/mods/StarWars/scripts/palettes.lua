@@ -1,7 +1,7 @@
 modApi:addPalette({
 		ID = "starwars_rebels_color",
-		Name = "Rebels",
-		Image = "img/units/player/wb_eater_ns.png",
+		Name = "Subtley Hopeful",
+		Image = "img/units/player/sw_xwing_ns.png",
 		PlateHighlight = { 150, 200, 255 },	--lights
 		PlateLight     = { 200, 190, 180 },	--main highlight
 		PlateMid       = { 125, 120, 115 },	--main light
@@ -15,8 +15,8 @@ modApi:getPaletteImageOffset("starwars_rebels_color")
 
 modApi:addPalette({
 		ID = "starwars_empire_color",
-		Name = "Empire",
-		Image = "img/units/player/wb_eater_ns.png",
+		Name = "Opressive Gray",
+		Image = "img/units/player/sw_atat_ns.png",
 		PlateHighlight = { 211,  59,  59 },	--lights
 		PlateLight     = { 163, 163, 163 },	--main highlight
 		PlateMid       = {  76,  76,  76 },	--main light
