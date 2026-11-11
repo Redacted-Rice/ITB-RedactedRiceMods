@@ -19,9 +19,6 @@ function mod:init()
 		self.libs[libId] = lib
 	end
 
-	-- Load replace repair
-	require(self.scriptPath .. "replaceRepair/api")
-
 	self.libs.pilotSkill_tooltip = require(self.scriptPath .. "libs/pilotSkill_tooltip")
 	self.libs.personality = require(self.scriptPath .. "libs/personality")
 
@@ -105,7 +102,7 @@ function mod:load(options, version)
 		},
 		"Star Wars Rebels",
 		"Brought from a long, long time ago in a galaxy far, far away, these Rebel starships are fighting back against the evil vek empire wherever it may be",
-		self.resourcePath .. "img/squad_icon.png"
+		self.resourcePath .. "img/rebels_icon.png"
 	)
 
 	-- Register squad skill exclusions if CPLUS+ is available
@@ -129,7 +126,7 @@ function mod:load(options, version)
 		},
 		"Star Wars Empire",
 		"Rule the galaxy with fear and overwhelming power. The Empire's advanced war machines crush all resistance under their iron grip.",
-		self.resourcePath .. "img/squad_icon.png"
+		self.resourcePath .. "img/empire_icon.png"
 	)
 
 	-- Register squad skill exclusions if CPLUS+ is available

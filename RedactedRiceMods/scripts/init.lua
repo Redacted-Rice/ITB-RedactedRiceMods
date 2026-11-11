@@ -49,6 +49,9 @@ function mod:init(options)
 	require(path.."libs/artilleryArc")
 	self.libs["tutorialTips"] = require(path.."libs/tutorialTips")
 
+	-- global ReplaceRepair API (folder lib, same pattern as upstream)
+	self.libs.replaceRepair = require(path.."libs/replaceRepair/api")
+
     -- add modApiExt as well
 	self.libs.modApiExt = modapiext
 end
