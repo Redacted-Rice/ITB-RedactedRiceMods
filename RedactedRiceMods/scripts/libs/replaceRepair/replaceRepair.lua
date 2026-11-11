@@ -1,3 +1,13 @@
+--[[
+ReplaceRepair - A lib that allows replace repair effects for pilots, mechs and more
+
+Originally by Lemonymous
+Enhanced by Das Keifer to support fns and GetText for replace repair texts
+
+Wiki: https://github.com/Lemonymous/ITB-Replace-Repair/wiki
+
+Redacted Rice Discord Server: https://discord.gg/CNjTVrpN4v
+]]
 
 local VERSION = "3.0.1"
 local PRIORITY_CUSTOM = 0
