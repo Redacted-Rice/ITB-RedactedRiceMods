@@ -7,7 +7,7 @@ Author: Das Keifer of Redacted Rice
 Discord Server: https://discord.gg/CNjTVrpN4v
 ]]
 
-local VERSION = "1.1.3"
+local VERSION = "1.0.0"
 
 local isNewestVersion = false
 	or MoveThrough == nil
@@ -78,7 +78,7 @@ if isNewestVersion then
 		local saved = tileSnapshots[prevTile:GetString()]
 		if saved then
 			ret:AddScript([[
-				MoveThrough._addRestoreTileDamage(]] .. prevTile:GetString() .. [[, ]] .. saved.fireType 
+				MoveThrough._addRestoreTileDamage(]] .. prevTile:GetString() .. [[, ]] .. saved.fireType
 						.. [[, ]] .. tostring(saved.acid) .. [[)
 			]])
 		end
@@ -136,8 +136,8 @@ if isNewestVersion then
 			return
 		end
 		ret:AddScript([[
-			MoveThrough._addRestorePawnDamage(]] .. pawnId .. [[, ]] 
-					.. tostring(pawnSnapshot.fire) .. [[, ]] .. tostring(pawnSnapshot.acid) .. [[, ]] 
+			MoveThrough._addRestorePawnDamage(]] .. pawnId .. [[, ]]
+					.. tostring(pawnSnapshot.fire) .. [[, ]] .. tostring(pawnSnapshot.acid) .. [[, ]]
 					.. tostring(landingSnap.fireType ~= FIRE_TYPE_NONE) .. [[, ]] .. tostring(landingSnap.acid) .. [[, ]]
 					.. tostring(isEndTile) .. [[)
 		]])

@@ -40,11 +40,13 @@ Released: XX/XX/2026
 
 compatible with:
 * ItB AE        1.2.93
-* ModLoader     2.9.6
+* ModLoader     2.9.7
 * ModLoaderExt  1.24
+* memhack	    1.5.0
+* MechFORGE     1.0.0
 
 ### Notes
-* Brand new Empire mod
+* Brand new Empire Squad and Darth Vader Pilot
 * X-Wing's Cannon Array will no longer cause the X-Wing to catch/spread fire or acid
 * X-Wing's Cannon Array can fire on a single space without moving
 * Rebel Hope is no longer a Science class weapon

@@ -3,12 +3,12 @@ local mod = {
 	name = "Star Wars",
 	icon = "img/mod_icon.png",
 	version = "2.0.0",
-	modApiVersion = "2.9.5",
+	modApiVersion = "2.9.7",
 	gameVersion = "1.2.93",
 	dependencies = {
 		modApiExt = "1.24",
 		redactedrice_mech_forge = "1.0.0",
-		redactedrice_memhack = "1.4.1",
+		redactedrice_memhack = "1.5.0",
 	},
 	libs = {}
 }
