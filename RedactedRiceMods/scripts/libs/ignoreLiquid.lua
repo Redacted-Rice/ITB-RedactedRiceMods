@@ -13,8 +13,6 @@ local DEBUG = false
 
 -- Massive trait cycle slot for ignore defined here so we can overwrite it if desired (e.g. Admiral legendary+ skill)
 local REPLACE_NAME = "ignoreLiquid"
-local ICON_FILE = "icon_rr_ignore_liquid.png"
-local TRAIT_ICON = "img/combat/icons/" .. ICON_FILE
 
 local function logDebug(...)
 	if DEBUG then
@@ -33,7 +31,6 @@ if isNewestVersion then
 	IgnoreLiquid = IgnoreLiquid or {}
 	IgnoreLiquid.version = VERSION
 	IgnoreLiquid.REPLACE_NAME = REPLACE_NAME
-	IgnoreLiquid.TRAIT_ICON = TRAIT_ICON
 
 	-- Pawns that should ignore liquid dynamically (ones with the IgnoreLiquid unit flag
 	-- are not inlcuded here unless we override them to false)
@@ -213,14 +210,6 @@ if isNewestVersion then
 			return
 		end
 
-		local iconPath = mod_loader.mods.redactedrice_libs.scriptPath .. "libs/" .. ICON_FILE
-		if not modApi:fileExists(iconPath) then
-			logDebug("ignoreLiquid icon missing at %s", iconPath)
-			return
-		end
-
-		modApi:appendAsset(TRAIT_ICON, iconPath)
-
 		TraitReplace:add{
 			id = REPLACE_NAME,
 			targetTrait = "massive",
@@ -228,9 +217,9 @@ if isNewestVersion then
 			func = function(_, pawn)
 				return IgnoreLiquid.pawnIgnoresLiquid(pawn)
 			end,
-			icon = "libs/" .. ICON_FILE,
+			icon = "img/combat/icons/icon_water_immune.png",
 			desc_title = "Ignore Liquid",
-			desc_text = "Mech is unaffected by liquid tiles.",
+			desc_text = "Mech hovers over liquid tiles unaffected by them.",
 		}
 		logDebug("Registered ignoreLiquid trait replace icon")
 	end
