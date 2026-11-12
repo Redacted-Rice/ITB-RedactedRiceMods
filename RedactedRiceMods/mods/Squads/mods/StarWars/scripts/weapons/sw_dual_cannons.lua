@@ -5,7 +5,7 @@ StarWars_DualCannons = Skill:new{
 	Damage = 1,
 	PowerCost = 0,
 	Upgrades = 2,
-	UpgradeCost = {2, 2},
+	UpgradeCost = {2, 1},
 	Icon = "weapons/brute_sw_tie_cannons.png",
 	TwoClick = true,
 	MoveRange = 3,
@@ -27,21 +27,21 @@ StarWars_DualCannons = Skill:new{
 }
 
 -- Weapon text definitions
-Weapon_Texts.StarWars_DualCannons_Upgrade1 = "Fast Targeting"
-Weapon_Texts.StarWars_DualCannons_A_UpgradeDescription = "Increases move range to mech's move speed (min 3)."
-StarWars_DualCannons_A = StarWars_DualCannons:new{
-	MoveRange = -1,
-}
 
-Weapon_Texts.StarWars_DualCannons_Upgrade2 = "Quality Gas"
-Weapon_Texts.StarWars_DualCannons_B_UpgradeDescription = "Increases damage to 2."
-StarWars_DualCannons_B = StarWars_DualCannons:new{
+Weapon_Texts.StarWars_DualCannons_Upgrade1 = "Quality Gas"
+Weapon_Texts.StarWars_DualCannons_A_UpgradeDescription = "Increases damage to 2."
+StarWars_DualCannons_A = StarWars_DualCannons:new{
 	Damage = 2,
 	Projectile1 = "effects/shot_sw_dual_green_split_1",
 	Projectile2 = "effects/shot_sw_dual_green_split_2",
 }
+Weapon_Texts.StarWars_DualCannons_Upgrade2 = "Fast Targeting"
+Weapon_Texts.StarWars_DualCannons_B_UpgradeDescription = "Increases move range to mech's move speed (min 3)."
+StarWars_DualCannons_B = StarWars_DualCannons:new{
+	MoveRange = -1,
+}
 
-StarWars_DualCannons_AB = StarWars_DualCannons_B:new{
+StarWars_DualCannons_AB = StarWars_DualCannons_A:new{
 	MoveRange = -1,
 }
 

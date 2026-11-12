@@ -57,17 +57,19 @@ function Vader_ForceChoke_Repair:GetSkillEffect(p1, p2)
 		local targetId = Board:GetPawn(p2):GetId()
 		local casterId = Board:GetPawn(p1):GetId()
 
-		damage.sScript = (damage.sScript or "") .. string.format([[
-			local target = Board:GetPawn(%d)
-			if target and not target:IsDead() then
-				target:AddMoveBonus(-target:GetMoveSpeed())
-			end
-			modApi:runLater(function()
-				Board:Ping(target:GetSpace(), GL_Color(0, 0, 0))
-			end)
-		]], targetId)
-
+		-- For replace repair, it seems like the scripts
+		-- affect the main board not the preview
 		if not Board:IsTipImage() then
+			damage.sScript = (damage.sScript or "") .. string.format([[
+				local target = Board:GetPawn(%d)
+				if target and not target:IsDead() then
+					target:AddMoveBonus(-target:GetMoveSpeed())
+				end
+				modApi:runLater(function()
+					Board:Ping(target:GetSpace(), GL_Color(0, 0, 0))
+				end)
+			]], targetId)
+
 			damage.sScript = damage.sScript .. string.format([[
 				local cast = { main = %d }
 				modapiext.dialog:triggerRuledDialog("Vader_ForceChoke", cast)
@@ -77,7 +79,11 @@ function Vader_ForceChoke_Repair:GetSkillEffect(p1, p2)
 
 	ret:AddDamage(damage)
 	ret:AddBounce(p2, 1)
-	BoardUtils.addCancelEffect(p2, ret)
+	-- I'm not positive this won't affect the board too just based on
+	-- that I saw the ping running on the board
+	if not Board:IsTipImage() then
+		BoardUtils.addCancelEffect(p2, ret, true)
+	end
 	return ret
 end
 
