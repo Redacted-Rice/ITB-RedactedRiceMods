@@ -755,12 +755,14 @@ if isNewestVersion then
 		return not BoardUtils.isUnallowedCustomTerrain(Board:GetCustomTile(point))
 	end
 
-	function BoardUtils.addCancelEffect(p, effect)
+	function BoardUtils.addCancelEffect(p, effect, isDamaging)
 		local smoked = Board:IsSmoke(p)
 		if not smoked then
 			local fireType = Board:GetFireType(p)
 			local pawn = Board:GetPawn(p)
 			local pawnFire = pawn and pawn:IsFire() or false
+			local isSand = Board:GetTerrain(p) == TERRAIN_SAND
+
 			effect:AddScript([[Board:SetSmoke(]]..p:GetString()..[[, true, false)]])
 
 			local damage = SpaceDamage(p, DAMAGE_ZERO)
@@ -769,17 +771,29 @@ if isNewestVersion then
 			damage.fDelay = 0.00017 --force a one frame delay on the board
 			effect:AddDamage(damage)
 
+			-- Handle fire
 			if fireType ~= FIRE_TYPE_NONE then
 				if fireType == FIRE_TYPE_FOREST_FIRE then
 					effect:AddScript([[Board:SetTerrain(]]..p:GetString()..[[, TERRAIN_FOREST)]])
 				end
 				effect:AddScript([[Board:SetFire(]]..p:GetString()..[[, true)]])
-			else
-				effect:AddScript([[Board:SetSmoke(]]..p:GetString()..[[, false, false)]])
 			end
 			if pawnFire then
 				effect:AddScript([[Board:GetPawn(]] .. pawn:GetId() .. [[):SetFire(true)]])
 			end
+
+			-- Check to restore smoke/sand
+			if not (isSand and isDamaging == true) then
+				-- Its not sand or not damaging, we remove smoke
+				effect:AddScript([[Board:SetSmoke(]]..p:GetString()..[[, false, false)]])
+			end
+			if isSand and isDamaging ~= true then
+				-- Sand but not damaging - preserve sand
+				local resand = SpaceDamage(p, DAMAGE_ZERO)
+				resand.iTerrain = TERRAIN_SAND
+				effect:AddDamage(resand)
+			end
+			-- otherwise its sand and damaging so we leave the smoke
 		end
 	end
 

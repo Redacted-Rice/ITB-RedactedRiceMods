@@ -1,12 +1,12 @@
 StarWars_Stomp = Skill:new{
 	Name = "Stomp",
-	Description = "Instead of moving, stomp across the battlefield dealing 1 damage and pushing up to move speed times per turn."
+	Description = "Instead of moving, stomp across the battlefield pushing up to move speed times per turn."
 			.. " Free action but must be used before other actions",
 	Class = "Ranged",
-	Damage = 1,
+	Damage = 0,
 	PowerCost = 1,
 	Upgrades = 2,
-	UpgradeCost = {3, 1},
+	UpgradeCost = {2, 1},
 	Limited = 1,
 	ExtraUses = 0,
 	Icon = "weapons/artillery_sw_stomp.png",
@@ -24,7 +24,7 @@ local mod = mod_loader.mods[modApi.currentMod]
 Weapon_Texts.StarWars_Stomp_Upgrade1 = "Spikes"
 Weapon_Texts.StarWars_Stomp_A_UpgradeDescription = "+1 damage"
 StarWars_Stomp_A = StarWars_Stomp:new{
-	Damage = 2,
+	Damage = 1,
 }
 
 Weapon_Texts.StarWars_Stomp_Upgrade2 = "+ Use"
