@@ -99,6 +99,7 @@ function StarWars_HeavyCannons:GetSkillEffect(p1, p2)
 		ret:AddDamage(splashDamage)
 		ret:AddBounce(behindPos, self.BouncePerDamage * self.BehindSplashDamage)
 	end
+	ret:AddDelay(0.05)
 	local mainPush = SpaceDamage(p2, self.Damage, attackDir)
 	ret:AddDamage(mainPush)
 	ret:AddDelay(0.1)

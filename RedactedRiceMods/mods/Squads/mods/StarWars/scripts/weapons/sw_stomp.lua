@@ -1,7 +1,7 @@
 StarWars_Stomp = Skill:new{
 	Name = "Stomp",
 	Description = "Instead of moving, stomp across the battlefield pushing up to move speed times per turn."
-			.. " Free action but must be used before other actions",
+			.. " Free action and doesn't consume boosted but must be used before other actions",
 	Class = "Ranged",
 	Damage = 0,
 	PowerCost = 1,
@@ -79,10 +79,30 @@ function StarWars_Stomp:syncStompForAllPlayerMechs()
 	end
 end
 
+function StarWars_Stomp:restoreBoostAfterStomp(pawn)
+	if not pawn or pawn:IsDead() then
+		return
+	end
+	StarWars_Stomp.initBoostRestoreSave()
+	local pawnId = pawn:GetId()
+	if GAME.starwars.stomp_restore_boost[pawnId] then
+		pawn:SetBoosted(true)
+		GAME.starwars.stomp_restore_boost[pawnId] = nil
+	end
+end
+
+function StarWars_Stomp.initBoostRestoreSave()
+	GAME = GAME or {}
+	GAME.starwars = GAME.starwars or {}
+	GAME.starwars.stomp_restore_boost = GAME.starwars.stomp_restore_boost or {}
+end
+
 function StarWars_Stomp:reactivateAfter(pawn)
 	if not pawn or pawn:IsDead() then
 		return
 	end
+
+	self:restoreBoostAfterStomp(pawn)
 
 	-- Set it to active so it can attack again and re-select it for convinence
 	pawn:SetActive(true)
@@ -115,15 +135,31 @@ end
 function StarWars_Stomp:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
 
+	if not Board:IsTipImage() then
+		local pawn = Board:GetPawn(p1)
+		local pawnId = pawn and pawn:GetId()
+		if pawnId then
+			local stripBoost = SpaceDamage(p1, DAMAGE_ZERO)
+			stripBoost.bHide = true
+			stripBoost.sScript = string.format([[
+				local pawn = Board:GetPawn(%d)
+				if pawn and pawn:IsBoosted() then
+					StarWars_Stomp.initBoostRestoreSave()
+					GAME.starwars.stomp_restore_boost[%d] = true
+				end
+			]], pawnId, pawnId)
+			ret:AddDamage(stripBoost)
+		end
+	end
+
 	ret:AddBounce(p1, 3)
 	ret:AddDelay(0.2)
 
 	-- Damage and push the target tile
 	local dir = GetDirection(p2 - p1)
 	if Board:IsValid(p2) then
-		local damage = SpaceDamage(p2, self.Damage)
+		local damage = SpaceDamage(p2, self.Damage, dir)
 		damage.sAnimation = "airpush_" .. dir
-		damage.iPush = dir
 		ret:AddDamage(damage)
 		ret:AddBounce(p2, -1)
 	end
@@ -132,27 +168,26 @@ function StarWars_Stomp:GetSkillEffect(p1, p2)
 
 
 	-- Move into the target if empty
-	if not Board:IsTipImage() then
-		local refund = SpaceDamage(p2)
-		refund.sScript = string.format([[
-			local p1 = %s
-			local p2 = %s
+	local refund = SpaceDamage(p2)
+	refund.bHide = true
+	refund.sScript = string.format([[
+		local p1 = %s
+		local p2 = %s
 
-			local pawn = Board:GetPawn(p1)
-			modApi:runLater(function()
-				StarWars_Stomp:reactivateAfter(pawn)
-			end)
+		local pawn = Board:GetPawn(p1)
+		modApi:runLater(function()
+			StarWars_Stomp:reactivateAfter(pawn)
+		end)
 
-			local effect = SkillEffect()
-			local path = PointList()
-			path:push_back(p1)
-			path:push_back(p2)
-			effect:AddMove(path, FULL_DELAY)
-			Board:AddEffect(effect)
+		local effect = SkillEffect()
+		local path = PointList()
+		path:push_back(p1)
+		path:push_back(p2)
+		effect:AddMove(path, FULL_DELAY)
+		Board:AddEffect(effect)
 
-		]], p1:GetString(), p2:GetString())
-		ret:AddDamage(refund)
-	end
+	]], p1:GetString(), p2:GetString())
+	ret:AddDamage(refund)
 
 	return ret
 end

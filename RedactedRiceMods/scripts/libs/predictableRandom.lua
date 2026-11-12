@@ -41,7 +41,7 @@ predictableRandom:resetToLastRoll(id)
 		id - the randomizer id
  ]]--
 
-local VERSION = "1.3.0"
+local VERSION = "1.3.1"
 
 local function onModsInitialized()
 	if VERSION < PredictableRandom.version then
@@ -83,8 +83,30 @@ if isNewestVersion then
 		end
 	end
 
-	--set the global seed
+	function PredictableRandom.setGameSeed(seed)
+		if GAME then
+			GAME.RandomizerSeed = seed
+		end
+	end
+
+	-- set the global seed since we use this for the GAME seed
 	PredictableRandom:seedGlobally()
+
+	function PredictableRandom.getGameSeedSettingIfNeeded(incrementSeed)
+		if GAME then
+			if GAME.RandomizerSeed == nil then
+				GAME.RandomizerSeed = PredictableRandom.seed_internal
+				-- Don't change the internal seed so it persists on resets/reloads
+				PredictableRandom.seed_internal = PredictableRandom.seed_internal + #GAME.Randomizers
+			end
+			local seed = GAME.RandomizerSeed
+			if incrementSeed then
+				GAME.RandomizerSeed = seed + 1
+			end
+			return seed
+		end
+		return PredictableRandom.seed_internal
+	end
 
 	-- Helper functions (part of the object, version-guarded)
 	function PredictableRandom.rollRandomizer(rand)
@@ -101,13 +123,12 @@ if isNewestVersion then
 	end
 
 	function PredictableRandom.getRandomizer(id)
-		--if its a tool tip in the squad selection GAME will not exist
-		--create/seed it if the GAME or the randomizer for the id does not exist and return it
-		if not(GAME and GAME.Randomizers and GAME.Randomizers[id]) then
+		-- if its a tool tip in the squad selection GAME will not exist
+		-- create/seed it if the GAME or the randomizer for the id does not exist and return it
+		if not (GAME and GAME.Randomizers and GAME.Randomizers[id]) then
 			return PredictableRandom:seed(id)
 		end
-
-		--otherwise return the randomizer at the passed id
+		-- otherwise return the randomizer at the passed id
 		return GAME.Randomizers[id]
 	end
 
@@ -119,25 +140,20 @@ if isNewestVersion then
 			if not GAME.Randomizers then
 				GAME.Randomizers = {}
 			end
-
 			rand = GAME.Randomizers[id]
 			if not rand then
 				rand = {}
 				GAME.Randomizers[id] = rand
 			end
+			if not seed then
+				seed = PredictableRandom.getGameSeedSettingIfNeeded(true)
+			end
 		end
 
 		rand.currCount = 0
 		rand.savedCount = 0
-
-		if seed then
-			rand.currSeed = seed
-		else
-			rand.currSeed = PredictableRandom.seed_internal
-			PredictableRandom.seed_internal = PredictableRandom.seed_internal + 1
-		end
+		rand.currSeed = seed
 		rand.savedSeed = rand.currSeed
-
 		return rand
 	end
 

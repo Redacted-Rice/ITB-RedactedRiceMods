@@ -197,7 +197,12 @@ Released: XX/XX/2026
 * Updated to support fn texts and supporting GetText ids for texts
 
 ## PredictableRandom
-Current Release: 1.3.0
+Current Release: 1.3.1
+
+### 1.3.1
+Released: XX/XX/2026
+
+* Fixing issue where the first creation of randomizers was not repeatable
 
 ### 1.3.0
 Released: 7/7/2026

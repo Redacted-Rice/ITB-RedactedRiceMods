@@ -116,11 +116,25 @@ function StarWars_TIEFighterMech.initGameSaveData()
 	GAME.starwars = GAME.starwars or {}
 	GAME.starwars.assembly_line = GAME.starwars.assembly_line or {}
 	GAME.starwars.assembly_line.uses = GAME.starwars.assembly_line.uses or {}
+	if GAME.starwars.assembly_line.turn_counter == nil then
+		GAME.starwars.assembly_line.turn_counter = 0
+	end
 end
 
 function StarWars_TIEFighterMech.resetAssemblyLineUses()
 	StarWars_TIEFighterMech.initGameSaveData()
 	GAME.starwars.assembly_line.uses = {}
+	GAME.starwars.assembly_line.turn_counter = 0
+end
+
+function StarWars_TIEFighterMech.onAssemblyLineNextTurn()
+	StarWars_TIEFighterMech.initGameSaveData()
+	GAME.starwars.assembly_line.turn_counter = GAME.starwars.assembly_line.turn_counter + 1
+end
+
+function StarWars_TIEFighterMech.getAssemblyLineTurnSalt()
+	StarWars_TIEFighterMech.initGameSaveData()
+	return GAME.starwars.assembly_line.turn_counter
 end
 
 function StarWars_TIEFighterMech.determinMaxAssemblyLineUses(pawn)
@@ -206,7 +220,9 @@ function StarWars_TIEFighterMech.respawnTieFighterWhenNotBusy(pawn)
 		return
 	end
 
-	local dest = BoardUtils.pickRandomSafeSpawnTile(PATH_FLYER, pawnId)
+	local turnCounter = StarWars_TIEFighterMech.getAssemblyLineTurnSalt()
+	local turnSalt = pawnId * 100000 + turnCounter
+	local dest = BoardUtils.pickRandomSafeSpawnTile(PATH_FLYER, turnSalt)
 	if not dest then
 		return
 	end
@@ -295,4 +311,5 @@ function StarWars_TIEFighterMech.RegisterHooks()
 	modApi:addMissionStartHook(StarWars_TIEFighterMech.resetAssemblyLineUses)
 	modApi:addMissionNextPhaseCreatedHook(StarWars_TIEFighterMech.resetAssemblyLineUses)
 	modapiext:addPawnKilledHook(StarWars_TIEFighterMech.tryAssemblyLineRespawn)
+	modApi.events.onNextTurn:subscribe(StarWars_TIEFighterMech.onAssemblyLineNextTurn)
 end
