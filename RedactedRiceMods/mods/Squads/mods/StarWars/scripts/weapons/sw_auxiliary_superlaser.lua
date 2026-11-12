@@ -119,7 +119,7 @@ end
 
 function StarWars_AuxiliarySuperlaser.addCenterEffect(ret, center, damage)
 	if damage and not Board:IsTerrain(center, TERRAIN_HOLE) then
-		sd = SpaceDamage(center, damage)
+		local sd = SpaceDamage(center, damage)
 		sd.iTerrain = TERRAIN_LAVA
 		ret:AddDamage(sd)
 	else

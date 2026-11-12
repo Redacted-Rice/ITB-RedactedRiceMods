@@ -249,7 +249,7 @@ function StarWars_TieOverdrive:GetPassiveSkillEffect_NextTurnHook(mission)
 end
 
 function StarWars_TieOverdrive:GetPassiveSkillEffect_OnPawnIsGrappled(mission, pawn, isGrappled)
-	if isGrappled or not Game or not Board or Board:IsTipImage() then
+	if not isGrappled or not Game or not Board or Board:IsTipImage() then
 		return
 	end
 	initGameSaveData()

@@ -137,7 +137,7 @@ function StarWars_TIEFighterMech.getAssemblyLineTurnSalt()
 	return GAME.starwars.assembly_line.turn_counter
 end
 
-function StarWars_TIEFighterMech.determinMaxAssemblyLineUses(pawn)
+function StarWars_TIEFighterMech.determineMaxAssemblyLineUses(pawn)
 	if not StarWars_TIEFighterMech.isTieFighter(pawn) then
 		return 0
 	end
@@ -156,7 +156,7 @@ function StarWars_TIEFighterMech.getAssemblyUsesRemaining(pawn)
 		return 0
 	end
 	StarWars_TIEFighterMech.initGameSaveData()
-	local max = StarWars_TIEFighterMech.determinMaxAssemblyLineUses(pawn)
+	local max = StarWars_TIEFighterMech.determineMaxAssemblyLineUses(pawn)
 	local used = GAME.starwars.assembly_line.uses[pawn:GetId()] or 0
 	return math.max(0, max - used)
 end
@@ -280,7 +280,7 @@ modTable.libs.traitReplace:addStateful{
 		if not StarWars_TIEFighterMech.isTieFighter(pawn) then
 			return 0
 		end
-		local max = StarWars_TIEFighterMech.determinMaxAssemblyLineUses(pawn)
+		local max = StarWars_TIEFighterMech.determineMaxAssemblyLineUses(pawn)
 		if max <= 0 then
 			return 0
 		end
