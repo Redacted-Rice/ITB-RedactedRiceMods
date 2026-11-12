@@ -1,5 +1,5 @@
 
-local VERSION = "4.2.0"
+local VERSION = "4.2.1"
 ----------------------------------------------------------------------
 -- Weapon Preview - code library
 --
@@ -133,6 +133,41 @@ local NULL_PAWNID = -1
 local NULL_WEAPON = ""
 local NULL_WEAPID = -1
 local INT_MAX = 2147483647
+
+-- Repair is always armed as Skill_Repair, but GetSkillEffect may run on
+-- Skill_Repair_Punch/Power or a ReplaceRepair weapon. Treat those as the same
+-- preview so More+ / custom repair effect icons can display.
+local function isRepairSkillId(skillId)
+	return skillId == "Skill_Repair"
+		or skillId == "Skill_Repair_Orig"
+		or (type(skillId) == "string" and skillId:sub(1, 13) == "Skill_Repair_")
+end
+
+local function getReplaceRepairWeaponId(pawn)
+	if ReplaceRepair == nil or pawn == nil or ReplaceRepair.repairSkills == nil then
+		return nil
+	end
+	for _, repairSkill in ipairs(ReplaceRepair.repairSkills) do
+		if repairSkill:isActive(pawn) then
+			return repairSkill.weapon or repairSkill.Weapon
+		end
+	end
+	return nil
+end
+
+local function matchesWeapon(skillId, armedWeapon, pawn)
+	if skillId == armedWeapon then
+		return true
+	end
+	if armedWeapon ~= "Skill_Repair" then
+		return false
+	end
+	if isRepairSkillId(skillId) then
+		return true
+	end
+	local replaceWeapon = getReplaceRepairWeaponId(pawn)
+	return replaceWeapon ~= nil and skillId == replaceWeapon
+end
 
 -- Tooltip key configuration
 local TOOLTIP_KEY = SDLKeycodes.h
@@ -898,7 +933,7 @@ local function getTargetArea(self, p1, ...)
 
 		actingMarker:setArmed(pawn)
 
-		if skillId == actingMarker.weapon and actingMarker ~= targetMarker then
+		if matchesWeapon(skillId, actingMarker.weapon, pawn) and actingMarker ~= targetMarker then
 			if targetMarker:isActive() then
 				events.onTargetAreaHidden:dispatch(targetMarker:unpack())
 				targetMarker:clear()
@@ -933,7 +968,7 @@ local function getSecondTargetArea(self, p1, p2, ...)
 
 		actingMarker:setArmed(pawn)
 
-		if skillId == actingMarker.weapon and actingMarker ~= secondTargetMarker then
+		if matchesWeapon(skillId, actingMarker.weapon, pawn) and actingMarker ~= secondTargetMarker then
 			if secondTargetMarker:isActive() then
 				events.onSecondTargetAreaHidden:dispatch(secondTargetMarker:unpack())
 				secondTargetMarker:clear()
@@ -968,7 +1003,7 @@ local function getSkillEffect(self, p1, p2, ...)
 
 		actingMarker:setArmed(pawn)
 
-		if skillId == actingMarker.weapon then
+		if matchesWeapon(skillId, actingMarker.weapon, pawn) then
 			if effectMarker ~= actingMarker and effectMarker:isActive() then
 				events.onSkillEffectHidden:dispatch(effectMarker:unpack())
 				effectMarker:clear()
@@ -985,7 +1020,7 @@ local function getSkillEffect(self, p1, p2, ...)
 			result = oldGetSkillEffects[skillId](self, p1, p2, ...)
 			previewState = STATE_NONE
 
-		elseif pawn and skillId == pawn:GetQueuedWeapon() then
+		elseif pawn and matchesWeapon(skillId, pawn:GetQueuedWeapon(), pawn) then
 			previewState = STATE_QUEUED_SKILL
 			local pawnId = pawn:GetId()
 
@@ -1015,7 +1050,7 @@ local function getFinalEffect(self, p1, p2, p3, ...)
 
 		actingMarker:setArmed(pawn)
 
-		if skillId == actingMarker.weapon then
+		if matchesWeapon(skillId, actingMarker.weapon, pawn) then
 			if finalEffectMarker ~= actingMarker and finalEffectMarker:isActive() then
 				events.onFinalEffectHidden:dispatch(finalEffectMarker:unpack())
 				finalEffectMarker:clear()
@@ -1032,7 +1067,7 @@ local function getFinalEffect(self, p1, p2, p3, ...)
 			result = oldGetFinalEffects[skillId](self, p1, p2, p3, ...)
 			previewState = STATE_NONE
 
-		elseif pawn and skillId == pawn:GetQueuedWeapon() then
+		elseif pawn and matchesWeapon(skillId, pawn:GetQueuedWeapon(), pawn) then
 			previewState = STATE_QUEUED_FINAL_EFFECT
 			local pawnId = pawn:GetId()
 

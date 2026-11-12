@@ -312,7 +312,12 @@ Current Release: 2.1.0
 Brought in from Lemonymous' repo in support of ArtilleryArc. No changes
 
 ## WeaponPreview
-Current Release: 4.2.0
+Current Release: 4.2.1
+
+### 4.2.1
+Released: XX/XX/2026
+
+* Made to work with replace repair skills
 
 ### 4.2.0
 Released: 10/15/2026
