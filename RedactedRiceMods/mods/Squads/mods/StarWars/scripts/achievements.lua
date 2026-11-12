@@ -44,7 +44,7 @@ local achievements = {
 
 	nosurvivors = modApi.achievements:add{
 		id = "nosurvivors",
-		name = "No Survivors",
+		name = "Technically a win",
 		tooltip = "Destroy all buildings in a mission",
 		image = mod.resourcePath .. "img/achievements/nosurvivors.png",
 		squad = StarWarsAchievements.empireSquad,

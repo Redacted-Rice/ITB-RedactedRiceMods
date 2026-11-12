@@ -30,7 +30,7 @@ StarWars_AuxiliarySuperlaser = Skill:new{
 	BounceDecay = 0.92,
 	-- Some magic numbers to make it line up nicely with sfx
 	ExplosionSfxDelay = PASS_DELAY * 35,
-	SecondaryShockwaveSfxDelay = PASS_DELAY * 27,
+	SecondaryShockwaveSfxDelay = PASS_DELAY * 10,
 	TertiaryShockwaveSfxDelay = PASS_DELAY * 12,
 	IntroFrames = 6,
 	PassDelay = PASS_DELAY,
@@ -48,6 +48,11 @@ StarWars_AuxiliarySuperlaser = Skill:new{
 		Mountain = Point(2, 2),
 	}
 }
+
+StarWars_AuxiliarySuperlaser.cachedPreviewRings = nil
+StarWars_AuxiliarySuperlaser.cachedRings = {}
+StarWars_AuxiliarySuperlaser.cachedSecondaryAndTertiaryShockwaves = {}
+StarWars_AuxiliarySuperlaser.MAX_DISTANCE = 14
 
 ANIMS.StarWars_AuxSuperlaser_Anim = Animation:new{
 	Image = "effects/satellite_sw_aux_superlaser.png",
@@ -90,30 +95,29 @@ function StarWars_AuxiliarySuperlaser:GetTargetArea(point)
 	return ret
 end
 
-local function getValidSpacesAtDistance(center, distance)
-	local tiles = {}
-	if distance == 0 then
-		table.insert(tiles, center)
-	else
-		for x = -distance, distance do
-			for y = -distance, distance do
-				local space = center + Point(x, y)
-				if Board:IsValid(space) and center:Manhattan(space) == distance then
-					table.insert(tiles, space)
-				end
-			end
+function StarWars_AuxiliarySuperlaser.calculateRings(center)
+	local rings = {}
+	for dist = 0, StarWars_AuxiliarySuperlaser.MAX_DISTANCE do
+		rings[dist] = {}
+	end
+
+	local size = Board:GetSize()
+	for x = 0, size.x - 1 do
+		for y = 0, size.y - 1 do
+			local space = Point(x, y)
+			table.insert(rings[BoardUtils.getManhattanDistance(center, space)], space)
 		end
 	end
-	return tiles
+	return rings
 end
 
-local function addShockwaveRing(ret, center, distance, bounce)
-	for _, space in ipairs(getValidSpacesAtDistance(center, distance)) do
+function StarWars_AuxiliarySuperlaser.addShockwaveRing(ret, spaces, bounce)
+	for _, space in ipairs(spaces) do
 		ret:AddBounce(space, bounce)
 	end
 end
 
-local function addCenterEffect(ret, center, damage)
+function StarWars_AuxiliarySuperlaser.addCenterEffect(ret, center, damage)
 	if damage and not Board:IsTerrain(center, TERRAIN_HOLE) then
 		sd = SpaceDamage(center, damage)
 		sd.iTerrain = TERRAIN_LAVA
@@ -123,7 +127,7 @@ local function addCenterEffect(ret, center, damage)
 	end
 end
 
-local function addExplosionEffects(ret, spaces, damage, isAdj)
+function StarWars_AuxiliarySuperlaser.addExplosionEffects(ret, spaces, damage, isAdj)
 	for _, space in ipairs(spaces) do
 		if damage then
 			local sd = SpaceDamage(space, damage)
@@ -156,6 +160,43 @@ function StarWars_AuxiliarySuperlaser:getSuperlaserSplashDamages(pawn)
 	return math.floor(hp / 3) + bonus, math.floor(hp / 7) + bonus
 end
 
+function StarWars_AuxiliarySuperlaser:addSecondaryAndTertiaryShockwaves(ret, center)
+	if Board:IsTipImage() then return end
+	if not self.cachedSecondaryAndTertiaryShockwaves[center] then
+		self.cachedSecondaryAndTertiaryShockwaves[center] = [[
+			local ret = SkillEffect()
+			local center = ]]..center:GetString()..[[	
+			local rings = StarWars_AuxiliarySuperlaser.cachedRings[center:GetString()]
+			local bounceDecay = StarWars_AuxiliarySuperlaser.BounceDecay
+			ret:AddDelay(StarWars_AuxiliarySuperlaser.SecondaryShockwaveSfxDelay)
+			ret:AddBoardShake(StarWars_AuxiliarySuperlaser.ShakeBaseVal)
+			ret:AddDamage(SpaceDamage(center, 0))
+
+			local secondaryBounce = ]]..SECONDARY_BOUNCE_BASE..[[	
+			for ring = StarWars_AuxiliarySuperlaser.MAX_DISTANCE, 0, -1 do
+				StarWars_AuxiliarySuperlaser.addShockwaveRing(ret, rings[ring], secondaryBounce)
+				secondaryBounce = math.min(-1, secondaryBounce * bounceDecay)
+				ret:AddDelay(StarWars_AuxiliarySuperlaser.PassDelay)
+			end
+
+			-- Let bounces finish before we start the next
+			ret:AddDelay(StarWars_AuxiliarySuperlaser.TertiaryShockwaveSfxDelay)
+
+			local tertiaryBounce = math.min(-1, secondaryBounce * bounceDecay)
+			for ring = 0, StarWars_AuxiliarySuperlaser.MAX_DISTANCE do
+				StarWars_AuxiliarySuperlaser.addShockwaveRing(ret, rings[ring], tertiaryBounce)
+				tertiaryBounce = math.min(-1, tertiaryBounce * bounceDecay)
+				ret:AddDelay(StarWars_AuxiliarySuperlaser.PassDelay)
+			end
+
+			-- Pause after for effect
+			ret:AddDelay(StarWars_AuxiliarySuperlaser.IntroFrames * StarWars_AuxiliarySuperlaser.PassDelay)
+			Board:AddEffect(ret)
+		]]
+	end
+	ret:AddScript(self.cachedSecondaryAndTertiaryShockwaves[center])
+end
+
 function StarWars_AuxiliarySuperlaser:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
 	local pawn = Board:GetPawn(p1)
@@ -172,8 +213,19 @@ function StarWars_AuxiliarySuperlaser:GetSkillEffect(p1, p2)
 	ret:AddDelay(self.IntroFrames * self.PassDelay)
 	ret:AddBoardShake(self.ShakeBaseVal * 2)
 
-	local adjacentSpaces = getValidSpacesAtDistance(p2, 1)
-	local furtherSpaces = getValidSpacesAtDistance(p2, 2)
+	-- compute the rings once and reuse them for optimization
+	local rings = nil
+	if Board:IsTipImage() then
+		if not self.cachedPreviewRings then
+			self.cachedPreviewRings = self.calculateRings(p2)
+		end
+		rings = self.cachedPreviewRings
+	else
+		if not self.cachedRings[p2:GetString()] then
+			self.cachedRings[p2:GetString()] = self.calculateRings(p2)
+		end
+		rings = self.cachedRings[p2:GetString()]
+	end
 
 	local CENTER = 1
 	local ADJACENT = 2
@@ -181,66 +233,44 @@ function StarWars_AuxiliarySuperlaser:GetSkillEffect(p1, p2)
 	local addDamageInPass = {1, 3, 5}
 	local explosionsInPasses = {{1,3,5,7,9}, {3,5,7}, {5}}
 	local maxExplosionPass = 9
-	local primaryPasses = 14
 
 	local primaryBounce = PRIMARY_BOUNCE_BASE
-	for pass = 1, primaryPasses do
-		local ring = pass - 1
-
+	for pass = 1, StarWars_AuxiliarySuperlaser.MAX_DISTANCE + 1 do
 		if pass <= maxExplosionPass and list_contains(explosionsInPasses[CENTER], pass) then
 			local damage = nil
 			if pass == addDamageInPass[CENTER] then
 				damage = DAMAGE_DEATH
 			end
-			addCenterEffect(ret, p2, damage)
+			self.addCenterEffect(ret, p2, damage)
 		end
 		if pass <= maxExplosionPass and list_contains(explosionsInPasses[ADJACENT], pass) then
 			local damage = nil
 			if pass == addDamageInPass[ADJACENT] then
 				damage = splashAdj
 			end
-			addExplosionEffects(ret, adjacentSpaces, damage, true)
+			self.addExplosionEffects(ret, rings[1], damage, true)
 		end
 		if pass <= maxExplosionPass and list_contains(explosionsInPasses[FURTHER], pass) then
 			local damage = nil
 			if pass == addDamageInPass[FURTHER] then
 				damage = splashFar
 			end
-			addExplosionEffects(ret, furtherSpaces, damage, false)
+			self.addExplosionEffects(ret, rings[2], damage, false)
 		end
 
-		if ring <= primaryPasses then
-			addShockwaveRing(ret, p2, ring, primaryBounce)
-			primaryBounce = primaryBounce * self.BounceDecay
-		end
+		self.addShockwaveRing(ret, rings[pass - 1], primaryBounce)
+		primaryBounce = primaryBounce * self.BounceDecay
+		
 		if pass <= maxExplosionPass then
 			ret:AddSound(self.ImpactSounds[math.random(1, #self.ImpactSounds)])
 		end
 		ret:AddDelay(self.PassDelay)
 	end
 
-	ret:AddDelay(self.SecondaryShockwaveSfxDelay)
-	ret:AddBoardShake(self.ShakeBaseVal)
+	-- Game seems to cut off delays if we don't add this
+	ret:AddDamage(SpaceDamage(p2, 0))
 
-	local secondaryBounce = SECONDARY_BOUNCE_BASE
-	for ring = primaryPasses, 0, -1 do
-		addShockwaveRing(ret, p2, ring, secondaryBounce)
-		secondaryBounce = math.min(-1, secondaryBounce * self.BounceDecay)
-		ret:AddDelay(self.PassDelay)
-	end
-
-	-- Let bounces finish before we start the next
-	ret:AddDelay(self.TertiaryShockwaveSfxDelay)
-
-	local tertiaryBounce = math.min(-1, secondaryBounce * self.BounceDecay)
-	for ring = 0, primaryPasses do
-		addShockwaveRing(ret, p2, ring, tertiaryBounce)
-		tertiaryBounce = math.min(-1, tertiaryBounce * self.BounceDecay)
-		ret:AddDelay(self.PassDelay)
-	end
-
-	-- Pause after for effect
-	ret:AddDelay(self.IntroFrames * self.PassDelay)
+	self:addSecondaryAndTertiaryShockwaves(ret, p2)
 
 	return ret
 end
