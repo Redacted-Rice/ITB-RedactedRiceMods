@@ -21,9 +21,14 @@ if isNewestVersion then
 	MoveThrough.version = VERSION
 
 	function MoveThrough._captureTile(point)
+		local item
+		if Board:IsItem(point) then
+			item = Board:GetItem(point)
+		end
 		return {
 			fireType = Board:GetFireType(point),
 			acid = Board:IsAcid(point),
+			item = item,
 		}
 	end
 
@@ -74,6 +79,29 @@ if isNewestVersion then
 		end
 	end
 
+	function MoveThrough._removeTileItem(point)
+		if Board:IsItem(point) then
+			Board:RemoveItem(point)
+		end
+	end
+
+	function MoveThrough._restoreTileItem(point, itemName)
+		if type(itemName) == "string" and itemName ~= "" and not Board:IsItem(point) then
+			Board:SetItem(point, itemName)
+		end
+	end
+
+	function MoveThrough._reapplyLandingItemAfterMove(point, itemName)
+		if type(itemName) ~= "string" or itemName == "" then
+			return
+		end
+		modApi:runLater(function()
+			if Board and Board:IsValid(point) and not Board:IsItem(point) then
+				Board:SetItem(point, itemName)
+			end
+		end)
+	end
+
 	function MoveThrough.restorePreviousTileState(ret, prevTile, tileSnapshots)
 		local saved = tileSnapshots[prevTile:GetString()]
 		if saved then
@@ -81,6 +109,11 @@ if isNewestVersion then
 				MoveThrough._addRestoreTileDamage(]] .. prevTile:GetString() .. [[, ]] .. saved.fireType
 						.. [[, ]] .. tostring(saved.acid) .. [[)
 			]])
+			if saved.item then
+				ret:AddScript(string.format([[
+					MoveThrough._restoreTileItem(%s, %q)
+				]], prevTile:GetString(), saved.item))
+			end
 		end
 	end
 
@@ -143,12 +176,31 @@ if isNewestVersion then
 		]])
 	end
 
+	function MoveThrough.preStepLeaveTile(ret, newPoint, tileSnapshots)
+		local landingSnap = tileSnapshots[newPoint:GetString()]
+		if landingSnap then
+			ret:AddScript(string.format([[
+				MoveThrough._removeTileItem(%s)
+			]], newPoint:GetString()))
+		end
+	end
+
 	-- After move + fire at a step: restore tile left behind, then fix pawn hazards
 	function MoveThrough.afterStepLeaveTile(ret, pawnId, prevPoint, newPoint, isEndTile, pawnSnapshot, tileSnapshots)
 		if prevPoint then
 			MoveThrough.restorePreviousTileState(ret, prevPoint, tileSnapshots)
 		end
-		MoveThrough.restorePawnState(ret, pawnId, pawnSnapshot, tileSnapshots[newPoint:GetString()], isEndTile)
+
+		local landingSnap = tileSnapshots[newPoint:GetString()]
+		if landingSnap then
+			if isEndTile and landingSnap.item then
+				ret:AddScript(string.format([[
+					MoveThrough._reapplyLandingItemAfterMove(%s, %q)
+				]], newPoint:GetString(), landingSnap.item))
+			end
+		end
+
+		MoveThrough.restorePawnState(ret, pawnId, pawnSnapshot, landingSnap, isEndTile)
 	end
 end
 

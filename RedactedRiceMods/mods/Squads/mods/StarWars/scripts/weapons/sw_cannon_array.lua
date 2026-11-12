@@ -194,23 +194,27 @@ function StarWars_CannonArray:GetFinalEffect(p1, p2, p3)
 			end
 		end
 	end
-	
+
 	local pawnId = pawn:GetId()
 	local tileSnapshots, pawnSnapshot = MoveThrough.buildPathSnapshots(path, pawn)
-	
+
 	-- Move through path one space at a time, firing at each position
 	for i = 1, path:size() do
 		local newPos = path:index(i)
-		
+
+		-- Prep the tile as needed before moveing
+		MoveThrough.preStepLeaveTile(ret, newPos, tileSnapshots)
+
 		-- Move to this position
 		BoardUtils.addForcedSingleMove(ret, pawnId, newPos)
-		
+
 		-- Fire from current position
 		self:FireFromPositionInDirection(ret, newPos, fireDir)
 
+		-- Cleanup the tile as needed after moving
 		MoveThrough.afterStepLeaveTile(ret, pawnId, i > 1 and path:index(i - 1) or nil,
 				newPos, i == path:size(), pawnSnapshot, tileSnapshots)
-		
+
 		-- Add small delay between positions
 		if i < path:size() then
 			ret:AddDelay(0.1)

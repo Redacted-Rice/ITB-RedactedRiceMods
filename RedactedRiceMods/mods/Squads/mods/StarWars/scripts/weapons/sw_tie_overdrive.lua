@@ -170,12 +170,6 @@ function StarWars_TieOverdrive:GetSkillEffect(p1, p2)
 		damage.sScript = damage.sScript .. [[
 			if GAME.starwars.tie_overdrive.web_immune_applied == nil then GAME.starwars.tie_overdrive.web_immune_applied = {} end
 			GAME.starwars.tie_overdrive.web_immune_applied[pawnId] = true
-
-			local space = pawn:GetSpace()
-            pawn:SetSpace(Point(-1,-1))
-            modApi:runLater(function()
-                pawn:SetSpace(space)
-            end)
 		]]
 	end
 
@@ -255,21 +249,15 @@ function StarWars_TieOverdrive:GetPassiveSkillEffect_NextTurnHook(mission)
 end
 
 function StarWars_TieOverdrive:GetPassiveSkillEffect_OnPawnIsGrappled(mission, pawn, isGrappled)
-	if not Game or not Board or Board:IsTipImage() then return end
+	if isGrappled or not Game or not Board or Board:IsTipImage() then
+		return
+	end
 	initGameSaveData()
-	if isGrappled and GAME.starwars.tie_overdrive.web_immune_applied[pawn:GetId()] then
-		-- Thanks Generic for this
-		--If removing the web right away it looks really weird. So we'll wait about half a second with this
-		modApi:scheduleHook(550,function()
-            local space = pawn:GetSpace() --Store the space so we can move it back later
-            --It's entirely optional, remove it if you don't like it
-            pawn:SetSpace(Point(-1,-1)) --Move the pawn to Point(-1,-1)
-            modApi:runLater(function() --This runs a function one frame later so things get updated
-                pawn:SetSpace(space) --Move the pawn back, after that one frame. The web will be gone
-				Board:AddAlert(space, "OVERDRIVE")
-				Board:Ping(space, GL_Color(0, 0, 255))
-            end)
-        end)
+	if GAME.starwars.tie_overdrive.web_immune_applied[pawn:GetId()] then
+		BoardUtils.breakGrapple(pawn, {
+			alert = "OVERDRIVE",
+			pingColor = GL_Color(0, 0, 255),
+		})
 	end
 end
 

@@ -37,6 +37,20 @@ StarWars_Stomp_AB = StarWars_Stomp_A:new{
 	ExtraUses = 1,
 }
 
+function StarWars_Stomp:pawnHasPoweredStomp(pawn)
+	if not pawn or pawn:IsDead() or not pawn:IsMech() then
+		return false
+	end
+	local weapons = pawn:GetPoweredWeaponTypes()
+	for wIdx = 1, 2 do
+		local weaponId = weapons[wIdx]
+		if weaponId and weaponId:find("StarWars_Stomp") and pawn:IsWeaponPowered(weaponId) then
+			return true
+		end
+	end
+	return false
+end
+
 function StarWars_Stomp:getStompUsesForPawn(pawn, weaponId)
 	local move = pawn:GetMoveSpeed()
 	if move < 0 then
@@ -59,10 +73,9 @@ function StarWars_Stomp:syncStompForPawn(pawn)
 		local weaponId = weapons[wIdx]
 		if weaponId and weaponId:find("StarWars_Stomp") and pawn:IsWeaponPowered(weaponId) then
 			
-			if Game:GetTeamTurn() == TEAM_ENEMY then
+			if Game:GetTeamTurn() == TEAM_PLAYER then
 				local uses = self:getStompUsesForPawn(pawn, weaponId)
 				pawn:SetWeaponLimitedRemaining(wIdx, uses)
-			else
 				pawn:SetMovementSpent(true)
 			end
 		end
@@ -206,6 +219,15 @@ function StarWars_Stomp:GetPassiveSkillEffect_NextTurnHook(mission)
 	self:syncStompForAllPlayerMechs()
 end
 
+function StarWars_Stomp:GetPassiveSkillEffect_OnPawnIsGrappled(mission, pawn, isGrappled)
+	if not isGrappled then
+		return
+	end
+	if StarWars_Stomp:pawnHasPoweredStomp(pawn) then
+		BoardUtils.breakGrapple(pawn)
+	end
+end
+
 -- Register the passive effect
 local passiveEffect = mod.libs.passiveEffect
 passiveEffect:addPassiveEffect(
@@ -214,6 +236,7 @@ passiveEffect:addPassiveEffect(
 		"missionStartHook",
 		"onMissionNextPhaseCreated",
 		"nextTurnHook",
+		"onPawnIsGrappled",
 	},
 	true  -- Not passive only
 )
