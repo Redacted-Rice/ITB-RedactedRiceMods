@@ -67,6 +67,28 @@ if isNewestVersion then
 		return pawn:IsFlying() and not BoardUtils.isPawnHijackedFlying(pawn)
 	end
 
+	-- Removes web/grapple from a pawn using and off board hop
+	-- Thanks Generic for the pattern.
+	function BoardUtils.breakGrapple(pawn, options)
+		if not pawn or not Board or Board:IsTipImage() then
+			return
+		end
+		options = options or {}
+		modApi:scheduleHook(550, function()
+			local space = pawn:GetSpace()
+			pawn:SetSpace(Point(-1, -1))
+			modApi:runLater(function()
+				pawn:SetSpace(space)
+				if options.alert and space then
+					Board:AddAlert(space, options.alert)
+				end
+				if options.pingColor and space then
+					Board:Ping(space, options.pingColor)
+				end
+			end)
+		end)
+	end
+
 	-- Helper for building the common "allow this if a condition is met, otherwise
 	-- defer to whatever was already there" override chain used by CanMoveOn*/
 	-- CanMoveThrough*

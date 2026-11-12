@@ -27,6 +27,7 @@ Current Release: 1.8.2
 Released: XX/XX/2026
 
 * Added several target area related functions and helpers
+* Added breakGrapple fn
 * Safe space checks for fire too
 * Fn for getting a random safe space
 
