@@ -45,7 +45,7 @@ Please enjoy and contact us if you run into any issues!
 * TraitReplace - v0.9.3 - Allows adding custom UI traits that cycle with vanilla traits
 * TutorialTips - v1.5.0 - Based on Lemonymous v1.4 with profile-aware storage; keeps custom rootId Init support for WeaponPreview/shared lib usage
 * WeaponArmed - v2.1.0 - Created by Lemonymous and incorporated due to dependencies. No changes made
-* WeaponPreview - v4.2.0 - Add icons to weapon previews. Originally created by Lemonymous and updated to v4.x.x to support use in skill build hooks and two click weapons and group icons and display tool tips for icons with descriptions
+* WeaponPreview - v4.2.1 - Add icons to weapon previews. Originally created by Lemonymous and updated to v4.x.x to support use in skill build hooks and two click weapons and group icons and display tool tips for icons with descriptions
 
 # Install
 - Unzip the release folder
@@ -63,7 +63,9 @@ Latest release: 2.1
 * Pulled in and enhanced existing libs: CustomEmitter, SpaceDamageObjects, ReplaceRepair
 * Several enhancments and fixes of libs
   * BoardUtils target area helpers and safe tile queries
+  * BoardUtils breakGrapple function
   * TraitReplace can replace vanilla/custom trait icons and use function-based names
+  * Fixed WeaponPreview effect icons with replace repair
 
 Released: XX/XX/2026
 
@@ -98,7 +100,7 @@ Libs v18.0.0:
 * TraitReplace       0.9.3
 * TutorialTips       1.5.0
 * WeaponArmed        2.1.0
-* WeaponPreview      4.2.0
+* WeaponPreview      4.2.1
 
 Dependencies:
 * ItB AE        1.2.93
