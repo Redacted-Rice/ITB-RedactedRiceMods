@@ -12,32 +12,40 @@ Please enjoy and contact us if you run into any issues!
 * ItB Discord: Das Keifer
 * Email: RedactedRice@gmail.com
 
-# Squads v4.0.0
+# Squads v5.0.0
 * Moon Walkers - v1.0.0 - They seem so familiar... but backwards. Yin and Yang, push and pull, Rift Walkers and Moon Walkers. A somewhat joke squad build on the idea of Rift Walkers but backwards.
-* Star Wars - v1.0.4 - Play as your favorite iconic rebel starships and Luke to fight back against the evil vek empire. This squad can hit hard but has less board control options at the start. Luke can focus on the force to deal massive damage the next turn.
+* Star Wars - v2.0.0 - Squads and Pilots from Star Wars have been pulled into the timeline
+  * Rebels - Play as your favorite iconic rebel starships and Luke to fight back against the evil vek empire. This squad can hit hard but has less board control options at the start. Luke can focus on the force to deal massive damage the next turn.
+  * Empire - This very uniqued squad has high damage, large areas and lots of collatoral damage. The Vek can destroy the world if you destroy it first... Plus this is the first squad with MechFORGE custom upgrades! Vader joins the fray and can force choke a Vek, canceling its attack and movement
 * Treeherders - v3.1.4 - Inspired by ents, this squad focuses on using forests tiles to increase their power. The flagship entborg mech gets stronger as the forests get destroyed
 * WorldBuilders - v1.3.5 - This squad focuses on terrain manipulation to block and avoid damage. It has some strong single target effects but you can easily get overwhelmed by numbers if not strategically manipulating the terrain
 
-# Pilot Level Up Skills v5.0.0
-* More+ - v2.4.0 - 35 custom pilot level up skills across 5 categories with Status Library integration
-* Legendary+ - v1.1.0 - Rare, powerful pilot level up skills that appear less often and only in the second skill slot
+# Pilot Level Up Skills v5.1.0
+* More+ - v2.4.1 - 35 custom pilot level up skills across 5 categories with Status Library integration
+* Legendary+ - v1.1.1 - Rare, powerful pilot level up skills that appear less often and only in the second skill slot
 * RebalanceCore+ - v1.2.0 - Reblances the core vanilla level up skills (other than reactor) so they are not strictly worse than the AE ones
 * Pilots+ - v1.1.0 - A few pilots focused around adding bonus level up skills beyond the standard two per pilot on level up
 * SkillChoices - v1.2.0 - Allows for selecting between a configurable amount of pilot level up skills on leveling up pilots
 
-# Libs - v12.0.0
+# Libs - v18.0.0
 * ArtilleryArc - v2.0.0 - Originally created by Lemonymous to customize aritllery height. Updated to handle multishot arcs and two click weapons
-* BoardUtils - v1.8.1 - Board related functions and pathing
+* BoardUtils - v1.8.2 - Board related functions and pathing
+* CustomEmitter - v1.0.0 - Created by Lemonymous and incorporated due to dependencies. No changes made
 * DamageModifierLib - v1.0.1 - Modify weapon SpaceDamage during skill builds and deadly checks
+* IgnoreLiquid - v1.0.0 - Adds support for a IgnoreLiquid field for pawn types and a SetIgnoreLiquid for dynamic changes by hijacking flying
+* MoveThrough - v1.0.0 - Functions to move pawns through spaces replicating as if they had not stopped. I.e. Fire and acid are not impacted/spread
+* InGameToolTip - v1.0.0 - Small helper for making vanilla-like tooltips on existing vanilla UI boxes or new UI elements
 * PassiveEffect - v2.0.0 - Helps with adding passive weapons to the game. This will handle automatically detecting if the weapon is powered and only call hooks when it is
 * PlusHelper - v1.0.0 - Shared helpers for CPLUS+ skill groups and pilot skill mod utilities
 * PawnTypeUtils - v1.1.1 - Functions to allow determining more detailed pawn types (using EasyEdit)
 * PredictableRandom - v1.3.0 - Get random numbers in a way that is repeatable for when undoing moves or resetting turns
+* SpaceDamageObject - v1.0.0 - Created by Lemonymous and incorporated due to dependencies. No changes made
+* ReplaceRepair - v3.0.1 - Global repair skill replacement API (vendored from Lemonymous, enhanced for Star Wars repairs)
 * Trait - v3.0.2 - Add traits to pawns & the board. Originally created by Lemonymous and updated to v3.x.x to support multiple traits via appending text and cycling images as well as showing icons for move previews
-* TraitReplace - v0.9.2 - Allows adding custom UI traits that cycle with vanilla traits
+* TraitReplace - v0.9.3 - Allows adding custom UI traits that cycle with vanilla traits
 * TutorialTips - v1.5.0 - Based on Lemonymous v1.4 with profile-aware storage; keeps custom rootId Init support for WeaponPreview/shared lib usage
 * WeaponArmed - v2.1.0 - Created by Lemonymous and incorporated due to dependencies. No changes made
-* WeaponPreview - v4.2.0 - Add icons to weapon previews. Originally created by Lemonymous and updated to v4.x.x to support use in skill build hooks and two click weapons and group icons and display tool tips for icons with descriptions
+* WeaponPreview - v4.2.1 - Add icons to weapon previews. Originally created by Lemonymous and updated to v4.x.x to support use in skill build hooks and two click weapons and group icons and display tool tips for icons with descriptions
 
 # Install
 - Unzip the release folder
@@ -47,7 +55,62 @@ Please enjoy and contact us if you run into any issues!
 To uninstall, delete the folder in mods
 
 # Releases
-Latest release: 2.0
+Latest release: 2.1
+
+## 2.1
+* Star Wars 2.0.0 with new Empire squad (That has custom Mech upgrades!) and Darth Vader pilot
+* Several new libs: IgnoreLiquid, MoveThrough, InGameToolTip
+* Pulled in and enhanced existing libs: CustomEmitter, SpaceDamageObjects, ReplaceRepair
+* Several enhancments and fixes of libs
+  * BoardUtils target area helpers and safe tile queries
+  * BoardUtils breakGrapple function
+  * TraitReplace can replace vanilla/custom trait icons and use function-based names
+  * Fixed WeaponPreview effect icons with replace repair
+
+Released: XX/XX/2026
+
+Squads v5.0.0:
+* Moon Walkers   1.0.0
+* Star Wars      2.0.0
+* Treeherders    3.1.4
+* WorldBuilders  1.3.5
+
+Pilot Level Up Skills v5.1.0:
+* More+                  2.4.1
+* Legendary+             1.1.1
+* RebalanceCore+         1.2.0
+* Pilots+                1.1.0
+* Skill Choices          1.2.0
+
+Libs v18.0.0:
+* ArtilleryArc       2.0.0
+* BoardUtils         1.8.2
+* CustomEmitter      1.0.0
+* DamageModifierLib  1.0.1
+* IgnoreLiquid       1.0.0
+* InGameToolTip      1.0.0
+* MoveThrough        1.0.0
+* PassiveEffect      2.0.0
+* PlusHelper         1.0.0
+* PawnTypeUtils      1.1.1
+* PredictableRandom  1.3.0
+* SpaceDamageObject  1.0.0
+* ReplaceRepair      3.0.1
+* Trait              3.0.2
+* TraitReplace       0.9.3
+* TutorialTips       1.5.0
+* WeaponArmed        2.1.0
+* WeaponPreview      4.2.1
+
+Dependencies:
+* ItB AE        1.2.93
+* ModLoader     2.9.7
+* ModLoaderExt  1.25
+* Memedit       1.2.1
+* EasyEdit      2.0.8
+* Memhack       1.5.0
+* CPLUS+ Ex     2.1.0
+* MechFORGE     1.0.0
 
 ## 2.0
 * Restructured mods under Squads and Pilot Level Up Skills parent mods and added more and more consistent icons for a cleaner overall look

@@ -1,7 +1,6 @@
 StarWars_RebelHope = PassiveSkill:new{
 	Name = "Rebel Hope",
 	Description = "The first time a mech would die each mission, it is revived with 1 HP.",
-	Class = "Science",
 	PowerCost = 0,
 	Upgrades = 1,
 	UpgradeCost = {1},

@@ -15,7 +15,7 @@ icons on top of flying and Lemonymous for the trait library which was
 the inspiration/starting point for this
 ]]
 
-local VERSION = "0.9.2"
+local VERSION = "0.9.3"
 local DEBUG = false
 
 local function logDebug(...)
@@ -69,8 +69,16 @@ if not TraitReplace then
 	}
 end
 
+-- Later added fields need to be added separately in case an old version is
+-- loaded first
+TraitReplace.customTraits = TraitReplace.customTraits or {}
+TraitReplace.pendingLinkTraits = TraitReplace.pendingLinkTraits or {}
+TraitReplace.traitsLinked = TraitReplace.traitsLinked or false
+TraitReplace.traitCount = TraitReplace.traitCount or 0
+
 -- Local alias for the global version
 local traitRegistry = TraitReplace.traitRegistry
+local customTraits = TraitReplace.customTraits
 local iconPlaceholderFolder = path .. "libs/traitReplacePlaceholders/"
 
 -- Get next available placeholder filename
@@ -95,6 +103,12 @@ end
 --   descTitle = "Status_massive_Title",
 --   descText = "Status_massive_Text",
 -- }
+--
+-- Custom traits use targetTrait (registered slot, e.g. "massive") and an optional replaces flag.
+-- When replaces is true on that slot, vanilla and other customs on the same slot are hidden.
+--
+-- Pass id on add so that trait can be targeted later: targetTrait = id with replaces = true
+-- removes at most that one custom icon from the parent cycle (e.g. Admiral over ignoreLiquid on massive).
 local function registerTargetTrait(config)
 	if traitRegistry[config.id] then
 		LOG("Target trait '" .. config.id .. "' already registered, skipping.")
@@ -130,7 +144,6 @@ local function registerTargetTrait(config)
 
 		-- Trait storage
 		surfaces = {},
-		allTraits = {},
 		queuedTraits = {},
 		funcs = {},
 		pilotSkills = {},
@@ -197,6 +210,38 @@ local function clip(base, widget, screen)
 	modApi.msDeltaTime = tmp
 end
 
+-- Apply vanilla and custom trait replace rules
+local function applyTraitReplaceRules(activeTraits, vanillaTraitDef)
+	local slotReplacers = {}
+	for _, trait in ipairs(activeTraits) do
+		if trait ~= vanillaTraitDef and trait.replaces and trait.targetTrait == trait.rootVanillaTrait then
+			table.insert(slotReplacers, trait)
+		end
+	end
+
+	if #slotReplacers > 0 then
+		return slotReplacers
+	end
+
+	local result = {}
+	for _, trait in ipairs(activeTraits) do
+		local hiddenByNamed = false
+		for _, replacer in ipairs(activeTraits) do
+			if replacer.replaces and replacer.targetTrait == trait.id
+					and replacer.targetTrait ~= replacer.rootVanillaTrait
+					and replacer ~= trait then
+				hiddenByNamed = true
+				break
+			end
+		end
+		if not hiddenByNamed then
+			table.insert(result, trait)
+		end
+	end
+
+	return result
+end
+
 -- Get all active traits for a pawn for a specific target trait
 local function getActiveTraits(pawn, replaceTraitId)
 	if not pawn then return {} end
@@ -204,10 +249,8 @@ local function getActiveTraits(pawn, replaceTraitId)
 	local traitData = traitRegistry[replaceTraitId]
 	if not traitData then return {} end
 
-	local activeTraits = {}
-
 	-- Always include vanilla trait first
-	table.insert(activeTraits, traitData.vanillaTraitDef)
+	local activeTraits = { traitData.vanillaTraitDef }
 
 	-- Check func traits
 	for _, trait in ipairs(traitData.funcs) do
@@ -230,7 +273,7 @@ local function getActiveTraits(pawn, replaceTraitId)
 		table.insert(activeTraits, pawnTrait)
 	end
 
-	return activeTraits
+	return applyTraitReplaceRules(activeTraits, traitData.vanillaTraitDef)
 end
 
 -- Get the current icon to display based on global cycling timer
@@ -637,6 +680,14 @@ local function createUIWidgets(uiRoot)
 	end
 end
 
+local function traitDescForTooltip(field, pawn)
+	local resolved = type(field) == "function" and field(pawn) or field
+	if type(resolved) ~= "string" then
+		return tostring(resolved or "")
+	end
+	return GetText(resolved)
+end
+
 -- Override GetStatusTooltip to provide custom descriptions for all registered traits
 local function overrideGetStatusTooltip()
 	local oldGetStatusTooltip = GetStatusTooltip
@@ -657,8 +708,8 @@ local function overrideGetStatusTooltip()
 				elseif #activeTraits == 1 then
 					-- Just the single vanilla trait
 					return {
-						GetText(activeTraits[1].desc_title),
-						GetText(activeTraits[1].desc_text)
+						traitDescForTooltip(activeTraits[1].desc_title, pawn),
+						traitDescForTooltip(activeTraits[1].desc_text, pawn),
 					}
 				else
 					-- Multiple traits, combine descriptions
@@ -667,7 +718,8 @@ local function overrideGetStatusTooltip()
 						if i > 1 then
 							combinedText = combinedText .. "\n\n"
 						end
-						combinedText = combinedText .. GetText(trait.desc_title) .. "\n" .. GetText(trait.desc_text)
+						combinedText = combinedText .. traitDescForTooltip(trait.desc_title, pawn)
+							.. "\n" .. traitDescForTooltip(trait.desc_text, pawn)
 					end
 					return {
 						"Extra Pawn Traits",
@@ -702,19 +754,58 @@ local function maybeCycleTraits(mission)
 	end
 end
 
--- Internal function to actually add a trait
-local function addTraitInternal(trait)
+-- Find a custom trait by id in either registered traits or pending link traits
+local function findTraitById(traitId)
+	if customTraits[traitId] then
+		return customTraits[traitId]
+	end
+	return TraitReplace.pendingLinkTraits[traitId]
+end
+
+-- Convert target trait to the base vanilla slot it applies to. Custom ids are walked
+-- through customTraits/pendingLinkTraits (e.g. Admiral -> ignoreLiquid -> massive).
+local function getVanillaTraitForTarget(targetTrait)
+	local current = targetTrait
+	-- Guard against infinite loops
+	local visited = {}
+
+	while current do
+		if visited[current] then
+			return nil
+		end
+		visited[current] = true
+
+		-- If the current trait is registered (i.e. its vanilla), return it
+		if traitRegistry[current] then
+			return current
+		end
+
+		-- If its a custom target look int he registered/pending traits for it
+		local customTarget = findTraitById(current)
+		if not customTarget then
+			return nil
+		end
+
+		-- If the custom target is already resolved, short cut with it
+		if customTarget.rootVanillaTrait then
+			return customTarget.rootVanillaTrait
+		end
+
+		-- Otherwise keep walkin
+		current = customTarget.targetTrait or "massive"
+	end
+	return nil
+end
+
+-- Internal function to register a trait. Does validation, id, and icon surfaces
+-- Wiring to the vanilla slot and skill/pawn tables happens later in linkTraitToRegistry.
+local function prepareTraitInternal(trait)
 	Assert.Equals('table', type(trait), "Argument #1")
 
 	-- targetTrait specifies which trait to add to (e.g., "massive", "flying")
 	-- Defaults to "massive"
 	local targetTrait = trait.targetTrait or "massive"
 	Assert.Equals('string', type(targetTrait), "Field 'targetTrait' (defaulting to 'massive' if not specified)")
-
-	local traitData = traitRegistry[targetTrait]
-	if not traitData then
-		error("ERROR: Target trait '" .. targetTrait .. "' is not registered! Call traitReplace:registerTrait() first.")
-	end
 
 	if type(trait.desc) == 'table' then
 		trait.desc_title = trait.desc.title or trait.desc[1]
@@ -734,20 +825,32 @@ local function addTraitInternal(trait)
 		error("ERROR: Attempted to add an unlinked trait replacement! Trait must have func, pilotSkill, or pawnType.")
 	end
 
-	-- Generate unique ID based on total count for this specific trait
-	local totalCount = #traitData.allTraits + 1
-	local id = targetTrait .. "_custom_" .. totalCount
-	trait.id = id
+	-- Generate unique ID if one is not specified
+	local hasId = trait.id ~= nil
+	if hasId then
+		Assert.Equals('nil', type(customTraits[trait.id]),
+			"Duplicate replaceable trait id '" .. trait.id .. "'")
+		Assert.Equals('nil', type(TraitReplace.pendingLinkTraits[trait.id]),
+			"Duplicate replaceable trait id '" .. trait.id .. "'")
+	end
 
-	if DEBUG then LOG("Adding custom trait '" .. id .. "' to target trait '" .. targetTrait .. "'") end
+	if not hasId then
+		trait.id = targetTrait .. "_custom_" .. TraitReplace.traitCount
+		TraitReplace.traitCount = TraitReplace.traitCount + 1
+	end
+
+	trait.targetTrait = targetTrait
+	trait.replaces = trait.replaces == true
+
+	if DEBUG then LOG("Preparing custom trait '" .. trait.id .. "' for target trait '" .. targetTrait .. "'") end
 
 	-- Load the icon surface
-	local iconPath = trait.icon:match(".-.png$") or trait.icon..".png"
+	local iconPath = trait.icon:match(".-.png$") or trait.icon .. ".png"
 	local surface
 
 	if iconPath:find("^img/") then
 		-- Asset registered by some mod - search for actual file
-		for modId, mod in pairs(mod_loader.mods) do
+		for _, mod in pairs(mod_loader.mods) do
 			if mod.resourcePath then
 				local possiblePath = mod.resourcePath .. iconPath
 				if modApi:fileExists(possiblePath) then
@@ -768,7 +871,6 @@ local function addTraitInternal(trait)
 	else
 		-- Relative mod asset path
 		local fullPath = resolveIconFilePath(iconPath, path)
-
 		if modApi:fileExists(fullPath) then
 			surface = sdlext.getSurface({ path = fullPath })
 		end
@@ -776,10 +878,39 @@ local function addTraitInternal(trait)
 
 	if not surface or surface:w() == 0 or surface:h() == 0 then
 		LOG("Warning: Could not load valid icon for trait replacement (" .. targetTrait .. "): " .. iconPath)
-		return
+		return false
 	end
 
-	traitData.surfaces[id] = surface
+	trait._preparedSurface = surface
+	return true
+end
+
+-- Tie a prepared trait to its vanilla slot and func/pilotSkill/pawnType tables
+local function linkTraitToRegistry(trait)
+	local targetTrait = trait.targetTrait or "massive"
+
+	-- Convert target trait to its base vanilla trait it applies to. We register based on that
+	-- as that is the slot we need to evaluate this for
+	local vanillaTrait = getVanillaTraitForTarget(targetTrait)
+	if not vanillaTrait then
+		error("ERROR: Target trait '" .. targetTrait .. "' is not registered. Add the host with traitReplace:add() and id first.")
+	end
+
+	trait.rootVanillaTrait = vanillaTrait
+
+	local traitData = traitRegistry[vanillaTrait]
+	if not traitData then
+		error("ERROR: Target root vanilla trait '" .. vanillaTrait .. "' is not registered for target trait '"
+				.. targetTrait .. "! Call traitReplace:registerTrait() first.")
+	end
+
+	local surface = trait._preparedSurface
+	Assert.True(surface ~= nil, "Trait '" .. trait.id .. "' was not prepared (missing icon surface)")
+	traitData.surfaces[trait.id] = surface
+
+	local func = trait.func
+	local pilotSkill = trait.pilotSkill
+	local pawnType = trait.pawnType
 
 	-- Add to appropriate collection for this specific trait
 	if func then
@@ -787,17 +918,51 @@ local function addTraitInternal(trait)
 		table.insert(traitData.funcs, trait)
 	elseif pilotSkill then
 		Assert.Equals('string', type(pilotSkill))
-		Assert.Equals('nil', type(traitData.pilotSkills[pilotSkill]), "Duplicate trait replacement for pilotSkill in " .. targetTrait)
+		Assert.Equals('nil', type(traitData.pilotSkills[pilotSkill]),
+			"Duplicate trait replacement for pilotSkill in " .. targetTrait)
 		traitData.pilotSkills[pilotSkill] = trait
 	elseif pawnType then
 		Assert.Equals('string', type(pawnType))
-		Assert.Equals('nil', type(traitData.pawnTypes[pawnType]), "Duplicate trait replacement for pawnType in " .. targetTrait)
+		Assert.Equals('nil', type(traitData.pawnTypes[pawnType]),
+			"Duplicate trait replacement for pawnType in " .. targetTrait)
 		traitData.pawnTypes[pawnType] = trait
 	end
 
-	-- Keep track of all traits for this specific trait
-	table.insert(traitData.allTraits, trait)
+	customTraits[trait.id] = trait
+	if DEBUG then
+		LOG("Linked custom trait '" .. trait.id .. "' to registry slot '" .. vanillaTrait .. "'")
+	end
+	return true
+end
 
+-- Link traits queued during init/register once all mods have registered their hosts and skills.
+local function resolvePendingTraitsOnLoad()
+	for _, trait in pairs(TraitReplace.pendingLinkTraits) do
+		linkTraitToRegistry(trait)
+	end
+
+	-- Clear the pending. Any future will be loaded immediately
+	TraitReplace.pendingLinkTraits = {}
+	TraitReplace.traitsLinked = true
+end
+
+-- Internal function to actually add a trait
+local function addTraitInternal(trait)
+	if not prepareTraitInternal(trait) then
+		return false
+	end
+
+	-- if we already linked, link this immediately
+	-- Note: I am not sure this will work as intended since I think we can only load
+	-- images at init so trying to link later I don't think will work
+	if TraitReplace.traitsLinked then
+		linkTraitToRegistry(trait)
+		return true
+	end
+
+	-- Otherwise queue it for later linking
+	TraitReplace.pendingLinkTraits[trait.id] = trait
+	return true
 end
 
 local function addStatefulTraitInternal(statefulTrait)
@@ -818,8 +983,12 @@ local function addStatefulTraitInternal(statefulTrait)
 		end
 
 		Assert.Equals('string', type(state.icon), "Field 'states["..stateIndex.."].icon'")
-		Assert.Equals('string', type(state.desc_title), "Field 'states["..stateIndex.."].desc_title'")
-		Assert.Equals('string', type(state.desc_text), "Field 'states["..stateIndex.."].desc_text'")
+		Assert.True(
+			type(state.desc_title) == 'string' or type(state.desc_title) == 'function',
+			"Field 'states["..stateIndex.."].desc_title' must be string or function")
+		Assert.True(
+			type(state.desc_text) == 'string' or type(state.desc_text) == 'function',
+			"Field 'states["..stateIndex.."].desc_text' must be string or function")
 
 		-- Create a trait for this state
 		local stateTrait = {
@@ -827,6 +996,7 @@ local function addStatefulTraitInternal(statefulTrait)
 			icon = state.icon,
 			desc_title = state.desc_title,
 			desc_text = state.desc_text,
+			replaces = statefulTrait.replaces,
 		}
 
 		-- Wrap the user's function to check for this specific state
@@ -912,7 +1082,7 @@ if isHighestVersion then
 				traitData.surfaces[config.id .. "_vanilla"] = traitData.targetOrigIcon
 
 				-- Log registration summary
-				if DEBUG then LOG("Registered target trait '" .. config.id .. "' with " .. #traitData.allTraits .. " custom traits") end
+				if DEBUG then LOG("Registered target trait '" .. config.id .. "'") end
 			end
 		end
 		self.queuedRegistrations = {}
@@ -959,6 +1129,7 @@ if isHighestVersion then
 
 		-- Register hooks via onModsLoaded event
 		modApi.events.onModsLoaded:subscribe(function()
+			resolvePendingTraitsOnLoad()
 			modApi:addMissionUpdateHook(maybeCycleTraits)
 		end)
 

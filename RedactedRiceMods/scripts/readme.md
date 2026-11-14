@@ -21,7 +21,15 @@ Released: 05/04/2026
 * Brought in from Lemonymous' repo and enhanced to support two click weapons and mutli shot effects
 
 ## BoardUtils
-Current Release: 1.8.1
+Current Release: 1.8.2
+
+### 1.8.2
+Released: XX/XX/2026
+
+* Added several target area related functions and helpers
+* Added breakGrapple fn
+* Safe space checks for fire too
+* Fn for getting a random safe space
 
 ### 1.8.1
 Released: 10/15/2026
@@ -76,6 +84,14 @@ Released: 01/10/2026
 
 Initial release to keep in sync with other libs
 
+## CustomEmitter
+Current Release: 1.0.0
+
+### 1.0.0
+Released: ?
+
+* Brough in from Lemonymous' repo. No changes
+
 ## DamageModifierLib
 Current Release: 1.0.1
 
@@ -90,13 +106,29 @@ Released: 9/19/2026
 * Initial release for modifying weapon SpaceDamage during skill builds and deadly checks
 * Supports priority events, push/move tracking, and GetModifiedDamage helpers
 
-## PlusHelper
+## IgnoreLiquid
 Current Release: 1.0.0
 
 ### 1.0.0
-Released: 10/15/2026
+Released: XX/XX/2026
 
-* Shared CPLUS+ skill group constants and helpers for pilot skill mods
+* Initial release. Pulled out mainly from More+ Pontoons/Admiral skills
+
+## MoveThrough
+Current Release: 1.0.0
+
+### 1.0.0
+Released: XX/XX/2026
+
+* Initial release. Pulled out mostly from Star Wars squad and forced-move skills
+
+## InGameToolTip
+Current Release: 1.0.0
+
+### 1.0.0
+Released: XX/XX/2026
+
+* Initial release
 
 ## PassiveEffect
 Current Release: 2.0.0
@@ -148,8 +180,30 @@ Released: 03/28/2026
 
 Initial release
 
+## PlusHelper
+Current Release: 1.0.0
+
+### 1.0.0
+Released: 10/15/2026
+
+* Shared CPLUS+ skill group constants and helpers for pilot skill mods
+
+## ReplaceRepair
+Current Release: 3.0.1
+
+### 3.0.1
+Released: XX/XX/2026
+
+* Pulled in from Lemonymous repo
+* Updated to support fn texts and supporting GetText ids for texts
+
 ## PredictableRandom
-Current Release: 1.3.0
+Current Release: 1.3.1
+
+### 1.3.1
+Released: XX/XX/2026
+
+* Fixing issue where the first creation of randomizers was not repeatable
 
 ### 1.3.0
 Released: 7/7/2026
@@ -168,6 +222,14 @@ Made it support multiple instances correctly
 ### 1.0.0
 Released: ?
 Initial Release.
+
+## SpaceDamageObjects
+Current Release: 1.0.0
+
+### 1.0.0
+Released: ?
+
+* Brought in from Lemonymous' repo in support of CustomEmitters. No changes
 
 ## Trait
 Current Release: 3.0.2
@@ -189,7 +251,15 @@ Released: 02/14/2026
 Copied from Lemonymous and updated to handle multiple traits by appending text together and cycling through images
 
 ## TraitReplace
-Current Release: 0.9.2
+Current Release: 0.9.3
+
+### 0.9.3
+Released: XX/XX/2026
+
+* Added support for fns instead of strings for trait descriptions and names
+* Added support for replacing vanilla icons instead of cycling them
+* Added support for replacing other custom icons
+* Implemented delayed linking of icons so registrataion order does not matter for dependencies
 
 ### 0.9.2
 Released: 7/7/2026
@@ -239,10 +309,15 @@ Released: 6/11/2026
 Current Release: 2.1.0
 
 ### 2.1.0
-Brough in from Lemonymous' repo in support of ArtilleryArc. No changes
+Brought in from Lemonymous' repo in support of ArtilleryArc. No changes
 
 ## WeaponPreview
-Current Release: 4.2.0
+Current Release: 4.2.1
+
+### 4.2.1
+Released: XX/XX/2026
+
+* Made to work with replace repair skills
 
 ### 4.2.0
 Released: 10/15/2026

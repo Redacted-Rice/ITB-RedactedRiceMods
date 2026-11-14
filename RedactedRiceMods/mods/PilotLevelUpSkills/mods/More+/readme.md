@@ -74,7 +74,21 @@ These are skills that have a stronger than typical positive effect but also incl
 * Vindictive - +1 damage to enemies for each negative status effect on piloted mech.
 
 # Releases
-Latest release: 2.4.0
+Latest release: 2.4.1
+
+## 2.4.1
+Released: XX/XX/2026
+
+compatible with:
+* ItB AE 	1.2.93
+* ModLoader 2.9.6
+* ModLoaderExt 1.25
+* memhack	1.4.1
+* CPLUS+ Ex	2.0.0
+
+### Notes
+* Updated Status Library to 2.1.0
+* Extracted Pontoons to an ignoreLiquid lib and uses that
 
 ## 2.4.0
 Released: 10/15/2026
@@ -154,9 +168,6 @@ compatible with:
 * Added a number of additional exclusions for Zoltan/Mafan
 * Added broken stateful icon for cheap plating
 * Updated icon for streetwise
-
-
-Latest release: 2.0.0
 
 ## 2.0.0
 Released: 05/01/2026
