@@ -63,7 +63,7 @@ function StarWars_Stomp:getStompUsesForPawn(pawn, weaponId)
 	return move + extraUses
 end
 
-function StarWars_Stomp:syncStompForPawn(pawn)
+function StarWars_Stomp:syncStompForPawn(pawn, override)
 	if not pawn or pawn:IsDead() or not pawn:IsMech() then
 		return
 	end
@@ -72,8 +72,7 @@ function StarWars_Stomp:syncStompForPawn(pawn)
 	for wIdx = 1, 2 do
 		local weaponId = weapons[wIdx]
 		if weaponId and weaponId:find("StarWars_Stomp") and pawn:IsWeaponPowered(weaponId) then
-			
-			if Game:GetTeamTurn() == TEAM_PLAYER then
+			if override or Game:GetTeamTurn() == TEAM_PLAYER then
 				local uses = self:getStompUsesForPawn(pawn, weaponId)
 				pawn:SetWeaponLimitedRemaining(wIdx, uses)
 				pawn:SetMovementSpent(true)
@@ -89,6 +88,25 @@ function StarWars_Stomp:syncStompForAllPlayerMechs()
 	for pId = 0, 2 do
 		local pawn = Game:GetPawn(pId)
 		self:syncStompForPawn(pawn)
+	end
+end
+
+function StarWars_Stomp:syncStompForTestMech()
+	if not IsTestMechScenario() or not Game or not Board or Board:IsTipImage() then
+		return
+	end
+
+	local pawn = Game:GetPawn(0) or Game:GetPawn(1) or Game:GetPawn(2)
+	if not pawn or not StarWars_ATATMech.isATATPawnType(pawn:GetType()) then
+		return
+	end
+	local weapons = pawn:GetBaseWeaponTypes()
+	for wIdx = 1, 2 do
+		local weaponId = weapons[wIdx]
+		if weaponId and weaponId:find("StarWars_Stomp") then
+			pawn:AddMoveBonus(-99)
+			break
+		end
 	end
 end
 
@@ -240,3 +258,9 @@ passiveEffect:addPassiveEffect(
 	},
 	true  -- Not passive only
 )
+
+modApi.events.onTestMechEntered:subscribe(function()
+	modApi:runLater(function()
+		StarWars_Stomp:syncStompForTestMech()
+	end)
+end)

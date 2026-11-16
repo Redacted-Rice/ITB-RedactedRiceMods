@@ -234,3 +234,42 @@ ReplaceRepair:addSkill{
 	icon = "img/weapons/deathstar_repair.png",
 	mechType = "StarWars_DeathStarMech",
 }
+
+-- IN test mode, spawn a TIE Fighter near an enemy for testing replace reapir
+function StarWars_DeathStarMech.spawnTestHangarAllyNearEnemy()
+	if not IsTestMechScenario() or not Board or Board:IsTipImage() then
+		return
+	end
+
+	-- Test mode is wonky with ids and what is nil or not. This will get the
+	-- test pawn and ensure its the death star
+	local testMech = Game:GetPawn(0) or Game:GetPawn(1) or Game:GetPawn(2)
+	if not testMech or testMech:GetType() ~= "StarWars_DeathStarMech" then
+		return
+	end
+
+	-- Find the safe locations to spawn near an enemy
+	local nearEnemy = {}
+	for _, point in ipairs(BoardUtils.getSafeSpawnTiles(PATH_FLYER)) do
+		for _, enemyId in ipairs(extract_table(Board:GetPawns(TEAM_ENEMY))) do
+			local enemy = Board:GetPawn(enemyId)
+			local enemySpace = enemy and enemy:GetSpace()
+			-- if an enemy is in range, add the space and continue to the next one
+			if BoardUtils.getManhattanDistance(point, enemySpace) <= StarWars_DeathStarMech.BASE_ALLY_RANGE then
+				table.insert(nearEnemy, point)
+				break
+			end
+		end
+	end
+
+	-- Spawn the tie fighter in a random safe spot near an enemy (if we found one)
+	if #nearEnemy > 0 then
+		Board:SpawnPawn("StarWars_TIEFighterMech", nearEnemy[math.random(#nearEnemy)])
+	end
+end
+
+modApi.events.onTestMechEntered:subscribe(function()
+	-- We seem to need to delay it a frame for the board to set up and enemies
+	-- to be on it
+	modApi:runLater(StarWars_DeathStarMech.spawnTestHangarAllyNearEnemy)
+end)
