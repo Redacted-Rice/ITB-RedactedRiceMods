@@ -265,6 +265,7 @@ if isNewestVersion then
 		modApi.events.onMissionStart:subscribe(IgnoreLiquid._applyOnMissionEnter)
 		modApi.events.onMissionNextPhaseCreated:subscribe(IgnoreLiquid._applyOnMissionEnter)
 		modApi.events.onPostLoadGame:subscribe(IgnoreLiquid._applyOnMissionEnter)
+		modApi.events.onTestMechEntered:subscribe(IgnoreLiquid._applyOnMissionEnter)
 
 		modApi.events.onMissionEnd:subscribe(IgnoreLiquid._clearMissionState)
 	end

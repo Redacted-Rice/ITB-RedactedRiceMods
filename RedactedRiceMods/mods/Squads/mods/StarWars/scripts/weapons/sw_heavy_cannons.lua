@@ -1,6 +1,6 @@
 StarWars_HeavyCannons = Skill:new{
 	Name = "Heavy Cannons",
-	Description = "Artillery shot dealing 2 damage to center, 1 splash damage in T-shape around target.",
+	Description = "Artillery shot dealing 2 damage to center, 1 splash damage in T-shape around target. Target area is a 2-5 90 degree arc facing southeast.",
 	Class = "Ranged",
 	Damage = 2,
 	SideSplashDamage = 1,
