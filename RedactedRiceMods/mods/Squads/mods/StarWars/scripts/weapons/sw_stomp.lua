@@ -1,6 +1,6 @@
 StarWars_Stomp = Skill:new{
 	Name = "Stomp",
-	Description = "Instead of moving, stomp across the battlefield pushing up to move speed times per turn."
+	Description = "Instead of normal movement, stomps across the battlefield up to move speed times per turn pushing the target space."
 			.. " Free action and doesn't consume boosted but must be used before other actions",
 	Class = "Ranged",
 	Damage = 0,
@@ -221,14 +221,18 @@ function StarWars_Stomp:GetSkillEffect(p1, p2)
 	-- Move into the target if empty
 	local refund = SpaceDamage(p2)
 	refund.bHide = true
+	-- Note we don't reactivate in the tool tip because it will select the
+	-- tool tip pawn which is very confusing and annoying
 	refund.sScript = string.format([[
 		local p1 = %s
 		local p2 = %s
 
 		local pawn = Board:GetPawn(p1)
-		modApi:runLater(function()
-			StarWars_Stomp:reactivateAfter(pawn)
-		end)
+		if not Board:IsTipImage() then
+			modApi:runLater(function()
+				StarWars_Stomp:reactivateAfter(pawn)
+			end)
+		end
 
 		local effect = SkillEffect()
 		local path = PointList()
