@@ -75,7 +75,7 @@ function StarWars_Stomp:clearBonusMoveIfAny(pawn)
 	return false
 end
 
-function StarWars_Stomp:syncStompForPawn(pawn, override)
+function StarWars_Stomp:syncStompForPawn(pawn)
 	if not pawn or pawn:IsDead() or not pawn:IsMech() then
 		return
 	end
@@ -84,7 +84,7 @@ function StarWars_Stomp:syncStompForPawn(pawn, override)
 	for wIdx = 1, 2 do
 		local weaponId = weapons[wIdx]
 		if weaponId and weaponId:find("StarWars_Stomp") and pawn:IsWeaponPowered(weaponId) then
-			if override or Game:GetTeamTurn() == TEAM_PLAYER then
+			if Game:GetTeamTurn() == TEAM_PLAYER then
 				local uses = self:getStompUsesForPawn(pawn, weaponId)
 				pawn:SetWeaponLimitedRemaining(wIdx, uses)
 				pawn:SetMovementSpent(true)

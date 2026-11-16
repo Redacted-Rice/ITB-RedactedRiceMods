@@ -196,6 +196,7 @@ Released: XX/XX/2026
 
 * Pulled in from Lemonymous repo
 * Updated to support fn texts and supporting GetText ids for texts
+* Added some nil handling for a tool tip case that would occasion fail to find the pawn
 
 ## PredictableRandom
 Current Release: 1.3.1
