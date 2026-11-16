@@ -63,6 +63,18 @@ function StarWars_Stomp:getStompUsesForPawn(pawn, weaponId)
 	return move + extraUses
 end
 
+function StarWars_Stomp:clearBonusMoveIfAny(pawn)
+	if not pawn or pawn:IsDead() then
+		return false
+	end
+	local bonusMove = pawn:GetBonusMove()
+	if bonusMove and bonusMove > 0 then
+		pawn:SetBonusMove(0)
+		return true
+	end
+	return false
+end
+
 function StarWars_Stomp:syncStompForPawn(pawn, override)
 	if not pawn or pawn:IsDead() or not pawn:IsMech() then
 		return
@@ -134,6 +146,7 @@ function StarWars_Stomp:reactivateAfter(pawn)
 	end
 
 	self:restoreBoostAfterStomp(pawn)
+	local clearedBonusMove = self:clearBonusMoveIfAny(pawn)
 
 	-- Set it to active so it can attack again and re-select it for convinence
 	pawn:SetActive(true)
@@ -141,14 +154,21 @@ function StarWars_Stomp:reactivateAfter(pawn)
 
 	-- If we have more uses left, set it to the active weapon too so we can easily
 	-- chain move + attack
+	local setArmed = false
 	local weapons = pawn:GetBaseWeaponTypes()
 	for wIdx = 1, 2 do
 		local weaponId = weapons[wIdx]
 		if weaponId and weaponId:find("StarWars_Stomp") then
 			if pawn:GetWeaponLimitedRemaining(wIdx) > 0 then
 				pawn:SetArmedWeaponId(wIdx)
+				setArmed = true
 			end
 		end
+	end
+	-- if we cleared the bonus move and didn't set an armed weapon, set it
+	-- to unarmed to prevent vanilla autoselecting and allowing a move
+	if clearedBonusMove and not setArmed then
+		pawn:SetArmedWeaponId(-1)
 	end
 end
 
