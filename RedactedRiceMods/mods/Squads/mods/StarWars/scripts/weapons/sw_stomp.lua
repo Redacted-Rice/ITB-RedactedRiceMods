@@ -55,18 +55,11 @@ function StarWars_Stomp:pawnHasPoweredStomp(pawn)
 end
 
 function StarWars_Stomp:initGameSaveData()
-	if GAME == nil then
-		GAME = {}
-	end
-	if GAME.starwars == nil then
-		GAME.starwars = {}
-	end
-	if GAME.starwars.stomp == nil then
-		GAME.starwars.stomp = {}
-	end
-	if GAME.starwars.stomp.pawn_acted == nil then
-		GAME.starwars.stomp.pawn_acted = {}
-	end
+	GAME = GAME or {}
+	GAME.starwars = GAME.starwars or {}
+	GAME.starwars.stomp = GAME.starwars.stomp or {}
+	GAME.starwars.stomp.pawn_acted = GAME.starwars.stomp.pawn_acted or {}
+	GAME.starwars.stomp_restore_boost = GAME.starwars.stomp_restore_boost or {}
 end
 
 function StarWars_Stomp:shouldReactivate(pawn)
@@ -203,18 +196,12 @@ function StarWars_Stomp:restoreBoostAfterStomp(pawn)
 	if not pawn or pawn:IsDead() then
 		return
 	end
-	StarWars_Stomp.initBoostRestoreSave()
+	self:initGameSaveData()
 	local pawnId = pawn:GetId()
 	if GAME.starwars.stomp_restore_boost[pawnId] then
 		pawn:SetBoosted(true)
 		GAME.starwars.stomp_restore_boost[pawnId] = nil
 	end
-end
-
-function StarWars_Stomp.initBoostRestoreSave()
-	GAME = GAME or {}
-	GAME.starwars = GAME.starwars or {}
-	GAME.starwars.stomp_restore_boost = GAME.starwars.stomp_restore_boost or {}
 end
 
 function StarWars_Stomp:reactivateAfter(pawn)
@@ -272,7 +259,7 @@ function StarWars_Stomp:GetSkillEffect(p1, p2)
 			stripBoost.sScript = string.format([[
 				local pawn = Board:GetPawn(%d)
 				if pawn and pawn:IsBoosted() then
-					StarWars_Stomp.initBoostRestoreSave()
+					StarWars_Stomp:initGameSaveData()
 					GAME.starwars.stomp_restore_boost[%d] = true
 				end
 			]], pawnId, pawnId)
