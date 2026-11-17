@@ -21,6 +21,9 @@ StarWars_Stomp = Skill:new{
 
 local mod = mod_loader.mods[modApi.currentMod]
 
+-- Silica (Pilot_Miner) uses Double_Shot
+StarWars_Stomp.SILICA_PILOT_SKILL = "Double_Shot"
+
 Weapon_Texts.StarWars_Stomp_Upgrade1 = "Spikes"
 Weapon_Texts.StarWars_Stomp_A_UpgradeDescription = "+1 damage"
 StarWars_Stomp_A = StarWars_Stomp:new{
@@ -49,6 +52,78 @@ function StarWars_Stomp:pawnHasPoweredStomp(pawn)
 		end
 	end
 	return false
+end
+
+function StarWars_Stomp:initGameSaveData()
+	if GAME == nil then
+		GAME = {}
+	end
+	if GAME.starwars == nil then
+		GAME.starwars = {}
+	end
+	if GAME.starwars.stomp == nil then
+		GAME.starwars.stomp = {}
+	end
+	if GAME.starwars.stomp.pawn_acted == nil then
+		GAME.starwars.stomp.pawn_acted = {}
+	end
+end
+
+function StarWars_Stomp:shouldReactivate(pawn)
+	if pawn and pawn:IsAbility(self.SILICA_PILOT_SKILL) then
+		self:initGameSaveData()
+		if not GAME.starwars.stomp.pawn_acted[pawn:GetId()] then
+			return true
+		end
+	end
+	return false
+end
+
+function StarWars_Stomp:tryGetPoweredWeaponIndex(pawn, weaponId)
+	local weapons = pawn:GetPoweredWeaponTypes()
+	for wIdx = 1, 2 do
+		local idAtIdx = weapons[wIdx]
+		if idAtIdx and idAtIdx:find(weaponId) then
+			return wIdx
+		end
+	end
+	return nil
+end
+
+function StarWars_Stomp:clearStompUsesForPawn(pawn)
+	local weaponIndex = self:tryGetPoweredWeaponIndex(pawn, "StarWars_Stomp")
+	if weaponIndex then
+		pawn:SetWeaponLimitedRemaining(weaponIndex, 0)
+	end
+end
+
+function StarWars_Stomp:reactivatePawn(pawn)
+	if not pawn or pawn:IsDead() then
+		return
+	end
+	pawn:SetActive(true)
+	Game:SetSelectedPawn(pawn)
+end
+
+function StarWars_Stomp:checkToReactivate(pawn, weaponId)
+	-- If we have stomp, check and see if we need to manually reactivate
+	local weaponIndex = self:tryGetPoweredWeaponIndex(pawn, "StarWars_Stomp")
+	if weaponIndex then
+		if Board:IsTipImage() or not self:shouldReactivate(pawn) then
+			return
+		end
+
+		self:initGameSaveData()
+		local pawnId = pawn:GetId()
+
+		if not GAME.starwars.stomp.pawn_acted[pawnId] and not weaponId:find("StarWars_Stomp") then
+			self:clearStompUsesForPawn(pawn)
+			self:reactivatePawn(pawn)
+		end
+
+		-- No matter what, we have acted now
+		GAME.starwars.stomp.pawn_acted[pawnId] = true
+	end
 end
 
 function StarWars_Stomp:getStompUsesForPawn(pawn, weaponId)
@@ -84,6 +159,8 @@ function StarWars_Stomp:syncStompForPawn(pawn)
 	for wIdx = 1, 2 do
 		local weaponId = weapons[wIdx]
 		if weaponId and weaponId:find("StarWars_Stomp") and pawn:IsWeaponPowered(weaponId) then
+			self:initGameSaveData()
+			GAME.starwars.stomp.pawn_acted[pawn:GetId()] = nil
 			if Game:GetTeamTurn() == TEAM_PLAYER then
 				local uses = self:getStompUsesForPawn(pawn, weaponId)
 				pawn:SetWeaponLimitedRemaining(wIdx, uses)
@@ -270,6 +347,14 @@ function StarWars_Stomp:GetPassiveSkillEffect_OnPawnIsGrappled(mission, pawn, is
 	end
 end
 
+function StarWars_Stomp:GetPassiveSkillEffect_SkillEndHook(mission, pawn, weaponId)
+	self:checkToReactivate(pawn, weaponId)
+end
+
+function StarWars_Stomp:GetPassiveSkillEffect_FinalEffectEndHook(mission, pawn, weaponId)
+	self:checkToReactivate(pawn, weaponId)
+end
+
 -- Register the passive effect
 local passiveEffect = mod.libs.passiveEffect
 passiveEffect:addPassiveEffect(
@@ -279,6 +364,8 @@ passiveEffect:addPassiveEffect(
 		"onMissionNextPhaseCreated",
 		"nextTurnHook",
 		"onPawnIsGrappled",
+		"skillEndHook",
+		"finalEffectEndHook",
 	},
 	true  -- Not passive only
 )
