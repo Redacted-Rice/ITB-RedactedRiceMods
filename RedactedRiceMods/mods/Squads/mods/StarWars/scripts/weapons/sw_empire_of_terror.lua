@@ -150,7 +150,7 @@ local function fxOnAllAliveBuildings(particle, selfColorVarName)
 		for j = 0, 7  do
 			local point = Point(i,j)
 			if Board:IsBuilding(point) and Board:GetHealth(point) > 0 then
-				Board:AddBurst(point, particle, DIR_NONE)
+				--Board:AddBurst(point, particle, DIR_NONE)
 				Board:Ping(point, StarWars_EmpireOfTerror[selfColorVarName])
 			end
 		end
