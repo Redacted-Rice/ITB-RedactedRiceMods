@@ -1,13 +1,13 @@
 StarWars_HeavyCannons = Skill:new{
 	Name = "Heavy Cannons",
-	Description = "Artillery shot dealing 2 damage to center, 1 splash damage in T-shape around target. Target area is a 2-5 90 degree arc facing southeast.",
+	Description = "Artillery shot dealing 2 damage and pushing target, 1 splash damage in T-shape around target. Target area is a 2-5 90 degree arc facing southeast.",
 	Class = "Ranged",
 	Damage = 2,
 	SideSplashDamage = 1,
 	BehindSplashDamage = 1,
 	PowerCost = 1,
 	Upgrades = 2,
-	UpgradeCost = {2, 1},
+	UpgradeCost = {2, 2},
 	Icon = "weapons/artillery_sw_heavy_turbocannons.png",
 	FireSound = "/weapons/push_beam",
 	ImpactSound = "/impact/generic/explosion",
@@ -95,11 +95,12 @@ function StarWars_HeavyCannons:GetSkillEffect(p1, p2)
 	-- space beyond the primary target
 	local behindPos = p2 + DIR_VECTORS[attackDir]
 	if Board:IsValid(behindPos) then
-		local splashDamage = SpaceDamage(behindPos, self.BehindSplashDamage, attackDir)
+		local splashDamage = SpaceDamage(behindPos, self.BehindSplashDamage)
 		ret:AddDamage(splashDamage)
 		ret:AddBounce(behindPos, self.BouncePerDamage * self.BehindSplashDamage)
 	end
-	ret:AddDelay(0.05)
+	-- Like this because it used to push all targets not just center
+	--ret:AddDelay(0.05)
 	local mainPush = SpaceDamage(p2, self.Damage, attackDir)
 	ret:AddDamage(mainPush)
 	ret:AddDelay(0.1)
@@ -108,7 +109,7 @@ function StarWars_HeavyCannons:GetSkillEffect(p1, p2)
 	local perpLeft = (attackDir + 1) % 4
 	local leftPos = p2 + DIR_VECTORS[perpLeft]
 	if Board:IsValid(leftPos) then
-		local splashDamage = SpaceDamage(leftPos, self.SideSplashDamage, attackDir)
+		local splashDamage = SpaceDamage(leftPos, self.SideSplashDamage)
 		ret:AddDamage(splashDamage)
 		ret:AddBounce(leftPos, self.BouncePerDamage * self.SideSplashDamage)
 	end
@@ -117,7 +118,7 @@ function StarWars_HeavyCannons:GetSkillEffect(p1, p2)
 	local perpRight = (attackDir + 3) % 4
 	local rightPos = p2 + DIR_VECTORS[perpRight]
 	if Board:IsValid(rightPos) then
-		local splashDamage = SpaceDamage(rightPos, self.SideSplashDamage, attackDir)
+		local splashDamage = SpaceDamage(rightPos, self.SideSplashDamage)
 		ret:AddDamage(splashDamage)
 		ret:AddBounce(rightPos, self.BouncePerDamage * self.SideSplashDamage)
 	end

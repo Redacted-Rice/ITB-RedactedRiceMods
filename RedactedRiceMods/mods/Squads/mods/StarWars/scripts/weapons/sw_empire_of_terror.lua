@@ -1,7 +1,7 @@
 StarWars_EmpireOfTerror = PassiveSkill:new{
 	Name = "Empire of Terror",
 	Description = "The first 3 grid lost from buildings will be restored. Building populations are halved during player turns.",
-	PowerCost = 3,
+	PowerCost = 2,
 	Upgrades = 2,
 	UpgradeCost = {1, 1},
 	Orbital = true,
