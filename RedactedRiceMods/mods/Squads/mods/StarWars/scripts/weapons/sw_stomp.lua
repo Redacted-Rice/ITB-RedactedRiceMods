@@ -4,6 +4,7 @@ StarWars_Stomp = Skill:new{
 			.. " Free action and doesn't consume boosted but must be used before other actions",
 	Class = "Ranged",
 	Damage = 0,
+	EmptyDamage = false,
 	PowerCost = 1,
 	Upgrades = 2,
 	UpgradeCost = {2, 1},
@@ -25,7 +26,7 @@ local mod = mod_loader.mods[modApi.currentMod]
 StarWars_Stomp.SILICA_PILOT_SKILL = "Double_Shot"
 
 Weapon_Texts.StarWars_Stomp_Upgrade1 = "Spikes"
-Weapon_Texts.StarWars_Stomp_A_UpgradeDescription = "+1 damage"
+Weapon_Texts.StarWars_Stomp_A_UpgradeDescription = "Deals 1 damage when stomping on pawns, mountains or buildings"
 StarWars_Stomp_A = StarWars_Stomp:new{
 	Damage = 1,
 }
@@ -247,6 +248,14 @@ function StarWars_Stomp:GetTargetArea(point)
 	return ret
 end
 
+function StarWars_Stomp:IsEmptySpace(point)
+	if Board:IsPawnSpace(point) then
+		return false
+	end
+	local terrain = Board:GetTerrain(point)
+	return terrain ~= TERRAIN_BUILDING and terrain ~= TERRAIN_MOUNTAIN
+end
+
 function StarWars_Stomp:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
 
@@ -273,7 +282,11 @@ function StarWars_Stomp:GetSkillEffect(p1, p2)
 	-- Damage and push the target tile
 	local dir = GetDirection(p2 - p1)
 	if Board:IsValid(p2) then
-		local damage = SpaceDamage(p2, self.Damage, dir)
+		local dmg = self.Damage
+		if dmg > 0 and not self.EmptyDamage and self:IsEmptySpace(p2) then
+			dmg = 0
+		end
+		local damage = SpaceDamage(p2, dmg, dir)
 		damage.sAnimation = "airpush_" .. dir
 		ret:AddDamage(damage)
 		ret:AddBounce(p2, -1)

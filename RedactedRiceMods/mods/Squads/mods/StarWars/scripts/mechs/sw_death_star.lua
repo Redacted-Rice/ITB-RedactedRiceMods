@@ -74,11 +74,12 @@ StarWars_DeathStarMech = Pawn:new{
 modApi:setText("StarWars_DeathStar_Capacitors_Tooltip",
 		"When powered, Priming Laser deals 2 damage instead of 1 damage")
 modApi:setText("StarWars_DeathStar_Detectors_Tooltip",
-		"When powered, doubles Priming Laser range from allies. Applied after move bonuses")
+		"When powered, increased Priming Laser range from allies by 1")
 
 mech_forge:registerMechUpgrade("StarWars_DeathStarMech", mech_forge.VANILLA_UPGRADES.HEALTH, {
-		label = "Capacitors",
+		label = "Refractors",
 		tooltip = "StarWars_DeathStar_Capacitors_Tooltip",
+		coreSlots = 2,
 })
 mech_forge:registerMechUpgrade("StarWars_DeathStarMech", mech_forge.VANILLA_UPGRADES.MOVE, {
 		label = "Detectors",
@@ -100,7 +101,7 @@ function StarWars_DeathStarMech.getPrimingRange(pawn)
 	end
 	local range = StarWars_DeathStarMech.BASE_ALLY_RANGE + move
 	if  mech_forge:isMechUpgradePowered(pawn, mech_forge.VANILLA_UPGRADES.MOVE) then
-		range = range * 2
+		range = range + 1
 	end
 	return range
 end

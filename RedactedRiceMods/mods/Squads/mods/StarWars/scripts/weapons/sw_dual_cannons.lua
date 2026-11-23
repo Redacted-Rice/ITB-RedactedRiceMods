@@ -1,6 +1,6 @@
 StarWars_DualCannons = Skill:new{
 	Name = "Dual Cannons",
-	Description = "Fly up to 3 spaces in a line firing laser cannons at ALL adjacent spaces on one side (fires at empty spaces too).",
+	Description = "Fly up to 2 spaces in a line firing laser cannons at ALL adjacent spaces on one side (fires at empty spaces too).",
 	Class = "Brute",
 	Damage = 1,
 	PowerCost = 0,
@@ -8,7 +8,7 @@ StarWars_DualCannons = Skill:new{
 	UpgradeCost = {2, 1},
 	Icon = "weapons/brute_sw_tie_cannons.png",
 	TwoClick = true,
-	MoveRange = 3,
+	MoveRange = 2,
 	TargetRange = 1,
 	FireSound = "/impact/generic/ricochet",
 	TipImage = {
