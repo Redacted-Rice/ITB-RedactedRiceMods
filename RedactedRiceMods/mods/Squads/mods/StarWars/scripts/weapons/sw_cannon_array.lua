@@ -250,3 +250,10 @@ function StarWars_CannonArray:FireFromPositionInDirection(ret, fromPos, fireDir)
 		end
 	end
 end
+
+-- When the weapon is unarmed, clear the table too
+mod_loader.mods.redactedrice_libs.libs.weaponArmed.events.onWeaponUnarmed:subscribe(function(skill)
+	if skill and skill.moveThroughKey == StarWars_CannonArray.moveThroughKey then
+		MoveThrough.complete(skill.moveThroughKey)
+	end
+end)

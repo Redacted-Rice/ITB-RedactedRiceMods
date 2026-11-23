@@ -23,6 +23,9 @@ if isNewestVersion then
 
 	-- Snapshots + path for multi-step forced moves (keyed by sessionKey, e.g. weapon name)
 	function MoveThrough.preparePath(sessionKey, path, pawn)
+		if Board:IsTipImage() then
+			return
+		end
 		local pathPoints = {}
 		for i = 1, path:size() do
 			pathPoints[i] = path:index(i)
