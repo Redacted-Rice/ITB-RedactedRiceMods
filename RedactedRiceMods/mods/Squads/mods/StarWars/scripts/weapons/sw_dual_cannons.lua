@@ -24,6 +24,7 @@ StarWars_DualCannons = Skill:new{
 	Projectile2 = "effects/shot_sw_dual_red_split_2",
 	Shots = 2,
 	ShotsDelay = 0.05,
+	moveThroughKey = "StarWars_DualCannons",
 }
 
 -- Weapon text definitions
@@ -207,15 +208,14 @@ function StarWars_DualCannons:GetFinalEffect(p1, p2, p3)
 		end
 	end
 
-	local tileSnapshots, pawnSnapshot = MoveThrough.buildPathSnapshots(path, pawn)
-
 	-- Move through path, firing at each position (ALWAYS fires, not just at enemies)
+	MoveThrough.preparePath(self.moveThroughKey, path, pawn)
 	local pawnId = pawn:GetId()
 	for i = 1, path:size() do
 		local newPos = path:index(i)
 
 		-- Prep the tile as needed before moveing
-		MoveThrough.preStepLeaveTile(ret, newPos, tileSnapshots)
+		MoveThrough.preStepLeaveTile(self.moveThroughKey, ret, i)
 
 		-- Move to this position
 		BoardUtils.addForcedSingleMove(ret, pawnId, newPos)
@@ -224,8 +224,7 @@ function StarWars_DualCannons:GetFinalEffect(p1, p2, p3)
 		self:FireFromPositionInDirection(ret, newPos, fireDir)
 
 		-- Cleanup the tile as needed after moving
-		MoveThrough.afterStepLeaveTile(ret, pawnId, i > 1 and path:index(i - 1) or nil,
-				newPos, i == path:size(), pawnSnapshot, tileSnapshots)
+		MoveThrough.afterStepLeaveTile(self.moveThroughKey, ret, i)
 
 		-- Add small delay between positions
 		if i < path:size() then
@@ -233,6 +232,7 @@ function StarWars_DualCannons:GetFinalEffect(p1, p2, p3)
 		end
 	end
 
+	MoveThrough.scheduleComplete(self.moveThroughKey, ret)
 	return ret
 end
 

@@ -20,7 +20,8 @@ StarWars_CannonArray = Skill:new{
 		Enemy2 = Point(4,2),
 		Target = Point(2,1),
 		Second_Click = Point(3,1),
-	}
+	},
+	moveThroughKey = "StarWars_CannonArray"
 }
 
 -- Weapon text definitions
@@ -46,7 +47,7 @@ function StarWars_CannonArray:GetTargetArea(point)
 	if not pawn then return ret end
 
 	ret:push_back(point)
-	
+
 	-- Temporarily overwrite getmovespeed of the global acting Pawn
 	-- so we can control the speed without having to change it on
 	-- the mech as this has been problematic
@@ -55,7 +56,7 @@ function StarWars_CannonArray:GetTargetArea(point)
 	function Pawn:GetMoveSpeed()
 		return attackRange
 	end
-	
+
 	-- Get all tiles reachable by the Move skill and fire the skill build manually
 	-- for things like nimble
 	local moveTargets = Move:GetTargetArea(point)
@@ -63,10 +64,10 @@ function StarWars_CannonArray:GetTargetArea(point)
 		modApiExt_internal.mission,
 		pawn, "Move", point, moveTargets
 	)
-	
+
 	-- Restore original move speed
 	Pawn.GetMoveSpeed = origMoveSpeed
-	
+
 	-- Filter to only straight line moves in 4 directions
 	for dir = DIR_START, DIR_END do
 		for i = 1, attackRange do
@@ -130,9 +131,9 @@ end
 function StarWars_CannonArray:GetSkillEffect(p1, p2)
 	local pawn = Board:GetPawn(p1)
 	if not pawn then return SkillEffect() end
-	
+
 	local ret = SkillEffect()
-	
+
 	-- Build straight line path from p1 to p2
 	local path = PointList()
 	local moveDir = GetDirection(p2 - p1)
@@ -142,19 +143,19 @@ function StarWars_CannonArray:GetSkillEffect(p1, p2)
 		current = current + DIR_VECTORS[moveDir]
 		path:push_back(current)
 	end
-	
+
 	-- Show the path with no delay for preview
 	BoardUtils.addForcedMove(ret, path, NO_DELAY, pawn:GetId())
-	
+
 	return ret
 end
 
 function StarWars_CannonArray:GetFinalEffect(p1, p2, p3)
 	local pawn = Board:GetPawn(p1)
 	if not pawn then return SkillEffect() end
-	
+
 	local ret = SkillEffect()
-	
+
 	local path = PointList()
 	path:push_back(p1)
 
@@ -195,15 +196,15 @@ function StarWars_CannonArray:GetFinalEffect(p1, p2, p3)
 		end
 	end
 
-	local pawnId = pawn:GetId()
-	local tileSnapshots, pawnSnapshot = MoveThrough.buildPathSnapshots(path, pawn)
 
 	-- Move through path one space at a time, firing at each position
+	MoveThrough.preparePath(self.moveThroughKey, path, pawn)
+	local pawnId = pawn:GetId()
 	for i = 1, path:size() do
 		local newPos = path:index(i)
 
 		-- Prep the tile as needed before moveing
-		MoveThrough.preStepLeaveTile(ret, newPos, tileSnapshots)
+		MoveThrough.preStepLeaveTile(self.moveThroughKey, ret, i)
 
 		-- Move to this position
 		BoardUtils.addForcedSingleMove(ret, pawnId, newPos)
@@ -212,8 +213,7 @@ function StarWars_CannonArray:GetFinalEffect(p1, p2, p3)
 		self:FireFromPositionInDirection(ret, newPos, fireDir)
 
 		-- Cleanup the tile as needed after moving
-		MoveThrough.afterStepLeaveTile(ret, pawnId, i > 1 and path:index(i - 1) or nil,
-				newPos, i == path:size(), pawnSnapshot, tileSnapshots)
+		MoveThrough.afterStepLeaveTile(self.moveThroughKey, ret, i)
 
 		-- Add small delay between positions
 		if i < path:size() then
@@ -221,6 +221,7 @@ function StarWars_CannonArray:GetFinalEffect(p1, p2, p3)
 		end
 	end
 
+	MoveThrough.scheduleComplete(self.moveThroughKey, ret)
 	return ret
 end
 
