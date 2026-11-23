@@ -19,6 +19,38 @@ if isNewestVersion then
 
 	MoveThrough = MoveThrough or {}
 	MoveThrough.version = VERSION
+	MoveThrough._sessions = MoveThrough._sessions or {}
+
+	-- Snapshots + path for multi-step forced moves (keyed by sessionKey, e.g. weapon name)
+	function MoveThrough.preparePath(sessionKey, path, pawn)
+		local pathPoints = {}
+		for i = 1, path:size() do
+			pathPoints[i] = path:index(i)
+		end
+		local tileSnapshots, pawnSnapshot = MoveThrough.buildPathSnapshots(path, pawn)
+		MoveThrough._sessions[sessionKey] = {
+			pawnId = pawn:GetId(),
+			pathPoints = pathPoints,
+			pathSize = path:size(),
+			tileSnapshots = tileSnapshots,
+			pawnSnapshot = pawnSnapshot,
+		}
+	end
+
+	function MoveThrough.complete(sessionKey)
+		MoveThrough._sessions[sessionKey] = nil
+	end
+
+	-- After the skill effect runs so Board:IsBlocked still sees path tiles
+	function MoveThrough.scheduleComplete(sessionKey, ret)
+		ret:AddScript(string.format([[
+			MoveThrough.complete(%q)
+		]], sessionKey))
+	end
+
+	function MoveThrough._clearMissionState()
+		MoveThrough._sessions = {}
+	end
 
 	function MoveThrough._captureTile(point)
 		local item
@@ -176,8 +208,14 @@ if isNewestVersion then
 		]])
 	end
 
-	function MoveThrough.preStepLeaveTile(ret, newPoint, tileSnapshots)
-		local landingSnap = tileSnapshots[newPoint:GetString()]
+	function MoveThrough.preStepLeaveTile(sessionKey, ret, stepIndex)
+		local session = MoveThrough._sessions[sessionKey]
+		if not session then
+			return
+		end
+
+		local newPoint = session.pathPoints[stepIndex]
+		local landingSnap = session.tileSnapshots[newPoint:GetString()]
 		if landingSnap then
 			ret:AddScript(string.format([[
 				MoveThrough._removeTileItem(%s)
@@ -186,12 +224,20 @@ if isNewestVersion then
 	end
 
 	-- After move + fire at a step: restore tile left behind, then fix pawn hazards
-	function MoveThrough.afterStepLeaveTile(ret, pawnId, prevPoint, newPoint, isEndTile, pawnSnapshot, tileSnapshots)
+	function MoveThrough.afterStepLeaveTile(sessionKey, ret, stepIndex)
+		local session = MoveThrough._sessions[sessionKey]
+		if not session then
+			return
+		end
+		local newPoint = session.pathPoints[stepIndex]
+		local isEndTile = stepIndex == session.pathSize
+		local prevPoint = stepIndex > 1 and session.pathPoints[stepIndex - 1] or nil
+
 		if prevPoint then
-			MoveThrough.restorePreviousTileState(ret, prevPoint, tileSnapshots)
+			MoveThrough.restorePreviousTileState(ret, prevPoint, session.tileSnapshots)
 		end
 
-		local landingSnap = tileSnapshots[newPoint:GetString()]
+		local landingSnap = session.tileSnapshots[newPoint:GetString()]
 		if landingSnap then
 			if isEndTile and landingSnap.item then
 				ret:AddScript(string.format([[
@@ -200,8 +246,56 @@ if isNewestVersion then
 			end
 		end
 
-		MoveThrough.restorePawnState(ret, pawnId, pawnSnapshot, landingSnap, isEndTile)
+		MoveThrough.restorePawnState(ret, session.pawnId, session.pawnSnapshot, landingSnap, isEndTile)
 	end
+
+	function MoveThrough.isPointInUse(point)
+		for _, session in pairs(MoveThrough._sessions) do
+			for i = 1, #session.pathPoints do
+				if session.pathPoints[i] == point then
+					return true
+				end
+			end
+		end
+		return false
+	end
+
+	function MoveThrough._installBoardIsBlockedOverride(BoardClass, board)
+		MoveThrough._origBoardIsBlocked = board.IsBlocked
+		BoardClass.IsBlocked = function(self, point, pathing)
+			if MoveThrough.isPointInUse(point) then
+				return true
+			end
+			return MoveThrough._origBoardIsBlocked(self, point, pathing)
+		end
+	end
+
+	function MoveThrough:finalizeInit()
+		modApi.events.onMissionEnd:subscribe(MoveThrough._clearMissionState)
+	end
+else
+	LOG("MoveThrough: Skipping version " .. VERSION .. " (previous: "
+			.. MoveThrough.version .. ")")
 end
+
+local function onModsInitialized()
+	if VERSION < MoveThrough.version then
+		return
+	end
+
+	if MoveThrough.initialized then
+		return
+	end
+
+	MoveThrough:finalizeInit()
+	MoveThrough.initialized = true
+end
+
+local function onBoardClassInitialized(BoardClass, board)
+	MoveThrough._installBoardIsBlockedOverride(BoardClass, board)
+end
+
+modApi:addModsInitializedHook(onModsInitialized)
+modApi.events.onBoardClassInitialized:subscribe(onBoardClassInitialized)
 
 return MoveThrough
