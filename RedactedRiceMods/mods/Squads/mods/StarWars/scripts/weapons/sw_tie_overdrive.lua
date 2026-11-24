@@ -212,7 +212,7 @@ function StarWars_TieOverdrive:maybeApplyExtraBonuses(pawn, weaponId)
 		modApi:runLater(function()
 			pawn:SetActive(true)
 		end)
-		Board:AddAlert(pawn:GetSpace(), "OVERDRIVE")
+		Board:AddAlert(pawn:GetSpace(), "MANEUVERS")
 		Board:Ping(pawn:GetSpace(), GL_Color(0, 0, 255))
 	end
 end
@@ -228,7 +228,7 @@ function StarWars_TieOverdrive:maybeApplyBaseSpeedBoosts()
 		if moveStacks > 0 then
 			local pawn = Board:GetPawn(pawnId)
 			pawn:AddMoveBonus(moveStacks)
-			Board:AddAlert(pawn:GetSpace(), "OVERDRIVE")
+			Board:AddAlert(pawn:GetSpace(), "MANEUVERS")
 			Board:Ping(pawn:GetSpace(), GL_Color(0, 0, 255))
 		end
 	end
