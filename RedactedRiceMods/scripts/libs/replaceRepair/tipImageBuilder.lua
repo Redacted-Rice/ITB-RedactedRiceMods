@@ -42,23 +42,30 @@ function tipImageBuilder:setup(skill)
 	if self:verify(skill).incomplete then return end
 	
 	local t = _G[skill].TipImage
-	local selected = getSelectedPawn() or Game:GetPawn(0)
-	local pawnType = t.CustomPawn or selected:GetType()
+	local selected = getSelectedPawn() or Game:GetPawn(0) or Game:GetPawn(1) or Game:GetPawn(2)
+	local pawnType = t.CustomPawn
+	if not pawnType and selected then
+		pawnType = selected:GetType()
+	end
+	if not pawnType then
+		-- All else fails, use punch mech
+		pawnType = "PunchMech"
+	end
 	local pawn = PAWN_FACTORY:CreatePawn(pawnType)
 	Board:AddPawn(pawn, t.Unit or t.Unit_Damaged)
-	
+
 	if t.Unit_Damaged then
 		Board:DamageSpace(SpaceDamage(pawn:GetSpace(), pawn:GetHealth() - 1))
 	end
-	
-	local mechId = selected:GetId()
+
+	local mechId = selected and selected:GetId() or 0
 	local enemy = t.CustomEnemy or "Scorpion2"
 	for k, loc in pairs(t) do
 		mechId = (mechId + 1) % 3
 		local mech = Game:GetPawn(mechId)
 		mech = mech and mech:GetType() or "PunchMech"
 		mech = t.CustomFriendly or mech
-		
+
 		if k:sub(1,5) == "Enemy" then
 			AddPawn(loc, enemy, k:sub(-7,-1) == "Damaged")
 		elseif k:sub(1,8) == "Friendly" then

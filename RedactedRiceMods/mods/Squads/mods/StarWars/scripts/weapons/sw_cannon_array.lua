@@ -10,8 +10,7 @@ StarWars_CannonArray = Skill:new{
 	TwoClick = true,
 	MoveRange = 2,
 	TargetRange = 1,
-	LaunchSound = "/weapons/ricochet",
-	ImpactSound = "/impact/generic/ricochet",
+	FireSound = "/impact/generic/ricochet",
 	Projectile1 = "effects/shot_sw_dual_red_split_1",
 	Projectile2 = "effects/shot_sw_dual_red_split_2",
 	TipImage = {
@@ -45,6 +44,8 @@ function StarWars_CannonArray:GetTargetArea(point)
 	local ret = PointList()
 	local pawn = Board:GetPawn(point)
 	if not pawn then return ret end
+
+	ret:push_back(point)
 	
 	-- Temporarily overwrite getmovespeed of the global acting Pawn
 	-- so we can control the speed without having to change it on
@@ -87,34 +88,40 @@ end
 
 function StarWars_CannonArray:GetSecondTargetArea(p1, p2)
 	local ret = PointList()
-	local moveDir = GetDirection(p2 - p1)
+	local dirs = {GetDirection(p2 - p1)}
+	if p1 == p2 then
+		dirs = {DIR_UP, DIR_LEFT}
+	end
 
-	-- Get perpendicular directions
-	local perpDir1 = (moveDir + 1) % 4
-	local perpDir2 = (moveDir + 3) % 4
+	for dirIdx = 1, #dirs do
+		local moveDir = dirs[dirIdx]
+		-- Get perpendicular directions
+		local perpDir1 = (moveDir + 1) % 4
+		local perpDir2 = (moveDir + 3) % 4
 
-	-- Show the line of targets on each side along the entire move path
-	local current = p1
-	while true do
-		-- Add targets on both sides of current position
-		local side1 = current
-		local side2 = current
-		for i = 1, self.TargetRange do
-			side1 = side1 + DIR_VECTORS[perpDir1]
-			side2 = side2 + DIR_VECTORS[perpDir2]
-			if Board:IsValid(side1) then
-				ret:push_back(side1)
+		-- Show the line of targets on each side along the entire move path
+		local current = p1
+		while true do
+			-- Add targets on both sides of current position
+			local side1 = current
+			local side2 = current
+			for i = 1, self.TargetRange do
+				side1 = side1 + DIR_VECTORS[perpDir1]
+				side2 = side2 + DIR_VECTORS[perpDir2]
+				if Board:IsValid(side1) then
+					ret:push_back(side1)
+				end
+				if Board:IsValid(side2) then
+					ret:push_back(side2)
+				end
 			end
-			if Board:IsValid(side2) then
-				ret:push_back(side2)
-			end
-		end
 
-		-- Move to next position along path
-		if current == p2 then
-			break
+			-- Move to next position along path
+			if current == p2 then
+				break
+			end
+			current = current + DIR_VECTORS[moveDir]
 		end
-		current = current + DIR_VECTORS[moveDir]
 	end
 
 	return ret
@@ -148,62 +155,72 @@ function StarWars_CannonArray:GetFinalEffect(p1, p2, p3)
 	
 	local ret = SkillEffect()
 	
-	-- Determine which side to fire based on p3
-	local moveDir = GetDirection(p2 - p1)
-	local perpDir1 = (moveDir + 1) % 4
-	local perpDir2 = (moveDir + 3) % 4
-	local fireDir = perpDir1
-	
-	-- Build straight line path from p1 to p2
 	local path = PointList()
-	
-	-- Check the first p
-	local current = p1
-	path:push_back(current)
-	
-	-- See which side its on while constructing the path
-	local testSide = current
-	for i = 1, self.TargetRange do
-		testSide = testSide + DIR_VECTORS[perpDir2]
-		if p3 == testSide then
-			fireDir = perpDir2
-		end
-	end
-	
-	-- Check the rest of the ps
-	while current ~= p2 do
-		current = current + DIR_VECTORS[moveDir]
-		path:push_back(current)
-		
-		testSide = current
+	path:push_back(p1)
+
+	local fireDir
+	if p1 == p2 then
+		fireDir = GetDirection(p3 - p1)
+	else
+		-- Determine which side to fire based on p3
+		local moveDir = GetDirection(p2 - p1)
+		local perpDir1 = (moveDir + 1) % 4
+		local perpDir2 = (moveDir + 3) % 4
+		fireDir = perpDir1
+
+		-- Build straight line path from p1 to p2
+		local current = p1
+
+		-- See which side its on while constructing the path
+		local testSide = current
 		for i = 1, self.TargetRange do
 			testSide = testSide + DIR_VECTORS[perpDir2]
 			if p3 == testSide then
 				fireDir = perpDir2
 			end
 		end
+
+		-- Check the rest of the ps
+		while current ~= p2 do
+			current = current + DIR_VECTORS[moveDir]
+			path:push_back(current)
+
+			testSide = current
+			for i = 1, self.TargetRange do
+				testSide = testSide + DIR_VECTORS[perpDir2]
+				if p3 == testSide then
+					fireDir = perpDir2
+				end
+			end
+		end
 	end
-	
-	-- Show the path with no delay for preview
+
 	local pawnId = pawn:GetId()
-	BoardUtils.addForcedMove(ret, path, NO_DELAY, pawnId)
-	
+	local tileSnapshots, pawnSnapshot = MoveThrough.buildPathSnapshots(path, pawn)
+
 	-- Move through path one space at a time, firing at each position
-	local lastPos = p1
 	for i = 1, path:size() do
 		local newPos = path:index(i)
-		
+
+		-- Prep the tile as needed before moveing
+		MoveThrough.preStepLeaveTile(ret, newPos, tileSnapshots)
+
 		-- Move to this position
 		BoardUtils.addForcedSingleMove(ret, pawnId, newPos)
-		
+
 		-- Fire from current position
 		self:FireFromPositionInDirection(ret, newPos, fireDir)
-		
+
+		-- Cleanup the tile as needed after moving
+		MoveThrough.afterStepLeaveTile(ret, pawnId, i > 1 and path:index(i - 1) or nil,
+				newPos, i == path:size(), pawnSnapshot, tileSnapshots)
+
 		-- Add small delay between positions
 		if i < path:size() then
 			ret:AddDelay(0.1)
 		end
 	end
+
 	return ret
 end
 
@@ -223,6 +240,7 @@ function StarWars_CannonArray:FireFromPositionInDirection(ret, fromPos, fireDir)
 				local projectile = (laser % 2 == 1) and self.Projectile1 or self.Projectile2
 				-- Only do damage on the last laser
 				local damage = SpaceDamage(target, laser == 4 and self.Damage or 0)
+				ret:AddSound(self.FireSound)
 				ret:AddProjectile(fromPos, damage, projectile, laser == 1 and NO_DELAY or 0.05)
 			end
 

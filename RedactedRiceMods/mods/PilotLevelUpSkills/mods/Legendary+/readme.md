@@ -60,7 +60,20 @@ Please enjoy and contact us if you run into any issues.
 * **Trapper** - When moving, drop an exploding mine at your origin on turn end
 
 # Releases
-Latest release: 1.1.0
+Latest release: 1.1.1
+
+## 1.1.1
+Released: XX/XX/2026
+
+compatible with:
+* ItB AE 	1.2.93
+* ModLoader 2.9.6
+* ModLoaderExt 1.25
+* memhack	1.4.1
+* CPLUS+ Ex	2.0.0
+
+### Notes
+* Admiral updated to use new IgnoreLiquid lib
 
 ## 1.1.0
 Released: 10/15/2026

@@ -7,7 +7,7 @@ Author: Das Keifer of Redacted Rice
 Discord Server: https://discord.gg/CNjTVrpN4v
 ]]
 
-local VERSION = "1.8.1"
+local VERSION = "1.8.2"
 
 -- Version check
 local isNewestVersion = false
@@ -64,7 +64,29 @@ if isNewestVersion then
 	end
 
 	function BoardUtils.isPawnFlying(pawn)
-		return pawn:IsFlying() and not BoardUtils.hijackedFlying[pawn:GetId()]
+		return pawn:IsFlying() and not BoardUtils.isPawnHijackedFlying(pawn)
+	end
+
+	-- Removes web/grapple from a pawn using and off board hop
+	-- Thanks Generic for the pattern.
+	function BoardUtils.breakGrapple(pawn, options)
+		if not pawn or not Board or Board:IsTipImage() then
+			return
+		end
+		options = options or {}
+		modApi:scheduleHook(550, function()
+			local space = pawn:GetSpace()
+			pawn:SetSpace(Point(-1, -1))
+			modApi:runLater(function()
+				pawn:SetSpace(space)
+				if options.alert and space then
+					Board:AddAlert(space, options.alert)
+				end
+				if options.pingColor and space then
+					Board:Ping(space, options.pingColor)
+				end
+			end)
+		end)
 	end
 
 	-- Helper for building the common "allow this if a condition is met, otherwise
@@ -608,6 +630,68 @@ if isNewestVersion then
 		return hash % 10, math.floor(hash / 10)
 	end
 
+	function BoardUtils.getManhattanDistance(p1, p2)
+		return math.abs(p1.x - p2.x) + math.abs(p1.y - p2.y)
+	end
+
+	-- Append point to list if valid and not already in seenSet
+	function BoardUtils.pushUniquePoint(pointsList, seenSet, point)
+		if not Board:IsValid(point) then
+			return false
+		end
+		local hash = BoardUtils.getSpaceHash(point)
+		if seenSet[hash] then
+			return false
+		end
+		seenSet[hash] = true
+		pointsList:push_back(point)
+		return true
+	end
+
+	-- 90 degree forward cone - main axis plus widening perpendicular offsets each step
+	function BoardUtils.addForwardConeToList(pointsList, seenSet, origin, direction, startRadius, minRange, maxRange)
+		local basePoint = origin + DIR_VECTORS[direction]
+		local currRadius = startRadius or 1
+
+		local leftDir = (direction + 1) % 4
+		local rightDir = (direction + 3) % 4
+
+		local leftVec = DIR_VECTORS[leftDir]
+		local rightVec = DIR_VECTORS[rightDir]
+
+		while Board:IsValid(basePoint) do
+			local baseDistance = BoardUtils.getManhattanDistance(origin, basePoint)
+			if baseDistance > maxRange then
+				-- Stop if we've exceeded max range even on the main axis as this will be the "furthest" point
+				-- in our algorithm
+				break
+			elseif baseDistance >= minRange then
+				-- Otherwise add this point as long as its in range
+				BoardUtils.pushUniquePoint(pointsList, seenSet, basePoint)
+			end
+
+			-- Go out both directions and add points as long as they are in range
+			for i = 1, currRadius do
+				local leftTarget = basePoint + leftVec * i
+				local rightTarget = basePoint + rightVec * i
+				local leftDistance = BoardUtils.getManhattanDistance(origin, leftTarget)
+				local rightDistance = BoardUtils.getManhattanDistance(origin, rightTarget)
+
+				-- Will add if its valid and unique and in range
+				if leftDistance >= minRange and leftDistance <= maxRange then
+					BoardUtils.pushUniquePoint(pointsList, seenSet, leftTarget)
+				end
+				if rightDistance >= minRange and rightDistance <= maxRange then
+					BoardUtils.pushUniquePoint(pointsList, seenSet, rightTarget)
+				end
+			end
+
+			-- Gradually widen each step
+			basePoint = basePoint + DIR_VECTORS[direction]
+			currRadius = currRadius + 1
+		end
+	end
+
 	-- Check if any adjacent point matches the given matcher function
 	-- matcher(point) should return true if the point matches the desired condition
 	function BoardUtils.isAdjacent(loc, matcher)
@@ -693,10 +777,14 @@ if isNewestVersion then
 		return not BoardUtils.isUnallowedCustomTerrain(Board:GetCustomTile(point))
 	end
 
-	function BoardUtils.addCancelEffect(p, effect)
+	function BoardUtils.addCancelEffect(p, effect, isDamaging)
 		local smoked = Board:IsSmoke(p)
 		if not smoked then
 			local fireType = Board:GetFireType(p)
+			local pawn = Board:GetPawn(p)
+			local pawnFire = pawn and pawn:IsFire() or false
+			local isSand = Board:GetTerrain(p) == TERRAIN_SAND
+
 			effect:AddScript([[Board:SetSmoke(]]..p:GetString()..[[, true, false)]])
 
 			local damage = SpaceDamage(p, DAMAGE_ZERO)
@@ -705,14 +793,29 @@ if isNewestVersion then
 			damage.fDelay = 0.00017 --force a one frame delay on the board
 			effect:AddDamage(damage)
 
+			-- Handle fire
 			if fireType ~= FIRE_TYPE_NONE then
 				if fireType == FIRE_TYPE_FOREST_FIRE then
 					effect:AddScript([[Board:SetTerrain(]]..p:GetString()..[[, TERRAIN_FOREST)]])
 				end
 				effect:AddScript([[Board:SetFire(]]..p:GetString()..[[, true)]])
-			else
+			end
+			if pawnFire then
+				effect:AddScript([[Board:GetPawn(]] .. pawn:GetId() .. [[):SetFire(true)]])
+			end
+
+			-- Check to restore smoke/sand
+			if not (isSand and isDamaging == true) then
+				-- Its not sand or not damaging, we remove smoke
 				effect:AddScript([[Board:SetSmoke(]]..p:GetString()..[[, false, false)]])
 			end
+			if isSand and isDamaging ~= true then
+				-- Sand but not damaging - preserve sand
+				local resand = SpaceDamage(p, DAMAGE_ZERO)
+				resand.iTerrain = TERRAIN_SAND
+				effect:AddDamage(resand)
+			end
+			-- otherwise its sand and damaging so we leave the smoke
 		end
 	end
 
@@ -748,10 +851,26 @@ if isNewestVersion then
 		if Board:IsEnvironmentDanger(point) then
 			return false
 		end
+		if Board:IsFire(point) then
+			return false
+		end
 		if Board:IsAcid(point) then
 			return false
 		end
 		return true
+	end
+
+	function BoardUtils.pickRandomSafeSpawnTile(pathing, randSalt)
+		local choices = BoardUtils.getSafeSpawnTiles(pathing)
+		if #choices == 0 then
+			return nil
+		end
+		if randSalt ~= nil then
+			local index = PredictableRandom:getNextValue(
+				"BoardUtils.pickRandomSafeSpawnTile", 1, #choices, randSalt)
+			return choices[index]
+		end
+		return choices[math.random(#choices)]
 	end
 
 	function BoardUtils.getSafeSpawnTiles(pathing)

@@ -52,8 +52,10 @@ function legendary_plus:addCustomTraitIcon(skill)
 	end
 
 	skill.icon = iconImg
+
 	self.libs.traitReplace:add{
-		targetTrait = "massive",
+		targetTrait = skill.targetTrait or "massive",
+		replaces = skill.replaces == true,
 		func = function(trait, pawn)
 			if cplus_plus_ex:isSkillOnPawn(skill.id, pawn) then
 				return true

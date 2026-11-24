@@ -190,9 +190,17 @@ local function overrideGetText()
 
 			if repairSkill then
 				if id:match("Name$") then
-					result = _G[repairSkill.weapon]:GetName()
+					local name = _G[repairSkill.weapon]:GetName()
+					if name == "Null" then
+						name = repairSkill.weapon .. "_Name"
+					end
+					result = vanillaGetText(name)
 				elseif id:match("Description$") then
-					result = _G[repairSkill.weapon]:GetDescription()
+					local description = _G[repairSkill.weapon]:GetDescription()
+					if description == "Null" then
+						description = repairSkill.weapon .. "_Description"
+					end
+					result = vanillaGetText(description)
 				end
 			end
 		end
