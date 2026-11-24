@@ -338,6 +338,13 @@ function StarWars_Stomp:GetPassiveSkillEffect_NextTurnHook(mission)
 	self:syncStompForAllPlayerMechs()
 end
 
+function StarWars_Stomp:GetPassiveSkillEffect_ResetTurnHook(mission)
+	-- Reset turn reloads save state but does not fire nextTurnHook
+	modApi:runLater(function()
+		StarWars_Stomp:syncStompForAllPlayerMechs()
+	end)
+end
+
 function StarWars_Stomp:GetPassiveSkillEffect_OnPawnIsGrappled(mission, pawn, isGrappled)
 	if not isGrappled then
 		return
@@ -363,6 +370,7 @@ passiveEffect:addPassiveEffect(
 		"missionStartHook",
 		"onMissionNextPhaseCreated",
 		"nextTurnHook",
+		"resetTurnHook",
 		"onPawnIsGrappled",
 		"skillEndHook",
 		"finalEffectEndHook",
