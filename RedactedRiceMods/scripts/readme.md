@@ -30,6 +30,7 @@ Released: XX/XX/2026
 * Added breakGrapple fn
 * Safe space checks for fire too
 * Fn for getting a random safe space
+* Fixed issue with cancelEffect causing sand to disapear
 
 ### 1.8.1
 Released: 10/15/2026

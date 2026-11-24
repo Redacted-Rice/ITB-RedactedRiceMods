@@ -88,13 +88,21 @@ if isNewestVersion then
 	-- Sets the text of the tip and whether it is static (non-static follows the cursor)
 	-- static defaults to true
 	function InGameToolTip:_setTipContent(ui, body, title, static)
-		ui:settooltip(body or "", title or "", static ~= false)
+		ui:settooltip(GetText(body or ""), GetText(title or ""), static ~= false)
+	end
+
+	-- Returns the overlay UI for a registered box name, or nil if not created yet
+	function InGameToolTip.getUiBox(boxName)
+		if not boxName then
+			return nil
+		end
+		return InGameToolTip._boxUiByName[boxName]
 	end
 
 	-- Resolves the box name to the UI element or returns the target (presumably the UI element already)
 	function InGameToolTip:_resolveTipTarget(target)
 		if type(target) == "string" then
-			return InGameToolTip._boxUiByName[target]
+			return InGameToolTip.getUiBox(target)
 		end
 		return target
 	end
@@ -222,8 +230,20 @@ if isNewestVersion then
 		return true
 	end
 
+	function InGameToolTip:_boxOverlayActive(spec)
+		local isActive = spec and spec.options and spec.options.isActive
+		if isActive then
+			return isActive() and true or false
+		end
+		return true
+	end
+
 	function InGameToolTip:_boxOverlayDraw(screen)
 		local spec = self._inGameToolTipSpec
+		if not InGameToolTip:_boxOverlayActive(spec) then
+			self.visible = false
+			return
+		end
 		local x, y, w, h = InGameToolTip:_specScreenRect(spec)
 		if not x or not InGameToolTip:_rectOnScreen(x, y, w, h) then
 			self.visible = false
@@ -242,7 +262,7 @@ if isNewestVersion then
 	end
 
 	function InGameToolTip:_tryCreateBoxOverlay(spec)
-		if InGameToolTip._boxUiByName[spec.box] then
+		if InGameToolTip.getUiBox(spec.box) then
 			return true
 		end
 		local uiRoot = sdlext.getUiRoot()
@@ -254,8 +274,9 @@ if isNewestVersion then
 	end
 
 	function InGameToolTip:_createBoxOverlay(uiRoot, spec)
-		if InGameToolTip._boxUiByName[spec.box] then
-			return InGameToolTip._boxUiByName[spec.box]
+		local existing = InGameToolTip.getUiBox(spec.box)
+		if existing then
+			return existing
 		end
 
 		local w, h = InGameToolTip:_boxDimensions(spec.box)
@@ -300,7 +321,9 @@ if isNewestVersion then
 		return true
 	end
 
-	-- body/title once, or getContent each sync (not both). options.static defaults to true
+	-- body/title once, or getContent each sync (not both).
+	-- options.static: defaults to true. If it follows the cursor or not
+	-- options.isActive: optional fn. Overlay hover/tooltip only while it returns true.
 	function InGameToolTip.forBox(box, loc, options)
 		options = options or {}
 		if not box then
