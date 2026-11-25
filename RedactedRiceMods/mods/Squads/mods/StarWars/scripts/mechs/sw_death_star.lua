@@ -72,12 +72,12 @@ StarWars_DeathStarMech = Pawn:new{
 }
 
 modApi:setText("StarWars_DeathStar_Capacitors_Tooltip",
-		"When powered, Priming Laser deals 2 damage instead of 1 damage")
+		"When powered, Priming Laser recharges the Aux. Superlaser by 2 instead of 1")
 modApi:setText("StarWars_DeathStar_Detectors_Tooltip",
-		"When powered, increased Priming Laser range from allies by 1")
+		"When powered, doubles Priming Laser range from allies. Applied after move bonuses")
 
 mech_forge:registerMechUpgrade("StarWars_DeathStarMech", mech_forge.VANILLA_UPGRADES.HEALTH, {
-		label = "Refractors",
+		label = "Force Drain",
 		tooltip = "StarWars_DeathStar_Capacitors_Tooltip",
 		coreSlots = 2,
 })
@@ -87,11 +87,15 @@ mech_forge:registerMechUpgrade("StarWars_DeathStarMech", mech_forge.VANILLA_UPGR
 })
 
 function StarWars_DeathStarMech.getPrimingDamage(pawn)
-	local damage = 1
-	if mech_forge:isMechUpgradePowered(pawn, mech_forge.VANILLA_UPGRADES.HEALTH) then
-		damage = damage + 1
+	return 1
+end
+
+function StarWars_DeathStarMech.getSuperlaserRechargeAmount(pawn)
+	local charges = 1
+	if pawn and mech_forge:isMechUpgradePowered(pawn, mech_forge.VANILLA_UPGRADES.HEALTH) then
+		charges = 2
 	end
-	return damage
+	return charges
 end
 
 function StarWars_DeathStarMech.getPrimingRange(pawn)
@@ -100,8 +104,8 @@ function StarWars_DeathStarMech.getPrimingRange(pawn)
 		move = math.max(0, pawn:GetMoveSpeed())
 	end
 	local range = StarWars_DeathStarMech.BASE_ALLY_RANGE + move
-	if  mech_forge:isMechUpgradePowered(pawn, mech_forge.VANILLA_UPGRADES.MOVE) then
-		range = range + 1
+	if pawn and mech_forge:isMechUpgradePowered(pawn, mech_forge.VANILLA_UPGRADES.MOVE) then
+		range = range * 2
 	end
 	return range
 end
@@ -113,22 +117,25 @@ end
 modApi:setText("StarWars_DeathStar_Repair_Description", memhack.getTextWrappers.basedOnSelectedPawn(function(pawn)
 	local damage = 1
 	local range = 2
-	local capacitors = false
+	local forceDrain = false
 	local detectors = false
+	local recharge = 1
 	if pawn then
 		damage = StarWars_DeathStarMech.getPrimingDamage(pawn)
 		range = StarWars_DeathStarMech.getPrimingRange(pawn)
-		capacitors = mech_forge:isMechUpgradePowered(pawn, mech_forge.VANILLA_UPGRADES.HEALTH)
+		recharge = StarWars_DeathStarMech.getSuperlaserRechargeAmount(pawn)
+		forceDrain = mech_forge:isMechUpgradePowered(pawn, mech_forge.VANILLA_UPGRADES.HEALTH)
 		detectors = mech_forge:isMechUpgradePowered(pawn, mech_forge.VANILLA_UPGRADES.MOVE)
 	end
 	local desc = "Deal " .. damage .. " damage to a target within " .. range .. " spaces of an ally, draining"
-			.. " energy if its a pawn or building to recharge the Aux. Superlaser. Range scales with Mech's Move Speed."
+			.. " energy if its a pawn or building to recharge the Aux. Superlaser by " .. recharge .. "."
+			.. " Range scales with Mech's Move Speed."
 
-	if capacitors then
+	if forceDrain then
 		if detectors then
-			desc = desc .. " Currently boosted by Capacitors and Detectors."
+			desc = desc .. " Currently boosted by Force Drain and Detectors."
 		else
-			desc = desc .. " Currently boosted by Capacitors."
+			desc = desc .. " Currently boosted by Force Drain."
 		end
 	elseif detectors then
 		desc = desc .. " Currently boosted by Detectors."
@@ -176,12 +183,12 @@ function StarWars_DeathStar_Repair:GetTargetArea(point)
 	return ret
 end
 
-function StarWars_DeathStarMech.rechargeSuperlaserScript(pawnId, weaponIdx)
+function StarWars_DeathStarMech.rechargeSuperlaserScript(pawnId, weaponIdx, chargeAmount)
 	return string.format([[
 			local pawn = Board:GetPawn(%d)
 			if pawn then
 				local wIdx = %d
-				pawn:SetWeaponLimitedRemaining(wIdx, pawn:GetWeaponLimitedRemaining(wIdx) + 1)
+				pawn:SetWeaponLimitedRemaining(wIdx, pawn:GetWeaponLimitedRemaining(wIdx) + %d)
 				for i = 0, 7 do
 					for j = 0, 7  do
 						local point = Point(i,j)
@@ -191,7 +198,7 @@ function StarWars_DeathStarMech.rechargeSuperlaserScript(pawnId, weaponIdx)
 					end
 				end
 			end
-	]], pawnId, weaponIdx)
+	]], pawnId, weaponIdx, chargeAmount)
 end
 
 function StarWars_DeathStar_Repair:GetSkillEffect(p1, p2)
@@ -217,7 +224,8 @@ function StarWars_DeathStar_Repair:GetSkillEffect(p1, p2)
 		for wIdx = 1, 2 do
 			local weaponId = weapons[wIdx]
 			if weaponId and weaponId:find("StarWars_AuxiliarySuperlaser") then
-				ret:AddScript(StarWars_DeathStarMech.rechargeSuperlaserScript(pawn:GetId(), wIdx))
+				local chargeAmount = StarWars_DeathStarMech.getSuperlaserRechargeAmount(pawn)
+				ret:AddScript(StarWars_DeathStarMech.rechargeSuperlaserScript(pawn:GetId(), wIdx, chargeAmount))
 			end
 		end
 	end
@@ -230,7 +238,7 @@ end
 -- Register the custom repair skill for Death Star
 ReplaceRepair:addSkill{
 	name = "Priming Laser",
-	description = "Hit an object near an ally to recharge the Aux. Superlaser.",
+	description = "StarWars_DeathStar_Repair_Description",
 	weapon = "StarWars_DeathStar_Repair",
 	icon = "img/weapons/deathstar_repair.png",
 	mechType = "StarWars_DeathStarMech",
