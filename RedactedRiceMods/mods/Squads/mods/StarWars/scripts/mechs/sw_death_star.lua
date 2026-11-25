@@ -104,7 +104,7 @@ function StarWars_DeathStarMech.getPrimingRange(pawn)
 		move = math.max(0, pawn:GetMoveSpeed())
 	end
 	local range = StarWars_DeathStarMech.BASE_ALLY_RANGE + move
-	if  mech_forge:isMechUpgradePowered(pawn, mech_forge.VANILLA_UPGRADES.MOVE) then
+	if pawn and mech_forge:isMechUpgradePowered(pawn, mech_forge.VANILLA_UPGRADES.MOVE) then
 		range = range * 2
 	end
 	return range
@@ -238,7 +238,7 @@ end
 -- Register the custom repair skill for Death Star
 ReplaceRepair:addSkill{
 	name = "Priming Laser",
-	description = "Hit an object near an ally to recharge the Aux. Superlaser.",
+	description = "StarWars_DeathStar_Repair_Description",
 	weapon = "StarWars_DeathStar_Repair",
 	icon = "img/weapons/deathstar_repair.png",
 	mechType = "StarWars_DeathStarMech",
