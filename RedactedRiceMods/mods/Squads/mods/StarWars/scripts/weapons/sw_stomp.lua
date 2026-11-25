@@ -169,7 +169,7 @@ function StarWars_Stomp:syncStompForAllPlayerMechs()
 		return
 	end
 	for pId = 0, 2 do
-		local pawn = Game:GetPawn(pId)
+		local pawn = Game:GetPawn(pId) or Board:GetPawn(pId)
 		self:syncStompForPawn(pawn)
 	end
 end
